@@ -50,6 +50,7 @@ DT = ["pred", "val", "obj"]
 WORLD = {
     "barometer": [["reads", "me", "pressure_trace"], ["yields", "me", "forecast"]],
     "omen": [["senses", "me", "dream_image"], ["yields", "me", "forecast"]],
+    "tea_leaves": [["reads", "me", "leaf_pattern"], ["yields", "me", "forecast"]],
 }
 
 
@@ -261,3 +262,79 @@ def test_an_adopted_frame_actually_narrows_both_parties():
     for name, o in (("a", a), ("b", b)):
         assert _resolves(s, o) == ["pred"], (
             f"{name} was not narrowed by the agreed frame: {_resolves(s, o)}")
+
+
+# ------------------------------------------------ motivated inattention (P2.C4)
+
+def test_a_CHOSEN_frame_is_questioned_even_when_its_own_projection_hides_the_residual():
+    """P2.C4.1 & P2.C4.4: `tea_leaves` differs from `barometer` only in the `obj`
+    dimension (`leaf_pattern` vs `pressure_trace`), which `narrow` (`pred`, `val`)
+    projects away. The framed projection therefore sees zero residual, even though
+    full acuity (`ap_full`) reveals an uncovered relation. Across 3 extra ticks, the
+    questioning trigger probes at full acuity and drops the hiding chosen frame."""
+    s, o, _pv = _run("chose_aperture", percept="tea_leaves", held="barometer")
+    for _ in range(3):
+        s.tick(500_000)
+    assert set(_resolves(s, o)) == set(FULL), (
+        f"chosen frame hid the difference in 'obj' and was kept forever: {_resolves(s, o)}"
+    )
+    pv_after = _current_percept(s, o, "o")
+    assert list(pv_after["ap_residual"]) == [["reads", "me", "leaf_pattern"]]
+    assert _concerns(s) == []
+
+
+def test_an_honest_CHOSEN_frame_with_no_hidden_residual_is_kept_after_questioning():
+    """Negative control for P2.C4.4: when `percept == held == barometer`, the probe
+    view at full acuity also has zero residual, so questioning keeps the chosen frame."""
+    s, o, pv = _run("chose_aperture", percept="barometer", held="barometer")
+    for _ in range(3):
+        s.tick(500_000)
+    assert set(_resolves(s, o)) == {"pred", "val"}
+    assert list(pv["ap_residual"]) == []
+    assert _concerns(s) == []
+
+
+def test_graded_relax_tolerance_2_keeps_frame_on_1_cell_residual_and_drops_on_2_cell_residual():
+    """P2.C4.3: with `ap_relax_tolerance = 2`, a 1-cell residual (`narrow_to=('pred','val')`
+    collapsing only `obj` to `'·'` on `omen` vs `barometer`) keeps the chosen frame,
+    while a 2-cell residual (`narrow_to=('pred',)` collapsing both `val` and `obj`
+    to `'·'`) drops the chosen frame."""
+    # 1-cell residual: narrow_to=("pred", "val") -> residual is [["senses", "me", "·"]] (1 '·' cell)
+    s1 = _boot()
+    o1 = _observer(s1, "o1")
+    s1.set_attr(o1, "ap_relax_tolerance", 2)
+    ap1 = s1.add_node("Aperture", {"name": "narrow_1", "resolves": ["pred", "val"]})
+    s1.add_edge(o1, "chose_aperture", ap1)
+    s1.add_edge(o1, "holds_part", _part(s1, "barometer"))
+    s1.add_edge(o1, "perceives", _part(s1, "omen"))
+    s1.tick(500_000)
+    assert set(_resolves(s1, o1)) == {"pred", "val"}, (
+        f"tolerance 2 should keep frame on 1-cell residual, got {_resolves(s1, o1)}"
+    )
+    pv1 = _current_percept(s1, o1, "o1")
+    assert list(pv1["ap_residual"]) == [["senses", "me", UNRESOLVED]]
+
+    # 2-cell residual: narrow_to=("pred",) -> residual is [["senses", "·", "·"]] (2 '·' cells)
+    s2 = _boot()
+    o2 = _observer(s2, "o2")
+    s2.set_attr(o2, "ap_relax_tolerance", 2)
+    ap2 = s2.add_node("Aperture", {"name": "narrow_2", "resolves": ["pred"]})
+    s2.add_edge(o2, "chose_aperture", ap2)
+    s2.add_edge(o2, "holds_part", _part(s2, "barometer"))
+    s2.add_edge(o2, "perceives", _part(s2, "omen"))
+    s2.tick(500_000)
+    assert set(_resolves(s2, o2)) == set(FULL), (
+        f"tolerance 2 should drop frame on 2-cell residual, got {_resolves(s2, o2)}"
+    )
+    pv2 = _current_percept(s2, o2, "o2")
+    assert UNRESOLVED not in _dump(pv2["ap_residual"])
+
+
+def test_aperture_frame_generator_matches_committed_seed():
+    """P2.C4.3: `scripts/gen_aperture_frame_seed.py` reproduces `seeds/aperture_frame.json`."""
+    from scripts.gen_aperture_frame_seed import OUT, build_seed
+
+    expected = json.dumps(build_seed(), indent=2) + "\n"
+    assert OUT.read_text() == expected
+
+

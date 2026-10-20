@@ -9,9 +9,42 @@
   "name": "residual_salience",
   "description": "salience tracks residual: the next frontier is wherever the unexplained prediction error is largest; a solved axis has residual 0 and stops winning, a hard unsolved axis keeps the highest residual and keeps being chosen."
  },
- "nodes": [],
- "edges": [],
- "productions": [],
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "SaliencePolicy",
+   "attrs": {
+    "name": "residual_salience_policy",
+    "shape_match_tolerance": 2.0
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_salience_policy",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:residual_salience:policy",
+   "src": {
+    "type": "Agent",
+    "var": "agent"
+   },
+   "edge_type": "has_salience_policy",
+   "tgt": {
+    "type": "SaliencePolicy",
+    "var": "policy"
+   }
+  }
+ ],
  "concepts": [
   {
    "name": "residual_salience",
@@ -676,8 +709,40 @@
             ]
            },
            "b": {
-            "type": "Lit",
-            "value": 2.0
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Pick",
+               "source": {
+                "type": "NodesOfType",
+                "node_type": "SaliencePolicy"
+               }
+              },
+              "key": "shape_match_tolerance"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": 2.0
+            },
+            "other": {
+             "type": "Attr",
+             "node": {
+              "type": "Pick",
+              "source": {
+               "type": "NodesOfType",
+               "node_type": "SaliencePolicy"
+              }
+             },
+             "key": "shape_match_tolerance"
+            }
            }
           },
           "then": {

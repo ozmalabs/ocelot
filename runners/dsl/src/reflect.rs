@@ -1260,6 +1260,37 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 },
             ],
         ),
+        TermNode::SoftWeights {
+            source,
+            var_name,
+            value,
+            temperature,
+            default,
+        } => (
+            "SoftWeights",
+            vec![
+                Child {
+                    name: "source",
+                    child: *source,
+                },
+                ScalarSym {
+                    name: "var_name",
+                    value: *var_name,
+                },
+                Child {
+                    name: "value",
+                    child: *value,
+                },
+                Child {
+                    name: "temperature",
+                    child: *temperature,
+                },
+                OptChild {
+                    name: "default",
+                    child: *default,
+                },
+            ],
+        ),
         TermNode::Fold {
             source,
             var_name,
@@ -4472,6 +4503,13 @@ fn reconstruct(
             var_name: get_sym("var_name")?,
             value: take_child!("value"),
             refused: take_opt_child!("refused"),
+        },
+        "SoftWeights" => TermNode::SoftWeights {
+            source: take_child!("source"),
+            var_name: get_sym("var_name")?,
+            value: take_child!("value"),
+            temperature: take_child!("temperature"),
+            default: take_opt_child!("default"),
         },
         "Fold" => TermNode::Fold {
             source: take_child!("source"),

@@ -1,0 +1,957 @@
+{
+  "id": "thinking_budget",
+  "version": "1.0.0",
+  "depends_on": [
+    "default_mode_core"
+  ],
+  "area": "thinking_budget",
+  "description": "Shared ThinkingBudget resource pool for System-2 requesters (P2.A5). Refills once per NetworkModeState.epoch up to capacity (optionally funded from ManifoldPolicy.future_manifold_projection_budget), debits approved requests, and records deduplicated ThinkingBudgetDenial nodes on exhaustion.",
+  "microtheory": {
+    "name": "thinking_budget",
+    "description": "System-2 escalation and offline consolidation requesters draw from a shared epoch-refilled ThinkingBudget."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ThinkingBudget",
+      "attrs": {
+        "name": "core_thinking_budget",
+        "enabled": 0.0,
+        "capacity": 16.0,
+        "capacity_ceiling": 64.0,
+        "funding_gain": 2.0,
+        "remaining": 16.0,
+        "refill_per_epoch": 2.0,
+        "last_refill_epoch": -1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_thinking_budget",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:thinking_budget:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:thinking_budget:has_thinking_budget_denial:Agent:ThinkingBudgetDenial",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_denial",
+      "tgt": {
+        "type": "ThinkingBudgetDenial",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:thinking_budget:governs_horizon:Agent:ManifoldPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "governs_horizon",
+      "tgt": {
+        "type": "ManifoldPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:thinking_budget:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:thinking_budget:draws_on_thinking_budget:SystemTwoEscalation:ThinkingBudget",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "tb_fund_from_horizon",
+      "area": "thinking_budget",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "comment": "When the agent has `governs_horizon -> ManifoldPolicy` with a positive `future_manifold_projection_budget`, scale `ThinkingBudget.capacity` as `Min(capacity_ceiling, future_manifold_projection_budget * funding_gain)`.",
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "governs_horizon",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "future_manifold_projection_budget"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "budget"
+                },
+                "key": "capacity"
+              },
+              "b": {
+                "type": "Min",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "capacity_ceiling"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pol"
+                        },
+                        "key": "future_manifold_projection_budget"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "budget"
+                        },
+                        "key": "funding_gain"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "budget",
+          "capacity",
+          {
+            "__term__": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "budget"
+                  },
+                  "key": "capacity_ceiling"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "future_manifold_projection_budget"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "budget"
+                      },
+                      "key": "funding_gain"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "budget"
+                  },
+                  "key": "remaining"
+                },
+                {
+                  "type": "Min",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "budget"
+                      },
+                      "key": "capacity_ceiling"
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "future_manifold_projection_budget"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "budget"
+                          },
+                          "key": "funding_gain"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "tb_refill_once_per_epoch",
+      "area": "thinking_budget",
+      "order": 9,
+      "latency_class": "hard_realtime",
+      "comment": "Refill `ThinkingBudget.remaining` by `refill_per_epoch` up to `capacity` at most once per `NetworkModeState.epoch`.",
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "last_refill_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "budget"
+                  },
+                  "key": "capacity"
+                },
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "budget"
+                      },
+                      "key": "remaining"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "budget"
+                      },
+                      "key": "refill_per_epoch"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "last_refill_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "tb_pass_when_disabled",
+      "area": "thinking_budget",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "comment": "When ThinkingBudget is disabled, approve pending requests without debiting.",
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Gte",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "budget"
+                },
+                "key": "enabled"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "approved"
+        ]
+      ]
+    },
+    {
+      "name": "tb_debit_request",
+      "area": "thinking_budget",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Approve and debit a pending request when `ThinkingBudget.remaining >= req.cost` (non-batched so multiple requests in one epoch debit sequentially).",
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "cost"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "approved"
+        ],
+        [
+          "set_attr",
+          "req",
+          "debited_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0.0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "req"
+                    },
+                    "key": "cost"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "tb_record_exhaustion",
+      "area": "thinking_budget",
+      "order": 11,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "When a pending request cannot be funded because `remaining < cost`, mark it denied and mint at most one `ThinkingBudgetDenial` per (requester_kind, epoch).",
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "cost"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget_denial",
+                "any_type": false
+              },
+              "var_name": "d",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "requester_kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "req"
+                      },
+                      "key": "requester_kind"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "mode"
+                      },
+                      "key": "epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "denied"
+        ],
+        [
+          "set_attr",
+          "req",
+          "terminal_reason",
+          "budget_exhausted"
+        ],
+        [
+          "add_node",
+          "denial",
+          "ThinkingBudgetDenial",
+          {
+            "reason": "budget_exhausted",
+            "requester_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "requester_kind"
+              }
+            },
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_thinking_budget_denial",
+          "denial",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "tb_deny_exhausted_request_after_denial",
+      "area": "thinking_budget",
+      "order": 12,
+      "latency_class": "hard_realtime",
+      "comment": "Mark subsequent exhausted requests of the same requester_kind in the same epoch as denied without duplicating `ThinkingBudgetDenial`.",
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "cost"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "edge_type": "has_thinking_budget_denial",
+              "any_type": false
+            },
+            "var_name": "d",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "requester_kind"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "req"
+                    },
+                    "key": "requester_kind"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "denied"
+        ],
+        [
+          "set_attr",
+          "req",
+          "terminal_reason",
+          "budget_exhausted"
+        ]
+      ]
+    }
+  ]
+}

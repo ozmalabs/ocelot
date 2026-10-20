@@ -422,6 +422,13 @@ def Argmin(source: Term, var_name: str, value: Term,
                 value=value, default=default)
 
 
+def SoftWeights(source: Term, var_name: str, value: Term,
+                temperature: Term, default: Term | None = None) -> Term:
+    """Temperature-parameterised Boltzmann / softmax weights over `source`."""
+    return Term("SoftWeights", source=source, var_name=var_name,
+                value=value, temperature=temperature, default=default)
+
+
 # --- universal codec primitives (Phase 16b/16c) -----------------------
 #
 # Orthogonal building blocks every entropy-coded format needs.
@@ -1394,6 +1401,7 @@ __all__ = [
     "EvalSubgraph",
     "Argmax",
     "Argmin",
+    "SoftWeights",
     "BitsAt", "BitsAtAll", "BitsWrite", "BitsWriteAll",
     "HuffmanDecodeStream", "HuffmanEncodeStream",
     "ExpGolombDecode", "ExpGolombDecodeSigned",

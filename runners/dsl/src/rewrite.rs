@@ -997,6 +997,7 @@ pub fn term_reads_attr_via_node_set(arena: &TermArena, idx: TermIdx) -> bool {
         | T::MaxOver { .. }
         | T::Argmax { .. }
         | T::Argmin { .. }
+        | T::SoftWeights { .. }
         | T::Fold { .. }
         | T::EvalSubgraph { .. } => subtree_reads_attr(arena, idx),
         other => crate::term::children(other)

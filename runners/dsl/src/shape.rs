@@ -462,6 +462,7 @@ fn depth_bump_for(node: &TermNode) -> u8 {
             | TermNode::Argmax { .. }
             | TermNode::Argmin { .. }
             | TermNode::ArgminUnique { .. }
+            | TermNode::SoftWeights { .. }
             | TermNode::MaxOver { .. }
             | TermNode::MinOver { .. }
             | TermNode::Count { .. }
@@ -562,7 +563,7 @@ fn variant_tag(node: &TermNode) -> u8 {
         Prod { .. } => 16,
         Filter { .. } => 17,
         Exists { .. } => 18,
-        Argmax { .. } | Argmin { .. } | ArgminUnique { .. } => 19,
+        Argmax { .. } | Argmin { .. } | ArgminUnique { .. } | SoftWeights { .. } => 19,
         MinOver { .. } | MaxOver { .. } => 20,
         Attr { .. } => 21,
         Neighbours { .. } | InNeighbours { .. } | MapNeighbours { .. } => 22,
@@ -614,6 +615,7 @@ fn is_parametric(node: &TermNode) -> bool {
             | TermNode::Argmax { .. }
             | TermNode::Argmin { .. }
             | TermNode::ArgminUnique { .. }
+            | TermNode::SoftWeights { .. }
             | TermNode::MaxOver { .. }
             | TermNode::MinOver { .. }
             | TermNode::Filter { .. }
@@ -630,6 +632,7 @@ fn has_var_in_body(node: &TermNode, arena: &TermArena) -> bool {
         | TermNode::Argmax { value, .. }
         | TermNode::Argmin { value, .. }
         | TermNode::ArgminUnique { value, .. }
+        | TermNode::SoftWeights { value, .. }
         | TermNode::MaxOver { value, .. }
         | TermNode::MinOver { value, .. } => Some(*value),
         TermNode::Filter { predicate, .. } | TermNode::Exists { predicate, .. } => Some(*predicate),
@@ -657,6 +660,9 @@ fn uses_bound_var(node: &TermNode, arena: &TermArena) -> bool {
             var_name, value, ..
         }
         | TermNode::ArgminUnique {
+            var_name, value, ..
+        }
+        | TermNode::SoftWeights {
             var_name, value, ..
         }
         | TermNode::MaxOver {
@@ -755,6 +761,19 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
             ..
         } => {
             let mut v = vec![*source, *value];
+            if let Some(d) = default {
+                v.push(*d);
+            }
+            v
+        }
+        SoftWeights {
+            source,
+            value,
+            temperature,
+            default,
+            ..
+        } => {
+            let mut v = vec![*source, *value, *temperature];
             if let Some(d) = default {
                 v.push(*d);
             }

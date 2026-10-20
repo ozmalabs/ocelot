@@ -1,6 +1,6 @@
 {
   "id": "aperture_frame",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "comment": "Emit seeds/aperture_frame.json -- APERTURE IS A FRAME: chosen, forced, or negotiated.\n\n`observer_aperture` made aperture graph data, but as a single authored list on the\nobserver -- an acuity it simply HAS. That is incomplete. An aperture is a FRAME\nyou are viewing in, and a frame has provenance: you can choose it, it can be\nforced on you, or you can negotiate it with someone else.\n\nThis is the reference-frame sense, not the Fillmore `Frame` (which is language\nsemantics and is left alone). And it is not a metaphor here: `CLAUDE.md`'s\nframe/continuum invariant puts every lossy or real-valued map in\n`Hom(frame, frame)` rather than inside a frame's coordinates, and the projection\n`observer_aperture` performs IS such a map -- world frame to observer frame, with\nthe collapse marker naming exactly what the map discards.\n\nTwo things follow, and the second is the whole point.\n\n**The effective aperture is a MEET.** Every frame in force narrows what you\nresolve, so `resolves` stops being authored and becomes derived: the fold of\n`Intersect` over your own maximum acuity and every frame currently on you. An\nobserver declares its PHYSIOLOGY (`ap_full`); the frames decide the rest.\n\n**The three modes decode identically and differ entirely in RECOURSE.** This is\nthe testable content -- same residual, three different things you may do about it:\n\n  * CHOSEN -- you narrowed your own attention, so you may widen it unilaterally.\n    An outstanding residual is a reason to look harder, and `ap_relax_chosen`\n    drops the frame and re-arms the decode. Attention, mechanically.\n  * FORCED -- someone or something else narrowed it, and you cannot lift it. An\n    outstanding residual here is a gap you can DETECT and cannot close alone, so\n    it opens a `SelfConcern` on the existing human-gated spine. This is the\n    knowing-THAT-without-knowing-WHAT case from `ONE_LOOP_MANY_GRAINS.md`, one\n    level up: not merely unresolved, but unresolvable BY YOU.\n  * NEGOTIATED -- it binds several parties, so no one may change it alone. A\n    proposal takes effect only when every bound party has accepted; a unilateral\n    accept does nothing at all.\n\nAn agent that can only be forced has no attention; one that can only choose has\nno social constraint; one that cannot negotiate cannot establish common ground.\n",
   "depends_on": [
     "observer_aperture"
@@ -136,6 +136,30 @@
       "tgt": {
         "type": "SelfConcern",
         "var": "sc"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:probe-projected-part",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "probe_projected_part",
+      "tgt": {
+        "type": "ObservedShape",
+        "var": "pp"
+      }
+    },
+    {
+      "provenance": "seed:aperture_frame:probe-projected",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "probe_projected",
+      "tgt": {
+        "type": "ObservedShape",
+        "var": "qv"
       }
     }
   ],
@@ -373,6 +397,89 @@
               "name": "pv"
             },
             "key": "ap_residual"
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Count",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pv"
+                    },
+                    "key": "ap_residual"
+                  }
+                },
+                {
+                  "type": "Sum",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pv"
+                    },
+                    "key": "ap_residual"
+                  },
+                  "var_name": "rel",
+                  "value": {
+                    "type": "Count",
+                    "source": {
+                      "type": "FilterList",
+                      "source": {
+                        "type": "Var",
+                        "name": "rel"
+                      },
+                      "var_name": "cell",
+                      "predicate": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "cell"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "\u00b7"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_relax_tolerance"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_relax_tolerance"
+              }
+            }
           }
         ]
       },
@@ -631,6 +738,1443 @@
           "obs",
           "agreed_aperture",
           "ap"
+        ]
+      ]
+    },
+    {
+      "name": "af_count_chosen_dwell",
+      "comment": "P2.C4.4 questioning counter: when a chosen frame is in force and the current generation's percept has been decoded without triggering `af_relax_chosen` (residual magnitude below `ap_relax_tolerance`), increment `obs.ap_chosen_dwell` once for this generation.",
+      "match": [
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "projected",
+          "pv"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_seen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_scope_n"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_scope_n"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Count",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pv"
+                    },
+                    "key": "ap_residual"
+                  }
+                },
+                {
+                  "type": "Sum",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pv"
+                    },
+                    "key": "ap_residual"
+                  },
+                  "var_name": "rel",
+                  "value": {
+                    "type": "Count",
+                    "source": {
+                      "type": "FilterList",
+                      "source": {
+                        "type": "Var",
+                        "name": "rel"
+                      },
+                      "var_name": "cell",
+                      "predicate": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "cell"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "\u00b7"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_relax_tolerance"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_relax_tolerance"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_last_dwell_gen"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_chosen_dwell",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_chosen_dwell"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_chosen_dwell"
+                  }
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_last_dwell_gen",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "af_probe_project_held",
+      "comment": "P2.C4.4 probe codebook projection: once `ap_chosen_dwell >= ap_question_after`, project each held part through `ap_probe_resolves` (bypassing `chose_aperture` while still honouring `forced_aperture` and `agreed_aperture`).",
+      "match": [
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "holds_part",
+          "sh"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_chosen_dwell"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_chosen_dwell"
+                  }
+                },
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_question_after"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 1.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_question_after"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_questioned_gen"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_gen"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "probe_projected_part"
+              },
+              "var_name": "p",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "p"
+                      },
+                      "key": "of_name"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "sh"
+                      },
+                      "key": "name"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "p"
+                      },
+                      "key": "ap_gen"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "pp",
+          "ObservedShape",
+          {
+            "ap_gen": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "/probe/"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "/"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "of_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sh"
+                },
+                "key": "name"
+              }
+            },
+            "observer": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "name"
+              }
+            },
+            "kind": "probe_held",
+            "signature": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sh"
+                  },
+                  "key": "signature"
+                },
+                "var_name": "rel",
+                "value": {
+                  "type": "ZipWith",
+                  "a": {
+                    "type": "Var",
+                    "name": "rel"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "dim_types"
+                  },
+                  "a_name": "slot",
+                  "b_name": "dt",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "In",
+                      "member": {
+                        "type": "Var",
+                        "name": "dt"
+                      },
+                      "container": {
+                        "type": "Fold",
+                        "source": {
+                          "type": "Union",
+                          "a": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "edge_type": "forced_aperture"
+                          },
+                          "b": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "edge_type": "agreed_aperture"
+                          }
+                        },
+                        "var_name": "fr",
+                        "acc_name": "acc",
+                        "init": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "obs"
+                          },
+                          "key": "ap_full"
+                        },
+                        "body": {
+                          "type": "Intersect",
+                          "a": {
+                            "type": "Var",
+                            "name": "acc"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "fr"
+                            },
+                            "key": "resolves"
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "type": "Var",
+                      "name": "slot"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "\u00b7"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "probe_projected_part",
+          "pp"
+        ]
+      ]
+    },
+    {
+      "name": "af_probe_project_percept",
+      "comment": "P2.C4.4 probe percept projection & decode: once all held parts are probe-projected for the current generation, project the percept through `ap_probe_resolves` and decode its residual against the probe codebook.",
+      "match": [
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "perceives",
+          "sh"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_chosen_dwell"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_chosen_dwell"
+                  }
+                },
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_question_after"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 1.0
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_question_after"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_questioned_gen"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_gen"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "FilterList",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "edge_type": "probe_projected_part"
+                },
+                "var_name": "q",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "ap_gen"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_gen"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "holds_part"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "probe_projected"
+              },
+              "var_name": "q",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "of_name"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "sh"
+                      },
+                      "key": "name"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "ap_gen"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "qv",
+          "ObservedShape",
+          {
+            "ap_gen": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            },
+            "of_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sh"
+                },
+                "key": "name"
+              }
+            },
+            "observer": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "name"
+              }
+            },
+            "kind": "probe_percept",
+            "signature": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sh"
+                  },
+                  "key": "signature"
+                },
+                "var_name": "rel",
+                "value": {
+                  "type": "ZipWith",
+                  "a": {
+                    "type": "Var",
+                    "name": "rel"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "dim_types"
+                  },
+                  "a_name": "slot",
+                  "b_name": "dt",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "In",
+                      "member": {
+                        "type": "Var",
+                        "name": "dt"
+                      },
+                      "container": {
+                        "type": "Fold",
+                        "source": {
+                          "type": "Union",
+                          "a": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "edge_type": "forced_aperture"
+                          },
+                          "b": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "edge_type": "agreed_aperture"
+                          }
+                        },
+                        "var_name": "fr",
+                        "acc_name": "acc",
+                        "init": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "obs"
+                          },
+                          "key": "ap_full"
+                        },
+                        "body": {
+                          "type": "Intersect",
+                          "a": {
+                            "type": "Var",
+                            "name": "acc"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "fr"
+                            },
+                            "key": "resolves"
+                          }
+                        }
+                      }
+                    },
+                    "then": {
+                      "type": "Var",
+                      "name": "slot"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "\u00b7"
+                    }
+                  }
+                }
+              }
+            },
+            "ap_residual": {
+              "__term__": {
+                "type": "ShapeDecode",
+                "goal": {
+                  "type": "MapList",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "sh"
+                    },
+                    "key": "signature"
+                  },
+                  "var_name": "rel",
+                  "value": {
+                    "type": "ZipWith",
+                    "a": {
+                      "type": "Var",
+                      "name": "rel"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "sh"
+                      },
+                      "key": "dim_types"
+                    },
+                    "a_name": "slot",
+                    "b_name": "dt",
+                    "value": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "In",
+                        "member": {
+                          "type": "Var",
+                          "name": "dt"
+                        },
+                        "container": {
+                          "type": "Fold",
+                          "source": {
+                            "type": "Union",
+                            "a": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "obs"
+                              },
+                              "edge_type": "forced_aperture"
+                            },
+                            "b": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "obs"
+                              },
+                              "edge_type": "agreed_aperture"
+                            }
+                          },
+                          "var_name": "fr",
+                          "acc_name": "acc",
+                          "init": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "key": "ap_full"
+                          },
+                          "body": {
+                            "type": "Intersect",
+                            "a": {
+                              "type": "Var",
+                              "name": "acc"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "fr"
+                              },
+                              "key": "resolves"
+                            }
+                          }
+                        }
+                      },
+                      "then": {
+                        "type": "Var",
+                        "name": "slot"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "\u00b7"
+                      }
+                    }
+                  }
+                },
+                "codebook_type": "ObservedShape",
+                "codebook_scope": {
+                  "type": "MapList",
+                  "source": {
+                    "type": "FilterList",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "edge_type": "probe_projected_part"
+                    },
+                    "var_name": "q",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "q"
+                        },
+                        "key": "ap_gen"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "ap_gen"
+                      }
+                    }
+                  },
+                  "var_name": "q",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "name"
+                  }
+                },
+                "field": "residual",
+                "wild_objects": false
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "probe_projected",
+          "qv"
+        ]
+      ]
+    },
+    {
+      "name": "af_question_drop_hiding_frame",
+      "comment": "P2.C4.4 questioning verdict (drop): if the probe view (bypassing chosen frames) reveals a larger residual than the framed view, the chosen frame is hiding an unresolved distinction (`APERTURE_PATHOLOGIES.md` \u00a71). Drop `chose_aperture` unilaterally and file no `SelfConcern`.",
+      "match": [
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "projected",
+          "pv"
+        ],
+        [
+          "obs",
+          "probe_projected",
+          "qv"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "qv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "of_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "qv"
+              },
+              "key": "of_name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_seen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_scope_n"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "qv"
+                },
+                "key": "ap_residual"
+              }
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "ap_residual"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_edge",
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_chosen_dwell",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_questioned_gen",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "af_question_keep_honest_frame",
+      "comment": "P2.C4.4 questioning verdict (keep): if the probe view's residual is no larger than the framed view's residual, the chosen frame is not hiding an unresolved distinction; keep the frame and reset `ap_chosen_dwell`.",
+      "match": [
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ],
+        [
+          "obs",
+          "projected",
+          "pv"
+        ],
+        [
+          "obs",
+          "probe_projected",
+          "qv"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "qv"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "of_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "qv"
+              },
+              "key": "of_name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pv"
+              },
+              "key": "ap_seen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_scope_n"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_questioned_gen"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "qv"
+                },
+                "key": "ap_residual"
+              }
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pv"
+                },
+                "key": "ap_residual"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_chosen_dwell",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_questioned_gen",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          }
         ]
       ]
     }

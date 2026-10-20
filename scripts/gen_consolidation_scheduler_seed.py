@@ -25,7 +25,10 @@ from gen_capability_collapse_seed import (
     Gte,
     L,
     Lte,
+    Max,
     N,
+    Not,
+    ONE,
     Plus,
     T,
     ZERO,
@@ -38,8 +41,47 @@ def Minus(a, b):
     return {"type": "Minus", "a": a, "b": b}
 
 
+def Lt(a, b):
+    return {"type": "Lt", "a": a, "b": b}
+
+
+def Exists(source, var_name, predicate):
+    return {
+        "type": "Exists",
+        "source": source,
+        "var_name": var_name,
+        "predicate": predicate,
+    }
+
+
+def IfThenElse(cond, then, other):
+    return {"type": "IfThenElse", "cond": cond, "then": then, "other": other}
+
+
 def policy_enabled():
     return Eq(A("pol", "enabled"), L(1.0))
+
+
+def policy_cost():
+    return IfThenElse(
+        Eq(A("pol", "cost"), L(None)),
+        L(1.0),
+        A("pol", "cost"),
+    )
+
+
+def budget_enabled(var="budget"):
+    return Gte(A(var, "enabled"), L(1.0))
+
+
+def unbudgeted_or_disabled():
+    return Not(
+        Exists(
+            N("agent", "has_thinking_budget"),
+            "tb",
+            budget_enabled("tb"),
+        )
+    )
 
 
 def bind_memory_clock_rule():
@@ -91,6 +133,7 @@ def mint_offline_cycle_rule():
                 A("pol", "cooldown_epochs"),
             ),
             Gt(Count(N("agent", "recorded_episode")), ZERO),
+            unbudgeted_or_disabled(),
         ),
         "effects": [
             ["add_node", "cycle", "MemoryCycle", {
@@ -113,6 +156,127 @@ def mint_offline_cycle_rule():
             ["add_edge", "req", "recruits_task_set", "cons_ts", {}],
             ["add_edge", "req", "recruits_task_set", "clean_ts", {}],
             ["set_attr", "pol", "last_cycle_epoch", T(A("mode", "epoch"))],
+        ],
+    }
+
+
+def mint_offline_cycle_budgeted_rule():
+    deadline_term = Plus(A("mode", "epoch"), A("pol", "retention_epochs"))
+    cost_term = policy_cost()
+    return {
+        "name": "csch_mint_offline_cycle_budgeted",
+        "area": AREA,
+        "order": 15,
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": (
+            "When ThinkingBudget is enabled and has `remaining >= pol.cost`, mint an "
+            "offline MemoryCycle, link the escalation via `draws_on_thinking_budget`, "
+            "and debit `ThinkingBudget.remaining`."
+        ),
+        "match": [
+            ["agent", "has_consolidation_scheduler_policy", "pol"],
+            ["agent", "has_thinking_budget", "budget"],
+            ["agent", "has_network_mode_state", "mode"],
+            ["agent", "has_memory_replay_task_set", "replay_ts"],
+            ["agent", "has_memory_consolidation_task_set", "cons_ts"],
+            ["agent", "has_memory_cleanup_task_set", "clean_ts"],
+        ],
+        "where": And(
+            policy_enabled(),
+            budget_enabled("budget"),
+            Gte(A("budget", "remaining"), cost_term),
+            Gte(A("mode", "default_mode_weight"), A("pol", "entry_weight")),
+            Lte(A("mode", "task_demand"), A("pol", "maximum_task_demand")),
+            Gte(
+                Minus(A("mode", "epoch"), A("pol", "last_cycle_epoch")),
+                A("pol", "cooldown_epochs"),
+            ),
+            Gt(Count(N("agent", "recorded_episode")), ZERO),
+        ),
+        "effects": [
+            ["add_node", "cycle", "MemoryCycle", {
+                "status": "pending",
+                "mode": "offline",
+                "epoch": T(A("mode", "epoch")),
+                "source": "consolidation_scheduler",
+            }],
+            ["add_node", "req", "SystemTwoEscalation", {
+                "status": "requested",
+                "reason": "offline_consolidation",
+                "request_kind": "consolidation",
+                "cost": T(cost_term),
+                "input_epoch": T(A("mode", "epoch")),
+                "deadline_epoch": T(deadline_term),
+            }],
+            ["add_edge", "agent", "has_memory_cycle", "cycle", {}],
+            ["add_edge", "cycle", "has_consolidation_task_request", "req", {}],
+            ["add_edge", "req", "about_context", "mode", {}],
+            ["add_edge", "req", "recruits_task_set", "replay_ts", {}],
+            ["add_edge", "req", "recruits_task_set", "cons_ts", {}],
+            ["add_edge", "req", "recruits_task_set", "clean_ts", {}],
+            ["add_edge", "req", "draws_on_thinking_budget", "budget", {}],
+            [
+                "set_attr",
+                "budget",
+                "remaining",
+                T(Max(ZERO, Minus(A("budget", "remaining"), cost_term))),
+            ],
+            ["set_attr", "pol", "last_cycle_epoch", T(A("mode", "epoch"))],
+        ],
+    }
+
+
+def record_budget_exhaustion_rule():
+    cost_term = policy_cost()
+    return {
+        "name": "csch_record_budget_exhaustion",
+        "area": AREA,
+        "order": 15,
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": (
+            "When an offline consolidation cycle would be minted except that "
+            "`ThinkingBudget.remaining < pol.cost`, record at most one "
+            "`ThinkingBudgetDenial` for `consolidation` at `mode.epoch`."
+        ),
+        "match": [
+            ["agent", "has_consolidation_scheduler_policy", "pol"],
+            ["agent", "has_thinking_budget", "budget"],
+            ["agent", "has_network_mode_state", "mode"],
+            ["agent", "has_memory_replay_task_set", "replay_ts"],
+            ["agent", "has_memory_consolidation_task_set", "cons_ts"],
+            ["agent", "has_memory_cleanup_task_set", "clean_ts"],
+        ],
+        "where": And(
+            policy_enabled(),
+            budget_enabled("budget"),
+            Lt(A("budget", "remaining"), cost_term),
+            Gte(A("mode", "default_mode_weight"), A("pol", "entry_weight")),
+            Lte(A("mode", "task_demand"), A("pol", "maximum_task_demand")),
+            Gte(
+                Minus(A("mode", "epoch"), A("pol", "last_cycle_epoch")),
+                A("pol", "cooldown_epochs"),
+            ),
+            Gt(Count(N("agent", "recorded_episode")), ZERO),
+            Not(
+                Exists(
+                    N("agent", "has_thinking_budget_denial"),
+                    "d",
+                    And(
+                        Eq(A("d", "requester_kind"), L("consolidation")),
+                        Eq(A("d", "epoch"), A("mode", "epoch")),
+                    ),
+                )
+            ),
+        ),
+        "effects": [
+            ["add_node", "denial", "ThinkingBudgetDenial", {
+                "reason": "budget_exhausted",
+                "requester_kind": "consolidation",
+                "epoch": T(A("mode", "epoch")),
+            }],
+            ["add_edge", "agent", "has_thinking_budget_denial", "denial", {}],
         ],
     }
 
@@ -184,6 +348,9 @@ def productions():
         ("MemoryCycle", "has_consolidation_task_request", "SystemTwoEscalation"),
         ("SystemTwoEscalation", "about_context", "NetworkModeState"),
         ("SystemTwoEscalation", "recruits_task_set", "SystemTwoTaskSet"),
+        ("Agent", "has_thinking_budget", "ThinkingBudget"),
+        ("Agent", "has_thinking_budget_denial", "ThinkingBudgetDenial"),
+        ("SystemTwoEscalation", "draws_on_thinking_budget", "ThinkingBudget"),
     ]
     return [
         {
@@ -225,6 +392,7 @@ def build():
                 "type": "ConsolidationSchedulerPolicy",
                 "attrs": {
                     "enabled": 0.0,
+                    "cost": 1.0,
                     "entry_weight": 0.6,
                     "maximum_task_demand": 0.2,
                     "cooldown_epochs": 4.0,
@@ -293,6 +461,8 @@ def build():
         "rules": [
             bind_memory_clock_rule(),
             mint_offline_cycle_rule(),
+            mint_offline_cycle_budgeted_rule(),
+            record_budget_exhaustion_rule(),
             prune_completed_cycle_request_rule(),
             prune_completed_cycle_rule(),
         ],

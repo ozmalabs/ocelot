@@ -58,18 +58,37 @@ SoftWeights { source, var_name, value, temperature, default? }
 
 | Task | Tier | Goal | Touch | Pattern to copy | Acceptance |
 |---|---|---|---|---|---|
-| P2.C1.1 | T1 | Freeze the spec: tuple access idiom, `integer_scale` yes/no, and whether results should be memoised (`is_stable_graph_query`) | this doc | — | Spec frozen |
+| P2.C1.1 | T1 | Freeze the spec: tuple access idiom, `integer_scale` yes/no, and whether results should be memoised (`is_stable_graph_query`) | this doc | — | Spec frozen (**DONE**) |
 | P2.C1.2 | T2 | Rust unit tests first | `term.rs` `#[cfg(test)]` | `argmax_cache_keys_free_vars_and_invalidates_on_graph_change` (`term.rs:16245`) | Tests cover: weights sum to 1 within 1e-12; T→0 gives one-hot; two-way tie at T=0 gives 0.5/0.5; skip of a non-numeric element; empty source gives `default`; the same input gives bit-identical output twice; free-var binding is correct (cache key test) |
 | P2.C1.3 | T2 | Implement every site in the checklist | the files listed | the Argmax arms | `scripts/engine_cargo_test.sh --lib` green apart from the known failure. `jsonio` round-trip test added (copy `pareto_dominates_term_round_trips_via_json` `jsonio.rs:3155`) |
 | P2.C1.4 | T3 | Build and Python test | `scripts/engine_build.sh`; new `tests/test_soft_weights_term.py` | `tests/test_selector_winner_value_migrated.py:24-90` | Evaluate via `s.evaluate(term_json, env)`. Weights match a NumPy reference to 1e-12. `tests/test_engine_provenance_migrated.py` green |
 | P2.C1.5 | T3 | Soft-exclusion recipe (no new Term) | new `docs/research/engine_substrate/SOFT_ADMISSIBILITY_RECIPES.md` (short) plus one test composing `SoftWeights(value = score - penalty * excluded)` | — | The test shows an excluded candidate keeps nonzero weight that falls as `penalty` grows |
 
+### P2.C1.1 Frozen Spec (`SoftWeights`)
+
+- **Variant signature (`term.rs` after `LogQuantum`):**
+  `SoftWeights { source: TermIdx, var_name: Sym, value: TermIdx, temperature: TermIdx, default: Option<TermIdx> }`
+- **Tuple return & access idiom:**
+  Each surviving candidate yields a 2-tuple `Value::Tuple(Arc::new(smallvec![element, Value::Float(w)]))` inside an outer `Value::List`, matching `DictItems` (`term.rs:7687`). Callers read the candidate element at index `0` and its weight at index `1` via the existing `Nth` Term (`{"type": "Nth", "items": {"type": "Var", "name": "pair"}, "index": 0 | 1}`).
+- **`integer_scale` field: No.**
+  Seeds that require integer weights compose `Round` (`term.rs:3233`) or `LogQuantum` (`term.rs:3303`) over `Times(Nth(pair, 1), Lit(scale))` in graph data rather than adding a second output mode to `SoftWeights`.
+- **Numeric coercion & skipping:**
+  `value` is evaluated per element with `var_name` bound. `Value::Int(i)` coerces to `i as f64`, `Value::Float(f)` to `f`, `Value::Rational(n, d)` to `n as f64 / d as f64` (when `d != 0`). Any other variant (`None`, `Bool`, `Str`, `Node`, containers) or non-finite `f64` (`!f.is_finite()`) is **skipped**.
+  `temperature` is evaluated once in the outer scope (`Int` / `Float` / `Rational` -> `f64`; non-numeric or `NaN` -> treated as `0.0`).
+- **Memoization (`is_stable_graph_query` & `free_vars`):**
+  `collect_into` binds `var_name` inside `value` and evaluates `source`, `temperature`, and `default` in the outer scope. `is_stable_graph_query` includes `SoftWeights` (when `source`, `value`, `temperature`, and optional `default` are stable graph queries) and `Nth` (when `items` is a stable graph query) so an enclosing `Argmax` over `SoftWeights` is memoised and invalidated on graph change with the exact free-variable key.
+
 ## P2.C2 — `ParetoDominates` real-valued: decision
 
 | Task | Tier | Goal | Touch | Acceptance |
 |---|---|---|---|---|
-| P2.C2.1 | T1 | Decide using the evidence: is there a P3 consumer that needs real coordinates? If none, record "deferred: integer contract is intentional (cognitive_pareto)". If yes, write the spec for an optional `epsilon` field (default absent, meaning byte-identical integer behaviour) and, when it is present, f64 coordinates compared as `alt ≥ cand − ε` with strictness `alt > cand + ε` | this doc | Decision recorded |
-| P2.C2.2 | T2 | (Only if C2.1 says yes) implement it at every checklist site, as in P2.C1, plus `eval_pareto_dominates` | `term.rs`, `jsonio.rs`, `reflect.rs`, `rewrite.rs` | `tests/test_cognitive_pareto_migrated.py` unchanged and green. A new test shows a ε-tolerant case dominating only when `epsilon` is set |
+| P2.C2.1 | T1 | Decide using the evidence: is there a P3 consumer that needs real coordinates? If none, record "deferred: integer contract is intentional (cognitive_pareto)". If yes, write the spec for an optional `epsilon` field (default absent, meaning byte-identical integer behaviour) and, when it is present, f64 coordinates compared as `alt ≥ cand − ε` with strictness `alt > cand + ε` | this doc | Decision recorded (**DONE**) |
+| P2.C2.2 | T2 | (Only if C2.1 says yes) implement it at every checklist site, as in P2.C1, plus `eval_pareto_dominates` | `term.rs`, `jsonio.rs`, `reflect.rs`, `rewrite.rs` | Skipped per P2.C2.1 |
+
+### P2.C2.1 Decision Record
+
+- **Decision:** **Deferred: integer contract is intentional (`cognitive_pareto`).**
+- **Rationale:** Inspection of Phase 3 (`P3.A6`, `P3.A7`, `P3.D1`, `P3.H9`) confirms no P3 consumer calls `ParetoDominates` on floating-point coordinates. `cognitive_pareto` (`scripts/gen_cognitive_pareto_seed.py`) scales utilities onto an integer lattice by design, and `tests/test_cognitive_pareto_migrated.py:107,162` explicitly pin the integer-only refusal contract (`eval_pareto_dominates` in `term.rs:7029-7131`). P2.C2.2 is therefore not needed.
 
 ## P2.C3 — Tolerance metadata nodes and inline-literal migration
 
@@ -83,20 +102,46 @@ It is linked by `tol -governs_policy-> policy_node` and `agent_root -has_toleran
 
 | Task | Tier | Goal | Read first | Touch | Acceptance |
 |---|---|---|---|---|---|
-| P2.C3.1 | T1 | Freeze the schema and choose the first tolerances to describe: `settle_tolerance` (motor), `conflict_margin` and `minimum_confidence` (dual-process), the valence match tolerance, and `dim_grains` (DimInfer). For each, give min, max, step and direction, and record why that direction counts as "widening" | the policy seeds above | this doc | Table frozen |
+| P2.C3.1 | T1 | Freeze the schema and choose the first tolerances to describe: `settle_tolerance` (motor), `conflict_margin` and `minimum_confidence` (dual-process), the valence match tolerance, and `dim_grains` (DimInfer). For each, give min, max, step and direction, and record why that direction counts as "widening" | the policy seeds above | this doc | Table frozen (**DONE**) |
 | P2.C3.2 | T3 | `tolerance_registry` seed (data only): Tolerance nodes plus `governs_policy` edges. Policy nodes are referenced by `{"type":…, "name":…}` cross-refs | `substrate/seed_loader.py` cross-ref format | new `seeds/tolerance_registry.json` | Loads beside its target seeds. A test asserts each Tolerance resolves to exactly one policy node with that attribute present |
 | P2.C3.3 | T3 | Migrate the `valence_salience` `Lit 2.0` to `Attr(policy, "shape_match_tolerance")` on a new or existing salience policy node with default 2.0 | `seeds/residual_salience.json:383-700` | that seed (generator first if one exists: `grep -l residual_salience scripts/gen_*`) | Byte-identical behaviour: existing `residual_salience` tests green. A new test shows that changing the attribute changes the match |
 | P2.C3.4 | T3 | Migrate the `dim_grains` fallback `Lit [0]` to a policy attribute | `seeds/shape_decode_loop.json:518-620`, `seeds/vision_grain_policy.json` | those seeds | `tests/test_dimension_inference_migrated.py` green. A new test covers the fallback being read from the graph |
 | P2.C3.5 | T3 | `SHAPE_MATCH_TOL`: make `number_runner.py` read the policy attribute from P2.C3.3 instead of the constant | `tests/capability/number_qualia/runners/number_runner.py:591,636,675,885` | that file | The number_qualia runner reproduces the stored track results (run its smallest track) |
+
+### P2.C3.1 Frozen Tolerance Registry Table
+
+| `Tolerance.name` | Target policy cross-ref (`-governs_policy->`) | `governs_attr` | `default` | `min` | `max` | `step` | `direction` | Why this direction counts as widening |
+|---|---|---|---|---|---|---|---|---|
+| `motor_settle_tolerance` | `{"type": "MotorDecisionPolicy", "name": "generic_motor_decision_policy"}` | `settle_tolerance` | `0.15` | `0.05` | `0.50` | `0.05` | `widen_up` | Raising `settle_tolerance` increases the allowable fast-vs-grounded value residual within which `motor_decision_collapse` can settle without staying open. |
+| `dual_process_conflict_margin_tolerance` | `{"type": "DualProcessPolicy", "name": "core_dual_process_policy"}` | `conflict_margin` | `0.20` | `0.05` | `0.50` | `0.05` | `widen_down` | `dual_process_escalate_near_conflict` refuses fast commit when a runner-up is within `conflict_margin` of the top score; lowering `conflict_margin` shrinks the near-tie refusal zone and admits closer candidates. |
+| `dual_process_minimum_confidence_tolerance` | `{"type": "DualProcessPolicy", "name": "core_dual_process_policy"}` | `minimum_confidence` | `0.20` | `0.05` | `0.50` | `0.05` | `widen_down` | `dual_process_commit_arbitrated_default` requires `decision_confidence >= minimum_confidence`; lowering `minimum_confidence` relaxes the confidence floor for commitment. |
+| `salience_shape_match_tolerance` | `{"type": "SaliencePolicy", "name": "residual_salience_policy"}` | `shape_match_tolerance` | `2.0` | `0.0` | `6.0` | `1.0` | `widen_up` | `valence_salience` matches held `Shape` exemplars when `L1(csig(x), sig(sh)) <= shape_match_tolerance`; raising the threshold widens the L1 neighbourhood of shapes that match. |
+| `dim_infer_grain_tolerance` | `{"type": "DimInferPolicy", "name": "default_dim_infer_policy"}` | `dim_grains` | `[0]` | `0` | `2` | `1` | `widen_up` | `sd_infer_dimension` tests grains in `dim_grains` and picks the finest grain that explains the observation; extending the grain ladder upward (`[0]` → `[0, 1]` → `[0, 1, 2]`) admits coarser-grain held-generator matches when exact grain `0` fails. |
 
 ## P2.C4 — Graded aperture relax
 
 | Task | Tier | Goal | Read first | Touch | Acceptance |
 |---|---|---|---|---|---|
 | P2.C4.1 | T3 | **Pathology test first**, marked `xfail(strict=True)` with the reason. Use `_run("chose_aperture", percept="barometer")`, where the held part and the percept match, so the residual is empty. Show that the chosen narrowing frame is kept forever across 3 extra ticks, even though the observer's full acuity would reveal what the frame hides. Use the `omen`/`barometer` world, adding a percept that differs only in the frame-excluded dimension | `tests/test_aperture_frame_migrated.py:45-200`, `APERTURE_PATHOLOGIES.md` §1 | `tests/test_aperture_frame_migrated.py` (append) | The test runs and xfails |
-| P2.C4.2 | T1 | Spec the graded relax: (a) relax on residual **magnitude** `Count(unresolved cells in pv.ap_residual) ≥ obs.ap_relax_tolerance`, where the tolerance attribute defaults to 1 so behaviour is unchanged; (b) a **questioning trigger** independent of residual: after `obs.ap_question_after` generations with a chosen frame in force, project once at full aperture, i.e. take a probe view that bypasses chosen frames but not forced or agreed ones. If the probe view's residual is larger than the framed view's residual, the frame is hiding something: drop it and file nothing. If not, reset the counter. Settle which projection rule in `observer_aperture.json` can produce a probe view, or whether a Rust change is needed (if so it is T2 and blocked behind its own spec) | `seeds/observer_aperture.json` (projection rules near `:728-760`), `seeds/aperture_frame.json` | this doc | Spec frozen, with an explicit "needs Rust: yes/no" |
+| P2.C4.2 | T1 | Spec the graded relax: (a) relax on residual **magnitude** `Count(unresolved cells in pv.ap_residual) ≥ obs.ap_relax_tolerance`, where the tolerance attribute defaults to 1 so behaviour is unchanged; (b) a **questioning trigger** independent of residual: after `obs.ap_question_after` generations with a chosen frame in force, project once at full aperture, i.e. take a probe view that bypasses chosen frames but not forced or agreed ones. If the probe view's residual is larger than the framed view's residual, the frame is hiding something: drop it and file nothing. If not, reset the counter. Settle which projection rule in `observer_aperture.json` can produce a probe view, or whether a Rust change is needed (if so it is T2 and blocked behind its own spec) | `seeds/observer_aperture.json` (projection rules near `:728-760`), `seeds/aperture_frame.json` | this doc | Spec frozen, with an explicit "needs Rust: yes/no" (**DONE**) |
 | P2.C4.3 | T3 | Implement (a) as a rule edit through a new generator, `scripts/gen_aperture_frame_seed.py`, which first reproduces the current JSON byte-identically | `seeds/aperture_frame.json` | generator plus seed | All existing aperture tests green. A new magnitude test: tolerance 2 keeps the frame on a 1-cell residual and drops it on a 2-cell residual |
 | P2.C4.4 | T3/T2 | Implement (b) according to the spec | per spec | per spec | The C4.1 xfail now passes; remove the xfail. The negotiated and forced tests are unchanged |
+
+### P2.C4.2 Frozen Spec (Graded Aperture Relax & Questioning Trigger)
+
+- **Needs Rust: No.** Both (a) and (b) are expressed purely as seed rules in `seeds/aperture_frame.json` (emitted by `scripts/gen_aperture_frame_seed.py`) using existing `MapList`, `ZipWith`, `FilterList`, `Fold`, `Intersect`, `Union`, `Count`, `Sum`, `Max`, and `ShapeDecode` Terms.
+- **(a) Residual magnitude threshold in `af_relax_chosen`:**
+  - Effective tolerance is `tol = IfThenElse(Eq(Attr(obs, "ap_relax_tolerance"), Lit(null)), Lit(1), Attr(obs, "ap_relax_tolerance"))`.
+  - Residual magnitude of `pv.ap_residual` is `Max(Count(Attr(pv, "ap_residual")), Sum(source=Attr(pv, "ap_residual"), var_name="rel", value=Count(FilterList(source=Var("rel"), var_name="cell", predicate=Eq(Var("cell"), Lit("·"))))))`.
+  - When `pv.ap_gen == obs.ap_gen` and `magnitude >= tol`, `af_relax_chosen` deletes `obs -chose_aperture-> ap`. At default `ap_relax_tolerance = 1` (or `null`), any non-empty residual has `magnitude >= 1` and drops the chosen frame, preserving existing behaviour. At `ap_relax_tolerance = 2`, a 1-cell residual (`magnitude == 1`) keeps the frame while a 2-cell residual (`magnitude >= 2`) drops it.
+- **(b) Non-residual questioning trigger (closing `APERTURE_PATHOLOGIES.md` §1 motivated inattention):**
+  - When `obs` has a `chose_aperture` edge and a current-generation decoded percept view `pv` (`pv.ap_gen == obs.ap_gen` and `pv.ap_seen == obs.ap_scope_n`) whose residual magnitude is `< tol` (so `af_relax_chosen` did not drop the frame), `af_count_chosen_dwell` increments `obs.ap_chosen_dwell` by `1.0` once per generation (`obs.ap_last_dwell_gen != obs.ap_gen`).
+  - Questioning threshold is `q_after = IfThenElse(Eq(Attr(obs, "ap_question_after"), Lit(null)), Lit(1.0), Attr(obs, "ap_question_after"))`.
+  - Once `obs.ap_chosen_dwell >= q_after` and `obs.ap_questioned_gen != obs.ap_gen`, the observer takes a **probe view** at `ap_probe_resolves = Fold(Union(Neighbours(obs, "forced_aperture"), Neighbours(obs, "agreed_aperture")), init=obs.ap_full, body=Intersect(acc, fr.resolves))` — bypassing `chose_aperture` while still honouring `forced_aperture` and `agreed_aperture`:
+    1. `af_probe_project_held` projects each `obs -holds_part-> sh` through `ap_probe_resolves` into an `ObservedShape` node `pp` (`kind: "probe_held"`, `name: StringConcat(obs.name, "/probe/", ToJsonString(obs.ap_gen), "/", sh.name)`, `ap_gen: obs.ap_gen`) linked via `obs -probe_projected_part-> pp`.
+    2. `af_probe_project_percept` (firing once all held parts are probe-projected for `obs.ap_gen`) projects `obs -perceives-> sh` through `ap_probe_resolves` into an `ObservedShape` node `qv` (`kind: "probe_percept"`, `ap_gen: obs.ap_gen`, `of_name: sh.name`) linked via `obs -probe_projected-> qv`, and computes `qv.ap_residual` via `ShapeDecode` against the current generation's `probe_projected_part` names.
+    3. `af_question_drop_hiding_frame`: if `Count(qv.ap_residual) > Count(pv.ap_residual)`, the chosen frame is hiding an unresolved distinction; delete `obs -chose_aperture-> ap` and reset `obs.ap_chosen_dwell = 0.0` (filing no `SelfConcern`).
+    4. `af_question_keep_honest_frame`: if `Count(qv.ap_residual) <= Count(pv.ap_residual)`, the chosen frame is not hiding any residual; keep the frame, reset `obs.ap_chosen_dwell = 0.0`, and set `obs.ap_questioned_gen = obs.ap_gen`.
 
 ## P2.A5 — `thinking_budget` seed
 
@@ -114,11 +159,21 @@ Rules:
 
 | Task | Tier | Goal | Read first | Touch | Acceptance |
 |---|---|---|---|---|---|
-| P2.A5.1 | T1 | Freeze the contract and decide the funding gain. Confirm whether engine-level enforcement (Rust reading `budget` on `SystemTwoEscalation`) is needed in P3; if so, write that as a separate P3 spec | `default_mode_core.json:839-931`, `cognitive_cycle.rs:497-517,772-835`, `arousal_horizon.json` | this doc | Spec frozen |
+| P2.A5.1 | T1 | Freeze the contract and decide the funding gain. Confirm whether engine-level enforcement (Rust reading `budget` on `SystemTwoEscalation`) is needed in P3; if so, write that as a separate P3 spec | `default_mode_core.json:839-931`, `cognitive_cycle.rs:497-517,772-835`, `arousal_horizon.json` | this doc | Spec frozen (**DONE**) |
 | P2.A5.2 | T3 | Tests first | `tests/test_default_mode_core_migrated.py:207-254` | new `tests/test_thinking_budget_migrated.py` | Tests cover: refill is capped at capacity; refill happens once per epoch (copy the "budget 99 after an epoch jump" assertion); a requester with cost 4 and remaining 6 succeeds once and is then denied with a `ThinkingBudgetDenial`; with the budget disabled every requester behaves exactly as in its P1 tests |
 | P2.A5.3 | T3 | Seed and generator | — | new `scripts/gen_thinking_budget_seed.py`, `seeds/thinking_budget.json` | A5.2 passes; regeneration test |
 | P2.A5.4 | T3 | Add the guard and debit to the P1 bridge generators (A4, B1), regenerate, and re-run their tests | the P1 generators | those generators and seeds | All P1 tests green with and without the budget seed loaded |
 | P2.A5.5 | T3 | Add `thinking_budget` and `tolerance_registry` to `COGNITION_ON_SEEDS`, and an enabled `ThinkingBudget` to `cognition_on_params` | `substrate/boot_profiles.py`, `seeds/cognition_on_params.json` | both | `tests/test_cognition_profile_integration.py` green. Total System-2 requests over a 64-epoch run are ≤ the funded total |
+
+### P2.A5.1 Frozen Contract (`thinking_budget`)
+
+- **Node schema (`seeds/thinking_budget.json`):**
+  `ThinkingBudget{name: "core_thinking_budget", enabled: 0.0, capacity: 16.0, capacity_ceiling: 64.0, funding_gain: 2.0, remaining: 16.0, refill_per_epoch: 2.0, last_refill_epoch: -1.0}`, linked via `agent_root -has_thinking_budget-> ThinkingBudget`.
+- **Funding gain:** `funding_gain = 2.0`, `capacity_ceiling = 64.0`. When `agent -governs_horizon-> pol` has `pol.future_manifold_projection_budget > 0`, `tb_fund_from_horizon` sets `capacity = Min(capacity_ceiling, pol.future_manifold_projection_budget * funding_gain)` and clamps `remaining = Min(remaining, capacity)`.
+- **Requester & P1 bridge contract:**
+  - Direct/generic requests linked via `req -draws_on_thinking_budget-> budget` with `req.status == "pending"` and `req.cost`: when `budget.enabled != 1.0`, `tb_pass_when_disabled` marks `req.status = "approved"` without debiting; when `budget.enabled == 1.0` and `budget.remaining >= req.cost`, `tb_debit_request` sets `req.status = "approved"`, `req.debited_epoch = mode.epoch`, and `budget.remaining = Max(0.0, budget.remaining - req.cost)` (`batch: false` so multiple pending requests in one epoch are debited sequentially against updated `remaining`). When `budget.enabled == 1.0` and `budget.remaining < req.cost`, `tb_record_exhaustion` sets `req.status = "denied"`, `req.terminal_reason = "budget_exhausted"`, and mints `agent -has_thinking_budget_denial-> ThinkingBudgetDenial{reason: "budget_exhausted", requester_kind: req.requester_kind, epoch: mode.epoch}` (deduped per `(requester_kind, epoch)`).
+  - P1 bridge mints: `ImpasseSimulationPolicy` (default `cost: 1.0`) in `impasse_simulation_bridge.json` and `ConsolidationSchedulerPolicy` (default `cost: 1.0`) in `consolidation_scheduler.json` keep their unbudgeted mint rules guarded on `Or(Count(Neighbours(agent, "has_thinking_budget")) == 0, Attr(Pick(Neighbours(agent, "has_thinking_budget")), "enabled") != 1.0)` (so tests without `thinking_budget` loaded are untouched), add budgeted mint rules (`isb_request_simulation_budgeted`, `csch_mint_offline_cycle_budgeted`, `batch: false`) that require `budget.enabled == 1.0` and `budget.remaining >= policy.cost`, add `req -draws_on_thinking_budget-> budget`, and debit `budget.remaining -= policy.cost`, plus exhaustion rules (`isb_record_budget_exhaustion`, `csch_record_budget_exhaustion`) that mint `ThinkingBudgetDenial{reason: "budget_exhausted", requester_kind, epoch: mode.epoch}` once per `(requester_kind, epoch)` when blocked by `remaining < policy.cost`.
+- **Engine-level enforcement in P3:** Not needed. P3's extended-thinking loop (`extended_thinking.json`) is rule-driven and checks/debits `ThinkingBudget.remaining` directly in graph rewrite rules; `cognitive_cycle.rs` fair-share step scheduling needs no modification for P3.
 
 ## Phase 2 gate
 

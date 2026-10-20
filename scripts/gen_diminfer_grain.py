@@ -41,13 +41,44 @@ def walk(o, fn):
 def main():
     text = SEED.read_text()
     seed = json.loads(text)
+    if not any(n.get("type") == "DimInferPolicy" for n in seed.get("nodes", [])):
+        seed.setdefault("nodes", []).append({
+            "local_id": 6,
+            "type": "DimInferPolicy",
+            "attrs": {
+                "name": "default_dim_infer_policy",
+                "dim_grains": [0],
+            },
+        })
+    if not any(e.get("type") == "has_dim_infer_policy" for e in seed.get("edges", [])):
+        seed.setdefault("edges", []).append({
+            "src": {"role": "agent_root"},
+            "type": "has_dim_infer_policy",
+            "tgt": {"local": 6},
+            "attrs": {},
+        })
+    if not any(p.get("edge_type") == "has_dim_infer_policy" for p in seed.get("productions", [])):
+        seed.setdefault("productions", []).append({
+            "provenance": "seed:shape_decode_loop:has-dim-infer-policy",
+            "src": {"type": "Agent", "var": "s"},
+            "edge_type": "has_dim_infer_policy",
+            "tgt": {"type": "DimInferPolicy", "var": "t"},
+        })
     rules = {r["name"]: r for r in seed["rules"]}
     rule = rules["sd_infer_dimension"]
     eff = [e for e in rule["effects"] if not (e[0] == "set_attr" and e[2] == "dim_grain")]
     ex = next(e for e in eff if e[0] == "set_attr" and e[2] == "dim_explained")
     probe = {"type": "DimInfer", "goal": A("obs", "signature"), "max_dims": 2, "field": "explained", "grain": V("g")}
+    pol_grains = {"type": "Attr",
+                  "node": {"type": "Pick",
+                           "source": {"type": "Neighbours", "node": V("ag"), "edge_type": "has_dim_infer_policy"}},
+                  "key": "dim_grains"}
+    fallback_grains = {"type": "IfThenElse",
+                       "cond": {"type": "Eq", "a": pol_grains, "b": L(None)},
+                       "then": L([0]),
+                       "other": pol_grains}
     grains = {"type": "IfThenElse", "cond": {"type": "Eq", "a": A("ag", "dim_grains"), "b": L(None)},
-              "then": L([0]), "other": A("ag", "dim_grains")}
+              "then": fallback_grains, "other": A("ag", "dim_grains")}
     grain_term = {"type": "MinOver", "source": {"type": "FilterList", "source": grains, "var_name": "g",
                                                 "predicate": {"type": "Eq", "a": probe, "b": L(True)}},
                   "var_name": "g", "value": V("g"), "default": L(None)}

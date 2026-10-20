@@ -102,6 +102,7 @@
       "type": "ImpasseSimulationPolicy",
       "attrs": {
         "enabled": 1.0,
+        "cost": 1.0,
         "horizon": 3.0,
         "budget": 6.0,
         "maximum_branching": 2.0,
@@ -113,11 +114,26 @@
       "type": "ConsolidationSchedulerPolicy",
       "attrs": {
         "enabled": 1.0,
+        "cost": 1.0,
         "entry_weight": 0.6,
         "maximum_task_demand": 0.2,
         "cooldown_epochs": 4.0,
         "retention_epochs": 4.0,
         "last_cycle_epoch": -1000000.0
+      }
+    },
+    {
+      "local_id": 10,
+      "type": "ThinkingBudget",
+      "attrs": {
+        "name": "cognition_on_thinking_budget",
+        "enabled": 1.0,
+        "capacity": 16.0,
+        "capacity_ceiling": 64.0,
+        "funding_gain": 2.0,
+        "remaining": 16.0,
+        "refill_per_epoch": 2.0,
+        "last_refill_epoch": -1.0
       }
     }
   ],
@@ -171,6 +187,11 @@
       "src": { "role": "agent_root" },
       "type": "has_consolidation_scheduler_policy",
       "tgt": { "local": 9 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_thinking_budget",
+      "tgt": { "local": 10 }
     }
   ],
   "productions": [

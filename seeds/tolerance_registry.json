@@ -1,0 +1,176 @@
+{
+  "id": "tolerance_registry",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [
+    "motor_decision_collapse",
+    "dual_process_core",
+    "residual_salience",
+    "shape_decode_loop"
+  ],
+  "area": "executive_control",
+  "latency_class": "deliberative",
+  "description": "Data-only registry of Tolerance metadata nodes describing relaxable policy attributes across motor decision collapse, dual-process arbitration, residual salience shape matching, and held-generator dimension inference.",
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "Tolerance",
+      "attrs": {
+        "name": "motor_settle_tolerance",
+        "governs_attr": "settle_tolerance",
+        "default": 0.15,
+        "min": 0.05,
+        "max": 0.5,
+        "step": 0.05,
+        "direction": "widen_up"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "Tolerance",
+      "attrs": {
+        "name": "dual_process_conflict_margin_tolerance",
+        "governs_attr": "conflict_margin",
+        "default": 0.2,
+        "min": 0.05,
+        "max": 0.5,
+        "step": 0.05,
+        "direction": "widen_down"
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "Tolerance",
+      "attrs": {
+        "name": "dual_process_minimum_confidence_tolerance",
+        "governs_attr": "minimum_confidence",
+        "default": 0.2,
+        "min": 0.05,
+        "max": 0.5,
+        "step": 0.05,
+        "direction": "widen_down"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "Tolerance",
+      "attrs": {
+        "name": "salience_shape_match_tolerance",
+        "governs_attr": "shape_match_tolerance",
+        "default": 2.0,
+        "min": 0.0,
+        "max": 6.0,
+        "step": 1.0,
+        "direction": "widen_up"
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "Tolerance",
+      "attrs": {
+        "name": "dim_infer_grain_tolerance",
+        "governs_attr": "dim_grains",
+        "default": [0],
+        "min": 0,
+        "max": 2,
+        "step": 1,
+        "direction": "widen_up"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_tolerance",
+      "tgt": {"local": 1},
+      "attrs": {}
+    },
+    {
+      "src": {"local": 1},
+      "type": "governs_policy",
+      "tgt": {"type": "MotorDecisionPolicy", "name": "generic_motor_decision_policy"},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_tolerance",
+      "tgt": {"local": 2},
+      "attrs": {}
+    },
+    {
+      "src": {"local": 2},
+      "type": "governs_policy",
+      "tgt": {"type": "DualProcessPolicy", "name": "core_dual_process_policy"},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_tolerance",
+      "tgt": {"local": 3},
+      "attrs": {}
+    },
+    {
+      "src": {"local": 3},
+      "type": "governs_policy",
+      "tgt": {"type": "DualProcessPolicy", "name": "core_dual_process_policy"},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_tolerance",
+      "tgt": {"local": 4},
+      "attrs": {}
+    },
+    {
+      "src": {"local": 4},
+      "type": "governs_policy",
+      "tgt": {"type": "SaliencePolicy", "name": "residual_salience_policy"},
+      "attrs": {}
+    },
+    {
+      "src": {"role": "agent_root"},
+      "type": "has_tolerance",
+      "tgt": {"local": 5},
+      "attrs": {}
+    },
+    {
+      "src": {"local": 5},
+      "type": "governs_policy",
+      "tgt": {"type": "DimInferPolicy", "name": "default_dim_infer_policy"},
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:tolerance_registry:has_tolerance",
+      "src": {"type": "Agent", "var": "agent"},
+      "edge_type": "has_tolerance",
+      "tgt": {"type": "Tolerance", "var": "tol"}
+    },
+    {
+      "provenance": "seed:tolerance_registry:governs_motor",
+      "src": {"type": "Tolerance", "var": "tol"},
+      "edge_type": "governs_policy",
+      "tgt": {"type": "MotorDecisionPolicy", "var": "policy"}
+    },
+    {
+      "provenance": "seed:tolerance_registry:governs_dual_process",
+      "src": {"type": "Tolerance", "var": "tol"},
+      "edge_type": "governs_policy",
+      "tgt": {"type": "DualProcessPolicy", "var": "policy"}
+    },
+    {
+      "provenance": "seed:tolerance_registry:governs_salience",
+      "src": {"type": "Tolerance", "var": "tol"},
+      "edge_type": "governs_policy",
+      "tgt": {"type": "SaliencePolicy", "var": "policy"}
+    },
+    {
+      "provenance": "seed:tolerance_registry:governs_dim_infer",
+      "src": {"type": "Tolerance", "var": "tol"},
+      "edge_type": "governs_policy",
+      "tgt": {"type": "DimInferPolicy", "var": "policy"}
+    }
+  ],
+  "rules": []
+}

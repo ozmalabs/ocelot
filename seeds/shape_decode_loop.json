@@ -93,9 +93,30 @@
     ],
     "modulus": 4
    }
+  },
+  {
+   "local_id": 6,
+   "type": "DimInferPolicy",
+   "attrs": {
+    "name": "default_dim_infer_policy",
+    "dim_grains": [
+     0
+    ]
+   }
   }
  ],
- "edges": [],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_dim_infer_policy",
+   "tgt": {
+    "local": 6
+   },
+   "attrs": {}
+  }
+ ],
  "productions": [
   {
    "provenance": "seed:shape_decode_loop:observed-0",
@@ -130,6 +151,18 @@
    "edge_type": "holds_chunk",
    "tgt": {
     "type": "DimensionGenerator",
+    "var": "t"
+   }
+  },
+  {
+   "provenance": "seed:shape_decode_loop:has-dim-infer-policy",
+   "src": {
+    "type": "Agent",
+    "var": "s"
+   },
+   "edge_type": "has_dim_infer_policy",
+   "tgt": {
+    "type": "DimInferPolicy",
     "var": "t"
    }
   }
@@ -523,10 +556,50 @@
           }
          },
          "then": {
-          "type": "Lit",
-          "value": [
-           0
-          ]
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Pick",
+             "source": {
+              "type": "Neighbours",
+              "node": {
+               "type": "Var",
+               "name": "ag"
+              },
+              "edge_type": "has_dim_infer_policy"
+             }
+            },
+            "key": "dim_grains"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Lit",
+           "value": [
+            0
+           ]
+          },
+          "other": {
+           "type": "Attr",
+           "node": {
+            "type": "Pick",
+            "source": {
+             "type": "Neighbours",
+             "node": {
+              "type": "Var",
+              "name": "ag"
+             },
+             "edge_type": "has_dim_infer_policy"
+            }
+           },
+           "key": "dim_grains"
+          }
          },
          "other": {
           "type": "Attr",
@@ -606,10 +679,50 @@
             }
            },
            "then": {
-            "type": "Lit",
-            "value": [
-             0
-            ]
+            "type": "IfThenElse",
+            "cond": {
+             "type": "Eq",
+             "a": {
+              "type": "Attr",
+              "node": {
+               "type": "Pick",
+               "source": {
+                "type": "Neighbours",
+                "node": {
+                 "type": "Var",
+                 "name": "ag"
+                },
+                "edge_type": "has_dim_infer_policy"
+               }
+              },
+              "key": "dim_grains"
+             },
+             "b": {
+              "type": "Lit",
+              "value": null
+             }
+            },
+            "then": {
+             "type": "Lit",
+             "value": [
+              0
+             ]
+            },
+            "other": {
+             "type": "Attr",
+             "node": {
+              "type": "Pick",
+              "source": {
+               "type": "Neighbours",
+               "node": {
+                "type": "Var",
+                "name": "ag"
+               },
+               "edge_type": "has_dim_infer_policy"
+              }
+             },
+             "key": "dim_grains"
+            }
            },
            "other": {
             "type": "Attr",

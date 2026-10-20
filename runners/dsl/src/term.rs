@@ -3310,6 +3310,23 @@ pub enum TermNode {
         raw: bool,
         field: Sym,
     },
+
+    /// `SoftWeights` — temperature-parameterised Boltzmann / softmax weights over `source`.
+    ///
+    /// Iterates `source.snapshot()` in snapshot order, binding each element to `var_name`
+    /// and evaluating `value` to a finite `f64` (non-numeric or non-finite values are
+    /// skipped). For `T = evaluate(temperature) > 0`, returns `Value::List` of 2-tuples
+    /// `(element, Float(w_i))` with `w_i = exp((v_i - v_max)/T) / sum_j exp((v_j - v_max)/T)`.
+    /// For `T <= 0` (hard limit), maximal elements share weight `1/k` equally and all other
+    /// surviving elements receive `0.0`. Empty or all-skipped source returns `default` if
+    /// supplied, else an empty `Value::List`.
+    SoftWeights {
+        source: TermIdx,
+        var_name: Sym,
+        value: TermIdx,
+        temperature: TermIdx,
+        default: Option<TermIdx>,
+    },
 }
 
 /// Arena for a Term tree. Childless to outside callers — construction
@@ -5053,6 +5070,19 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             var_name,
             value: copy_subtree(src, dst, value),
             refused: refused.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::SoftWeights {
+            source,
+            var_name,
+            value,
+            temperature,
+            default,
+        } => TermNode::SoftWeights {
+            source: copy_subtree(src, dst, source),
+            var_name,
+            value: copy_subtree(src, dst, value),
+            temperature: copy_subtree(src, dst, temperature),
+            default: default.map(|d| copy_subtree(src, dst, d)),
         },
         // --- Program IR (P1) ---
         TermNode::ProgSeq { stmts } => TermNode::ProgSeq {
@@ -7163,6 +7193,19 @@ fn is_stable_graph_query(arena: &TermArena, idx: TermIdx) -> bool {
         | TermNode::Exists {
             source, predicate, ..
         } => is_stable_graph_query(arena, *source) && is_stable_graph_query(arena, *predicate),
+        TermNode::Nth { items, .. } => items.is_some_and(|i| is_stable_graph_query(arena, i)),
+        TermNode::SoftWeights {
+            source,
+            value,
+            temperature,
+            default,
+            ..
+        } => {
+            is_stable_graph_query(arena, *source)
+                && is_stable_graph_query(arena, *value)
+                && is_stable_graph_query(arena, *temperature)
+                && default.map_or(true, |d| is_stable_graph_query(arena, d))
+        }
         _ => false,
     }
 }
@@ -9031,6 +9074,22 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 arena, *source, *var_name, *value, None, env, ctx, true, true, *refused,
             )
         }
+        TermNode::SoftWeights {
+            source,
+            var_name,
+            value,
+            temperature,
+            default,
+        } => eval_soft_weights(
+            arena,
+            *source,
+            *var_name,
+            *value,
+            *temperature,
+            *default,
+            env,
+            ctx,
+        ),
 
         // --- Program IR (P1): STRUCTURAL variants are INERT here. ---
         // The main evaluator does NOT execute statement/expression IR —
@@ -14017,6 +14076,93 @@ fn argmin_or_argmax_over(
     }
 }
 
+fn finite_numeric_f64(v: &Value) -> Option<f64> {
+    let f = match v {
+        Value::Int(i) => *i as f64,
+        Value::Float(f) => *f,
+        Value::Rational(n, d) if *d != 0 => (*n as f64) / (*d as f64),
+        _ => return None,
+    };
+    if f.is_finite() {
+        Some(f)
+    } else {
+        None
+    }
+}
+
+fn eval_soft_weights(
+    arena: &TermArena,
+    source: TermIdx,
+    var_name: Sym,
+    value: TermIdx,
+    temperature: TermIdx,
+    default: Option<TermIdx>,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+) -> Value {
+    let source_v = evaluate(arena, source, env, ctx);
+    let snap = source_v.snapshot();
+    let temp_v = evaluate(arena, temperature, env, ctx);
+    let temp = finite_numeric_f64(&temp_v).unwrap_or(0.0);
+
+    let mut scored: Vec<(Value, f64)> = Vec::with_capacity(snap.len());
+    let mut v_max = f64::NEG_INFINITY;
+    for it_ref in snap.iter() {
+        let it = it_ref.clone();
+        env.push((var_name, it.clone()));
+        let v = evaluate(arena, value, env, ctx);
+        env.pop();
+        if let Some(fv) = finite_numeric_f64(&v) {
+            if fv > v_max {
+                v_max = fv;
+            }
+            scored.push((it, fv));
+        }
+    }
+
+    if scored.is_empty() {
+        return match default {
+            Some(d) => evaluate(arena, d, env, ctx),
+            None => Value::List(std::sync::Arc::new(smallvec::SmallVec::new())),
+        };
+    }
+
+    let mut out: smallvec::SmallVec<[Value; 4]> = smallvec::SmallVec::with_capacity(scored.len());
+    if temp > 0.0 {
+        let mut exps: Vec<f64> = Vec::with_capacity(scored.len());
+        let mut sum_exp = 0.0f64;
+        for (_, fv) in &scored {
+            let e = ((*fv - v_max) / temp).exp();
+            let e_clean = if e.is_finite() { e } else { 0.0 };
+            sum_exp += e_clean;
+            exps.push(e_clean);
+        }
+        let k = scored.len() as f64;
+        for ((elem, _), e) in scored.into_iter().zip(exps.into_iter()) {
+            let w = if sum_exp > 0.0 && sum_exp.is_finite() {
+                e / sum_exp
+            } else {
+                1.0 / k
+            };
+            out.push(Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                elem,
+                Value::Float(w)
+            ])));
+        }
+    } else {
+        let k = scored.iter().filter(|(_, fv)| *fv == v_max).count().max(1) as f64;
+        let share = 1.0 / k;
+        for (elem, fv) in scored {
+            let w = if fv == v_max { share } else { 0.0 };
+            out.push(Value::Tuple(std::sync::Arc::new(smallvec::smallvec![
+                elem,
+                Value::Float(w)
+            ])));
+        }
+    }
+    Value::List(std::sync::Arc::new(out))
+}
+
 fn vec_binary(
     arena: &TermArena,
     a: TermIdx,
@@ -14195,6 +14341,20 @@ fn collect_into(
         } => {
             collect_into(arena, *source, out, excluded);
             collect_into(arena, *value, out, Some(*var_name));
+            if let Some(d) = default {
+                collect_into(arena, *d, out, excluded);
+            }
+        }
+        TermNode::SoftWeights {
+            source,
+            var_name,
+            value,
+            temperature,
+            default,
+        } => {
+            collect_into(arena, *source, out, excluded);
+            collect_into(arena, *value, out, Some(*var_name));
+            collect_into(arena, *temperature, out, excluded);
             if let Some(d) = default {
                 collect_into(arena, *d, out, excluded);
             }
@@ -14495,6 +14655,20 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             out.push(*value);
             if let Some(r) = refused {
                 out.push(*r);
+            }
+        }
+        TermNode::SoftWeights {
+            source,
+            value,
+            temperature,
+            default,
+            ..
+        } => {
+            out.push(*source);
+            out.push(*value);
+            out.push(*temperature);
+            if let Some(d) = default {
+                out.push(*d);
             }
         }
         TermNode::Fold {
@@ -17660,6 +17834,278 @@ mod tests {
         // (no new nodes, no identity attr written anywhere).
         assert_eq!(g.node(p0).attrs.get(&feat_key).is_some(), true);
         assert!(g.node(p0).attrs.iter().all(|(k, _)| *k == feat_key));
+    }
+
+    #[test]
+    fn soft_weights_sums_to_one_and_is_bit_identical_across_evaluations() {
+        let mut a = TermArena::new();
+        let g = TypedGraph::new();
+        let mut ir = Interner::new();
+        let x_var = ir.intern("x");
+        let source = a.add(TermNode::Lit {
+            value: Value::List(Arc::new(smallvec![
+                Value::Float(1.0),
+                Value::Float(2.0),
+                Value::Float(3.5),
+                Value::Int(-1)
+            ])),
+        });
+        let val = a.add(TermNode::Var { name: x_var });
+        let temp = a.add(TermNode::Lit {
+            value: Value::Float(0.75),
+        });
+        let sw = a.add(TermNode::SoftWeights {
+            source,
+            var_name: x_var,
+            value: val,
+            temperature: temp,
+            default: None,
+        });
+
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&g, &ir);
+        let out1 = evaluate(&a, sw, &mut env, &mut ctx);
+        let out2 = evaluate(&a, sw, &mut env, &mut ctx);
+        assert_eq!(out1, out2);
+
+        let Value::List(items) = out1 else {
+            panic!("expected List, got {:?}", out1);
+        };
+        assert_eq!(items.len(), 4);
+        let mut sum = 0.0f64;
+        for item in items.iter() {
+            let Value::Tuple(pair) = item else {
+                panic!("expected Tuple pair, got {:?}", item);
+            };
+            assert_eq!(pair.len(), 2);
+            let Value::Float(w) = pair[1] else {
+                panic!("expected Float weight, got {:?}", pair[1]);
+            };
+            assert!(w > 0.0 && w < 1.0);
+            sum += w;
+        }
+        assert!((sum - 1.0).abs() <= 1e-12, "sum={}", sum);
+    }
+
+    #[test]
+    fn soft_weights_hard_limit_and_tie_splitting() {
+        let mut a = TermArena::new();
+        let g = TypedGraph::new();
+        let mut ir = Interner::new();
+        let x_var = ir.intern("x");
+        let val = a.add(TermNode::Var { name: x_var });
+
+        // T -> 0+ gives one-hot on unique maximum.
+        let src_unique = a.add(TermNode::Lit {
+            value: Value::List(Arc::new(smallvec![
+                Value::Float(1.0),
+                Value::Float(5.0),
+                Value::Float(2.0)
+            ])),
+        });
+        let tiny_t = a.add(TermNode::Lit {
+            value: Value::Float(1e-6),
+        });
+        let sw_tiny = a.add(TermNode::SoftWeights {
+            source: src_unique,
+            var_name: x_var,
+            value: val,
+            temperature: tiny_t,
+            default: None,
+        });
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&g, &ir);
+        let Value::List(items_tiny) = evaluate(&a, sw_tiny, &mut env, &mut ctx) else {
+            panic!("expected List");
+        };
+        let ws_tiny: Vec<f64> = items_tiny
+            .iter()
+            .map(|p| match p {
+                Value::Tuple(t) => t[1].as_f64(),
+                _ => panic!("expected Tuple"),
+            })
+            .collect();
+        assert!((ws_tiny[0] - 0.0).abs() <= 1e-12);
+        assert!((ws_tiny[1] - 1.0).abs() <= 1e-12);
+        assert!((ws_tiny[2] - 0.0).abs() <= 1e-12);
+
+        // Two-way tie at T = 0 gives 0.5 / 0.5.
+        let src_tie = a.add(TermNode::Lit {
+            value: Value::List(Arc::new(smallvec![
+                Value::Float(4.0),
+                Value::Float(1.0),
+                Value::Float(4.0)
+            ])),
+        });
+        let zero_t = a.add(TermNode::Lit {
+            value: Value::Float(0.0),
+        });
+        let sw_tie = a.add(TermNode::SoftWeights {
+            source: src_tie,
+            var_name: x_var,
+            value: val,
+            temperature: zero_t,
+            default: None,
+        });
+        let Value::List(items_tie) = evaluate(&a, sw_tie, &mut env, &mut ctx) else {
+            panic!("expected List");
+        };
+        let ws_tie: Vec<f64> = items_tie
+            .iter()
+            .map(|p| match p {
+                Value::Tuple(t) => t[1].as_f64(),
+                _ => panic!("expected Tuple"),
+            })
+            .collect();
+        assert_eq!(ws_tie, vec![0.5, 0.0, 0.5]);
+    }
+
+    #[test]
+    fn soft_weights_skips_non_numeric_and_returns_default_when_empty() {
+        let mut a = TermArena::new();
+        let g = TypedGraph::new();
+        let mut ir = Interner::new();
+        let x_var = ir.intern("x");
+        let bad_sym = ir.intern("not_a_number");
+        let val = a.add(TermNode::Var { name: x_var });
+        let temp = a.add(TermNode::Lit {
+            value: Value::Float(1.0),
+        });
+
+        let src_mixed = a.add(TermNode::Lit {
+            value: Value::List(Arc::new(smallvec![
+                Value::Float(2.0),
+                Value::Str(bad_sym),
+                Value::None,
+                Value::Float(2.0)
+            ])),
+        });
+        let sw_mixed = a.add(TermNode::SoftWeights {
+            source: src_mixed,
+            var_name: x_var,
+            value: val,
+            temperature: temp,
+            default: None,
+        });
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&g, &ir);
+        let Value::List(items) = evaluate(&a, sw_mixed, &mut env, &mut ctx) else {
+            panic!("expected List");
+        };
+        assert_eq!(items.len(), 2);
+        for it in items.iter() {
+            let Value::Tuple(t) = it else {
+                panic!("expected Tuple");
+            };
+            assert!((t[1].as_f64() - 0.5).abs() <= 1e-12);
+        }
+
+        // Empty / all-skipped source returns default.
+        let src_empty = a.add(TermNode::Lit {
+            value: Value::List(Arc::new(smallvec![Value::Str(bad_sym), Value::None])),
+        });
+        let fallback = a.add(TermNode::Lit {
+            value: Value::Int(-99),
+        });
+        let sw_empty = a.add(TermNode::SoftWeights {
+            source: src_empty,
+            var_name: x_var,
+            value: val,
+            temperature: temp,
+            default: Some(fallback),
+        });
+        assert_eq!(evaluate(&a, sw_empty, &mut env, &mut ctx), Value::Int(-99));
+    }
+
+    #[test]
+    fn soft_weights_free_vars_and_cache_key_bind_correctly() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let mut graph = TypedGraph::new();
+        let agent_type = interner.intern("Agent");
+        let episode_type = interner.intern("Episode");
+        let recorded_episode = interner.intern("recorded_episode");
+        let weight_key = interner.intern("episode_weight");
+        let agent_var = interner.intern("agent");
+        let candidate_var = interner.intern("candidate_source");
+        let pair_var = interner.intern("pair");
+        let temp_var = interner.intern("temp");
+
+        let agent_a = graph.insert_node(agent_type, FxHashMap::default());
+        let agent_b = graph.insert_node(agent_type, FxHashMap::default());
+        let mut add_ep = |agent, w: f64| {
+            let mut attrs = FxHashMap::default();
+            attrs.insert(weight_key, Value::Float(w));
+            let ep = graph.insert_node(episode_type, attrs);
+            graph
+                .insert_edge(agent, recorded_episode, ep, FxHashMap::default())
+                .unwrap();
+            ep
+        };
+        let _a_low = add_ep(agent_a, 1.0);
+        let a_high = add_ep(agent_a, 5.0);
+        let _b_low = add_ep(agent_b, 2.0);
+        let b_high = add_ep(agent_b, 9.0);
+
+        let agent_term = arena.add(TermNode::Var { name: agent_var });
+        let source_nodes = arena.add(TermNode::Neighbours {
+            node: agent_term,
+            edge_type: recorded_episode,
+            any_type: false,
+        });
+        let candidate_term = arena.add(TermNode::Var {
+            name: candidate_var,
+        });
+        let weight = arena.add(TermNode::Attr {
+            node: candidate_term,
+            key: weight_key,
+        });
+        let temp_term = arena.add(TermNode::Var { name: temp_var });
+        let sw = arena.add(TermNode::SoftWeights {
+            source: source_nodes,
+            var_name: candidate_var,
+            value: weight,
+            temperature: temp_term,
+            default: None,
+        });
+
+        // `candidate_var` must NOT leak into free_vars of `sw`, whereas `agent_var` and `temp_var` must be present.
+        let fv = free_vars(&arena, sw, None);
+        assert!(fv.contains(&agent_var));
+        assert!(fv.contains(&temp_var));
+        assert!(!fv.contains(&candidate_var));
+
+        let pair_term = arena.add(TermNode::Var { name: pair_var });
+        let weight_slot = arena.add(TermNode::Nth {
+            items: Some(pair_term),
+            index: 1,
+        });
+        let argmax = arena.add(TermNode::Argmax {
+            source: sw,
+            var_name: pair_var,
+            value: weight_slot,
+            default: None,
+        });
+        let elem_slot = arena.add(TermNode::Nth {
+            items: Some(argmax),
+            index: 0,
+        });
+
+        let mut cache = EvalCache::default();
+        let mut env: Env = smallvec![
+            (agent_var, Value::Node(agent_a)),
+            (temp_var, Value::Float(0.5))
+        ];
+        let mut eval = EvalCtx::new(&graph, &interner).with_cache(&mut cache);
+        let win_a = evaluate(&arena, elem_slot, &mut env, &mut eval);
+        assert_eq!(win_a, Value::Node(a_high));
+
+        env.clear();
+        env.push((agent_var, Value::Node(agent_b)));
+        env.push((temp_var, Value::Float(0.5)));
+        let win_b = evaluate(&arena, elem_slot, &mut env, &mut eval);
+        assert_eq!(win_b, Value::Node(b_high));
+        assert_eq!(eval.cache.as_ref().unwrap().argmax.len(), 2);
     }
 }
 

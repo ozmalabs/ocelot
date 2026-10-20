@@ -18,6 +18,7 @@
       "type": "ImpasseSimulationPolicy",
       "attrs": {
         "enabled": 0.0,
+        "cost": 1.0,
         "horizon": 3.0,
         "budget": 6.0,
         "maximum_branching": 2.0,
@@ -169,6 +170,42 @@
         "type": "PredictionTrajectory",
         "var": "tgt"
       }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_thinking_budget_denial:Agent:ThinkingBudgetDenial",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_denial",
+      "tgt": {
+        "type": "ThinkingBudgetDenial",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:draws_on_thinking_budget:SystemTwoEscalation:ThinkingBudget",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
     }
   ],
   "rules": [
@@ -226,6 +263,611 @@
             "b": {
               "type": "Lit",
               "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "escalated"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "instinct_conflict"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "near_conflict"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "low_confidence"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "no_grounded_default"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "controller_arbitration"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "prediction_error"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "novelty"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "uncertainty"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "edge_type": "has_impasse_simulation",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "key": "isb_requested"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "provenance_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "perceived"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "belief"
+            },
+            "b": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_belief_state",
+                  "any_type": false
+                },
+                "var_name": "candidate_belief",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_belief"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "current"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_belief"
+                        },
+                        "key": "provenance_kind"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "perceived"
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "ranked_belief",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ranked_belief"
+                },
+                "key": "epoch"
+              },
+              "default": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget",
+                "any_type": false
+              },
+              "var_name": "tb",
+              "predicate": {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "tb"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sim",
+          "SimulationRequest",
+          {
+            "status": "collecting_actions",
+            "request_kind": "impasse_counterfactual",
+            "provenance_kind": "imagined",
+            "observation_status": "not_observed",
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "deadline_window"
+                  }
+                ]
+              }
+            },
+            "horizon": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "horizon"
+              }
+            },
+            "budget": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "budget"
+              }
+            },
+            "maximum_branching": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "maximum_branching"
+              }
+            },
+            "interruptible": 1.0
+          }
+        ],
+        [
+          "add_node",
+          "req",
+          "SystemTwoEscalation",
+          {
+            "status": "requested",
+            "reason": "impasse_simulation",
+            "request_kind": "impasse",
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "deadline_window"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "esc",
+          "isb_requested",
+          1
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_simulation_request",
+          "sim",
+          {}
+        ],
+        [
+          "add_edge",
+          "esc",
+          "has_impasse_simulation",
+          "sim",
+          {}
+        ],
+        [
+          "add_edge",
+          "sim",
+          "has_source_belief",
+          "belief",
+          {}
+        ],
+        [
+          "add_edge",
+          "sim",
+          "validated_by_clock",
+          "mode",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "about_context",
+          "mode",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "wts",
+          {}
+        ],
+        [
+          "add_edge",
+          "sim",
+          "driven_by_escalation",
+          "req",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "isb_request_simulation_budgeted",
+      "area": "impasse_simulation",
+      "order": 16,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "When ThinkingBudget is enabled and has `remaining >= pol.cost`, open an impasse_counterfactual SimulationRequest, link the escalation via `draws_on_thinking_budget`, and debit `ThinkingBudget.remaining`.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_dual_process_context",
+          "ctx"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_belief_state",
+          "belief"
+        ],
+        [
+          "agent",
+          "has_world_model_simulation_task_set",
+          "wts"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cost"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "cost"
+              }
             }
           },
           {
@@ -592,6 +1234,38 @@
             "status": "requested",
             "reason": "impasse_simulation",
             "request_kind": "impasse",
+            "cost": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "cost"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cost"
+                }
+              }
+            },
             "input_epoch": {
               "__term__": {
                 "type": "Attr",
@@ -632,6 +1306,63 @@
           "esc",
           "isb_requested",
           1
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pol"
+                        },
+                        "key": "cost"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    "other": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "cost"
+                    }
+                  }
+                }
+              ]
+            }
+          }
         ],
         [
           "add_edge",
@@ -677,9 +1408,498 @@
         ],
         [
           "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
           "sim",
           "driven_by_escalation",
           "req",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "isb_record_budget_exhaustion",
+      "area": "impasse_simulation",
+      "order": 16,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "When an impasse simulation request is blocked because `ThinkingBudget.remaining < pol.cost`, record at most one `ThinkingBudgetDenial` for `impasse_simulation` at `mode.epoch`.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_dual_process_context",
+          "ctx"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_belief_state",
+          "belief"
+        ],
+        [
+          "agent",
+          "has_world_model_simulation_task_set",
+          "wts"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cost"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "cost"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "escalated"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "instinct_conflict"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "near_conflict"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "low_confidence"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "no_grounded_default"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "controller_arbitration"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "prediction_error"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "novelty"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "uncertainty"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "edge_type": "has_impasse_simulation",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "key": "isb_requested"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "provenance_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "perceived"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "belief"
+            },
+            "b": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_belief_state",
+                  "any_type": false
+                },
+                "var_name": "candidate_belief",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_belief"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "current"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_belief"
+                        },
+                        "key": "provenance_kind"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "perceived"
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "ranked_belief",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ranked_belief"
+                },
+                "key": "epoch"
+              },
+              "default": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget_denial",
+                "any_type": false
+              },
+              "var_name": "d",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "requester_kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "impasse_simulation"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "mode"
+                      },
+                      "key": "epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "denial",
+          "ThinkingBudgetDenial",
+          {
+            "reason": "budget_exhausted",
+            "requester_kind": "impasse_simulation",
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_thinking_budget_denial",
+          "denial",
           {}
         ]
       ]

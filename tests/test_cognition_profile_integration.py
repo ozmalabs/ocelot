@@ -93,6 +93,7 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
         ("has_decomposition_consumer_policy", "DecompositionConsumerPolicy"),
         ("has_impasse_simulation_policy", "ImpasseSimulationPolicy"),
         ("has_consolidation_scheduler_policy", "ConsolidationSchedulerPolicy"),
+        ("has_thinking_budget", "ThinkingBudget"),
     ]
     for edge_type, node_type in expected_edges_and_types:
         targets = list(agent.inner.neighbours(agent.agent, edge_type))
@@ -104,6 +105,7 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
         assert len(matching) >= 1, (
             f"Expected enabled {node_type} reachable via {edge_type} from agent_root"
         )
+    assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 5
 
 
 def test_cognition_on_single_agent_end_to_end_four_rule_chains():
@@ -351,3 +353,86 @@ def test_cognition_on_single_agent_end_to_end_four_rule_chains():
     supports = _nodes(agent, "SemanticSupport")
     assert len(supports) >= 1
     assert sum(agent.s.node(s)["attrs"]["support_count"] for s in supports) >= 2.0
+
+
+def test_cognition_on_64_epoch_system_two_requests_bounded_by_funded_total():
+    """P2.A5.5: Over a 64-epoch run on boot_cognition_on(), total System-2 requests
+    drawn against ThinkingBudget are <= the funded total (initial capacity + 64 * refill_per_epoch)."""
+    agent = boot_cognition_on()
+    enabled_budgets = [
+        nid
+        for nid in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+        if agent.s.node(nid)["attrs"].get("enabled") == 1.0
+    ]
+    assert len(enabled_budgets) == 1
+    budget = enabled_budgets[0]
+
+    # Set tight budget parameters so a 64-epoch stream exercises both refilling and denials
+    agent.s.set_attr(budget, "capacity", 8.0)
+    agent.s.set_attr(budget, "remaining", 8.0)
+    agent.s.set_attr(budget, "refill_per_epoch", 1.0)
+    agent.s.set_attr(budget, "last_refill_epoch", 0.0)
+
+    isb_policies = [
+        nid
+        for nid in agent.inner.neighbours(agent.agent, "has_impasse_simulation_policy")
+        if agent.s.node(nid)["attrs"].get("enabled") == 1.0
+    ]
+    csch_policies = [
+        nid
+        for nid in agent.inner.neighbours(agent.agent, "has_consolidation_scheduler_policy")
+        if agent.s.node(nid)["attrs"].get("enabled") == 1.0
+    ]
+    agent.s.set_attr(isb_policies[0], "cost", 2.0)
+    agent.s.set_attr(csch_policies[0], "cost", 2.0)
+    agent.s.set_attr(csch_policies[0], "cooldown_epochs", 1.0)
+
+    m_ctx = agent.s.add_node("MemoryContext", {"context_key": "room_budget"})
+    m_schema = agent.s.add_node("MemorySchema", {"name": "schema_budget"})
+    ev = agent.s.add_node(
+        "EpisodicEvent",
+        {
+            "event_key": "ev_budget",
+            "cue_key": "cue_budget",
+            "epoch": 1.0,
+            "salience": 0.7,
+            "surprise": 0.8,
+            "value": 0.6,
+            "observation_status": "observed",
+            "provenance_kind": "perceived",
+            "state_kind": "world_state",
+            "state_summary": "experienced world state",
+        },
+    )
+    _edge(agent, agent.agent, "experienced_event", ev)
+    _edge(agent, ev, "in_context", m_ctx)
+    _edge(agent, ev, "instantiates_schema", m_schema)
+
+    total_mints = 0
+    prev_cycle_ids: set[int] = set()
+    for epoch in range(1, 65):
+        sample = agent.s.add_node(
+            "NetworkModeSample",
+            {
+                "epoch": float(epoch),
+                "exteroceptive_load": 0.0,
+                "task_demand": 0.0,
+                "interoceptive_urgency": 0.0,
+                "uncertainty": 0.0,
+                "idle_duration": 8.0,
+                "status": "raw",
+            },
+        )
+        _edge(agent, agent.agent, "has_network_mode_sample", sample)
+        agent.tick()
+        cur_cycle_ids = set(_nodes(agent, "MemoryCycle"))
+        new_cycles = cur_cycle_ids - prev_cycle_ids
+        total_mints += len(new_cycles)
+        prev_cycle_ids = cur_cycle_ids
+
+    # Initial remaining = 8.0, 64 epochs * refill_per_epoch (1.0) = 64.0 -> max funded spend = 72.0.
+    # At cost = 2.0 per request, at most 36 requests can be funded across 64 epochs.
+    funded_total_requests = (8.0 + 64.0 * 1.0) / 2.0
+    assert 1 <= total_mints <= funded_total_requests
+    assert len(_nodes(agent, "ThinkingBudgetDenial")) >= 1
+

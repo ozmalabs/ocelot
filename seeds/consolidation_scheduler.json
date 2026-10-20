@@ -17,6 +17,7 @@
       "type": "ConsolidationSchedulerPolicy",
       "attrs": {
         "enabled": 0.0,
+        "cost": 1.0,
         "entry_weight": 0.6,
         "maximum_task_demand": 0.2,
         "cooldown_epochs": 4.0,
@@ -203,6 +204,42 @@
       "edge_type": "recruits_task_set",
       "tgt": {
         "type": "SystemTwoTaskSet",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_thinking_budget_denial:Agent:ThinkingBudgetDenial",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_denial",
+      "tgt": {
+        "type": "ThinkingBudgetDenial",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:draws_on_thinking_budget:SystemTwoEscalation:ThinkingBudget",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
         "var": "tgt"
       }
     }
@@ -412,6 +449,37 @@
               "type": "Lit",
               "value": 0
             }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget",
+                "any_type": false
+              },
+              "var_name": "tb",
+              "predicate": {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "tb"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              }
+            }
           }
         ]
       },
@@ -535,6 +603,713 @@
               "key": "epoch"
             }
           }
+        ]
+      ]
+    },
+    {
+      "name": "csch_mint_offline_cycle_budgeted",
+      "area": "consolidation_scheduler",
+      "order": 15,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "When ThinkingBudget is enabled and has `remaining >= pol.cost`, mint an offline MemoryCycle, link the escalation via `draws_on_thinking_budget`, and debit `ThinkingBudget.remaining`.",
+      "match": [
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_replay_task_set",
+          "replay_ts"
+        ],
+        [
+          "agent",
+          "has_memory_consolidation_task_set",
+          "cons_ts"
+        ],
+        [
+          "agent",
+          "has_memory_cleanup_task_set",
+          "clean_ts"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cost"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "cost"
+              }
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "default_mode_weight"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "entry_weight"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "task_demand"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "maximum_task_demand"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "last_cycle_epoch"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "cooldown_epochs"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "recorded_episode",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "cycle",
+          "MemoryCycle",
+          {
+            "status": "pending",
+            "mode": "offline",
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "source": "consolidation_scheduler"
+          }
+        ],
+        [
+          "add_node",
+          "req",
+          "SystemTwoEscalation",
+          {
+            "status": "requested",
+            "reason": "offline_consolidation",
+            "request_kind": "consolidation",
+            "cost": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "cost"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1.0
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cost"
+                }
+              }
+            },
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "retention_epochs"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_memory_cycle",
+          "cycle",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_consolidation_task_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "about_context",
+          "mode",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "replay_ts",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "cons_ts",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "clean_ts",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pol"
+                        },
+                        "key": "cost"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": 1.0
+                    },
+                    "other": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "cost"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pol",
+          "last_cycle_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "csch_record_budget_exhaustion",
+      "area": "consolidation_scheduler",
+      "order": 15,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "When an offline consolidation cycle would be minted except that `ThinkingBudget.remaining < pol.cost`, record at most one `ThinkingBudgetDenial` for `consolidation` at `mode.epoch`.",
+      "match": [
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_replay_task_set",
+          "replay_ts"
+        ],
+        [
+          "agent",
+          "has_memory_consolidation_task_set",
+          "cons_ts"
+        ],
+        [
+          "agent",
+          "has_memory_cleanup_task_set",
+          "clean_ts"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cost"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "cost"
+              }
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "default_mode_weight"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "entry_weight"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "task_demand"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "maximum_task_demand"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "last_cycle_epoch"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "cooldown_epochs"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "recorded_episode",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget_denial",
+                "any_type": false
+              },
+              "var_name": "d",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "requester_kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "consolidation"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "mode"
+                      },
+                      "key": "epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "denial",
+          "ThinkingBudgetDenial",
+          {
+            "reason": "budget_exhausted",
+            "requester_kind": "consolidation",
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_thinking_budget_denial",
+          "denial",
+          {}
         ]
       ]
     },

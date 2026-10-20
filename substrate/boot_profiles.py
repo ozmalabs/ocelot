@@ -778,6 +778,8 @@ COGNITION_ON_SEEDS = (
     "decomposition_consumer",
     "impasse_simulation_bridge",
     "consolidation_scheduler",
+    "tolerance_registry",
+    "thinking_budget",
     "cognition_on_params",
 )
 

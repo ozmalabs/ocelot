@@ -588,7 +588,18 @@ def f1_score(predicted: set, truth: set) -> float:
 #  confirmed-fine drifts toward 0/+ by the same valence update (not a bespoke decay).
 # --------------------------------------------------------------------------- #
 SHAPE_SIG_WIDTH = 8          # fixed signature width so the L1 Sum term has fixed shape
-SHAPE_MATCH_TOL = 2.0        # L1 shape-distance threshold for "same shape at this aperture"
+SHAPE_MATCH_TOL = 2.0        # default L1 shape-distance threshold (migrated to SaliencePolicy.shape_match_tolerance)
+
+
+def _shape_match_tol(substrate) -> float:
+    """Read `shape_match_tolerance` from the graph's `SaliencePolicy` node
+    (`seeds/residual_salience.json`), falling back to `SHAPE_MATCH_TOL` when
+    no `SaliencePolicy` node is installed on a bare substrate."""
+    for pol in substrate.nodes("SaliencePolicy"):
+        val = substrate.node(pol)["attrs"].get("shape_match_tolerance")
+        if val is not None:
+            return float(val)
+    return SHAPE_MATCH_TOL
 
 
 def _eval_num(x):
@@ -628,12 +639,13 @@ def mint_shape(substrate, coord: list, k: int, valence: float,
     the new sign (re-earning) and adopt the new reading when moving positive. Returns the
     Shape node id."""
     sig = aperture_signature(coord, k, substrate)
+    tol = _shape_match_tol(substrate)
     for sh in substrate.nodes("Shape"):
         at = substrate.node(sh)["attrs"]
         if int(at.get("aperture", -1)) != k:
             continue
         d = sum(abs(sig[i] - int(at.get("sig_%d" % i, 0))) for i in range(SHAPE_SIG_WIDTH))
-        if d <= SHAPE_MATCH_TOL:                       # same shape already held -> re-earn
+        if d <= tol:                                   # same shape already held -> re-earn
             cur = float(at.get("valence", 0.0))
             new = max(-1.0, min(1.0, cur + valence))
             substrate.set_attr(sh, "valence", new)
@@ -671,8 +683,15 @@ def net_valence_term() -> dict:
         {"type": "Abs", "arg": {"type": "Minus", "a": A("x", "csig_%d" % i),
                                 "b": A("sh", "sig_%d" % i)}}
         for i in range(SHAPE_SIG_WIDTH)]}
+    pol_tol = {"type": "Attr",
+               "node": {"type": "Pick", "source": {"type": "NodesOfType", "node_type": "SaliencePolicy"}},
+               "key": "shape_match_tolerance"}
+    tol_term = {"type": "IfThenElse",
+                "cond": {"type": "Eq", "a": pol_tol, "b": {"type": "Lit", "value": None}},
+                "then": {"type": "Lit", "value": SHAPE_MATCH_TOL},
+                "other": pol_tol}
     match = {"type": "IfThenElse",
-             "cond": {"type": "Lte", "a": l1, "b": {"type": "Lit", "value": SHAPE_MATCH_TOL}},
+             "cond": {"type": "Lte", "a": l1, "b": tol_term},
              "then": {"type": "Lit", "value": 1.0}, "other": {"type": "Lit", "value": 0.0}}
     per_shape = {"type": "Times", "items": [A("sh", "valence"), match]}
     return {"type": "Sum",
@@ -877,12 +896,13 @@ def _held_shape_for(substrate, coord: list, k: int) -> Optional[int]:
     tol), or None. Used to tell a FIRST no-rescue encounter (mint the anti-shape) from a
     REPEAT (invest in authoring a reading via self-extension)."""
     sig = aperture_signature(coord, k, substrate)
+    tol = _shape_match_tol(substrate)
     for sh in substrate.nodes("Shape"):
         at = substrate.node(sh)["attrs"]
         if int(at.get("aperture", -1)) != k:
             continue
         d = sum(abs(sig[i] - int(at.get("sig_%d" % i, 0))) for i in range(SHAPE_SIG_WIDTH))
-        if d <= SHAPE_MATCH_TOL:
+        if d <= tol:
             return sh
     return None
 

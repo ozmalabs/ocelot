@@ -22,7 +22,9 @@ from gen_capability_collapse_seed import (
     Eq,
     Filter,
     Gt,
+    Gte,
     L,
+    Max,
     N,
     Not,
     ONE,
@@ -49,6 +51,49 @@ TRIGGER_REASONS = (
 
 def Times(*items):
     return {"type": "Times", "items": list(items)}
+
+
+def Minus(a, b):
+    return {"type": "Minus", "a": a, "b": b}
+
+
+def Lt(a, b):
+    return {"type": "Lt", "a": a, "b": b}
+
+
+def Exists(source, var_name, predicate):
+    return {
+        "type": "Exists",
+        "source": source,
+        "var_name": var_name,
+        "predicate": predicate,
+    }
+
+
+def IfThenElse(cond, then, other):
+    return {"type": "IfThenElse", "cond": cond, "then": then, "other": other}
+
+
+def policy_cost():
+    return IfThenElse(
+        Eq(A("pol", "cost"), L(None)),
+        L(1.0),
+        A("pol", "cost"),
+    )
+
+
+def budget_enabled(var="budget"):
+    return Gte(A(var, "enabled"), L(1.0))
+
+
+def unbudgeted_or_disabled():
+    return Not(
+        Exists(
+            N("agent", "has_thinking_budget"),
+            "tb",
+            budget_enabled("tb"),
+        )
+    )
 
 
 def Argmax(source, var_name, value, default=None):
@@ -132,6 +177,7 @@ def request_simulation_rule():
                     A("ranked_belief", "epoch"),
                 ),
             ),
+            unbudgeted_or_disabled(),
         ),
         "effects": [
             ["add_node", "sim", "SimulationRequest", {
@@ -161,6 +207,166 @@ def request_simulation_rule():
             ["add_edge", "req", "about_context", "mode", {}],
             ["add_edge", "req", "recruits_task_set", "wts", {}],
             ["add_edge", "sim", "driven_by_escalation", "req", {}],
+        ],
+    }
+
+
+def request_simulation_budgeted_rule():
+    current_perceived_beliefs = Filter(
+        N("agent", "has_belief_state"),
+        "candidate_belief",
+        And(
+            Eq(A("candidate_belief", "status"), L("current")),
+            Eq(A("candidate_belief", "provenance_kind"), L("perceived")),
+        ),
+    )
+    deadline_term = Plus(A("mode", "epoch"), A("pol", "deadline_window"))
+    cost_term = policy_cost()
+    return {
+        "name": "isb_request_simulation_budgeted",
+        "area": AREA,
+        "order": 16,
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": (
+            "When ThinkingBudget is enabled and has `remaining >= pol.cost`, open an "
+            "impasse_counterfactual SimulationRequest, link the escalation via "
+            "`draws_on_thinking_budget`, and debit `ThinkingBudget.remaining`."
+        ),
+        "match": [
+            ["agent", "has_impasse_simulation_policy", "pol"],
+            ["agent", "has_thinking_budget", "budget"],
+            ["agent", "has_dual_process_context", "ctx"],
+            ["ctx", "has_system_two_escalation", "esc"],
+            ["agent", "has_network_mode_state", "mode"],
+            ["agent", "has_belief_state", "belief"],
+            ["agent", "has_world_model_simulation_task_set", "wts"],
+        ],
+        "where": And(
+            policy_enabled(),
+            budget_enabled("budget"),
+            Gte(A("budget", "remaining"), cost_term),
+            Eq(A("ctx", "status"), L("escalated")),
+            Or(*(Eq(A("esc", "reason"), L(reason)) for reason in TRIGGER_REASONS)),
+            Eq(Count(N("esc", "has_impasse_simulation")), ZERO),
+            Not(Eq(A("esc", "isb_requested"), ONE)),
+            Eq(A("belief", "status"), L("current")),
+            Eq(A("belief", "provenance_kind"), L("perceived")),
+            Eq(
+                V("belief"),
+                Argmax(
+                    current_perceived_beliefs,
+                    "ranked_belief",
+                    A("ranked_belief", "epoch"),
+                ),
+            ),
+        ),
+        "effects": [
+            ["add_node", "sim", "SimulationRequest", {
+                "status": "collecting_actions",
+                "request_kind": "impasse_counterfactual",
+                "provenance_kind": "imagined",
+                "observation_status": "not_observed",
+                "input_epoch": T(A("mode", "epoch")),
+                "deadline_epoch": T(deadline_term),
+                "horizon": T(A("pol", "horizon")),
+                "budget": T(A("pol", "budget")),
+                "maximum_branching": T(A("pol", "maximum_branching")),
+                "interruptible": 1.0,
+            }],
+            ["add_node", "req", "SystemTwoEscalation", {
+                "status": "requested",
+                "reason": "impasse_simulation",
+                "request_kind": "impasse",
+                "cost": T(cost_term),
+                "input_epoch": T(A("mode", "epoch")),
+                "deadline_epoch": T(deadline_term),
+            }],
+            ["set_attr", "esc", "isb_requested", 1],
+            [
+                "set_attr",
+                "budget",
+                "remaining",
+                T(Max(ZERO, Minus(A("budget", "remaining"), cost_term))),
+            ],
+            ["add_edge", "agent", "has_simulation_request", "sim", {}],
+            ["add_edge", "esc", "has_impasse_simulation", "sim", {}],
+            ["add_edge", "sim", "has_source_belief", "belief", {}],
+            ["add_edge", "sim", "validated_by_clock", "mode", {}],
+            ["add_edge", "req", "about_context", "mode", {}],
+            ["add_edge", "req", "recruits_task_set", "wts", {}],
+            ["add_edge", "req", "draws_on_thinking_budget", "budget", {}],
+            ["add_edge", "sim", "driven_by_escalation", "req", {}],
+        ],
+    }
+
+
+def record_budget_exhaustion_rule():
+    current_perceived_beliefs = Filter(
+        N("agent", "has_belief_state"),
+        "candidate_belief",
+        And(
+            Eq(A("candidate_belief", "status"), L("current")),
+            Eq(A("candidate_belief", "provenance_kind"), L("perceived")),
+        ),
+    )
+    cost_term = policy_cost()
+    return {
+        "name": "isb_record_budget_exhaustion",
+        "area": AREA,
+        "order": 16,
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "comment": (
+            "When an impasse simulation request is blocked because "
+            "`ThinkingBudget.remaining < pol.cost`, record at most one "
+            "`ThinkingBudgetDenial` for `impasse_simulation` at `mode.epoch`."
+        ),
+        "match": [
+            ["agent", "has_impasse_simulation_policy", "pol"],
+            ["agent", "has_thinking_budget", "budget"],
+            ["agent", "has_dual_process_context", "ctx"],
+            ["ctx", "has_system_two_escalation", "esc"],
+            ["agent", "has_network_mode_state", "mode"],
+            ["agent", "has_belief_state", "belief"],
+            ["agent", "has_world_model_simulation_task_set", "wts"],
+        ],
+        "where": And(
+            policy_enabled(),
+            budget_enabled("budget"),
+            Lt(A("budget", "remaining"), cost_term),
+            Eq(A("ctx", "status"), L("escalated")),
+            Or(*(Eq(A("esc", "reason"), L(reason)) for reason in TRIGGER_REASONS)),
+            Eq(Count(N("esc", "has_impasse_simulation")), ZERO),
+            Not(Eq(A("esc", "isb_requested"), ONE)),
+            Eq(A("belief", "status"), L("current")),
+            Eq(A("belief", "provenance_kind"), L("perceived")),
+            Eq(
+                V("belief"),
+                Argmax(
+                    current_perceived_beliefs,
+                    "ranked_belief",
+                    A("ranked_belief", "epoch"),
+                ),
+            ),
+            Not(
+                Exists(
+                    N("agent", "has_thinking_budget_denial"),
+                    "d",
+                    And(
+                        Eq(A("d", "requester_kind"), L("impasse_simulation")),
+                        Eq(A("d", "epoch"), A("mode", "epoch")),
+                    ),
+                )
+            ),
+        ),
+        "effects": [
+            ["add_node", "denial", "ThinkingBudgetDenial", {
+                "reason": "budget_exhausted",
+                "requester_kind": "impasse_simulation",
+                "epoch": T(A("mode", "epoch")),
+            }],
+            ["add_edge", "agent", "has_thinking_budget_denial", "denial", {}],
         ],
     }
 
@@ -301,6 +507,9 @@ def productions():
         ("SimulationRequest", "considers_action", "WorldModelAction"),
         ("SystemTwoEscalation", "has_imagined_candidate", "ImaginedCandidate"),
         ("ImaginedCandidate", "derived_from_trajectory", "PredictionTrajectory"),
+        ("Agent", "has_thinking_budget", "ThinkingBudget"),
+        ("Agent", "has_thinking_budget_denial", "ThinkingBudgetDenial"),
+        ("SystemTwoEscalation", "draws_on_thinking_budget", "ThinkingBudget"),
     ]
     return [
         {
@@ -341,6 +550,7 @@ def build():
                 "type": "ImpasseSimulationPolicy",
                 "attrs": {
                     "enabled": 0.0,
+                    "cost": 1.0,
                     "horizon": 3.0,
                     "budget": 6.0,
                     "maximum_branching": 2.0,
@@ -359,6 +569,8 @@ def build():
         "productions": productions(),
         "rules": [
             request_simulation_rule(),
+            request_simulation_budgeted_rule(),
+            record_budget_exhaustion_rule(),
             offer_actions_rule(),
             seal_rule(),
             propose_imagined_candidate_rule(),

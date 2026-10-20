@@ -224,6 +224,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::Argmin { .. } => "Argmin",
         TermNode::ArgminUnique { .. } => "ArgminUnique",
         TermNode::ArgminRefusal { .. } => "ArgminRefusal",
+        TermNode::SoftWeights { .. } => "SoftWeights",
         TermNode::Fold { .. } => "Fold",
         TermNode::BitsAt { .. } => "BitsAt",
         TermNode::BitsWrite { .. } => "BitsWrite",
@@ -837,6 +838,19 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             m.insert("var_name".into(), sym_str(*var_name, interner));
             m.insert("value".into(), child(*value, arena, interner));
             m.insert("refused".into(), opt_child(*refused, arena, interner));
+        }
+        TermNode::SoftWeights {
+            source,
+            var_name,
+            value,
+            temperature,
+            default,
+        } => {
+            m.insert("source".into(), child(*source, arena, interner));
+            m.insert("var_name".into(), sym_str(*var_name, interner));
+            m.insert("value".into(), child(*value, arena, interner));
+            m.insert("temperature".into(), child(*temperature, arena, interner));
+            m.insert("default".into(), opt_child(*default, arena, interner));
         }
         TermNode::Fold {
             source,
@@ -2178,6 +2192,13 @@ fn read_term(
             value: child_of("value", obj, arena, interner, variant)?,
             refused: opt_child_of("refused", obj, arena, interner)?,
         },
+        "SoftWeights" => TermNode::SoftWeights {
+            source: child_of("source", obj, arena, interner, variant)?,
+            var_name: get_sym("var_name", interner)?,
+            value: child_of("value", obj, arena, interner, variant)?,
+            temperature: child_of("temperature", obj, arena, interner, variant)?,
+            default: opt_child_of("default", obj, arena, interner)?,
+        },
         "Fold" => TermNode::Fold {
             source: child_of("source", obj, arena, interner, variant)?,
             var_name: get_sym("var_name", interner)?,
@@ -3176,6 +3197,44 @@ mod tests {
             dimension_key: interner.intern("dimension"),
             verified_key: interner.intern("trusted"),
             signed_value_key: interner.intern("utility"),
+        });
+
+        let json = term_to_json(&arena, term, &interner);
+        let mut rebuilt_arena = TermArena::new();
+        let mut rebuilt_interner = Interner::new();
+        let rebuilt = term_from_json(&json, &mut rebuilt_arena, &mut rebuilt_interner).unwrap();
+
+        assert_eq!(
+            json,
+            term_to_json(&rebuilt_arena, rebuilt, &rebuilt_interner)
+        );
+    }
+
+    #[test]
+    fn soft_weights_term_round_trips_via_json() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let src_var = interner.intern("candidates");
+        let item_var = interner.intern("item");
+        let score_key = interner.intern("score");
+        let source = arena.add(TermNode::Var { name: src_var });
+        let item = arena.add(TermNode::Var { name: item_var });
+        let value = arena.add(TermNode::Attr {
+            node: item,
+            key: score_key,
+        });
+        let temperature = arena.add(TermNode::Lit {
+            value: Value::Float(0.25),
+        });
+        let default = arena.add(TermNode::Lit {
+            value: Value::List(std::sync::Arc::new(smallvec::SmallVec::new())),
+        });
+        let term = arena.add(TermNode::SoftWeights {
+            source,
+            var_name: item_var,
+            value,
+            temperature,
+            default: Some(default),
         });
 
         let json = term_to_json(&arena, term, &interner);
