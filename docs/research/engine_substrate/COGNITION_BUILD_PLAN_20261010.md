@@ -10,8 +10,8 @@ Each detailed plan breaks its phase into tasks using the §3 template, records t
 |---|---|---|
 | 0 — Baseline and guardrails | [`COGNITION_BUILD_P0_BASELINE_PLAN.md`](COGNITION_BUILD_P0_BASELINE_PLAN.md) | Executed (`d83fa140`); baseline in `COGNITION_BUILD_BASELINE.md` |
 | 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Executed (`5b52a38b`). Results in `COGNITION_BUILD_P1_RESULTS.md`; these are mechanism tests on fixtures, not capability evidence |
-| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`) |
-| 3 — Extended-thinking executor | Planned and executed in a separate session | In progress |
+| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`). **No results doc was committed**; P3.0.1 writes `COGNITION_BUILD_P2_RESULTS.md` |
+| 3 — Extended-thinking executor | [`COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md`](COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md) | Planned; design frozen for T2/T3 execution. A first attempt in another session ran out of allocation and left no artifacts, so P3 starts from zero |
 | 4–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
 | **Track I — Process understanding and invention** | [`COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md`](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) | Runs in parallel with P3–P6. Its levels L1–L7 run from understanding and invention up to measurable beyond-human criteria. I0 (the evaluation battery and a `ProcessSchema` decision shared with P3) comes first |
 
@@ -44,6 +44,24 @@ These were found while detailing Phases 0–2. They override the §4 tables belo
 - **P2.C4 starts with a pathology test, because none exists.**
 - **P2.A5: `SystemTwoEscalation.budget` is written but never read.** The budget therefore gates the minting of requests, and engine-level enforcement is a P3 question.
 - **Rule 4 is relaxed.** The other author's engine and WASM work was committed (`8e82a211`, `5fb07d4f`). Rust tasks still check `git status --short runners/dsl` first.
+
+### Amendments from detailing Phase 3
+
+These override the §4 Phase 3 table. Details and evidence are in the P3 plan.
+
+- **P3.A6 relax targets are replaced.**
+  - `settle_tolerance` is a depth gate: raising it means thinking less.
+  - `conflict_margin` and `minimum_confidence` are commit-permissiveness knobs. Relaxing them is the motivated-relaxation pathology, so P3 locks them out by construction.
+  - `shape_match_tolerance` has no exact verifier.
+  - `basin_threshold` would need a contract for re-opening a frozen seed, so it is deferred.
+  - The two targets are the DimInfer grain ladder (`agent.dim_grains` `[0]→[0,1]→[0,1,2]`) and the GenInfer rung (`agent.gen_infer_enabled` 0→1). Both have exact verifiers and existing fixtures.
+- **There is no generic "relax any Tolerance" rule.** `set_attr` cannot take an attribute name from data, so P3 uses one rule family per ladder, with the rungs held as graph data.
+- **Re-admission is a targeted re-decode, not a `pruned_at` record.** It sets `decoded_epoch = codebook_epoch - 1` so that `sd_redecode` re-arms. The gen ladder also clears `gen_checked`/`gen_explained`. No change to `motor_decision_collapse` or the bigville core.
+- **P3 is the first producer of `thinking_budget`'s generic pending-request contract.**
+- **P3.A7 cache:** an `ExtendedThinkingCacheEntry` for the grain ladder. For the GenInfer rung, the minted `genlin_*` generator is itself the cache.
+- **P3.D1 is re-scoped** to a readout seed, `inference_ladder_record`. The quadratic rung is an optional decision task. The TimeInfer/order-N rung is **deferred to Track I or P4**, because Observations carry no frames.
+- **No Rust in P3.**
+- **The P2 results doc is missing.** It is added as P3.0.1 before any P3 work.
 
 ## 1. Ground rules (apply to every task)
 
@@ -146,6 +164,8 @@ The extended-thinking executor needs something graded to relax. Rust tasks follo
 
 ### Phase 3 — Extended-thinking executor
 
+> Superseded by [`COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md`](COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md) and the Phase 3 amendments above. The table is kept as the original intent.
+
 | ID | Sec | Work item | Touch points | Tier mix | Done when |
 |---|---|---|---|---|---|
 | P3.A6 | A | **Relax / widen / re-admit loop.** On impasse with budget left: step one Tolerance or aperture outward (P2.C3/C4), re-admit candidates previously pruned at the tighter setting (needs a `pruned_at` record on candidates), re-verify with the existing exact checkers, and repeat until a hit, the bound or budget exhaustion | new `seeds/extended_thinking.json` + generator; pruning record in `motor_decision_collapse` and the bigville core | T1 spec, T3 rules, T2 for pruning records | Test: a task unsolvable at the default tolerance is solved after N relax steps, and the loop stops at the bound |
@@ -208,7 +228,8 @@ P4: D2 ► D3 ► D4 ► D5 ;  C5 needs P2.C4 ;  E1 needs P1.A4 + P3.A6 ; E2 nee
 P5 items independent (E4 benefits from E1; F2 after F1)
 P6: D7 independent ; F3 needs P5.F1 ; B2 needs P1.B1
 Track I: I0 ─► I1 ─► I2 ─► I3 ; I1 ─► I4 ; I3+I4 ─► I5 ─► I6 ─► I7
-  coupling: I0.4 ProcessSchema decision shared with P3 ; P3.A6 consumes I5.2 targeted invention ;
+  coupling: I0.4 ProcessSchema decision shared with P3 (P3 as built uses its own RelaxLadder data, which I0.4 may later map onto ProcessSchema) ;
+            P3.A6 consumes I5.2 targeted invention (as a later ladder, not in P3 scope) ; P3's deferred time rung moves to I4.2 or P4 ;
             I2.2/I3.2 run in the P1.B1/P6.B2 offline cycle ; I4.3 supplies the VOI that P2.A5 funding lacks ;
             I5.3 needs P4.C5 ; I5.4 needs P4.D4 ; I6.2 extends P6.F3
 ```
