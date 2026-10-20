@@ -68,8 +68,8 @@ The structural weaknesses from revision 1 still hold. They concern the *proposal
 | Future manifold | `future_manifold_resolved_dims`, stipulated by `stress_aperture.json` | Hard tube; relaxation exists only in the Python twin | `shape_snapshot` capped at 7 dims; no cache | Budget from `arousal_horizon`; `refinement_count` is always 0; no projector |
 | Generative world model | `horizon` and `maximum_branching` on SimulationRequest | `prune_terminal_*` rules | None | Bounded branching rollouts, the only graph-native tree search. Requested by default mode or by counterfactual experiments, never by impasse |
 | Salience | `fovea_resolve` ArgminUnique | Graph-weighted (the only such selector) | L1 match against Shape signatures (`valence_salience`) | None |
-| Aperture (general) | `af_effective_aperture` Intersect meet | `af_relax_chosen` is binary and residual-driven (motivated inattention) | None | `obs_established` is written but never read |
-| Γ | n/a | Weights are summed; no softmax in Rust; `ParetoDominates` is integer-only; tolerances are literals | None | No relax-to-find-more loop |
+| Aperture (general) | `af_effective_aperture` Intersect meet | `af_relax_chosen` is binary and residual-driven (motivated inattention) | None | Nothing questions a chosen frame whose residual is empty. (Correction: `obs_established` is unread, but it is redundant with `obs_unassessable`, which the learner does read. Since `learning_progress_curiosity` v1.1.0, compressed and mastered items stay distinguishable.) |
+| Γ | n/a | Weights are summed; no softmax in Rust; `ParetoDominates` is integer-only (by explicit contract); most tolerances are policy attributes with no relax metadata, and four are inline literals | None | No relax-to-find-more loop |
 | Qualia field | QualiaAperture k (Python) | `SHAPE_MATCH_TOL=2.0` literal | Three disjoint stores | No cross-domain recall tested |
 | Dual process | Admits SystemTwoTaskSet areas | Continuous System-2 weight; escalates on conflict, near-conflict and low confidence | None | Admits areas but does not widen the candidate set |
 | Capability collapse / impasse | Pre-authored chain; orders 2–6 | Static | None | `synthesis_requested` and `needs_decomposition` have no consumer; `needs_tool` is consumed by `self_extension` (`compose_zero_coverage_impasse`, `compose_from_held_primitives`) |
@@ -136,7 +136,7 @@ Revision 2 changes this picture. Most parts of an executor already exist as grap
    - Add a graded `RelaxAdmissibility(ε)` / `WidenAperture(k)` step that re-admits pruned candidates.
    - Verify with the existing checkers, then settle back through EWM consolidation and codebook minting.
 2. **Soft admissibility in Γ.** A Rust softmax / soft excluder over exp(w); tolerance literals promoted to graph nodes; a real-valued `ParetoDominates`. Item 1 needs these, because otherwise there is nothing graded to relax.
-3. **Unified aperture.** Recast the domain apertures as Observer-frame instances, chosen by evidence or value of information (the prediction-world judge shows this working). Make the relax step graded. Read `obs_established`.
+3. **Unified aperture.** Recast the domain apertures as Observer-frame instances, chosen by evidence or value of information (the prediction-world judge shows this working). Make the relax step graded, and add a trigger that questions a frame even when it leaves no residual.
 4. **Qualia as a cache.**
    - Graph-native Shape minting.
    - One signature space covering QualiaDimension axes, Shape sig_k and valence.

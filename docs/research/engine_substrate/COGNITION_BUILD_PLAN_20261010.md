@@ -2,12 +2,53 @@
 
 Source audit: `COGNITION_CAPABILITY_ASSESSMENT_20261010.md` (rev 2). This is the overarching plan: phases, sections and work items. In the next step a frontier model breaks each work item into tasks using the contract in §3. A lower-tier or local model then executes each task. Ordering puts wiring and quick wins first: seed-only changes that connect machinery which already exists. New Rust primitives come later, and new faculties last.
 
+## Detailed phase plans
+
+Each detailed plan breaks its phase into tasks using the §3 template, records the findings that changed this plan, and supersedes this document's phase table wherever the two differ.
+
+| Phase | Detailed plan | Status |
+|---|---|---|
+| 0 — Baseline and guardrails | [`COGNITION_BUILD_P0_BASELINE_PLAN.md`](COGNITION_BUILD_P0_BASELINE_PLAN.md) | Ready to execute |
+| 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Ready after the P0 gate. T1 spec tasks open each work item |
+| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Ready after the P1 gate. Spec tasks may start earlier |
+| 3–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
+
+### Amendments from detailing (2026-10-10)
+
+These were found while detailing Phases 0–2. They override the §4 tables below.
+
+- **P1.A1 is re-scoped.**
+  - `program_synthesis` is a code-domain ladder: it is entered from a request Message, carries float values and is driven from Python.
+  - `capability_collapse` is integer-only and domain-neutral.
+  - So the bridge does not call code synthesis. Instead it mints a graph-native `CapabilitySynthesisRequest`, files it as a SelfConcern, and re-arms collapse when any producer supplies a higher-order program.
+- **P1.A2 consumes only the Impasse→CapabilityAxis `needs_decomposition` edge.**
+  - It partitions the axis by its `requires_key` CapKeys and never clones the parent axis.
+  - The repair-side `Fault.needs_decomposition` attribute is already acted on, so the lint allowlists it.
+  - `impasse_escalation` is frozen core, so the consumer is a new seed.
+- **P1.A3 is dropped from Phase 1.**
+  - A counterfactual experiment needs a concrete SeedDelta, and a zero-coverage impasse has none to offer.
+  - The existing HumanImpasse is the honest response.
+  - The item returns in P3 under relax/re-admit.
+- **P1.C1 is dropped.** `obs_established` is `1 - obs_unassessable` by construction, and the learner already reads `obs_unassessable`. The assessment claim that compressed and mastered items look the same was outdated, and is corrected there.
+- **P1.H7 gains a repair.** `goal_derivation`'s dependency closure is broken: `llvm_ir_vocabulary` has no seed file.
+- **P1.H8 must boot through `WorldAdapter(seeds=…)`.**
+  - `load_all_seeds` skips `self_load_only` seeds even when they are selected.
+  - The opt-in parameter nodes are supplied by a new `cognition_on_params` seed.
+- **P2.C1 drops the `SoftExclude` Term.** Soft exclusion is composed from the new `SoftWeights` Term instead.
+- **P2.C2 is now a decision, defaulting to defer.** `ParetoDominates` is integer-only by explicit contract, and two tests pin that.
+- **P2.C3 adds tolerance metadata alongside existing attributes.**
+  - Most tolerances are already graph attributes on policy nodes. The plan describes them with metadata nodes (`Tolerance -governs_policy->`) and leaves the consuming rules unchanged.
+  - Only four inline literals are migrated.
+- **P2.C4 starts with a pathology test, because none exists.**
+- **P2.A5: `SystemTwoEscalation.budget` is written but never read.** The budget therefore gates the minting of requests, and engine-level enforcement is a P3 question.
+- **Rule 4 is relaxed.** The other author's engine and WASM work was committed (`8e82a211`, `5fb07d4f`). Rust tasks still check `git status --short runners/dsl` first.
+
 ## 1. Ground rules (apply to every task)
 
 1. **The graph decides; Python is mechanical** (`CLAUDE.md` "Architecture rule"). A decision is a seed Rule. A missing primitive is a Rust Term in `runners/dsl/src/term.rs`, exposed via `py.rs`. Python may only ingest and emit.
 2. **Byte-identical by default until Phase 1.8.** New behaviour is guarded on an opt-in policy node (the `HeldXParams.enabled` / `game.x_on` idiom). An unguarded change to a CORE seed needs a phase-gate decision.
 3. **Seeds with a generator are edited through the generator.** Edit the script, then regenerate the JSON, so the two never diverge. Current generators: `capability_collapse` ← `scripts/gen_capability_collapse_seed.py`; `repair_escalation` ← `scripts/gen_repair_escalation_seed.py`; aperture minting ← `scripts/gen_aperture_minting_seed.py`. For a large new rule set, write a new `scripts/gen_<seed>_seed.py`. Never put one in `tools/`, which is never committed.
-4. **Rust changes conflict with another author's uncommitted work.** That work lives in `runners/dsl/*`, `runners/wasm/`, `scripts/engine_build_wasm.sh`, `scripts/serve_wasm_studio.sh` and `.gitignore`. Phases 2+ Rust tasks therefore run in a git worktree, or wait until that author has committed. Never stage those files. Build only through `scripts/engine_build.sh`; never `cp` the `.so`. Run Rust tests with `scripts/engine_cargo_test.sh`.
+4. **Do not collide with uncommitted engine work.** Before any Rust task, run `git status --short runners/dsl runners/wasm`. If someone else's changes are dirty there, work in a git worktree or wait, and never stage their files. The 2026-10-10 engine/WASM work is now committed (`8e82a211`, `5fb07d4f`). Build only through `scripts/engine_build.sh`; never `cp` the `.so`. Run Rust tests with `scripts/engine_cargo_test.sh`.
 5. **Verification for every task:** the task's own test, plus the regression gate for its phase (§5). `tests/test_frozen_core_invariant.py` has 3 known baseline failures, so the gate is "no new failures", not "all pass".
 6. **Hygiene.** Stage specific files only. No `git stash` or `git reset`. Set `OZMA_SEED_PERSIST_DISABLED=1` for test runs. Never commit `papers/`, `tools/`, `evaluation/reports/`, `evaluation/labels/` or `docs/experiments/qualia-visualization-development-plan.md`. Check free disk space before a Rust build: the disk filled on 2026-10-10.
 7. **Claims need evidence.** A capability counts as done when it passes a test, and when a pre-registered evaluation exists for that phase, it must also pass that. Results docs report failures plainly.
