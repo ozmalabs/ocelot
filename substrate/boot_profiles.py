@@ -780,6 +780,8 @@ COGNITION_ON_SEEDS = (
     "consolidation_scheduler",
     "tolerance_registry",
     "thinking_budget",
+    "extended_thinking",
+    "inference_ladder_record",
     "cognition_on_params",
 )
 

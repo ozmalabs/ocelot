@@ -110,17 +110,17 @@ The intended faculty: relax admissibility and widen aperture to reach deeper int
 | Part | Exists? | Evidence |
 |---|---|---|
 | Trigger | Yes | `dual_process_core` (prediction error, novelty, uncertainty, conflict, low confidence); `impasse_escalation`; `cc_residual_deepen` |
-| Request object | Yes, consumed opt-in | `synthesis_requested` (capability_collapse) is consumed by `capability_synthesis_bridge` (opt-in); `Impasse -needs_decomposition-> CapabilityAxis` (impasse_escalation) is consumed by `decomposition_consumer` (opt-in); `Fault.needs_decomposition` (repair_escalation) remains unconsumed; `needs_tool` → `self_extension` composes an operator from held primitives |
+| Request object | Yes, consumed opt-in | P3 adds `ExtendedThinkingStepRequest` nodes which draw on `ThinkingBudget`; each widening step is approved or denied by the generic budget rules. Existing `synthesis_requested` and `Impasse -needs_decomposition-> CapabilityAxis` bridges remain opt-in; `Fault.needs_decomposition` remains unconsumed. |
 | Area admission | Yes | `admit_system_two` admits SystemTwoTaskSet areas, with lease and staleness checks |
 | Shared budget / anytime object | Yes (opt-in) | `thinking_budget.json` (`ThinkingBudget`, `tb_refill_once_per_epoch`, `tb_fund_from_horizon`, `tb_debit_request`, `tb_record_exhaustion`), integrated with `impasse_simulation_bridge`, `consolidation_scheduler`, and `boot_cognition_on()` |
-| Graded relaxation of admissibility | Metadata + primitive ready | `SoftWeights` Term in Rust; `tolerance_registry.json` (`Tolerance` metadata linked via `governs_policy` to policy nodes); inline tolerances migrated to `SaliencePolicy.shape_match_tolerance` and `DimInferPolicy.dim_grains`; `af_relax_chosen` graded on `ap_relax_tolerance`. (Active relax/restore executor loop is Phase 3) |
+| Graded relaxation of admissibility | Yes, scoped | `extended_thinking.json` steps the `agent.dim_grains` ladder `[0] → [0,1] → [0,1,2]` and the `agent.gen_infer_enabled` ladder `0 → 1`; each step is funded and restored by `ToleranceRelaxLease`. Commit-permissiveness tolerances are excluded. |
 | Widening of aperture | Partial (`aperture_frame` questioning landed) | `aperture_frame.json` now probes bypassing chosen frames after `ap_question_after` generations and drops hiding chosen frames; `DimInferPolicy.dim_grains` is graph-governed; domain apertures remain separate |
-| Re-admission of pruned candidates | No | Motor collapse and the bigville core never re-admit |
+| Re-admission of pruned candidates | Yes, scoped | The executor re-arms one ShapeDecode observation at a time by backdating `decoded_epoch`, after marking it `minted` so frozen `sd_redecode` runs. It re-verifies through DimInfer or GenInfer. Motor collapse and the bigville core still do not re-admit candidates. |
 | Generative proposal | Domain-bound | `ps_propose`/`SynthEnumerate` (code); GenInfer (matrices); GWM rollouts (actions); no manifold projector |
 | Tree search over graph states | Partial | GWM bounded branching rollouts with `prune_terminal_*` (C); the ShapeDecode internal beam |
 | Imagination | Yes, including opt-in impasse trigger | Detached imagination and counterfactual_experiment run on idleness or explicit request; `impasse_simulation_bridge` (opt-in) triggers GWM counterfactual rollouts on `dual_process_core` `instinct_conflict` escalations |
 | Verification | Yes | `build_candidate`, the MDL witness, the grounded-outcome comparison in GWM, the judge |
-| Settling back and caching | Domain-bound | `ps_accept`; codebook minting; EWM consolidation; the manifold does not cache |
+| Settling back and caching | Yes, scoped | Extended thinking restores the original Agent setting on terminal outcomes and caches a successful grain rung by observation key; a minted linear GenInfer generator is the persistent cache for its rung. `ps_accept` and EWM consolidation retain their existing caches; the manifold does not cache. |
 
 Revision 2 changes this picture. Most parts of an executor already exist as graph rules: triggers, admission, imagination, rollout search, verification and consolidation. What is missing is the connective tissue:
 - a consumer for the orphaned requests;

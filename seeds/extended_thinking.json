@@ -1,0 +1,3926 @@
+{
+ "id": "extended_thinking",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "shape_decode_loop",
+  "thinking_budget"
+ ],
+ "area": "extended_thinking",
+ "description": "Opt-in bounded executor for funded DimInfer grain and GenInfer widening, targeted re-decode, exact re-verification, and settle-back.",
+ "microtheory": {
+  "name": "extended_thinking",
+  "description": "Every widening step requires an approved ThinkingBudget request and carries a restoring lease."
+ },
+ "nodes": [
+  {
+   "local_id": 0,
+   "type": "ExtendedThinkingPolicy",
+   "attrs": {
+    "name": "core_extended_thinking_policy",
+    "enabled": 0.0,
+    "step_cost": 1.0,
+    "lease_epochs": 4.0
+   }
+  },
+  {
+   "local_id": 1,
+   "type": "RelaxLadder",
+   "attrs": {
+    "name": "dim_grain_ladder",
+    "governs": "agent.dim_grains",
+    "rungs": [
+     [
+      0
+     ],
+     [
+      0,
+      1
+     ],
+     [
+      0,
+      1,
+      2
+     ]
+    ],
+    "rank": 1
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "RelaxLadder",
+   "attrs": {
+    "name": "gen_infer_ladder",
+    "governs": "agent.gen_infer_enabled",
+    "rungs": [
+     0.0,
+     1.0
+    ],
+    "rank": 2
+   }
+  }
+ ],
+ "edges": [
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_extended_thinking_policy",
+   "tgt": {
+    "local": 0
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_relax_ladder",
+   "tgt": {
+    "local": 1
+   },
+   "attrs": {}
+  },
+  {
+   "src": {
+    "role": "agent_root"
+   },
+   "type": "has_relax_ladder",
+   "tgt": {
+    "local": 2
+   },
+   "attrs": {}
+  }
+ ],
+ "productions": [
+  {
+   "provenance": "seed:extended_thinking:has_extended_thinking_policy:Agent:ExtendedThinkingPolicy",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_extended_thinking_policy",
+   "tgt": {
+    "type": "ExtendedThinkingPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_relax_ladder:Agent:RelaxLadder",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_relax_ladder",
+   "tgt": {
+    "type": "RelaxLadder",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_extended_thinking_episode:Observation:ExtendedThinkingEpisode",
+   "src": {
+    "type": "Observation",
+    "var": "src"
+   },
+   "edge_type": "has_extended_thinking_episode",
+   "tgt": {
+    "type": "ExtendedThinkingEpisode",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_extended_thinking_episode:Agent:ExtendedThinkingEpisode",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_extended_thinking_episode",
+   "tgt": {
+    "type": "ExtendedThinkingEpisode",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:relaxes_ladder:ExtendedThinkingEpisode:RelaxLadder",
+   "src": {
+    "type": "ExtendedThinkingEpisode",
+    "var": "src"
+   },
+   "edge_type": "relaxes_ladder",
+   "tgt": {
+    "type": "RelaxLadder",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_step_request:ExtendedThinkingEpisode:ExtendedThinkingStepRequest",
+   "src": {
+    "type": "ExtendedThinkingEpisode",
+    "var": "src"
+   },
+   "edge_type": "has_step_request",
+   "tgt": {
+    "type": "ExtendedThinkingStepRequest",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:draws_on_thinking_budget:ExtendedThinkingStepRequest:ThinkingBudget",
+   "src": {
+    "type": "ExtendedThinkingStepRequest",
+    "var": "src"
+   },
+   "edge_type": "draws_on_thinking_budget",
+   "tgt": {
+    "type": "ThinkingBudget",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_relax_lease:ExtendedThinkingEpisode:ToleranceRelaxLease",
+   "src": {
+    "type": "ExtendedThinkingEpisode",
+    "var": "src"
+   },
+   "edge_type": "has_relax_lease",
+   "tgt": {
+    "type": "ToleranceRelaxLease",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:temporarily_hides_quantum:ExtendedThinkingEpisode:CapabilityAxis",
+   "src": {
+    "type": "ExtendedThinkingEpisode",
+    "var": "src"
+   },
+   "edge_type": "temporarily_hides_quantum",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_extended_thinking_cache:Agent:ExtendedThinkingCacheEntry",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_extended_thinking_cache",
+   "tgt": {
+    "type": "ExtendedThinkingCacheEntry",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:minted:Observation:CapabilityAxis",
+   "src": {
+    "type": "Observation",
+    "var": "src"
+   },
+   "edge_type": "minted",
+   "tgt": {
+    "type": "CapabilityAxis",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_dim_infer_policy:Agent:DimInferPolicy",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_dim_infer_policy",
+   "tgt": {
+    "type": "DimInferPolicy",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_network_mode_state:Agent:NetworkModeState",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_network_mode_state",
+   "tgt": {
+    "type": "NetworkModeState",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:observed:Agent:Observation",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "tgt"
+   }
+  },
+  {
+   "provenance": "seed:extended_thinking:has_thinking_budget:Agent:ThinkingBudget",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "has_thinking_budget",
+   "tgt": {
+    "type": "ThinkingBudget",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "et_open_dim_episode",
+   "area": "extended_thinking",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "agent",
+     "has_relax_ladder",
+     "ladder"
+    ],
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "gen_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "minted"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "decoded"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "recognized_duplicate"
+          }
+         }
+        ]
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_types"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_extended_thinking_episode",
+        "any_type": false
+       },
+       "var_name": "prior_ep",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "prior_ep"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "settled"
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "et_settled_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "codebook_epoch"
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "edge_type": "has_extended_thinking_cache",
+        "any_type": false
+       },
+       "var_name": "ce",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ce"
+           },
+           "key": "key"
+          },
+          "b": {
+           "type": "ToJsonString",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "key"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ce"
+           },
+           "key": "ladder_name"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "dim_grain_ladder"
+          }
+         }
+        ]
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ladder"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ep",
+     "ExtendedThinkingEpisode",
+     {
+      "status": "open",
+      "ladder_name": "dim_grain_ladder",
+      "rung_index": 0,
+      "steps": 0,
+      "opened_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mode"
+        },
+        "key": "epoch"
+       }
+      },
+      "prior_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "dim_grains"
+       }
+      },
+      "from_cache": 0
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_extended_thinking_episode",
+     "ep",
+     {}
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_extended_thinking_episode",
+     "ep",
+     {}
+    ],
+    [
+     "add_edge",
+     "ep",
+     "relaxes_ladder",
+     "ladder",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "et_open_dim_episode_from_cache",
+   "area": "extended_thinking",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "agent",
+     "has_relax_ladder",
+     "ladder"
+    ],
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ],
+    [
+     "agent",
+     "has_extended_thinking_cache",
+     "ce"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "gen_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "minted"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "decoded"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "recognized_duplicate"
+          }
+         }
+        ]
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_types"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_extended_thinking_episode",
+        "any_type": false
+       },
+       "var_name": "prior_ep",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "prior_ep"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "settled"
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "et_settled_epoch"
+       },
+       "b": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "codebook_epoch"
+       }
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "edge_type": "has_extended_thinking_cache",
+       "any_type": false
+      },
+      "var_name": "ce",
+      "predicate": {
+       "type": "And",
+       "items": [
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ce"
+          },
+          "key": "key"
+         },
+         "b": {
+          "type": "ToJsonString",
+          "value": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "key"
+          }
+         }
+        },
+        {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ce"
+          },
+          "key": "ladder_name"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "dim_grain_ladder"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ce"
+       },
+       "key": "key"
+      },
+      "b": {
+       "type": "ToJsonString",
+       "value": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "key"
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ce"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ladder"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ep",
+     "ExtendedThinkingEpisode",
+     {
+      "status": "open",
+      "ladder_name": "dim_grain_ladder",
+      "rung_index": {
+       "__term__": {
+        "type": "Minus",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ce"
+         },
+         "key": "rung_index"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "steps": 0,
+      "opened_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mode"
+        },
+        "key": "epoch"
+       }
+      },
+      "prior_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "dim_grains"
+       }
+      },
+      "from_cache": 1
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_extended_thinking_episode",
+     "ep",
+     {}
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_extended_thinking_episode",
+     "ep",
+     {}
+    ],
+    [
+     "add_edge",
+     "ep",
+     "relaxes_ladder",
+     "ladder",
+     {}
+    ],
+    [
+     "set_attr",
+     "ce",
+     "hits",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ce"
+         },
+         "key": "hits"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "et_open_gen_episode",
+   "area": "extended_thinking",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "agent",
+     "has_relax_ladder",
+     "ladder"
+    ],
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ],
+    [
+     "obs",
+     "has_extended_thinking_episode",
+     "prior_dim_ep"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "gen_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "minted"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "decoded"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "recognized_duplicate"
+          }
+         }
+        ]
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_types"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_extended_thinking_episode",
+        "any_type": false
+       },
+       "var_name": "prior_ep",
+       "predicate": {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "prior_ep"
+          },
+          "key": "status"
+         },
+         "b": {
+          "type": "Lit",
+          "value": "settled"
+         }
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior_dim_ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "settled"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "prior_dim_ep"
+       },
+       "key": "outcome"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "exhausted"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "has_extended_thinking_episode",
+        "any_type": false
+       },
+       "var_name": "prior_gen_ep",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "prior_gen_ep"
+         },
+         "key": "ladder_name"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "gen_infer_ladder"
+        }
+       }
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ladder"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gen_infer_ladder"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "ep",
+     "ExtendedThinkingEpisode",
+     {
+      "status": "open",
+      "ladder_name": "gen_infer_ladder",
+      "rung_index": 0,
+      "steps": 0,
+      "opened_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mode"
+        },
+        "key": "epoch"
+       }
+      },
+      "prior_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "gen_infer_enabled"
+       }
+      },
+      "from_cache": 0
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "has_extended_thinking_episode",
+     "ep",
+     {}
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_extended_thinking_episode",
+     "ep",
+     {}
+    ],
+    [
+     "add_edge",
+     "ep",
+     "relaxes_ladder",
+     "ladder",
+     {}
+    ]
+   ]
+  },
+  {
+   "name": "et_request_step",
+   "area": "extended_thinking",
+   "order": 11,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_policy",
+     "pol"
+    ],
+    [
+     "ep",
+     "relaxes_ladder",
+     "ladder"
+    ],
+    [
+     "agent",
+     "has_thinking_budget",
+     "budget"
+    ],
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "open"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Gte",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "budget"
+         },
+         "key": "enabled"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Exists",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "agent"
+          },
+          "edge_type": "has_thinking_budget",
+          "any_type": false
+         },
+         "var_name": "enabled_budget",
+         "predicate": {
+          "type": "Gte",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "enabled_budget"
+           },
+           "key": "enabled"
+          },
+          "b": {
+           "type": "Lit",
+           "value": 1.0
+          }
+         }
+        }
+       }
+      ]
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "rung_index"
+      },
+      "b": {
+       "type": "Minus",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ladder"
+         },
+         "key": "rungs"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "req",
+     "ExtendedThinkingStepRequest",
+     {
+      "status": "pending",
+      "cost": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "pol"
+        },
+        "key": "step_cost"
+       }
+      },
+      "requester_kind": "extended_thinking"
+     }
+    ],
+    [
+     "add_edge",
+     "ep",
+     "has_step_request",
+     "req",
+     {}
+    ],
+    [
+     "add_edge",
+     "req",
+     "draws_on_thinking_budget",
+     "budget",
+     {}
+    ],
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "awaiting_budget"
+    ]
+   ]
+  },
+  {
+   "name": "et_apply_dim_step",
+   "area": "extended_thinking",
+   "order": 13,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "obs",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "relaxes_ladder",
+     "ladder"
+    ],
+    [
+     "ep",
+     "has_step_request",
+     "req"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "awaiting_budget"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ladder"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "req"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "approved"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "lease",
+     "ToleranceRelaxLease",
+     {
+      "governs": "agent.dim_grains",
+      "prior_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "prior_value"
+       }
+      },
+      "relaxed_value": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ladder"
+         },
+         "key": "rungs"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ep"
+           },
+           "key": "rung_index"
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        }
+       }
+      },
+      "rung_index": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ep"
+          },
+          "key": "rung_index"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "valid_from_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mode"
+        },
+        "key": "epoch"
+       }
+      },
+      "expires_after_epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mode"
+          },
+          "key": "epoch"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "lease_epochs"
+         }
+        ]
+       }
+      },
+      "status": "active"
+     }
+    ],
+    [
+     "add_edge",
+     "ep",
+     "has_relax_lease",
+     "lease",
+     {}
+    ],
+    [
+     "set_attr",
+     "agent",
+     "dim_grains",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "lease"
+       },
+       "key": "relaxed_value"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "minted"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "codebook_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ep",
+     "rung_index",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "rung_index"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ep",
+     "steps",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "steps"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "probing"
+    ],
+    [
+     "set_attr",
+     "req",
+     "status",
+     "consumed"
+    ]
+   ]
+  },
+  {
+   "name": "et_apply_gen_step",
+   "area": "extended_thinking",
+   "order": 13,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_policy",
+     "pol"
+    ],
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "obs",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "relaxes_ladder",
+     "ladder"
+    ],
+    [
+     "ep",
+     "has_step_request",
+     "req"
+    ],
+    [
+     "obs",
+     "minted",
+     "ax"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "pol"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "awaiting_budget"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gen_infer_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ladder"
+       },
+       "key": "name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gen_infer_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "req"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "approved"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "lease",
+     "ToleranceRelaxLease",
+     {
+      "governs": "agent.gen_infer_enabled",
+      "prior_value": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "prior_value"
+       }
+      },
+      "relaxed_value": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ladder"
+         },
+         "key": "rungs"
+        },
+        "index": {
+         "type": "Plus",
+         "items": [
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "ep"
+           },
+           "key": "rung_index"
+          },
+          {
+           "type": "Lit",
+           "value": 1
+          }
+         ]
+        }
+       }
+      },
+      "rung_index": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "ep"
+          },
+          "key": "rung_index"
+         },
+         {
+          "type": "Lit",
+          "value": 1
+         }
+        ]
+       }
+      },
+      "valid_from_epoch": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "mode"
+        },
+        "key": "epoch"
+       }
+      },
+      "expires_after_epoch": {
+       "__term__": {
+        "type": "Plus",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "mode"
+          },
+          "key": "epoch"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "pol"
+          },
+          "key": "lease_epochs"
+         }
+        ]
+       }
+      },
+      "status": "active"
+     }
+    ],
+    [
+     "add_edge",
+     "ep",
+     "has_relax_lease",
+     "lease",
+     {}
+    ],
+    [
+     "set_attr",
+     "agent",
+     "gen_infer_enabled",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "lease"
+       },
+       "key": "relaxed_value"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "status",
+     "minted"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "decoded_epoch",
+     {
+      "__term__": {
+       "type": "Minus",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "key": "codebook_epoch"
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ep",
+     "rung_index",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "rung_index"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ep",
+     "steps",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "steps"
+        },
+        {
+         "type": "Lit",
+         "value": 1
+        }
+       ]
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "probing"
+    ],
+    [
+     "set_attr",
+     "req",
+     "status",
+     "consumed"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "gen_checked",
+     0
+    ],
+    [
+     "set_attr",
+     "obs",
+     "gen_explained",
+     0
+    ],
+    [
+     "add_edge",
+     "ep",
+     "temporarily_hides_quantum",
+     "ax",
+     {}
+    ],
+    [
+     "del_edge",
+     "obs",
+     "minted",
+     "ax"
+    ]
+   ]
+  },
+  {
+   "name": "et_observe_hit",
+   "area": "extended_thinking",
+   "order": 14,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "obs",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "obs",
+     "minted",
+     "ax"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "probing"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_transformed"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "hit"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "outcome",
+     "hit"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "accepted_at_relaxed",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "accepted_rung",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "rung_index"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ax",
+     "superseded_by_extended_thinking",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "et_observe_gen_hit",
+   "area": "extended_thinking",
+   "order": 14,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "obs",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "temporarily_hides_quantum",
+     "ax"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "probing"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gen_infer_ladder"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_transformed"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "hit"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "outcome",
+     "hit"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "accepted_at_relaxed",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "obs",
+     "accepted_rung",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "rung_index"
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "obs",
+     "minted",
+     "ax",
+     {}
+    ],
+    [
+     "set_attr",
+     "ax",
+     "superseded_by_extended_thinking",
+     1
+    ]
+   ]
+  },
+  {
+   "name": "et_observe_miss",
+   "area": "extended_thinking",
+   "order": 14,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "probing"
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_checked"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Not",
+        "arg": {
+         "type": "Eq",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "gen_explained"
+         },
+         "b": {
+          "type": "Lit",
+          "value": 1
+         }
+        }
+       },
+       {
+        "type": "Or",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "minted"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "decoded"
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "status"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "recognized_duplicate"
+          }
+         }
+        ]
+       },
+       {
+        "type": "Gt",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "dim_types"
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "decoded_epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "miss"
+    ]
+   ]
+  },
+  {
+   "name": "et_continue_after_miss",
+   "area": "extended_thinking",
+   "order": 14,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "relaxes_ladder",
+     "ladder"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "miss"
+      }
+     },
+     {
+      "type": "Lt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "rung_index"
+      },
+      "b": {
+       "type": "Minus",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ladder"
+         },
+         "key": "rungs"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "open"
+    ]
+   ]
+  },
+  {
+   "name": "et_exhaust",
+   "area": "extended_thinking",
+   "order": 14,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "relaxes_ladder",
+     "ladder"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "miss"
+      }
+     },
+     {
+      "type": "Gte",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "rung_index"
+      },
+      "b": {
+       "type": "Minus",
+       "a": {
+        "type": "Count",
+        "source": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ladder"
+         },
+         "key": "rungs"
+        }
+       },
+       "b": {
+        "type": "Lit",
+        "value": 1
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "exhausted"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "outcome",
+     "exhausted"
+    ]
+   ]
+  },
+  {
+   "name": "et_budget_denied",
+   "area": "extended_thinking",
+   "order": 14,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "has_step_request",
+     "req"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "awaiting_budget"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "req"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "denied"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "denied"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "outcome",
+     "denied"
+    ]
+   ]
+  },
+  {
+   "name": "et_expire_lease",
+   "area": "extended_thinking",
+   "order": 9,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_network_mode_state",
+     "mode"
+    ],
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "has_relax_lease",
+     "lease"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "lease"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "active"
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "mode"
+       },
+       "key": "epoch"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "lease"
+       },
+       "key": "expires_after_epoch"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Eq",
+       "a": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "status"
+       },
+       "b": {
+        "type": "Lit",
+        "value": "settled"
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "expired"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "outcome",
+     "expired"
+    ]
+   ]
+  },
+  {
+   "name": "et_cache_hit",
+   "area": "extended_thinking",
+   "order": 16,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ],
+    [
+     "obs",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "relaxes_ladder",
+     "ladder"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "settled"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "outcome"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "hit"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "agent"
+        },
+        "edge_type": "has_extended_thinking_cache",
+        "any_type": false
+       },
+       "var_name": "existing_cache",
+       "predicate": {
+        "type": "And",
+        "items": [
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "existing_cache"
+           },
+           "key": "key"
+          },
+          "b": {
+           "type": "ToJsonString",
+           "value": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "obs"
+            },
+            "key": "key"
+           }
+          }
+         },
+         {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "existing_cache"
+           },
+           "key": "ladder_name"
+          },
+          "b": {
+           "type": "Lit",
+           "value": "dim_grain_ladder"
+          }
+         }
+        ]
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node_if_absent",
+     "ce",
+     "ExtendedThinkingCacheEntry",
+     {
+      "key": {
+       "__term__": {
+        "type": "ToJsonString",
+        "value": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "key"
+        }
+       }
+      },
+      "ladder_name": "dim_grain_ladder",
+      "rung_index": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "rung_index"
+       }
+      },
+      "hits": 0
+     }
+    ],
+    [
+     "add_edge",
+     "agent",
+     "has_extended_thinking_cache",
+     "ce",
+     {}
+    ]
+   ],
+   "batch": false
+  },
+  {
+   "name": "et_settle_dim",
+   "area": "extended_thinking",
+   "order": 15,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "agent",
+     "has_dim_infer_policy",
+     "dim_policy"
+    ],
+    [
+     "ep",
+     "has_relax_lease",
+     "lease"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "hit"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhausted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "denied"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "expired"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "lease"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "active"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "agent",
+     "dim_grains",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "prior_value"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "dim_policy"
+        },
+        "key": "dim_grains"
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "prior_value"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "lease",
+     "status",
+     "restored"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "settled"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "et_settled_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "et_settle_dim_without_lease",
+   "area": "extended_thinking",
+   "order": 15,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "agent",
+     "has_dim_infer_policy",
+     "dim_policy"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "dim_grain_ladder"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "hit"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhausted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "denied"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "expired"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "edge_type": "has_relax_lease",
+        "any_type": false
+       },
+       "var_name": "l",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "l"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "active"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "settled"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "et_settled_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "et_settle_gen",
+   "area": "extended_thinking",
+   "order": 15,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "ep",
+     "has_relax_lease",
+     "lease"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gen_infer_ladder"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "hit"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhausted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "denied"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "expired"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "lease"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "active"
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "agent",
+     "gen_infer_enabled",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "prior_value"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 0.0
+       },
+       "other": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "key": "prior_value"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "lease",
+     "status",
+     "restored"
+    ],
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "settled"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "et_settled_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "et_settle_gen_without_lease",
+   "area": "extended_thinking",
+   "order": 15,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "has_extended_thinking_episode",
+     "ep"
+    ],
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "ladder_name"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "gen_infer_ladder"
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "hit"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "exhausted"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "denied"
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ep"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "expired"
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ep"
+        },
+        "edge_type": "has_relax_lease",
+        "any_type": false
+       },
+       "var_name": "l",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "l"
+         },
+         "key": "status"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "active"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ep",
+     "status",
+     "settled"
+    ],
+    [
+     "set_attr",
+     "obs",
+     "et_settled_epoch",
+     {
+      "__term__": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "agent"
+       },
+       "key": "codebook_epoch"
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}

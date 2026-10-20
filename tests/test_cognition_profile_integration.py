@@ -19,6 +19,7 @@ from substrate.boot_core import installed_seeds
 from substrate.boot_profiles import COGNITION_ON_SEEDS, boot_cognition_on
 from substrate.seed_loader import manifest_for
 from substrate.world_adapter import WorldAdapter
+from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
 
 
 def _edge(agent, src, edge_type, tgt):
@@ -55,6 +56,8 @@ def test_default_world_adapter_loads_none_of_cognition_on_seeds():
         "core_emotions",
         "arousal_window_coreg",
         "capability_collapse",
+        "extended_thinking",
+        "inference_ladder_record",
     ):
         manifest = manifest_for(sid)
         for rule in manifest.get("rules", ()):
@@ -94,6 +97,7 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
         ("has_impasse_simulation_policy", "ImpasseSimulationPolicy"),
         ("has_consolidation_scheduler_policy", "ConsolidationSchedulerPolicy"),
         ("has_thinking_budget", "ThinkingBudget"),
+        ("has_extended_thinking_policy", "ExtendedThinkingPolicy"),
     ]
     for edge_type, node_type in expected_edges_and_types:
         targets = list(agent.inner.neighbours(agent.agent, edge_type))
@@ -106,6 +110,35 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
             f"Expected enabled {node_type} reachable via {edge_type} from agent_root"
         )
     assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 5
+
+
+def test_cognition_on_runs_a_funded_dim_grain_episode():
+    agent = boot_cognition_on()
+    mode = _nodes(agent, "NetworkModeState")[0]
+    budget = next(n for n in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    policy = next(n for n in agent.inner.neighbours(agent.agent, "has_extended_thinking_policy")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    agent.s.set_attr(mode, "epoch", 1.0)
+    agent.s.set_attr(agent.agent, "codebook_epoch", 0.0)
+    agent.s.set_attr(budget, "remaining", 8.0)
+    agent.s.set_attr(budget, "last_refill_epoch", 1.0)
+    agent.s.add_node("ShapeSignature", {
+        "name": "profile_block", "signature": json.dumps(BLOCK), "kind": "faculty",
+        "faculty": "profile_block", "dim_types": DT3,
+    })
+    signature = _rot(JIT)
+    obs = agent.s.add_node("Observation", {
+        "signature": signature, "key": ["profile-grain"], "status": "decoded",
+        "residual": signature, "decoded_epoch": 0.0, "dim_types": DT3,
+    })
+    _edge(agent, agent.agent, "observed", obs)
+    agent.inner.run_rules()
+    attrs = agent.s.node(obs)["attrs"]
+    assert attrs["status"] == "recognized_transformed"
+    assert attrs["accepted_at_relaxed"] == "dim_grain_ladder"
+    assert agent.s.node(budget)["attrs"]["remaining"] == pytest.approx(7.0)
+    assert len(_nodes(agent, "ExtendedThinkingEpisode")) == 1
 
 
 def test_cognition_on_single_agent_end_to_end_four_rule_chains():

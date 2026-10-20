@@ -1,0 +1,380 @@
+{
+ "id": "inference_ladder_record",
+ "version": "1.0.0",
+ "self_load_only": true,
+ "depends_on": [
+  "shape_decode_loop"
+ ],
+ "area": "inference_ladder_record",
+ "description": "SLO readout that records which existing inference rung explained an Observation, without changing inference decisions.",
+ "microtheory": {
+  "name": "inference_ladder_record",
+  "description": "One-shot auditable inference winner labels."
+ },
+ "nodes": [],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:inference_ladder_record:observed:Agent:Observation",
+   "src": {
+    "type": "Agent",
+    "var": "src"
+   },
+   "edge_type": "observed",
+   "tgt": {
+    "type": "Observation",
+    "var": "tgt"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "ilr_gen_linear",
+   "area": "inference_ladder_record",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_transformed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "ladder_winner"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Exists",
+      "source": {
+       "type": "Neighbours",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "edge_type": "gen_minted",
+       "any_type": false
+      },
+      "var_name": "g",
+      "predicate": {
+       "type": "Lit",
+       "value": true
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "ladder_winner",
+     "gen_linear"
+    ]
+   ]
+  },
+  {
+   "name": "ilr_dim_grain",
+   "area": "inference_ladder_record",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_transformed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "ladder_winner"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "gen_minted",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "dim_grain"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "ladder_winner",
+     "dim_grain"
+    ]
+   ]
+  },
+  {
+   "name": "ilr_dim",
+   "area": "inference_ladder_record",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "recognized_transformed"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "ladder_winner"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "gen_minted",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     },
+     {
+      "type": "Or",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_grain"
+        },
+        "b": {
+         "type": "Lit",
+         "value": null
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "obs"
+         },
+         "key": "dim_grain"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "ladder_winner",
+     "dim"
+    ]
+   ]
+  },
+  {
+   "name": "ilr_quantum",
+   "area": "inference_ladder_record",
+   "order": 20,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "agent",
+     "observed",
+     "obs"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "status"
+      },
+      "b": {
+       "type": "Lit",
+       "value": "minted"
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "obs"
+       },
+       "key": "ladder_winner"
+      },
+      "b": {
+       "type": "Lit",
+       "value": null
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "edge_type": "gen_minted",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "obs",
+     "ladder_winner",
+     "quantum"
+    ]
+   ]
+  }
+ ]
+}

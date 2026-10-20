@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "self_load_only": true,
   "depends_on": [],
-  "description": "Data-only parameter and policy bundle for the opt-in cognition-on profile (P1.H8.2). Attaches enabled parameter/policy nodes for staleness_decay, demotion_hierarchy, core_emotions, arousal_window_coreg, capability_synthesis_bridge, decomposition_consumer, impasse_simulation_bridge, and consolidation_scheduler to agent_root.",
+  "description": "Data-only parameter and policy bundle for the opt-in cognition-on profile. Attaches enabled policy nodes for the profile's opt-in seeds, including the extended-thinking executor and its funded request budget.",
   "microtheory": {
     "name": "cognition_on_params",
     "description": "Opt-in policy and parameter nodes for the cognition-on profile."
@@ -135,6 +135,16 @@
         "refill_per_epoch": 2.0,
         "last_refill_epoch": -1.0
       }
+    },
+    {
+      "local_id": 11,
+      "type": "ExtendedThinkingPolicy",
+      "attrs": {
+        "name": "cognition_on_extended_thinking_policy",
+        "enabled": 1.0,
+        "step_cost": 1.0,
+        "lease_epochs": 4.0
+      }
     }
   ],
   "edges": [
@@ -192,6 +202,11 @@
       "src": { "role": "agent_root" },
       "type": "has_thinking_budget",
       "tgt": { "local": 10 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_extended_thinking_policy",
+      "tgt": { "local": 11 }
     }
   ],
   "productions": [

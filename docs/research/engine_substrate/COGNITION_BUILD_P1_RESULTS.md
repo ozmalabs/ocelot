@@ -32,3 +32,9 @@ Both arms boot `boot_cognition_on()` (`CORE_SEEDS + COGNITION_ON_SEEDS`, mean bo
 2. **Q2 — Should `child_mean_saturation` drive parent `saturation` directly?**
    - *Observation:* In Arm A, `dc_parent_progress_from_children` computes `ax.child_mean_saturation == 0.5` when the two partitioned child `CapabilityAxis` nodes reach `saturation = 1.0` and `0.0`, while `ax.saturation` remains at its original `0.2`.
    - *Finding:* Writing `child_mean_saturation` as a separate diagnostic attribute prevents circular feedback with `impasse_escalation`'s order-1/2/3 saturation guards on the parent axis while decomposition is still in progress. A separate completion rule (e.g., when all `decomposes_into` children exceed the saturation threshold) is the clean mechanism to resolve the parent `Impasse` and update parent `saturation` without premature de-escalation.
+
+## 3. Deferred work carried forward
+
+- The `ImaginedCandidate` consumer is deferred to P5.E4 (multi-step planning) or Track I5. P1 established that the proposal remains advisory until a grounded arbitration consumer exists.
+- The parent-completion rule that converts `child_mean_saturation` into parent `saturation` is deferred to Phase 5. P1 keeps the child rollup diagnostic to avoid premature de-escalation during decomposition.
+- The P1 bridges' inline budget debit remains as implemented. P3 is the first consumer of the generic pending-request contract in `thinking_budget`; the bridges are not migrated in this phase.
