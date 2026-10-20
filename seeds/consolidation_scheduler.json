@@ -1,0 +1,798 @@
+{
+  "id": "consolidation_scheduler",
+  "version": "1.0.0",
+  "depends_on": [
+    "episodic_working_memory_core",
+    "default_mode_core"
+  ],
+  "area": "consolidation_scheduler",
+  "description": "Opt-in offline replay and consolidation scheduler. Binds NetworkModeState as the memory clock, mints cooldown-paced offline MemoryCycle nodes when default_mode_weight is high and task_demand is low, recruits the EWM background replay/consolidation/cleanup areas, and prunes completed cycles after retention.",
+  "microtheory": {
+    "name": "consolidation_scheduler",
+    "description": "Quiet default-mode epochs schedule bounded offline episodic replay and semantic consolidation without unbounded transient growth."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ConsolidationSchedulerPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "entry_weight": 0.6,
+        "maximum_task_demand": 0.2,
+        "cooldown_epochs": 4.0,
+        "retention_epochs": 4.0,
+        "last_cycle_epoch": -1000000.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "SystemTwoTaskSet",
+      "attrs": {
+        "name": "consolidation_memory_replay",
+        "area": "memory_replay",
+        "task_kind": "offline_replay",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "SystemTwoTaskSet",
+      "attrs": {
+        "name": "consolidation_memory_consolidation",
+        "area": "memory_consolidation",
+        "task_kind": "semantic_consolidation",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "SystemTwoTaskSet",
+      "attrs": {
+        "name": "consolidation_memory_cleanup",
+        "area": "memory_cleanup",
+        "task_kind": "memory_transient_cleanup",
+        "enabled": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_consolidation_scheduler_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_memory_replay_task_set",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_memory_consolidation_task_set",
+      "tgt": {
+        "local": 2
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_memory_cleanup_task_set",
+      "tgt": {
+        "local": 3
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:consolidation_scheduler:has_consolidation_scheduler_policy:Agent:ConsolidationSchedulerPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_consolidation_scheduler_policy",
+      "tgt": {
+        "type": "ConsolidationSchedulerPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_memory_replay_task_set:Agent:SystemTwoTaskSet",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_replay_task_set",
+      "tgt": {
+        "type": "SystemTwoTaskSet",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_memory_consolidation_task_set:Agent:SystemTwoTaskSet",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_consolidation_task_set",
+      "tgt": {
+        "type": "SystemTwoTaskSet",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_memory_cleanup_task_set:Agent:SystemTwoTaskSet",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_cleanup_task_set",
+      "tgt": {
+        "type": "SystemTwoTaskSet",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_memory_clock:Agent:NetworkModeState",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_clock",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_memory_cycle:Agent:MemoryCycle",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_cycle",
+      "tgt": {
+        "type": "MemoryCycle",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:has_consolidation_task_request:MemoryCycle:SystemTwoEscalation",
+      "src": {
+        "type": "MemoryCycle",
+        "var": "src"
+      },
+      "edge_type": "has_consolidation_task_request",
+      "tgt": {
+        "type": "SystemTwoEscalation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:about_context:SystemTwoEscalation:NetworkModeState",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "about_context",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:consolidation_scheduler:recruits_task_set:SystemTwoEscalation:SystemTwoTaskSet",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "recruits_task_set",
+      "tgt": {
+        "type": "SystemTwoTaskSet",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "csch_bind_memory_clock",
+      "area": "consolidation_scheduler",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "comment": "Bind NetworkModeState as the canonical memory clock when none is bound.",
+      "match": [
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_memory_clock",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "agent",
+          "has_memory_clock",
+          "mode",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "csch_mint_offline_cycle",
+      "area": "consolidation_scheduler",
+      "order": 15,
+      "latency_class": "hard_realtime",
+      "comment": "Mint an offline MemoryCycle and recruit memory_replay, memory_consolidation, and memory_cleanup when default_mode_weight is high, task_demand is low, and the cooldown has elapsed.",
+      "match": [
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_replay_task_set",
+          "replay_ts"
+        ],
+        [
+          "agent",
+          "has_memory_consolidation_task_set",
+          "cons_ts"
+        ],
+        [
+          "agent",
+          "has_memory_cleanup_task_set",
+          "clean_ts"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "default_mode_weight"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "entry_weight"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "task_demand"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "maximum_task_demand"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "last_cycle_epoch"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "cooldown_epochs"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "recorded_episode",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "cycle",
+          "MemoryCycle",
+          {
+            "status": "pending",
+            "mode": "offline",
+            "epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "source": "consolidation_scheduler"
+          }
+        ],
+        [
+          "add_node",
+          "req",
+          "SystemTwoEscalation",
+          {
+            "status": "requested",
+            "reason": "offline_consolidation",
+            "request_kind": "consolidation",
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "retention_epochs"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_memory_cycle",
+          "cycle",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_consolidation_task_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "about_context",
+          "mode",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "replay_ts",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "cons_ts",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "clean_ts",
+          {}
+        ],
+        [
+          "set_attr",
+          "pol",
+          "last_cycle_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "csch_prune_completed_cycle_request",
+      "area": "consolidation_scheduler",
+      "order": 54,
+      "latency_class": "hard_realtime",
+      "comment": "Prune the consolidation SystemTwoEscalation once its MemoryCycle is past retention and its ReplayTrace is gone.",
+      "match": [
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "cycle",
+          "has_consolidation_task_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "retention_epochs"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "edge_type": "selected_replay",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_node",
+          "req"
+        ]
+      ]
+    },
+    {
+      "name": "csch_prune_completed_cycle",
+      "area": "consolidation_scheduler",
+      "order": 55,
+      "latency_class": "hard_realtime",
+      "comment": "Prune a completed MemoryCycle after retention once its selected ReplayTrace and request have been cleaned up.",
+      "match": [
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "retention_epochs"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "edge_type": "selected_replay",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "edge_type": "has_consolidation_task_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_node",
+          "cycle"
+        ]
+      ]
+    }
+  ]
+}

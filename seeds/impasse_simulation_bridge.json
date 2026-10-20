@@ -1,0 +1,1306 @@
+{
+  "id": "impasse_simulation_bridge",
+  "version": "1.0.0",
+  "depends_on": [
+    "dual_process_core",
+    "generative_world_model",
+    "default_mode_core"
+  ],
+  "area": "impasse_simulation",
+  "description": "Opt-in bridge that responds to a System-2 escalation on DualProcessContext by opening an action-conditioned SimulationRequest in generative_world_model and proposing the highest-expected-value branch as an ImaginedCandidate.",
+  "microtheory": {
+    "name": "impasse_simulation_bridge",
+    "description": "System-2 escalations recruit bounded world-model counterfactual rollouts and surface the best branch as an explicit ImaginedCandidate."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ImpasseSimulationPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "horizon": 3.0,
+        "budget": 6.0,
+        "maximum_branching": 2.0,
+        "deadline_window": 4.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_impasse_simulation_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_impasse_simulation_policy:Agent:ImpasseSimulationPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_impasse_simulation_policy",
+      "tgt": {
+        "type": "ImpasseSimulationPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_simulation_request:Agent:SimulationRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_simulation_request",
+      "tgt": {
+        "type": "SimulationRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_impasse_simulation:SystemTwoEscalation:SimulationRequest",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "has_impasse_simulation",
+      "tgt": {
+        "type": "SimulationRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_source_belief:SimulationRequest:BeliefState",
+      "src": {
+        "type": "SimulationRequest",
+        "var": "src"
+      },
+      "edge_type": "has_source_belief",
+      "tgt": {
+        "type": "BeliefState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:validated_by_clock:SimulationRequest:NetworkModeState",
+      "src": {
+        "type": "SimulationRequest",
+        "var": "src"
+      },
+      "edge_type": "validated_by_clock",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:about_context:SystemTwoEscalation:NetworkModeState",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "about_context",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:recruits_task_set:SystemTwoEscalation:SystemTwoTaskSet",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "recruits_task_set",
+      "tgt": {
+        "type": "SystemTwoTaskSet",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:driven_by_escalation:SimulationRequest:SystemTwoEscalation",
+      "src": {
+        "type": "SimulationRequest",
+        "var": "src"
+      },
+      "edge_type": "driven_by_escalation",
+      "tgt": {
+        "type": "SystemTwoEscalation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:considers_action:SimulationRequest:WorldModelAction",
+      "src": {
+        "type": "SimulationRequest",
+        "var": "src"
+      },
+      "edge_type": "considers_action",
+      "tgt": {
+        "type": "WorldModelAction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:has_imagined_candidate:SystemTwoEscalation:ImaginedCandidate",
+      "src": {
+        "type": "SystemTwoEscalation",
+        "var": "src"
+      },
+      "edge_type": "has_imagined_candidate",
+      "tgt": {
+        "type": "ImaginedCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:impasse_simulation_bridge:derived_from_trajectory:ImaginedCandidate:PredictionTrajectory",
+      "src": {
+        "type": "ImaginedCandidate",
+        "var": "src"
+      },
+      "edge_type": "derived_from_trajectory",
+      "tgt": {
+        "type": "PredictionTrajectory",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "isb_request_simulation",
+      "area": "impasse_simulation",
+      "order": 16,
+      "latency_class": "hard_realtime",
+      "comment": "Open an impasse_counterfactual SimulationRequest and a SystemTwoEscalation recruiting world_model_simulation when a DualProcessContext escalates.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_dual_process_context",
+          "ctx"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_belief_state",
+          "belief"
+        ],
+        [
+          "agent",
+          "has_world_model_simulation_task_set",
+          "wts"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "escalated"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "instinct_conflict"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "near_conflict"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "low_confidence"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "no_grounded_default"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "controller_arbitration"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "prediction_error"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "novelty"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "esc"
+                  },
+                  "key": "reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "uncertainty"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "edge_type": "has_impasse_simulation",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "key": "isb_requested"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "provenance_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "perceived"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "belief"
+            },
+            "b": {
+              "type": "Argmax",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_belief_state",
+                  "any_type": false
+                },
+                "var_name": "candidate_belief",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_belief"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "current"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_belief"
+                        },
+                        "key": "provenance_kind"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "perceived"
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "ranked_belief",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ranked_belief"
+                },
+                "key": "epoch"
+              },
+              "default": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sim",
+          "SimulationRequest",
+          {
+            "status": "collecting_actions",
+            "request_kind": "impasse_counterfactual",
+            "provenance_kind": "imagined",
+            "observation_status": "not_observed",
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "deadline_window"
+                  }
+                ]
+              }
+            },
+            "horizon": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "horizon"
+              }
+            },
+            "budget": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "budget"
+              }
+            },
+            "maximum_branching": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "maximum_branching"
+              }
+            },
+            "interruptible": 1.0
+          }
+        ],
+        [
+          "add_node",
+          "req",
+          "SystemTwoEscalation",
+          {
+            "status": "requested",
+            "reason": "impasse_simulation",
+            "request_kind": "impasse",
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "deadline_window"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "esc",
+          "isb_requested",
+          1
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_simulation_request",
+          "sim",
+          {}
+        ],
+        [
+          "add_edge",
+          "esc",
+          "has_impasse_simulation",
+          "sim",
+          {}
+        ],
+        [
+          "add_edge",
+          "sim",
+          "has_source_belief",
+          "belief",
+          {}
+        ],
+        [
+          "add_edge",
+          "sim",
+          "validated_by_clock",
+          "mode",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "about_context",
+          "mode",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "recruits_task_set",
+          "wts",
+          {}
+        ],
+        [
+          "add_edge",
+          "sim",
+          "driven_by_escalation",
+          "req",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "isb_offer_actions",
+      "area": "impasse_simulation",
+      "order": 16,
+      "latency_class": "hard_realtime",
+      "batch": true,
+      "comment": "Offer all held WorldModelAction nodes to the collecting impasse simulation request.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "esc",
+          "has_impasse_simulation",
+          "sim"
+        ],
+        [
+          "agent",
+          "has_world_model_action",
+          "action"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "escalated"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sim"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "collecting_actions"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "sim",
+          "considers_action",
+          "action",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "isb_seal",
+      "area": "impasse_simulation",
+      "order": 17,
+      "latency_class": "hard_realtime",
+      "comment": "Seal the impasse simulation action snapshot so generative_world_model can expand branches.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "esc",
+          "has_impasse_simulation",
+          "sim"
+        ],
+        [
+          "sim",
+          "considers_action",
+          "action"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "escalated"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sim"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "collecting_actions"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sim",
+          "status",
+          "active"
+        ]
+      ]
+    },
+    {
+      "name": "isb_propose_imagined_candidate",
+      "area": "impasse_simulation",
+      "order": 18,
+      "latency_class": "hard_realtime",
+      "comment": "Select the highest-expected-value simulated trajectory and propose an ImaginedCandidate on the escalation.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "esc",
+          "has_impasse_simulation",
+          "sim"
+        ],
+        [
+          "sim",
+          "has_prediction_trajectory",
+          "t"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sim"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "esc"
+                },
+                "edge_type": "has_imagined_candidate",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "t"
+            },
+            "b": {
+              "type": "Argmax",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "sim"
+                },
+                "edge_type": "has_prediction_trajectory",
+                "any_type": false
+              },
+              "var_name": "tr",
+              "value": {
+                "type": "MaxOver",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "tr"
+                  },
+                  "edge_type": "has_predicted_belief_state",
+                  "any_type": false
+                },
+                "var_name": "s",
+                "value": {
+                  "type": "MaxOver",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "edge_type": "has_predicted_outcome",
+                    "any_type": false
+                  },
+                  "var_name": "o",
+                  "value": {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "outcome_value"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "confidence"
+                      }
+                    ]
+                  },
+                  "default": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                },
+                "default": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "default": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "cand",
+          "ImaginedCandidate",
+          {
+            "status": "proposal",
+            "provenance_kind": "imagined",
+            "observation_status": "not_observed",
+            "root_action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "root_action_kind"
+              }
+            },
+            "expected_value": {
+              "__term__": {
+                "type": "MaxOver",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "edge_type": "has_predicted_belief_state",
+                  "any_type": false
+                },
+                "var_name": "s",
+                "value": {
+                  "type": "MaxOver",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "edge_type": "has_predicted_outcome",
+                    "any_type": false
+                  },
+                  "var_name": "o",
+                  "value": {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "outcome_value"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "o"
+                        },
+                        "key": "confidence"
+                      }
+                    ]
+                  },
+                  "default": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                },
+                "default": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "esc",
+          "has_imagined_candidate",
+          "cand",
+          {}
+        ],
+        [
+          "add_edge",
+          "cand",
+          "derived_from_trajectory",
+          "t",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "isb_cancel_on_terminal",
+      "area": "impasse_simulation",
+      "order": 19,
+      "latency_class": "hard_realtime",
+      "comment": "Cancel the simulation and its driving SystemTwoEscalation when the context commits or the deadline passes.",
+      "match": [
+        [
+          "agent",
+          "has_impasse_simulation_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ctx",
+          "has_system_two_escalation",
+          "esc"
+        ],
+        [
+          "esc",
+          "has_impasse_simulation",
+          "sim"
+        ],
+        [
+          "sim",
+          "driven_by_escalation",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ctx"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "committed"
+                }
+              },
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sim"
+                  },
+                  "key": "deadline_epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sim"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "collecting_actions"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sim"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "sim"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "completed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sim",
+          "status",
+          "cancelled"
+        ],
+        [
+          "set_attr",
+          "sim",
+          "terminal_reason",
+          "context_committed_or_deadline"
+        ],
+        [
+          "set_attr",
+          "sim",
+          "cleanup_after_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 2.0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          "cancelled"
+        ]
+      ]
+    }
+  ]
+}

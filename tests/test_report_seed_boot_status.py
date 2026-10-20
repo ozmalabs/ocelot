@@ -17,4 +17,5 @@ def test_report_seed_boot_status_classifications_and_broken_deps():
     assert report["self_account_reply"]["class"] == "Prof"
     assert report["core_emotions"]["class"] == "SLO"
     assert report["compositional_plan"]["class"] == "Bulk"
-    assert "llvm_ir_vocabulary" in report["llvm_passes"]["broken_deps"]
+    assert report["llvm_passes"]["broken_deps"] == []
+    assert "core" in report["observer_aperture"]["broken_deps"]

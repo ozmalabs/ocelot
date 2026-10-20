@@ -1,0 +1,203 @@
+{
+  "id": "cognition_on_params",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "description": "Data-only parameter and policy bundle for the opt-in cognition-on profile (P1.H8.2). Attaches enabled parameter/policy nodes for staleness_decay, demotion_hierarchy, core_emotions, arousal_window_coreg, capability_synthesis_bridge, decomposition_consumer, impasse_simulation_bridge, and consolidation_scheduler to agent_root.",
+  "microtheory": {
+    "name": "cognition_on_params",
+    "description": "Opt-in policy and parameter nodes for the cognition-on profile."
+  },
+  "nodes": [
+    {
+      "local_id": 1,
+      "type": "HeldDecayParams",
+      "attrs": {
+        "enabled": 1.0,
+        "lr_min": 0.15,
+        "hl_scale": 32.0,
+        "hl_min": 1.0,
+        "c0": 1024.0,
+        "refresh_thresh": 15.0,
+        "attn_thresh": 768.0,
+        "uniform": 0.0,
+        "uniform_hl": 256.0,
+        "pin_freshness": 0.0
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "HeldTierParams",
+      "attrs": {
+        "enabled": 1.0,
+        "c0": 1024.0,
+        "t_fresh": 256.0,
+        "t_gist": 16.0,
+        "k_gist": 4.0,
+        "bits_full": 8.0,
+        "bits_gist": 4.0,
+        "bits_latent": 1.0,
+        "delete_enabled": 0.0,
+        "evict_age": 64.0
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "EmotionHub",
+      "attrs": {
+        "enabled": 1.0,
+        "name": "agent_emotion_hub"
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "HeldEmotionParams",
+      "attrs": {
+        "enabled": 1.0,
+        "w_supergraph": 1.0,
+        "w_supergraph_q": 256.0,
+        "w_scale_bits": 8.0,
+        "mood_bias": 0.0,
+        "residual_thresh": 100.0,
+        "high_arousal": 800.0,
+        "mid_arousal": 400.0,
+        "low_arousal": 50.0
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "WindowOfTolerance",
+      "attrs": {
+        "enabled": 1.0,
+        "name": "agent_window",
+        "lo": -30.0,
+        "hi": 30.0,
+        "half_width": 30.0,
+        "widen_delta": 2.0,
+        "narrow_delta": 2.0,
+        "min_half_width": 5.0,
+        "safety_prior": 0.5,
+        "safety_step": 0.03,
+        "widen_count": 0.0,
+        "narrow_count": 0.0
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "CapabilitySynthesisBridgePolicy",
+      "attrs": {
+        "enabled": 1
+      }
+    },
+    {
+      "local_id": 7,
+      "type": "DecompositionConsumerPolicy",
+      "attrs": {
+        "enabled": 1.0,
+        "child_shortfall": 0.6
+      }
+    },
+    {
+      "local_id": 8,
+      "type": "ImpasseSimulationPolicy",
+      "attrs": {
+        "enabled": 1.0,
+        "horizon": 3.0,
+        "budget": 6.0,
+        "maximum_branching": 2.0,
+        "deadline_window": 4.0
+      }
+    },
+    {
+      "local_id": 9,
+      "type": "ConsolidationSchedulerPolicy",
+      "attrs": {
+        "enabled": 1.0,
+        "entry_weight": 0.6,
+        "maximum_task_demand": 0.2,
+        "cooldown_epochs": 4.0,
+        "retention_epochs": 4.0,
+        "last_cycle_epoch": -1000000.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_held_decay_params",
+      "tgt": { "local": 1 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_hier_tier_params",
+      "tgt": { "local": 2 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_emotion_hub",
+      "tgt": { "local": 3 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_emotion_params",
+      "tgt": { "local": 4 }
+    },
+    {
+      "src": { "local": 3 },
+      "type": "has_emotion_params",
+      "tgt": { "local": 4 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_window",
+      "tgt": { "local": 5 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_capability_synthesis_bridge_policy",
+      "tgt": { "local": 6 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_decomposition_consumer_policy",
+      "tgt": { "local": 7 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_impasse_simulation_policy",
+      "tgt": { "local": 8 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_consolidation_scheduler_policy",
+      "tgt": { "local": 9 }
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:cognition_on_params:agent-decay-params",
+      "src": { "type": "Agent", "var": "agent" },
+      "edge_type": "has_held_decay_params",
+      "tgt": { "type": "HeldDecayParams", "var": "dp" }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-tier-params",
+      "src": { "type": "Agent", "var": "agent" },
+      "edge_type": "has_hier_tier_params",
+      "tgt": { "type": "HeldTierParams", "var": "tp" }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-emotion-hub",
+      "src": { "type": "Agent", "var": "agent" },
+      "edge_type": "has_emotion_hub",
+      "tgt": { "type": "EmotionHub", "var": "hub" }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-emotion-params",
+      "src": { "type": "Agent", "var": "agent" },
+      "edge_type": "has_emotion_params",
+      "tgt": { "type": "HeldEmotionParams", "var": "ep" }
+    }
+  ],
+  "rules": []
+}

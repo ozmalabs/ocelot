@@ -764,7 +764,33 @@ def prepass_conversation_turn(
     return load_conversation_content_candidates(agent, candidates)
 
 
-__all__ = ["CONVERSATION_RUNTIME_MODULES", "CONVERSATION_SEED_ANCHORS",
+# Opt-in cognition-on seed profile (COGNITION_BUILD_P1_WIRING_PLAN.md §P1.H8).
+# Purely additive: conversation constants and loaders are untouched.
+COGNITION_ON_SEEDS = (
+    "dual_process_core",
+    "cognitive_supervision",
+    "staleness_decay",
+    "demotion_hierarchy",
+    "core_emotions",
+    "arousal_window_coreg",
+    "capability_collapse",
+    "capability_synthesis_bridge",
+    "decomposition_consumer",
+    "impasse_simulation_bridge",
+    "consolidation_scheduler",
+    "cognition_on_params",
+)
+
+
+def boot_cognition_on():
+    """Boot a WorldAdapter with CORE_SEEDS + COGNITION_ON_SEEDS enabled."""
+    from substrate.world_adapter import WorldAdapter
+
+    return WorldAdapter(seeds=CORE_SEEDS + COGNITION_ON_SEEDS)
+
+
+__all__ = ["COGNITION_ON_SEEDS", "CONVERSATION_RUNTIME_MODULES",
+           "CONVERSATION_SEED_ANCHORS", "boot_cognition_on",
            "load_conversation_content_candidates",
            "load_conversation_graph_content_refs",
            "load_conversation_seed_profile", "prepass_conversation_turn"]

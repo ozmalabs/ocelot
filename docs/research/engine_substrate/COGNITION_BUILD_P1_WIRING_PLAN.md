@@ -59,6 +59,12 @@ Rules:
 5. **`csb_close_on_settlement`.** Where `r.status=="supplied"` and `state.stage=="settled"`. Effects: `r.status="resolved"` and `r.resolved_order = state.achieved_order`.
 6. **`csb_close_on_ambiguity`.** Where the program now has more than one continuation. Effects: `r.status="ambiguous"`, no re-arm. Collapse's own `cc_request_synthesis_ambiguous_higher_program` handles the state.
 
+**P1.A1.1 Frozen Spec Confirmation:**
+- `cc_reset_published_outcome`, `cc_reset_active_program`, `cc_reset_effective_outcome`, and `cc_open` (all order 0, `hard_realtime`) restart from `has_root_capability_program` when `state.stage == "ready"` and `state.collapse_armed == 1` (one-shot) or after `cc_continuous_arm_requested_cycle` sees `cycle_request_epoch > completed_cycle_epoch` (continuous mode).
+- All 6 bridge rules carry `latency_class: "hard_realtime"` and `area: "general_cognition_synthesis_bridge"` so they settle in the System-1 hard sheet alongside `capability_collapse` under both `StructRulesOnly` and `DualProcess`.
+- `csb_open_request` guards against duplicate requests per epoch via `Count(Filter(N("state", "has_capability_synthesis_request"), "r", Or(Eq(A("r", "status"), L("open")), Eq(numeric("r", "request_epoch"), numeric("state", "request_epoch"))))) == 0` and excludes `override_status == "conflicting_leases"` (which is handled by `csb_open_authority_conflict`).
+- `numeric("program", "residual_quanta")` (`Plus(Attr(program, "residual_quanta"), 0)`) safely coerces missing `residual_quanta` on channel-mode programs to integer `0`.
+
 | Task | Tier | Goal | Read first | Touch | Pattern to copy | Acceptance |
 |---|---|---|---|---|---|---|
 | P1.A1.1 | T1 | Confirm the rule spec above against the generator. In particular, confirm that the reset rules (`reset_published_rule`, `reset_active_rule`, `open_rule`) restart cleanly after the bridge's re-arm. Finalise attribute names | `scripts/gen_capability_collapse_seed.py:110-400,552-700,1341-1470` | this doc (amend if needed) | — | Spec frozen |
@@ -101,6 +107,11 @@ The partition source is the parent axis's `requires_key` CapKeys. These are back
    - Effects: `ax.child_mean_saturation = Sum(children.saturation)/Count`.
 
    Whether this attribute should feed `ax.saturation` is a T1 decision. Writing `saturation` would interact with `escalation_resolve_high_confidence` (≥ 0.95) and `escalation_climb_low_confidence`. Default: write only `child_mean_saturation`, and decide in P1.H9.
+
+**P1.A2.1 Frozen Spec Confirmation:**
+- Child `capability_keys` are set to `Vec([k.name])` (a single-element list containing the child's distinguishing `CapKey.name`), and `dc_mint_child_per_key` fires only when `Count(ax -requires_key->) > 1`. Because the parent axis has ≥ 2 keys, `[k.name]` is always strictly distinct from the parent's `capability_keys` and from sibling children.
+- `dc_inherit_operator` optionally binds `child -investigated_by-> op` when the parent axis has an `investigated_by` operator and `Count(child -investigated_by->) == 0`, while `dc_mint_child_per_key` does not require an operator on the parent.
+- `dc_parent_progress_from_children` uses a value-change fixpoint guard (`Not(Eq(A("ax", "child_mean_saturation"), mean_term))`) rather than an external clock, so it works standalone and updates whenever any child's `saturation` changes, writing only `child_mean_saturation` (leaving `ax.saturation` untouched for P1.H9 evaluation).
 
 | Task | Tier | Goal | Read first | Touch | Pattern to copy | Acceptance |
 |---|---|---|---|---|---|---|
@@ -152,6 +163,11 @@ The trigger reasons are `instinct_conflict`, `near_conflict`, `low_confidence`, 
    It is **not** added as a `SystemOneCandidate`. Whether imagined candidates may become System-1 eligible is a P1.H9 question.
 4. **`isb_cancel_on_terminal`.** Copy `default_mode_cancel_content_simulation_on_interrupt`. When `ctx.status` is `committed`, or `mode.epoch > sim.deadline_epoch`, set `sim.status="cancelled"` and `cleanup_after_epoch = mode.epoch + 2` so the GWM prune rules (orders 40-43) clean up the family. Mark `req.status="cancelled"`.
 
+**P1.A4.1 Frozen Spec Confirmation:**
+- Trajectory-value Term (`score(tr)`): `MaxOver(tr -has_predicted_belief_state-> s, MaxOver(s -has_predicted_outcome-> o, o.outcome_value * o.confidence, default=0.0), default=0.0)`.
+- `isb_request_simulation` requires `ctx.status == "escalated"`, `Not(Eq(esc.isb_requested, 1))`, and `Count(esc -has_impasse_simulation->) == 0`, sets `esc.isb_requested = 1` (preventing re-minting after deadline pruning deletes `sim`), and adds `req -about_context-> mode` so `cognitive_cycle::request_is_stale` validates `req.input_epoch` and `req.deadline_epoch` against `mode.epoch`.
+- All 5 bridge rules carry `area: "impasse_simulation"` and `latency_class: "hard_realtime"` (orders 16, 16, 17, 18, 22). During a single `dual_process_tick()`, Phase 1 (`system_one_settle`) opens and seals `sim` and requests `req`; Phase 3 (`run_scoped_system_two`) runs the `soft_realtime` world-model branch expansions in area `world_model_simulation`; Phase 4 (`system_two_motor_fold`, `hard_realtime`) terminalises leaves, materialises outcomes, completes `sim`, and runs `isb_propose_imagined_candidate` to mint `ImaginedCandidate`.
+
 | Task | Tier | Goal | Read first | Touch | Pattern to copy | Acceptance |
 |---|---|---|---|---|---|---|
 | P1.A4.1 | T1 | Freeze the spec. In particular: (i) the trajectory-value Term; (ii) whether `isb_request_simulation` should also wait for `ctx.status=="escalated"` ; (iii) area and latency labels so the DualProcess plan runs each rule in the intended sheet | `seeds/default_mode_core.json:204-445,640-1000`, `seeds/generative_world_model.json:224-860`, `seeds/dual_process_core.json:337-540,667-830`, `runners/dsl/src/cognitive_cycle.rs:350-470,771-835` | this doc | — | Spec frozen |
@@ -194,6 +210,10 @@ The policy node is `ConsolidationSchedulerPolicy{enabled:0.0, entry_weight:0.6, 
    - Where `cycle.status=="completed"` and `mode.epoch >= cycle.epoch + pol.retention_epochs`.
    - Effects: `del_node cycle`, but only if no `selected_replay` ReplayTrace still points to it. Otherwise wait, because the EWM prunes the trace through `has_memory_transient`.
 
+**P1.B1.1 Frozen Spec Confirmation:**
+- Aliasing `agent -has_memory_clock-> mode` (`NetworkModeState`) with production `Agent -has_memory_clock-> NetworkModeState` has zero conflicts across all 848 seeds (no seed previously declared a production for `has_memory_clock`), and `working_memory_expire_unmaintained_slot` / `episodic_prune_expired_transient` only read `clock.epoch`.
+- Because `episodic_prioritize_one_replay_per_cycle` (`area: "memory_replay"`), `episodic_replay_*_semantic_support` (`area: "memory_consolidation"`), and `episodic_prune_expired_transient` (`area: "memory_cleanup"`) in `episodic_working_memory_core.json` have `latency_class: "background"`, `consolidation_scheduler` also seeds `SystemTwoTaskSet` nodes for those three areas on `agent_root` and `csch_mint_offline_cycle` mints a `SystemTwoEscalation` recruiting them (pruned by `csch_prune_completed_cycle_request` before `csch_prune_completed_cycle` deletes `cycle`) so replay, consolidation, and transient cleanup execute under `CyclePlan::DualProcess`.
+
 | Task | Tier | Goal | Read first | Touch | Pattern to copy | Acceptance |
 |---|---|---|---|---|---|---|
 | P1.B1.1 | T1 | Freeze: whether aliasing the memory clock to `NetworkModeState` is acceptable (a single clock), or whether to mint a dedicated `MemoryClock` advanced from `mode.epoch`; check existing productions for `has_memory_clock` | `seeds/episodic_working_memory_core.json` (productions, :349-470, :839-880), `seeds/default_mode_core.json:13-100,204-286` | this doc | — | Spec frozen |
@@ -232,6 +252,21 @@ The seed set:
 `mood_r1` is excluded unless P1.H8.1 shows its `mood_r1_task` dependency is light.
 
 New seed `cognition_on_params` holds only nodes and edges. They are the opt-in params and policy nodes with `enabled:1`, attached to the agent root: `HeldDecayParams`, `HeldTierParams`, `HeldEmotionParams`, the window-of-tolerance nodes, and the four P1 bridge policies set to enabled. Exact attribute schemas come from each seed's measurement adapter.
+
+### P1.H8.1 Opt-in Node Schema Inventory
+
+| Seed | Node Type | Edge from `agent_root` | Producer Reference | Attributes |
+|---|---|---|---|---|
+| `staleness_decay` | `HeldDecayParams` | `has_held_decay_params` | `scripts/doom_held_prediction_measure.py:72-75,117-118` | `enabled: 1.0, lr_min: 0.15, hl_scale: 32.0, hl_min: 1.0, c0: 1024.0, refresh_thresh: 15.0, attn_thresh: 768.0, uniform: 0.0, uniform_hl: 256.0, pin_freshness: 0.0` |
+| `demotion_hierarchy` | `HeldTierParams` | `has_hier_tier_params` | `scripts/demotion_hierarchy_measure.py:46-50,67-68` | `enabled: 1.0, c0: 1024.0, t_fresh: 256.0, t_gist: 16.0, k_gist: 4.0, bits_full: 8.0, bits_gist: 4.0, bits_latent: 1.0, delete_enabled: 0.0, evict_age: 64.0` |
+| `core_emotions` | `HeldEmotionParams` (plus `EmotionHub`) | `has_emotion_params` (and `has_emotion_hub` -> `EmotionHub` -`has_emotion_params`->) | `scripts/core_emotions_measure.py:48-51,113-121` | `enabled: 1.0, w_supergraph: 1.0, w_supergraph_q: 256.0, w_scale_bits: 8.0, mood_bias: 0.0, residual_thresh: 100.0, high_arousal: 800.0, mid_arousal: 400.0, low_arousal: 50.0` |
+| `arousal_window_coreg` | `WindowOfTolerance` | `has_window` | `worlds/coreg_dyad_world.py:91-97` | `enabled: 1.0, name: "agent_window", lo: -30.0, hi: 30.0, half_width: 30.0, widen_delta: 2.0, narrow_delta: 2.0, min_half_width: 5.0, safety_prior: 0.5, safety_step: 0.03, widen_count: 0.0, narrow_count: 0.0` |
+| `capability_synthesis_bridge` | `CapabilitySynthesisBridgePolicy` | `has_capability_synthesis_bridge_policy` | `seeds/capability_synthesis_bridge.json` | `enabled: 1` |
+| `decomposition_consumer` | `DecompositionConsumerPolicy` | `has_decomposition_consumer_policy` | `seeds/decomposition_consumer.json` | `enabled: 1.0, child_shortfall: 0.6` |
+| `impasse_simulation_bridge` | `ImpasseSimulationPolicy` | `has_impasse_simulation_policy` | `seeds/impasse_simulation_bridge.json` | `enabled: 1.0, horizon: 3.0, budget: 6.0, maximum_branching: 2.0, deadline_window: 4.0` |
+| `consolidation_scheduler` | `ConsolidationSchedulerPolicy` | `has_consolidation_scheduler_policy` | `seeds/consolidation_scheduler.json` | `enabled: 1.0, entry_weight: 0.6, maximum_task_demand: 0.2, cooldown_epochs: 4.0, retention_epochs: 4.0, last_cycle_epoch: -1000000.0` |
+
+**Decision on `mood_r1`:** Excluded from `COGNITION_ON_SEEDS`. While `mood_r1_task` is small (4 rules, 0 dependencies), it is a specific 1-offer accept/decline trial fixture (`MoodTask`) rather than a general-purpose agent state subsystem, whereas `core_emotions` already carries `mood_bias` directly on `HeldEmotionParams`.
 
 | Task | Tier | Goal | Read first | Touch | Acceptance |
 |---|---|---|---|---|---|

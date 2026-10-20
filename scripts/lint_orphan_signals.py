@@ -67,15 +67,15 @@ _CODE_READ_PATTERNS = (
 )
 
 
-def _walk_term_reads(node: object, reads: set[str]) -> None:
+def _walk_term_reads(node: object, reads: set[tuple[str, str]]) -> None:
     if isinstance(node, dict):
         t = node.get("type")
         if t == "Attr" and isinstance(node.get("key"), str):
-            reads.add(node["key"])
+            reads.add(("attr", node["key"]))
         elif t in ("Neighbours", "InNeighbours", "MapNeighbours") and isinstance(node.get("edge_type"), str):
-            reads.add(node["edge_type"])
+            reads.add(("edge", node["edge_type"]))
         elif t == "NodesOfType" and isinstance(node.get("node_type"), str):
-            reads.add(node["node_type"])
+            reads.add(("node_type", node["node_type"]))
         for v in node.values():
             _walk_term_reads(v, reads)
     elif isinstance(node, list):
@@ -83,18 +83,22 @@ def _walk_term_reads(node: object, reads: set[str]) -> None:
             _walk_term_reads(item, reads)
 
 
-def _extract_seed_writes_and_reads(seed_dir: Path) -> tuple[dict[str, dict[str, set[str]]], set[str]]:
-    writes: dict[str, dict[str, set[str]]] = {}
-    reads: set[str] = set()
+def _extract_seed_writes_and_reads(
+    seed_dir: Path,
+    exclude_seeds: set[str] | None = None,
+) -> tuple[dict[tuple[str, str], set[str]], set[tuple[str, str]]]:
+    writes: dict[tuple[str, str], set[str]] = {}
+    reads: set[tuple[str, str]] = set()
+    excluded = exclude_seeds or set()
 
     def record_write(kind: str, name: str, writer: str) -> None:
         if not name:
             return
-        entry = writes.setdefault(name, {"kinds": set(), "writers": set()})
-        entry["kinds"].add(kind)
-        entry["writers"].add(writer)
+        writes.setdefault((kind, name), set()).add(writer)
 
     for path in sorted(seed_dir.glob("*.json")):
+        if path.stem in excluded:
+            continue
         try:
             manifest = json.loads(path.read_text(encoding="utf-8"))
         except Exception:
@@ -102,6 +106,8 @@ def _extract_seed_writes_and_reads(seed_dir: Path) -> tuple[dict[str, dict[str, 
         if not isinstance(manifest, dict):
             continue
         seed_id = str(manifest.get("id") or path.stem)
+        if seed_id in excluded:
+            continue
         for rule in manifest.get("rules", ()) or ():
             if not isinstance(rule, dict):
                 continue
@@ -110,7 +116,7 @@ def _extract_seed_writes_and_reads(seed_dir: Path) -> tuple[dict[str, dict[str, 
 
             for triple in rule.get("match", ()) or ():
                 if isinstance(triple, list) and len(triple) >= 2 and isinstance(triple[1], str):
-                    reads.add(triple[1])
+                    reads.add(("edge", triple[1]))
 
             _walk_term_reads(rule.get("where"), reads)
 
@@ -164,7 +170,7 @@ def _load_allowlist(allowlist_path: Path | None) -> dict[str, str]:
     try:
         data = json.loads(allowlist_path.read_text(encoding="utf-8"))
         if isinstance(data, dict):
-            return {str(k): str(v) for k, v in data.items() if not str(k).startswith("_")}
+            return {str(k): str(v) for k, v in data.items() if str(k) != "_comment"}
     except Exception:
         pass
     return {}
@@ -174,20 +180,26 @@ def scan_orphan_signals(
     root: Path = ROOT,
     allowlist_path: Path | None = DEFAULT_ALLOWLIST,
     include_code_reads: bool = True,
+    exclude_seeds: set[str] | None = None,
 ) -> dict[str, dict]:
     """Return deterministic mapping of orphan signal names to metadata."""
-    writes, reads = _extract_seed_writes_and_reads(root / "seeds")
-    if include_code_reads:
-        reads |= _extract_code_reads(root)
+    writes, seed_reads = _extract_seed_writes_and_reads(root / "seeds", exclude_seeds=exclude_seeds)
+    code_reads = _extract_code_reads(root) if include_code_reads else set()
     allowlist = _load_allowlist(allowlist_path)
 
-    orphans: dict[str, dict] = {}
-    for name in sorted(writes.keys()):
-        if name in reads:
+    grouped: dict[str, dict[str, set[str]]] = {}
+    for (kind, name), writers in writes.items():
+        if (kind, name) in seed_reads or name in code_reads:
             continue
-        kinds = sorted(writes[name]["kinds"])
+        entry = grouped.setdefault(name, {"kinds": set(), "writers": set()})
+        entry["kinds"].add(kind)
+        entry["writers"].update(writers)
+
+    orphans: dict[str, dict] = {}
+    for name in sorted(grouped.keys()):
+        kinds = sorted(grouped[name]["kinds"])
         kind_str = "/".join(kinds)
-        writers = sorted(writes[name]["writers"])
+        writers = sorted(grouped[name]["writers"])
         item: dict[str, object] = {
             "kind": kind_str,
             "writers": writers,

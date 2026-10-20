@@ -1,0 +1,1296 @@
+{
+  "id": "capability_synthesis_bridge",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [
+    "capability_collapse"
+  ],
+  "area": "general_cognition",
+  "description": "Opt-in integer-native bridge turning CapabilityCollapseState.synthesis_requested into explicit CapabilitySynthesisRequest and SelfConcern nodes, and re-arming collapse when a unique higher-order CapabilityProgram is supplied.",
+  "microtheory": {
+    "name": "capability_synthesis_bridge",
+    "description": "Unresolved capability boundaries file explicit synthesis requests on the SelfConcern spine and re-arm collapse automatically once a unique higher-order CapabilityProgram continuation arrives."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CapabilitySynthesisBridgePolicy",
+      "attrs": {
+        "enabled": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_capability_synthesis_bridge_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:capability_synthesis_bridge:has_capability_synthesis_bridge_policy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_capability_synthesis_bridge_policy",
+      "tgt": {
+        "type": "CapabilitySynthesisBridgePolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:capability_synthesis_bridge:has_capability_synthesis_request",
+      "src": {
+        "type": "CapabilityCollapseState",
+        "var": "src"
+      },
+      "edge_type": "has_capability_synthesis_request",
+      "tgt": {
+        "type": "CapabilitySynthesisRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:capability_synthesis_bridge:requests_higher_program_for",
+      "src": {
+        "type": "CapabilitySynthesisRequest",
+        "var": "src"
+      },
+      "edge_type": "requests_higher_program_for",
+      "tgt": {
+        "type": "CapabilityProgram",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:capability_synthesis_bridge:has_self_concern",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_self_concern",
+      "tgt": {
+        "type": "SelfConcern",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:capability_synthesis_bridge:about_request",
+      "src": {
+        "type": "SelfConcern",
+        "var": "src"
+      },
+      "edge_type": "about_request",
+      "tgt": {
+        "type": "CapabilitySynthesisRequest",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "csb_open_request",
+      "area": "general_cognition_synthesis_bridge",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Mint an open CapabilitySynthesisRequest and SelfConcern when collapse is unresolved and requests synthesis.",
+      "match": [
+        [
+          "agent",
+          "has_capability_synthesis_bridge_policy",
+          "policy"
+        ],
+        [
+          "state",
+          "has_active_capability_program",
+          "program"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "synthesis_requested"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "key": "stage"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unresolved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "override_status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "conflicting_leases"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "edge_type": "has_capability_synthesis_request",
+                  "any_type": false
+                },
+                "var_name": "r",
+                "predicate": {
+                  "type": "Or",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "r"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "open"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "r"
+                            },
+                            "key": "request_epoch"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        ]
+                      },
+                      "b": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "state"
+                            },
+                            "key": "request_epoch"
+                          },
+                          {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "r",
+          "CapabilitySynthesisRequest",
+          {
+            "status": "open",
+            "reason": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "unresolved_reason"
+              }
+            },
+            "request_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "state"
+                    },
+                    "key": "request_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "order": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "program"
+                    },
+                    "key": "order"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "residual_quanta": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "program"
+                    },
+                    "key": "residual_quanta"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "boundary_quanta": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "program"
+                    },
+                    "key": "capability_boundary_quanta"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "state",
+          "has_capability_synthesis_request",
+          "r"
+        ],
+        [
+          "add_edge",
+          "r",
+          "requests_higher_program_for",
+          "program"
+        ],
+        [
+          "add_node",
+          "sc",
+          "SelfConcern",
+          {
+            "status": "noted",
+            "source": "capability_collapse",
+            "kind": "capability_synthesis",
+            "content": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "unresolved_reason"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_self_concern",
+          "sc"
+        ],
+        [
+          "add_edge",
+          "sc",
+          "about_request",
+          "r"
+        ]
+      ]
+    },
+    {
+      "name": "csb_open_authority_conflict",
+      "area": "general_cognition_synthesis_bridge",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "File a conflicting_leases synthesis request and SelfConcern without re-arming.",
+      "match": [
+        [
+          "agent",
+          "has_capability_synthesis_bridge_policy",
+          "policy"
+        ],
+        [
+          "state",
+          "has_active_capability_program",
+          "program"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "synthesis_requested"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "key": "override_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "conflicting_leases"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "edge_type": "has_capability_synthesis_request",
+                  "any_type": false
+                },
+                "var_name": "r",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r"
+                    },
+                    "key": "reason"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "conflicting_leases"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "r",
+          "CapabilitySynthesisRequest",
+          {
+            "status": "open",
+            "reason": "conflicting_leases",
+            "request_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "state"
+                    },
+                    "key": "request_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "order": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "program"
+                    },
+                    "key": "order"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "residual_quanta": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "program"
+                    },
+                    "key": "residual_quanta"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            },
+            "boundary_quanta": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "program"
+                    },
+                    "key": "capability_boundary_quanta"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "state",
+          "has_capability_synthesis_request",
+          "r"
+        ],
+        [
+          "add_edge",
+          "r",
+          "requests_higher_program_for",
+          "program"
+        ],
+        [
+          "add_node",
+          "sc",
+          "SelfConcern",
+          {
+            "status": "noted",
+            "source": "capability_collapse",
+            "kind": "capability_synthesis",
+            "content": "conflicting_leases"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_self_concern",
+          "sc"
+        ],
+        [
+          "add_edge",
+          "sc",
+          "about_request",
+          "r"
+        ]
+      ]
+    },
+    {
+      "name": "csb_supplied_rearm_oneshot",
+      "area": "general_cognition_synthesis_bridge",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Re-arm one-shot collapse when a unique higher-order CapabilityProgram is supplied.",
+      "match": [
+        [
+          "agent",
+          "has_capability_synthesis_bridge_policy",
+          "policy"
+        ],
+        [
+          "state",
+          "has_capability_synthesis_request",
+          "r"
+        ],
+        [
+          "r",
+          "requests_higher_program_for",
+          "program"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "reason"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "conflicting_leases"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "program"
+                },
+                "edge_type": "continues_to_higher_order_capability_program",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "state"
+                    },
+                    "key": "continuous_enabled"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "r",
+          "status",
+          "supplied"
+        ],
+        [
+          "set_attr",
+          "state",
+          "stage",
+          "ready"
+        ],
+        [
+          "set_attr",
+          "state",
+          "collapse_armed",
+          1
+        ],
+        [
+          "set_attr",
+          "state",
+          "request_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "state"
+                      },
+                      "key": "request_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "csb_supplied_rearm_continuous",
+      "area": "general_cognition_synthesis_bridge",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Advance cycle_request_epoch in continuous mode when a unique higher-order CapabilityProgram is supplied.",
+      "match": [
+        [
+          "agent",
+          "has_capability_synthesis_bridge_policy",
+          "policy"
+        ],
+        [
+          "state",
+          "has_capability_synthesis_request",
+          "r"
+        ],
+        [
+          "r",
+          "requests_higher_program_for",
+          "program"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "reason"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "conflicting_leases"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "program"
+                },
+                "edge_type": "continues_to_higher_order_capability_program",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "continuous_enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "completed_cycle_epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "request_epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "r",
+          "status",
+          "supplied"
+        ],
+        [
+          "set_attr",
+          "state",
+          "cycle_request_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "state"
+                          },
+                          "key": "cycle_request_epoch"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "state"
+                          },
+                          "key": "completed_cycle_epoch"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "csb_close_on_settlement",
+      "area": "general_cognition_synthesis_bridge",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Mark a supplied synthesis request resolved once the re-armed collapse settles.",
+      "match": [
+        [
+          "agent",
+          "has_capability_synthesis_bridge_policy",
+          "policy"
+        ],
+        [
+          "state",
+          "has_capability_synthesis_request",
+          "r"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "supplied"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "key": "stage"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "settled"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "r",
+          "status",
+          "resolved"
+        ],
+        [
+          "set_attr",
+          "r",
+          "resolved_order",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "state"
+                  },
+                  "key": "achieved_order"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "csb_close_on_ambiguity",
+      "area": "general_cognition_synthesis_bridge",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Mark an open synthesis request ambiguous without re-arming when multiple continuations are attached.",
+      "match": [
+        [
+          "agent",
+          "has_capability_synthesis_bridge_policy",
+          "policy"
+        ],
+        [
+          "state",
+          "has_capability_synthesis_request",
+          "r"
+        ],
+        [
+          "r",
+          "requests_higher_program_for",
+          "program"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "program"
+                },
+                "edge_type": "continues_to_higher_order_capability_program",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "r",
+          "status",
+          "ambiguous"
+        ]
+      ]
+    }
+  ]
+}
