@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCELOT Substrate Studio — Interactive Cognitive Architecture & Experiments</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">&Omega;</div>
+      <div>
+        <h1>OCELOT Substrate Studio</h1>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 2px;">
+          <span class="badge">WebAssembly Target</span>
+          <span class="badge success" id="stat-status">Active</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Execution Target Toggle & Cognitive Loop -->
+    <div class="header-controls">
+      <div class="mode-toggle-group">
+        <button id="mode-main" class="mode-toggle-btn active" title="Direct synchronous execution on Main Thread with browser tool callbacks">Main Thread</button>
+        <button id="mode-worker" class="mode-toggle-btn" title="Autonomous asynchronous cognitive loop inside a dedicated Web Worker">Web Worker</button>
+      </div>
+
+      <div class="btn-row" style="align-items: center;">
+        <button id="btn-single-tick" class="btn" title="Advance cognitive rules loop by 1 step">Step Tick</button>
+        <button id="btn-toggle-loop" class="btn primary" title="Run autonomous cognitive loop">▶ Run Loop</button>
+        <select id="select-hz" style="width: 85px; font-size: 0.75rem; padding: 0.35rem;" title="Loop frequency">
+          <option value="1">1 Hz</option>
+          <option value="10">10 Hz</option>
+          <option value="20" selected>20 Hz</option>
+          <option value="50">50 Hz</option>
+        </select>
+      </div>
+
+      <!-- Live Metrics Ribbon -->
+      <div class="metrics-ribbon">
+        <div class="metric-item"><span>|V| Nodes:</span><b id="stat-nodes">0</b></div>
+        <div class="metric-item"><span>|E| Edges:</span><b id="stat-edges">0</b></div>
+        <div class="metric-item"><span>|R| Rules:</span><b id="stat-rules">0</b></div>
+        <div class="metric-item"><span>Ticks:</span><b id="stat-ticks">0</b></div>
+        <div class="metric-item"><span>Latency:</span><b id="stat-latency">-</b></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App Layout -->
+  <div class="app-container">
+    <!-- Left Sidebar: Controls & Lab -->
+    <aside class="sidebar">
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="experiments">🧪 Experiments</button>
+        <button class="tab-btn" data-tab="graph">🕸️ Graph Explorer</button>
+        <button class="tab-btn" data-tab="rules">📜 Rule IDE</button>
+        <button class="tab-btn" data-tab="terms">⚡ Term REPL</button>
+        <button class="tab-btn" data-tab="tools">🔌 Tools</button>
+        <button class="tab-btn" data-tab="telemetry">📊 Telemetry</button>
+      </nav>
+
+      <!-- TAB 1: Experiments Lab -->
+      <div id="tab-experiments" class="tab-content tab-pane">
+        <div class="card">
+          <div class="form-group">
+            <label>Select Experiment:</label>
+            <select id="exp-select"></select>
+          </div>
+
+          <div>
+            <h3 id="exp-title" style="margin-bottom: 0.25rem;">Experiment Title</h3>
+            <span class="badge" id="exp-badge">Category</span>
+          </div>
+
+          <p class="description" id="exp-description">Experiment description goes here...</p>
+          <div style="font-size: 0.72rem; color: var(--text-dim);" id="exp-citation">Citation</div>
+
+          <div class="form-group" style="margin-top: 0.5rem;">
+            <label>Test Condition / Preset:</label>
+            <select id="exp-preset-select"></select>
+          </div>
+
+          <!-- Stimulus Canvas Preview -->
+          <canvas id="exp-canvas" class="exp-preview-canvas"></canvas>
+
+          <div class="btn-row">
+            <button id="btn-run-exp" class="btn primary" style="flex: 1;">⚡ Run Experiment Round</button>
+            <button id="btn-play-sound" class="btn" style="display: none;">🔊 Synthesize Tone</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Graph Explorer -->
+      <div id="tab-graph" class="tab-content tab-pane" style="display: none;">
+        <div class="card">
+          <h3>Add Typed Node (G)</h3>
+          <div class="form-group">
+            <label>Node Type:</label>
+            <input type="text" id="in-node-type" value="Concept" placeholder="e.g. Concept, SensoryInput, MotorAction">
+          </div>
+          <div class="form-group">
+            <label>Attributes (JSON):</label>
+            <input type="text" id="in-node-attrs" value='{"name": "agent_goal", "priority": 1.0}' placeholder='{"key": "val"}'>
+          </div>
+          <button id="btn-add-node" class="btn">Add Node to Graph</button>
+        </div>
+
+        <div class="card">
+          <h3>Connect Directed Edge with Admissibility Gate (C)</h3>
+          <p class="description">Edges are validated against Grammar &Gamma;. Inadmissible edges are blocked by the C admissibility gate.</p>
+          <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 0.5rem;">
+            <div class="form-group">
+              <label>Src ID:</label>
+              <input type="number" id="in-edge-src" value="0">
+            </div>
+            <div class="form-group">
+              <label>Edge Type:</label>
+              <input type="text" id="in-edge-type" value="projects_to" placeholder="e.g. projects_to">
+            </div>
+            <div class="form-group">
+              <label>Tgt ID:</label>
+              <input type="number" id="in-edge-tgt" value="1">
+            </div>
+          </div>
+          <button id="btn-add-edge" class="btn">Insert Edge & Verify C</button>
+        </div>
+
+        <div class="card">
+          <h3>Snapshot & Persistence</h3>
+          <button id="btn-export-snapshot" class="btn">Download Graph Snapshot (JSON)</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: Rule IDE -->
+      <div id="tab-rules" class="tab-content tab-pane" style="display: none;">
+        <div class="card">
+          <h3>Author Rewrite Rule</h3>
+          <p class="description">Declare graph rewrite rules in wire JSON format. Rules specify match pattern, where guard, and effects.</p>
+          <div class="form-group">
+            <textarea id="in-rule-json" class="code-editor">{
+  "name": "stimulus_to_motor_response",
+  "match_type": "SensoryInput",
+  "match": [],
+  "where": {
+    "type": "Gt",
+    "a": { "type": "Attr", "node": { "type": "Var", "name": "s" }, "key": "intensity" },
+    "b": { "type": "Lit", "value": 0.5 }
+  },
+  "effects": [
+    ["add_node", "m", "MotorAction", { "command": "rapid_avoidance" }],
+    ["add_edge", "s", "triggers", "m", {}]
+  ]
+}</textarea>
+          </div>
+          <button id="btn-add-rule" class="btn primary">Compile & Insert Rule</button>
+        </div>
+
+        <div class="card">
+          <h3>Active Ruleset</h3>
+          <div id="rules-list"></div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Term Evaluator -->
+      <div id="tab-terms" class="tab-content tab-pane" style="display: none;">
+        <div class="card">
+          <h3>AST Term Evaluator</h3>
+          <div class="form-group">
+            <label>Load Expression Preset:</label>
+            <select id="select-term-preset">
+              <option value="arithmetic">Arithmetic: (30 + 12) * 2</option>
+              <option value="logic">Boolean Logic: (100 > 50) and (not false)</option>
+              <option value="graph_lookup">Graph Query: Count(NodesOfType('Concept'))</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Term JSON:</label>
+            <textarea id="in-term-json" class="code-editor">{
+  "type": "Times",
+  "items": [
+    { "type": "Plus", "items": [{ "type": "Lit", "value": 30 }, { "type": "Lit", "value": 12 }] },
+    { "type": "Lit", "value": 2 }
+  ]
+}</textarea>
+          </div>
+          <button id="btn-eval-term" class="btn primary">Evaluate Expression</button>
+          <pre id="term-result-box" style="background: var(--bg-dark); padding: 0.75rem; border-radius: 0.375rem; font-family: var(--font-mono); font-size: 0.8rem; border: 1px solid var(--border);">Result: -</pre>
+        </div>
+      </div>
+
+      <!-- TAB 5: Tools Interop -->
+      <div id="tab-tools" class="tab-content tab-pane" style="display: none;">
+        <div class="card">
+          <h3>Browser Native Tool Registration</h3>
+          <p class="description">Equip the Substrate with JavaScript callbacks that cognitive rewrite rules and IR terms can invoke directly.</p>
+          <div class="btn-row">
+            <button id="btn-register-audio-tool" class="btn">Register Web Audio Synth</button>
+            <button id="btn-register-canvas-tool" class="btn">Register Canvas Drawer</button>
+            <button id="btn-test-tools" class="btn primary">Test Tool via Substrate IR</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Registered Native Tools</h3>
+          <div id="tools-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- TAB 6: Telemetry -->
+      <div id="tab-telemetry" class="tab-content tab-pane" style="display: none;">
+        <div class="card">
+          <h3>Substrate Engine Observability</h3>
+          <div class="btn-row">
+            <button id="btn-refresh-telemetry" class="btn">Refresh Observability Counters</button>
+          </div>
+          <pre id="telemetry-content" style="background: var(--bg-dark); padding: 0.75rem; border-radius: 0.375rem; font-family: var(--font-mono); font-size: 0.75rem; max-height: 400px; overflow-y: auto; border: 1px solid var(--border);"></pre>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Stage: Live Graph Simulation (2D / 3D) -->
+    <main class="stage">
+      <div class="stage-overlay">
+        <div class="mode-toggle-group" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);">
+          <button id="view-mode-2d" class="mode-toggle-btn active" title="2D physics spring-layout canvas">2D Canvas</button>
+          <button id="view-mode-3d" class="mode-toggle-btn" title="Three.js 3D WebGL neural space with energy pulses">3D WebGL</button>
+        </div>
+        <button id="btn-toggle-orbit" class="btn" style="display: none; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);" title="Toggle cinematic 3D camera auto-orbit">🌐 Auto-Orbit</button>
+        <button id="btn-reset-view" class="btn" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px);">Center / Reset View</button>
+      </div>
+
+      <!-- Node Inspector Floating Card -->
+      <div id="inspector-panel" class="inspector-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+          <span style="font-weight: 600; font-size: 0.8rem; text-transform: uppercase;">Node Inspector</span>
+          <button id="btn-inspector-close" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem;">&times;</button>
+        </div>
+        <div id="inspector-content"></div>
+      </div>
+
+      <!-- 2D Graph Canvas -->
+      <canvas id="graph-canvas" class="graph-canvas"></canvas>
+
+      <!-- 3D WebGL Graph Container -->
+      <div id="graph-3d-container" style="display: none; width: 100%; height: 100%; position: absolute; inset: 0;"></div>
+
+      <!-- Family Legend -->
+      <div class="stage-legend" id="stage-legend"></div>
+    </main>
+  </div>
+
+  <!-- Bottom Drawer: Real-time Event Log -->
+  <footer class="log-drawer">
+    <div class="log-drawer-head">
+      <span>Substrate Activity Stream</span>
+      <button id="btn-clear-log" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.75rem;">Clear</button>
+    </div>
+    <div class="log-stream" id="log-stream"></div>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
