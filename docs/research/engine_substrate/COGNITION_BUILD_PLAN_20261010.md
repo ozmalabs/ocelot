@@ -8,10 +8,12 @@ Each detailed plan breaks its phase into tasks using the §3 template, records t
 
 | Phase | Detailed plan | Status |
 |---|---|---|
-| 0 — Baseline and guardrails | [`COGNITION_BUILD_P0_BASELINE_PLAN.md`](COGNITION_BUILD_P0_BASELINE_PLAN.md) | Ready to execute |
-| 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Ready after the P0 gate. T1 spec tasks open each work item |
-| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Ready after the P1 gate. Spec tasks may start earlier |
-| 3–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
+| 0 — Baseline and guardrails | [`COGNITION_BUILD_P0_BASELINE_PLAN.md`](COGNITION_BUILD_P0_BASELINE_PLAN.md) | Executed (`d83fa140`); baseline in `COGNITION_BUILD_BASELINE.md` |
+| 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Executed (`5b52a38b`). Results in `COGNITION_BUILD_P1_RESULTS.md`; these are mechanism tests on fixtures, not capability evidence |
+| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`) |
+| 3 — Extended-thinking executor | Planned and executed in a separate session | In progress |
+| 4–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
+| **Track I — Process understanding and invention** | [`COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md`](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) | Runs in parallel with P3–P6. Its levels L1–L7 run from understanding and invention up to measurable beyond-human criteria. I0 (the evaluation battery and a `ProcessSchema` decision shared with P3) comes first |
 
 ### Amendments from detailing (2026-10-10)
 
@@ -65,6 +67,7 @@ These were found while detailing Phases 0–2. They override the §4 tables belo
 | **F. Social & language** | ToM unification, recursive ToM, imitation | §4 ToM/imitation rows |
 | **G. Affect & control** | Reappraisal, response inhibition, dual-process status | §4 executive/emotion rows |
 | **H. Integration & evaluation** | Cognition-on profile, orphan-signal lint, coverage gaps, pre-registered phase evaluations | §6.7, §7 |
+| **I. Process understanding & invention** | Process schema and effect fingerprints; invention algebra; invariant walls; lifting and library learning; lifted induction and experiment design; explain-and-rebuild; goal-directed and representation invention; social acquisition; meta-invention. Gated by the Process Mastery Battery against human baselines | Track I doc |
 
 ## 3. How to break work items into tasks (contract for the frontier model)
 
@@ -204,6 +207,10 @@ P2 (C1,C2 Rust; C3,C4,A5 seed) ────────────────�
 P4: D2 ► D3 ► D4 ► D5 ;  C5 needs P2.C4 ;  E1 needs P1.A4 + P3.A6 ; E2 needs E1
 P5 items independent (E4 benefits from E1; F2 after F1)
 P6: D7 independent ; F3 needs P5.F1 ; B2 needs P1.B1
+Track I: I0 ─► I1 ─► I2 ─► I3 ; I1 ─► I4 ; I3+I4 ─► I5 ─► I6 ─► I7
+  coupling: I0.4 ProcessSchema decision shared with P3 ; P3.A6 consumes I5.2 targeted invention ;
+            I2.2/I3.2 run in the P1.B1/P6.B2 offline cycle ; I4.3 supplies the VOI that P2.A5 funding lacks ;
+            I5.3 needs P4.C5 ; I5.4 needs P4.D4 ; I6.2 extends P6.F3
 ```
 
 ## 7. Risks
@@ -213,4 +220,5 @@ P6: D7 independent ; F3 needs P5.F1 ; B2 needs P1.B1
 - **Motivated relaxation:** the A6 loop could relax tolerances to dodge residual, the same pathology as `af_relax_chosen`. P2.C4's VOI requirement and P3.A6's bound are mandatory, not optional.
 - **Boot cost:** the cognition-on profile adds seeds, so boot time is recorded at P1.H8 and checked at each later gate.
 - **Disk:** Rust builds need several GB free. Check `df -h /` before building.
-- **Overclaiming:** each phase's pre-registration decides "done" for capability claims, not test greenness alone.
+- **Overclaiming:** each phase's pre-registration decides "done" for capability claims, not test greenness alone. Results on deterministic fixtures (such as Phase 1's 1.0 vs 0.0) show only that a mechanism exists. Track I's claims at and beyond human level require held-out instances and human baselines (Track I §0 and §6).
+- **Self-modification (Track I L7):** a loop that authors new invention operators changes the agent's own machinery. It goes through `adoption_safety`, human-gated criterion proposals and the future-manifold commit boundary.
