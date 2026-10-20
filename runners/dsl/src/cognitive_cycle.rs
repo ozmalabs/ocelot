@@ -555,8 +555,9 @@ fn is_unlabelled_legacy_rule(rule: &crate::rewrite::RewriteRule) -> bool {
 /// LEGACY (UNLABELLED) SETTLEMENT INSIDE THE DUAL-PROCESS CYCLE.
 ///
 /// `CyclePlan::Default` selects `DualProcess` whenever the graph holds an
-/// enabled `DualProcessPolicy`, and `dual_process_core` is a core seed, so
-/// every default boot takes this plan.  Before this pass existed, a rule
+/// enabled `DualProcessPolicy` (installed when the optional core seed
+/// `dual_process_core` is loaded; see `substrate/boot_core.py`).  Before
+/// this pass existed, a rule
 /// with no `latency_class` and no `area` matched neither the hard sheet nor
 /// any admitted System-2 area mask and was STARVED -- not deferred: no
 /// escalation could ever name its (empty) area.  The intended contract is
