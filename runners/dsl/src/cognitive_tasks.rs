@@ -11,7 +11,7 @@ use crate::value::Value;
 use rustc_hash::FxHashMap;
 use std::collections::VecDeque;
 use std::sync::{mpsc, Arc, Mutex};
-use std::time::Instant;
+use crate::clock::Instant;
 
 #[derive(Clone, Debug)]
 pub(crate) struct TaskSpec {

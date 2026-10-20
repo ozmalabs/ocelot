@@ -16,6 +16,7 @@ use crate::sym::{Interner, Sym};
 use crate::term::{free_vars, ConceptResolver, TermArena, TermIdx};
 use crate::value::Value;
 use rustc_hash::{FxHashMap, FxHashSet};
+use crate::clock::Instant;
 use smallvec::SmallVec;
 
 /// Raised when C rejects a proposed edge. Carries the discriminated
@@ -41,9 +42,9 @@ pub struct Substrate {
     pub graph: TypedGraph,
     /// Process-unique namespace for process-global scale-audit rule IDs.
     rule_audit_store_id: u64,
-    pub(crate) interner: Interner,
+    pub interner: Interner,
     pub(crate) checker: ConsistencyChecker,
-    pub(crate) terms: TermArena,
+    pub terms: TermArena,
     pub(crate) concepts: ConceptResolver,
     /// Phase 7 observability — incremented on every mutation /
     /// admissibility check / eval, queryable via `counters()`.
@@ -53,7 +54,7 @@ pub struct Substrate {
     /// through `graph_to_dict` yet — that's an explicit choice, since
     /// rules can reference TermIdx in `self.terms`, and round-tripping
     /// the arena is a Phase-8 concern.
-    pub(crate) rules: Vec<crate::rewrite::RewriteRule>,
+    pub rules: Vec<crate::rewrite::RewriteRule>,
     /// Monotonic allocator for stable `RuleUid`s. UIDs are checkpointed on
     /// rules; import advances this past the largest restored identity.
     next_rule_uid: u64,
@@ -108,7 +109,6 @@ pub struct Substrate {
     /// JIT'd where-clauses, indexed parallel to `rules`. `None` means
     /// the where-clause used a Term variant the JIT doesn't handle yet
     /// — matcher falls back to the interpreter for those rules.
-    #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
     rule_where_jit: Vec<Option<crate::jit::CompiledWhere>>,
 
     /// **Semi-naive matching cursors**. Per-rule, per-edge-type cursor
@@ -852,7 +852,63 @@ pub struct StagedRulePatch {
     inverse_clause: Value,
 }
 
+impl Default for Substrate {
+    fn default() -> Self {
+        Self::empty()
+    }
+}
+
 impl Substrate {
+    pub fn empty() -> Self {
+        Self::new(ConsistencyChecker::new(crate::grammar::Grammar::new()))
+    }
+
+    /// Evaluate a Term represented as JSON within this Substrate's graph and arena context.
+    /// Resets the term arena snapshot afterwards so temporary evaluation terms are freed.
+    pub fn evaluate_json(
+        &mut self,
+        term: &serde_json::Value,
+        env: Option<&serde_json::Value>,
+    ) -> Result<serde_json::Value, String> {
+        let snapshot = self.terms.nodes.len();
+        let idx = match crate::jsonio::term_from_json(term, &mut self.terms, &mut self.interner) {
+            Ok(idx) => idx,
+            Err(err) => {
+                self.terms.nodes.truncate(snapshot);
+                return Err(format!("bad Term JSON: {:?}", err));
+            }
+        };
+
+        let mut env_v: crate::term::Env = smallvec::SmallVec::new();
+        if let Some(serde_json::Value::Object(m)) = env {
+            for (k, v) in m {
+                let sym = self.interner.intern(k);
+                let val = crate::persist::decode_value(v, &mut self.interner);
+                env_v.push((sym, val));
+            }
+        }
+
+        let mut cache = crate::term::EvalCache::default();
+        self.counters.on_evaluation();
+
+        let val = {
+            let mut ctx = crate::term::EvalCtx::new(&self.graph, &self.interner)
+                .with_cache(&mut cache)
+                .with_counters(&mut self.counters)
+                .with_shape_cache(&mut self.shape_cache);
+            if !self.concepts.is_empty() {
+                ctx = ctx.with_concepts(&self.concepts);
+            }
+            if !self.framebuffers.is_empty() {
+                ctx = ctx.with_framebuffers(&self.framebuffers);
+            }
+            crate::term::evaluate(&self.terms, idx, &mut env_v, &mut ctx)
+        };
+
+        self.terms.nodes.truncate(snapshot);
+        Ok(crate::persist::encode_value(&val, &self.interner))
+    }
+
     pub fn new(checker: ConsistencyChecker) -> Self {
         Self {
             graph: TypedGraph::new(),
@@ -879,7 +935,6 @@ impl Substrate {
             rule_cost_progress: Vec::new(),
             any_mutation: false,
             eval_cache: crate::term::EvalCache::default(),
-            #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
             rule_where_jit: Vec::new(),
             rule_cursors: Vec::new(),
             edge_delete_version: 0,
@@ -933,7 +988,7 @@ impl Substrate {
             .map(|(local_rule_index, rule)| {
                 serde_json::json!({
                     "local_rule_index": local_rule_index,
-                    "definition": crate::py::rule_to_json(rule, &self.terms, &self.interner),
+                    "definition": crate::rule_json::rule_to_json(rule, &self.terms, &self.interner),
                 })
             })
             .collect();
@@ -1084,12 +1139,9 @@ impl Substrate {
         fork.rule_dirty_nodes = self.rule_dirty_nodes.clone();
         fork.rule_dirty_dyn_nodes = self.rule_dirty_dyn_nodes.clone();
         fork.rule_pred_retract_ok = self.rule_pred_retract_ok.clone();
-        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
-        {
-            fork.rule_where_jit = std::iter::repeat_with(|| None)
-                .take(self.rules.len())
-                .collect();
-        }
+        fork.rule_where_jit = std::iter::repeat_with(|| None)
+            .take(self.rules.len())
+            .collect();
         Ok(fork)
     }
 
@@ -1405,7 +1457,7 @@ impl Substrate {
         let mut out = Vec::new();
         for (label, rule) in variants {
             let mut bindings: u64 = 0;
-            let t0 = std::time::Instant::now();
+            let t0 = Instant::now();
             for _ in 0..reps.max(1) {
                 bindings = 0;
                 crate::rewrite::match_rule_each(
@@ -3751,7 +3803,7 @@ impl Substrate {
     /// and Effect variant, so the hash is stable across export/import rather
     /// than depending on arena-local `TermIdx` values.
     fn rule_content_hash(&self, rule: &crate::rewrite::RewriteRule) -> u64 {
-        let mut j = crate::py::rule_to_json(rule, &self.terms, &self.interner);
+        let mut j = crate::rule_json::rule_to_json(rule, &self.terms, &self.interner);
         if let Some(obj) = j.as_object_mut() {
             obj.remove("active");
             obj.remove("rule_uid");
@@ -3784,7 +3836,7 @@ impl Substrate {
                 self.rules[rule_index]
                     .effects
                     .iter()
-                    .map(|effect| crate::py::effect_to_json(effect, &self.terms, &self.interner))
+                    .map(|effect| crate::rule_json::effect_to_json(effect, &self.terms, &self.interner))
                     .collect(),
             ),
         };
@@ -3917,7 +3969,6 @@ impl Substrate {
                 && add_only
         };
         self.rebuild_rule_reader_index();
-        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
         if i < self.rule_where_jit.len() {
             self.rule_where_jit[i] = None;
         }
@@ -4158,7 +4209,6 @@ impl Substrate {
         // JIT compile the where-clause if all its Terms are kernel
         // shape. Falls back to interpreter at match time for rules
         // with where-clauses that use Filter, Sum, Float, etc.
-        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
         {
             let compiled = rule.where_.and_then(|where_idx| {
                 // Var order = match-edge vars in insertion order
@@ -4224,11 +4274,8 @@ impl Substrate {
         // rule — harmless to leave, but stale state on a dead slot is
         // just confusion waiting to happen if the rule is ever inspected.
         self.rule_cursors[i].clear();
-        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
-        {
-            if i < self.rule_where_jit.len() {
-                self.rule_where_jit[i] = None;
-            }
+        if i < self.rule_where_jit.len() {
+            self.rule_where_jit[i] = None;
         }
         // Γ has changed (a production left the grammar) — bump the epoch,
         // mirroring add_rule's bump for the reverse edit.
@@ -4513,10 +4560,7 @@ impl Substrate {
             dirty.remove(0);
         }
 
-        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
         let jit_for_this = self.rule_where_jit.get(rule_idx).and_then(|j| j.as_ref());
-        #[cfg(not(all(target_arch = "x86_64", target_os = "linux")))]
-        let jit_for_this: Option<&crate::jit::CompiledWhere> = None;
 
         // MATCH PHASE — for each dirty node `d`, drive from the edges INCIDENT
         // to `d` (its own out/in adjacency, O(degree(d)) — NOT a scan of the
@@ -4788,10 +4832,7 @@ impl Substrate {
             self.note_empty_match_skip(rule_idx);
         }
 
-        #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
         let jit_for_this = self.rule_where_jit.get(rule_idx).and_then(|j| j.as_ref());
-        #[cfg(not(all(target_arch = "x86_64", target_os = "linux")))]
-        let jit_for_this: Option<&crate::jit::CompiledWhere> = None;
 
         if tr {
             let counts: Vec<usize> = new_edges_per_pos.iter().map(|v| v.len()).collect();
@@ -4969,7 +5010,7 @@ impl Substrate {
     /// the agent can inspect a stable refusal code or the committed revision,
     /// content hash and exact inverse clause without host interpretation.
     fn apply_pending_rule_patches(&mut self) {
-        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
+        let drain_started = crate::scale_audit::enabled().then(Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_rule_patches);
         let drained_items = pending.len();
         let target_uid_key = self.interner.intern("target_uid");
@@ -5101,7 +5142,7 @@ impl Substrate {
     /// compiled-where JIT + incremental cursor, and mark it dirty so it re-matches its NEW body.
     /// A rule editing a rule — graph-native self-modification of the live engine.
     fn apply_pending_rule_edits(&mut self) {
-        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
+        let drain_started = crate::scale_audit::enabled().then(Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_rule_edits);
         let drained_items = pending.len();
         for (queue_index, (name, field, val, origin_rule)) in pending.into_iter().enumerate() {
@@ -5274,7 +5315,7 @@ impl Substrate {
     /// downstream rules reading the fresh Region/Cell state wake
     /// normally on the next pass.
     pub(crate) fn apply_pending_fb_samples(&mut self) {
-        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
+        let drain_started = crate::scale_audit::enabled().then(Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_fb_samples);
         let drained_items = pending.len();
         for (fb_id, game, grid_w, grid_h, origin_rule) in pending {
@@ -5309,7 +5350,7 @@ impl Substrate {
     /// `reflex_self_train_converged` rule reads. This is how "collapse and
     /// surprise within the net" runs as part of the engine's run_rules loop.
     pub(crate) fn apply_pending_net_collapses(&mut self) {
-        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
+        let drain_started = crate::scale_audit::enabled().then(Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_net_collapses);
         let drained_items = pending.len();
         let na_edge = self.interner.intern("net_assemblage");
@@ -5384,7 +5425,7 @@ impl Substrate {
             self.interner.resolve(audit_rule.name),
             audit_rule.match_edges.len(),
         );
-        let __cost_t0 = std::time::Instant::now();
+        let __cost_t0 = Instant::now();
         // FALLBACK TRACE: bind the running rule by NAME so defaulted
         // reads and absence-branch firings are attributed to it. Name,
         // not index — the redundancy audit established that rule
@@ -5474,10 +5515,7 @@ impl Substrate {
             p
         } else {
             let rule = self.rules[rule_idx].clone();
-            #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
             let jit_for_this = self.rule_where_jit.get(rule_idx).and_then(|j| j.as_ref());
-            #[cfg(not(all(target_arch = "x86_64", target_os = "linux")))]
-            let jit_for_this: Option<&crate::jit::CompiledWhere> = None;
             // Multi-spec fan-out fix (cold-cursor fallback).
             //
             // This path runs on a rule's FIRST visit (no cursor
@@ -6760,7 +6798,7 @@ impl Substrate {
             let scheduler_audit_on = crate::scale_audit::enabled();
             let scheduler_work_trace_on =
                 crate::access_trace::work_capture_enabled_for_scope(work_scope);
-            let scheduler_started = scheduler_audit_on.then(std::time::Instant::now);
+            let scheduler_started = scheduler_audit_on.then(Instant::now);
             let count_fixedpoint_probe = scheduler_audit_on || scheduler_work_trace_on;
             // PERCEPTION-AS-ACTION: force-dirty every rule whose where-clause
             // reads FbFrameSeq. Every OTHER dirty bit here is graph-reactive
@@ -7044,7 +7082,7 @@ impl Substrate {
     /// this counterfactual profiler. It neither executes rules nor changes state.
     pub fn profile_scoped_rule_snapshot(&self, iterations: usize) -> (usize, usize, u128) {
         let active_count = self.rules.iter().filter(|rule| rule.active).count();
-        let started = std::time::Instant::now();
+        let started = Instant::now();
         let mut copied_total = 0usize;
         for _ in 0..iterations {
             let cloned_rules: Vec<(u32, crate::rewrite::RewriteRule)> = self
@@ -7838,7 +7876,7 @@ impl Substrate {
     /// "queue + drain between passes" pattern `apply_pending_fb_samples`
     /// established for `Effect::FbSample`.
     pub(crate) fn apply_pending_track_identity(&mut self) {
-        let drain_started = crate::scale_audit::enabled().then(std::time::Instant::now);
+        let drain_started = crate::scale_audit::enabled().then(Instant::now);
         let pending = std::mem::take(&mut self.graph.pending_track_identity);
         let drained_items = pending.len();
         for (
@@ -8470,13 +8508,13 @@ mod tests {
         let exported: Vec<_> = original
             .rules
             .iter()
-            .map(|rule| crate::py::rule_to_json(rule, &original.terms, &original.interner))
+            .map(|rule| crate::rule_json::rule_to_json(rule, &original.terms, &original.interner))
             .collect();
 
         let mut restored = empty_substrate();
         for json in &exported {
             let rule =
-                crate::py::parse_rule_json_pub(json, &mut restored.terms, &mut restored.interner)
+                crate::rule_json::parse_rule_json_pub(json, &mut restored.terms, &mut restored.interner)
                     .unwrap();
             restored.add_rule(rule);
         }
@@ -9328,7 +9366,7 @@ mod tests {
     #[test]
     #[ignore]
     fn bench_conway_tick() {
-        use std::time::Instant;
+        use crate::clock::Instant;
         let mut s = empty_substrate();
         let cell = s.interner.intern("Cell");
         let adj = s.interner.intern("adjacent_to");
@@ -9447,7 +9485,7 @@ mod tests {
     #[test]
     #[ignore]
     fn profile_real_workload() {
-        use std::time::Instant;
+        use crate::clock::Instant;
         let mut s = empty_substrate();
 
         // --- Graph setup: 5 node types, 3 edge types, 5000 nodes, ~15K edges.

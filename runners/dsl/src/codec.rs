@@ -48,7 +48,7 @@ pub fn install_field_grammar_rules(substrate: &mut Substrate) -> Result<usize, S
     let symbols_before = substrate.interner.len();
     let mut staged = Vec::with_capacity(arr.len());
     for (i, rule_json) in arr.iter().enumerate() {
-        let rule = match crate::py::parse_rule_json_pub(
+        let rule = match crate::rule_json::parse_rule_json_pub(
             rule_json,
             &mut substrate.terms,
             &mut substrate.interner,

@@ -14,7 +14,7 @@ crate-type = ["cdylib", "rlib"]
 # build is unchanged. Test binaries are executables that must link libpython;
 # run them without it: scripts/engine_cargo_test.sh (= cargo test
 # --no-default-features + the interpreter's LIBDIR for the runtime loader).
-pyo3 = { version = "0.22", features = ["abi3-py39"] }
+pyo3 = { version = "0.22", features = ["abi3-py39"], optional = true }
 smallvec = { version = "1.13", features = ["union"] }
 rustc-hash = "2.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -27,45 +27,43 @@ roaring = "0.10"
 # FFT for the STFT "second ear" — a frequency-sharp auditory front-end
 # complementary to the gammatone bank. Used by audio_primitives::stft.
 rustfft = "6"
-# Runtime x86_64 assembler for the JIT path. Macro emits encoding
-# logic at Rust compile time; the runtime walks Term-trees and calls
-# the emitter to produce executable bytes. Used by Wasmtime / Lucet
-# in production. Linux x86_64 only for now; the JIT is gated behind
-# `#[cfg(all(target_arch = "x86_64", target_os = "linux"))]`.
-dynasmrt = "2.0"
-dynasm = "2.0"
+
 # wgpu compute path for motion estimation. Off by default — Python
 # wheels still build vanilla without a GPU stack. Enable with the
 # `gpu_me` feature.
 wgpu = { version = "0.20", optional = true }
 pollster = { version = "0.3", optional = true }
 bytemuck = { version = "1.16", optional = true, features = ["derive"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 # CPU affinity for the L2 work-stealing scheduler. Pin worker threads
-# to physical cores (avoiding SMT siblings for hot-path reflexes) on
-# the hardware Jabberwock's vocabulary identified as ideal — see
-# scripts/jabberwock_optimal_runner_for_this_system.py.
+# to physical cores.
 core_affinity = "0.8"
-# Lock-free work-stealing deque used by l2_dispatch_work_stealing —
-# implements the per-Mt local queue + steal pattern the L2 Mt names
-# under `tradeoff_hot_counter_locality`. Closes the bench-2 throughput
-# gap (commit fe93761) by removing the single-Mutex bottleneck.
+# Lock-free work-stealing deque used by l2_dispatch_work_stealing.
 crossbeam-deque = "0.8"
 # Deterministic indexed parallel iteration for immutable batch-rule matching.
-# Effects still fold serially in authored binding order.
 rayon = "1.10"
-# POSIX shm_open for the framebuffer vision primitive's reader side
-# (framebuffer.rs). Already a transitive dep (dynasmrt/core_affinity
-# pull it in — see Cargo.lock) so promoting it to a direct dep pins no
-# new version.
+
+[target.'cfg(all(target_arch = "x86_64", target_os = "linux"))'.dependencies]
+# Runtime x86_64 assembler for the JIT path.
+dynasmrt = "2.0"
+dynasm = "2.0"
+
+[target.'cfg(unix)'.dependencies]
+# POSIX shm_open for the framebuffer vision primitive's reader side.
 libc = "0.2"
-# mmap wrapper for the same primitive. Also already transitive
-# (pulled in by an existing dep) — promoted to direct, no new version.
+# mmap wrapper for the same primitive.
 memmap2 = "0.5"
 
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+web-time = "1.1"
+
 [features]
-default = ["extension-module"]
+default = ["python", "extension-module"]
+python = ["dep:pyo3"]
 # Python extension build (engine_build.sh, maturin): libpython is NOT linked.
-extension-module = ["pyo3/extension-module"]
+extension-module = ["python", "pyo3/extension-module"]
 # Build with the un-tuned baseline CABAC renorm loop. Used to
 # measure the hand-tune speedup head-to-head. Off in production.
 cabac_baseline = []

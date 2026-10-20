@@ -82,6 +82,7 @@
 
 use std::convert::TryInto;
 use std::ffi::CString;
+#[cfg(unix)]
 use std::os::unix::io::FromRawFd;
 
 /// Convenience alias for the substrate-held attached-framebuffer
@@ -372,9 +373,13 @@ pub struct FbHandle {
     /// Kept alive only so the fd doesn't close early in some
     /// platform/allocator edge case; the mapping itself owns its own
     /// kernel reference once created.
+    #[cfg(unix)]
     #[allow(dead_code)]
     file: std::fs::File,
+    #[cfg(unix)]
     map: memmap2::Mmap,
+    #[cfg(not(unix))]
+    map: Vec<u8>,
     pub header: FbHeader,
     pub last_sampled_seq: u64,
     pub cell_cache: Option<CellCache>,
@@ -387,6 +392,7 @@ impl FbHandle {
     /// example literally). Validates the header (magic/version/
     /// format/geometry) and that the object is large enough to hold
     /// the declared payload before returning.
+    #[cfg(unix)]
     pub fn open(name: &str) -> Result<Self, String> {
         let cname = CString::new(name).map_err(|e| format!("bad shm name {name:?}: {e}"))?;
         let fd = unsafe { libc::shm_open(cname.as_ptr(), libc::O_RDONLY, 0) };
@@ -425,6 +431,11 @@ impl FbHandle {
             last_sampled_seq: 0,
             cell_cache: None,
         })
+    }
+
+    #[cfg(not(unix))]
+    pub fn open(name: &str) -> Result<Self, String> {
+        Err(format!("shared-memory framebuffers not supported on non-unix targets: {name}"))
     }
 
     /// Cheap "has anything changed" oracle: current `frame_seq` vs. a

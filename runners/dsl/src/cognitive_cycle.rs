@@ -1163,7 +1163,7 @@ mod tests {
                 obj.insert(k.clone(), v.clone());
             }
         }
-        let parsed = crate::py::parse_rule_json_pub(&rule, &mut substrate.terms, &mut substrate.interner)
+        let parsed = crate::rule_json::parse_rule_json_pub(&rule, &mut substrate.terms, &mut substrate.interner)
             .expect("probe rule parses");
         substrate.add_rule(parsed);
         probe

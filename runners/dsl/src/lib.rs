@@ -103,9 +103,7 @@ pub mod l2_adaptive;
 /// realising Jabberwock's L2 design layer (RT scheduling primitive
 /// from Mt realtime_systems).
 pub mod l2_dispatch;
-/// L2 work-stealing scheduler — FIFO throughput-optimised alternative
-/// to the single-Mutex EDF scheduler. Closes the bench-2 gap from
-/// commit fe93761.
+#[cfg(not(target_arch = "wasm32"))]
 pub mod l2_dispatch_work_stealing;
 /// L2 ↔ Graph bridge — materialises DispatcherSnapshot into the
 /// substrate's typed graph (Axiom 3 at the L2 layer; realises the
@@ -279,6 +277,40 @@ pub mod inferior_colliculus;
 pub mod ink_topology;
 #[cfg(all(target_arch = "x86_64", target_os = "linux"))]
 pub mod jit;
+#[cfg(not(all(target_arch = "x86_64", target_os = "linux")))]
+pub mod jit {
+    use crate::graph::TypedGraph;
+    use crate::sym::Sym;
+    use crate::term::{TermArena, TermIdx};
+
+    pub struct JitCtx;
+    impl JitCtx {
+        pub fn from_graph(_graph: &TypedGraph) -> Self {
+            Self
+        }
+    }
+
+    pub struct JittedFn;
+    impl JittedFn {
+        pub fn call_with_ctx(&self, _ctx: &JitCtx, _args: &[i64]) -> i64 {
+            0
+        }
+    }
+
+    pub struct CompiledWhere {
+        pub jit: JittedFn,
+        pub var_order: Vec<Sym>,
+    }
+    impl CompiledWhere {
+        pub fn try_compile(
+            _arena: &TermArena,
+            _where_idx: TermIdx,
+            _binding_vars: &[Sym],
+        ) -> Option<CompiledWhere> {
+            None
+        }
+    }
+}
 pub mod jsonio;
 pub mod memory;
 /// `NetForward` — native forward pass of a graph-resident authored net
@@ -333,17 +365,24 @@ pub mod vision_primitives;
 /// (byte-identical), not a net — gated by Γ-admissibility (structural AST match
 /// of the stencil), with the general per-cell path unchanged as the default.
 pub mod wave_stencil;
+pub mod clock;
+pub mod rule_json;
+pub mod seed_manifest;
 
-mod py;
 // Shared rule JSON decoder used by the Python binding and other Rust callers.
-pub use py::parse_rule_json_pub;
+pub use rule_json::parse_rule_json_pub;
 
+#[cfg(feature = "python")]
+mod py;
+
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
 
 /// Top-level PyO3 module. The Python wrapper at
 /// `python/substrate_rs/__init__.py` re-exports the symbols as `Filter`,
 /// `Lit`, `Substrate`, etc. so callers can `from substrate_rs import Filter`
 /// exactly as they do for the Python `substrate` package.
+#[cfg(feature = "python")]
 #[pymodule]
 fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     py::register(m)?;

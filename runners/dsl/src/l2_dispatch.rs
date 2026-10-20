@@ -59,7 +59,7 @@ use std::collections::BinaryHeap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
-use std::time::{Duration, Instant};
+use crate::clock::{Duration, Instant};
 
 /// Priority class influences pinning + (in a future commit) which
 /// scheduler policy the OS thread runs under. Ordering of tasks
@@ -165,11 +165,15 @@ impl Scheduler {
         // physical (heuristic: low-numbered IDs are conventionally
         // physical-first on Linux). A future enhancement can parse
         // /sys/devices/system/cpu/cpu*/topology to be exact.
+        #[cfg(not(target_arch = "wasm32"))]
         let core_ids = core_affinity::get_core_ids();
+        #[cfg(not(target_arch = "wasm32"))]
         let pin_targets: Vec<Option<core_affinity::CoreId>> = match core_ids {
             Some(ids) => (0..n_workers).map(|i| ids.get(i).copied()).collect(),
             None => vec![None; n_workers],
         };
+        #[cfg(target_arch = "wasm32")]
+        let pin_targets: Vec<Option<()>> = vec![None; n_workers];
 
         let mut workers = Vec::with_capacity(n_workers);
         for worker_idx in 0..n_workers {
@@ -179,6 +183,7 @@ impl Scheduler {
             let handle = thread::Builder::new()
                 .name(format!("l2-worker-{}", worker_idx))
                 .spawn(move || {
+                    #[cfg(not(target_arch = "wasm32"))]
                     if let Some(core) = pin {
                         let _ = core_affinity::set_for_current(core);
                     }

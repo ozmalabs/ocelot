@@ -51,7 +51,7 @@
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use crate::clock::Instant;
 
 use crate::code_cache::{CodeCache, CodeCacheConfig, CodeSize};
 use crate::l2_dispatch::{PriorityClass, Scheduler, Task};

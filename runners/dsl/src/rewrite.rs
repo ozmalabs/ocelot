@@ -19,6 +19,7 @@ use crate::graph::{EdgeKey, NodeID, TypedGraph};
 use crate::sym::{Interner, Sym};
 use crate::term::{evaluate, ConceptResolver, Env, EvalCtx, TermArena, TermIdx};
 use crate::value::{SurfaceKind, Value};
+#[cfg(not(target_arch = "wasm32"))]
 use rayon::prelude::*;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
@@ -3450,7 +3451,7 @@ pub fn run_rules_opts_with_audit_ids(
                     .unwrap_or(position as u32);
                 serde_json::json!({
                     "local_rule_index": local_rule_index,
-                    "definition": crate::py::rule_to_json(rule, arena, interner),
+                    "definition": crate::rule_json::rule_to_json(rule, arena, interner),
                 })
             })
             .collect();
@@ -4062,7 +4063,7 @@ pub fn run_rules_opts_scoped(
             .map(|(local_rule_index, rule)| {
                 serde_json::json!({
                     "local_rule_index": local_rule_index,
-                    "definition": crate::py::rule_to_json(rule, arena, interner),
+                    "definition": crate::rule_json::rule_to_json(rule, arena, interner),
                 })
             })
             .collect();
@@ -4287,7 +4288,10 @@ pub fn batch_apply_rule(
         }
         (Some(mt), _) if graph.nodes_of_type(mt).is_empty() => {}
         _ => {
+            #[cfg(not(target_arch = "wasm32"))]
             let worker_capacity = rayon::current_num_threads();
+            #[cfg(target_arch = "wasm32")]
+            let worker_capacity = 1;
             if let Some(parallel) = collect_batch_bindings_parallel(
                 rule,
                 arena,
@@ -4359,6 +4363,7 @@ pub fn batch_apply_rule(
 /// no tuned grain constant: parallelism opens only when the graph supplies at
 /// least one root candidate per available worker.  A one-worker capacity is
 /// therefore the exact serial reduction arm.
+#[cfg(not(target_arch = "wasm32"))]
 fn collect_batch_bindings_parallel(
     rule: &RewriteRule,
     arena: &TermArena,
@@ -4495,6 +4500,21 @@ fn collect_batch_bindings_parallel(
         bindings.extend(partition);
     }
     Some(bindings)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[allow(dead_code)]
+fn collect_batch_bindings_parallel(
+    _rule: &RewriteRule,
+    _arena: &TermArena,
+    _graph: &TypedGraph,
+    _interner: &Interner,
+    _concepts: Option<&ConceptResolver>,
+    _framebuffers: Option<&crate::framebuffer::FbRegistry>,
+    _where_jit: Option<&crate::jit::CompiledWhere>,
+    _worker_capacity: usize,
+) -> Option<Vec<Binding>> {
+    None
 }
 
 #[cfg(test)]
