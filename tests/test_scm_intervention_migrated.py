@@ -1,7 +1,39 @@
-"""E3.1 finite-SCM contract fixtures; no runtime term is wired here."""
+"""E3 finite-SCM contract and native evaluator fixtures."""
 from __future__ import annotations
 
 from copy import deepcopy
+
+from domains.engine_provenance import engine_preamble
+
+engine_preamble()
+
+from substrate_rs import Lit, Substrate, Term  # noqa: E402
+
+
+def _native(model, query, intervention, assignments, cap=16):
+    term = Term(
+        "SCMIntervene",
+        model=Lit(model),
+        query=Lit(query),
+        intervention=Lit(intervention),
+        exogenous_assignments=Lit(assignments),
+        assignment_cap=Lit(cap),
+    )
+    return term.evaluate({}, Substrate())
+
+
+def _common_cause_model():
+    rows = [{"inputs": {"U": 0}, "value": 0}, {"inputs": {"U": 1}, "value": 1}]
+    return {
+        "variables": [{"id": "X", "domain": [0, 1]}, {"id": "Y", "domain": [0, 1]}],
+        "exogenous": [{"id": "U", "domain": [0, 1]}],
+        "equations": [
+            {"target": name, "parents": [], "exogenous": ["U"], "rows": rows}
+            for name in ("X", "Y")
+        ],
+        "source_ids": ["mechanism-1"],
+        "source_epoch": 7,
+    }
 
 
 def _do_y_for_common_cause(x_value, u_values=(0, 1)):
@@ -149,3 +181,43 @@ def test_live_graph_unchanged():
     result = _finite_do(detached_model, {"X": 1})
     assert result["status"] == "identified"
     assert live == before
+
+
+def test_native_do_differs_from_conditioning():
+    model = _common_cause_model()
+    assignments = [{"U": 0}, {"U": 1}]
+    intervention = {"X": 1}
+    effect = _native(model, {"kind": "effect", "outcome": "Y"}, intervention, assignments)
+    condition = _native(model, {"kind": "condition", "outcome": "Y"}, intervention, assignments)
+    assert effect["status"] == condition["status"] == "identified"
+    assert effect["values"] == [0, 1]
+    assert condition["values"] == [1]
+    assert effect["assumptions"] == ["uniform_exogenous_assignments"]
+    assert effect["source_ids"] == ["mechanism-1"] and effect["source_epoch"] == 7
+
+
+def test_native_counterfactual_reuses_shared_exogenous_assignment():
+    result = _native(_common_cause_model(), {"kind": "unit_counterfactual", "outcome": "Y"},
+                     {"X": 1}, [{"U": 0}, {"U": 1}])
+    assert result["values"] == [
+        {"factual": 0, "counterfactual": 0},
+        {"factual": 1, "counterfactual": 1},
+    ]
+
+
+def test_native_scm_abstains_on_cycles_empty_assignments_and_bounds():
+    cyclic = {
+        "variables": [{"id": "X", "domain": [0, 1]}, {"id": "Y", "domain": [0, 1]}],
+        "exogenous": [],
+        "equations": [
+            {"target": "X", "parents": ["Y"], "exogenous": [], "rows": [
+                {"inputs": {"Y": 0}, "value": 0}, {"inputs": {"Y": 1}, "value": 1}]},
+            {"target": "Y", "parents": ["X"], "exogenous": [], "rows": [
+                {"inputs": {"X": 0}, "value": 0}, {"inputs": {"X": 1}, "value": 1}]},
+        ],
+    }
+    query = {"kind": "effect", "outcome": "Y"}
+    assert _native(cyclic, query, {"X": 1}, []).get("status") == "unknown"
+    assert _native(_common_cause_model(), query, {"X": 1}, []).get("status") == "unknown"
+    assert _native(_common_cause_model(), query, {"X": 1}, [{"U": 0}, {"U": 1}], 1).get("status") == "unknown"
+    assert _native(None, query, {"X": 1}, [{"U": 0}]).get("status") == "invalid"

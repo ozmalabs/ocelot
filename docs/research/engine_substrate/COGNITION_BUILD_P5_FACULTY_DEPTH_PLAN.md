@@ -278,7 +278,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Tier:** T2
 - **Goal:** Build and expose SCMIntervene through the native evaluator.
 - **Read first:** `scripts/engine_build.sh`; `runners/dsl/src/py.rs`; `COGNITION_SCM_CONTRACT.md`.
-- **Touch:** new `tests/test_scm_intervention_migrated.py`; `runners/dsl/src/py.rs` only if generic evaluation is insufficient.
+- **Touch:** `runners/dsl/src/can_ops.rs`; `runners/dsl/src/term.rs`; `runners/dsl/src/sym.rs`; `tests/test_scm_intervention_migrated.py` (native conformance fixtures; pure Term dispatch uses a small fixed reserved-symbol vocabulary because `EvalCtx`'s interner is immutable).
 - **Pattern to copy:** `tests/test_time_infer_migrated.py::_boot` and native Term evaluation.
 - **Steps:** 1. Build through engine_build.sh after disk check. 2. Evaluate JSON through the native API; add a thin binding only if required. 3. Run Rust tests, provenance and regression gates; record artifact hash.
 - **Guard:** no default feature or default seed changes.

@@ -7326,9 +7326,14 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
     match node {
         TermNode::Var { name } => env_get(env, *name).cloned().unwrap_or(Value::None),
 
-        // Activated with the finite SCM evaluator in P5.R4. Keeping this
-        // inert during schema wiring prevents partial native exposure.
-        TermNode::SCMIntervene { .. } => Value::None,
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => {
+            let model = evaluate(arena, *model, env, ctx);
+            let query = evaluate(arena, *query, env, ctx);
+            let intervention = evaluate(arena, *intervention, env, ctx);
+            let assignments = evaluate(arena, *exogenous_assignments, env, ctx);
+            let cap = evaluate(arena, *assignment_cap, env, ctx);
+            crate::can_ops::scm_intervene(&model, &query, &intervention, &assignments, &cap, ctx.interner)
+        }
 
         TermNode::Lit { value } => value.clone(),
 

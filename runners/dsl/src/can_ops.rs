@@ -343,9 +343,9 @@ fn scm_get<'a>(value: &'a Value, key: &str, interner: &Interner) -> Option<&'a V
     })
 }
 
-fn scm_record(interner: &mut Interner, fields: Vec<(&str, Value)>) -> Value {
+fn scm_record(fields: Vec<(&str, Value)>) -> Value {
     Value::Dict(Arc::from(fields.into_iter().map(|(key, value)| {
-        (Value::Str(interner.intern(key)), value)
+        (Value::Str(crate::sym::Sym::reserved(key).expect("SCM result symbols are reserved")), value)
     }).collect::<Vec<_>>()))
 }
 
@@ -353,13 +353,13 @@ fn scm_strings(value: &Value, interner: &Interner) -> Option<Vec<String>> {
     scm_seq(value)?.iter().map(|item| scm_string(item, interner)).collect()
 }
 
-fn scm_unknown(interner: &mut Interner, reason: &str, model: &Value) -> Value {
+fn scm_unknown(interner: &Interner, reason: &str, model: &Value) -> Value {
     let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
     let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
-    let status = Value::Str(interner.intern("unknown"));
-    let reason = Value::Str(interner.intern(reason));
+    let status = Value::Str(crate::sym::Sym::reserved("unknown").expect("reserved SCM status"));
+    let reason = Value::Str(crate::sym::Sym::reserved(reason).expect("reserved SCM reason"));
     let empty = || Value::List(Arc::new(smallvec::SmallVec::new()));
-    scm_record(interner, vec![
+    scm_record(vec![
         ("status", status),
         ("values", empty()),
         ("assumptions", empty()),
@@ -368,13 +368,13 @@ fn scm_unknown(interner: &mut Interner, reason: &str, model: &Value) -> Value {
     ])
 }
 
-fn scm_invalid(interner: &mut Interner, reason: &str, model: &Value) -> Value {
+fn scm_invalid(interner: &Interner, reason: &str, model: &Value) -> Value {
     let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
     let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
-    let status = Value::Str(interner.intern("invalid"));
-    let reason = Value::Str(interner.intern(reason));
+    let status = Value::Str(crate::sym::Sym::reserved("invalid").expect("reserved SCM status"));
+    let reason = Value::Str(crate::sym::Sym::reserved(reason).expect("reserved SCM reason"));
     let empty = || Value::List(Arc::new(smallvec::SmallVec::new()));
-    scm_record(interner, vec![
+    scm_record(vec![
         ("status", status),
         ("values", empty()),
         ("assumptions", empty()),
@@ -435,7 +435,7 @@ pub fn scm_intervene(
     intervention_value: &Value,
     assignments_value: &Value,
     assignment_cap_value: &Value,
-    interner: &mut Interner,
+    interner: &Interner,
 ) -> Value {
     let Some(cap) = (match assignment_cap_value { Value::Int(n) => usize::try_from(*n).ok(), _ => None }) else {
         return scm_invalid(interner, "assignment_cap_must_be_positive_integer", model);
@@ -611,7 +611,7 @@ pub fn scm_intervene(
                 };
                 let factual = factual.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()).unwrap_or(Value::None);
                 let counterfactual = counterfactual.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()).unwrap_or(Value::None);
-                output_values.push(scm_record(interner, vec![("factual", factual), ("counterfactual", counterfactual)]));
+                output_values.push(scm_record(vec![("factual", factual), ("counterfactual", counterfactual)]));
             }
             _ => unreachable!(),
         }
@@ -619,9 +619,9 @@ pub fn scm_intervene(
     let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
     let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
     let assumption = if kind == "effect" { "uniform_exogenous_assignments" } else { "shared_supplied_exogenous_assignments" };
-    let status = Value::Str(interner.intern("identified"));
-    let assumption = Value::Str(interner.intern(assumption));
-    scm_record(interner, vec![
+    let status = Value::Str(crate::sym::Sym::reserved("identified").expect("reserved SCM status"));
+    let assumption = Value::Str(crate::sym::Sym::reserved(assumption).expect("reserved SCM assumption"));
+    scm_record(vec![
         ("status", status),
         ("values", Value::List(Arc::new(output_values.into()))),
         ("assumptions", Value::List(Arc::new(smallvec::smallvec![assumption]))),
@@ -714,5 +714,26 @@ mod scm_intervene_tests {
         let malformed = scm_intervene(&Value::None, &query_effect, &intervention,
             &assignments, &Value::Int(16), &mut interner);
         assert_eq!(status(&malformed, &interner), "invalid");
+    }
+
+    #[test]
+    fn scm_intervene_term_executes_with_immutable_interner() {
+        let mut interner = Interner::new();
+        let (model, assignments, intervention, query) = fixtures(&mut interner);
+        let mut arena = crate::term::TermArena::new();
+        let lit = |arena: &mut crate::term::TermArena, value| arena.add(crate::term::TermNode::Lit { value });
+        let model = lit(&mut arena, model);
+        let query = lit(&mut arena, query);
+        let intervention = lit(&mut arena, intervention);
+        let assignments = lit(&mut arena, assignments);
+        let cap = lit(&mut arena, Value::Int(16));
+        let term = arena.add(crate::term::TermNode::SCMIntervene {
+            model, query, intervention, exogenous_assignments: assignments, assignment_cap: cap,
+        });
+        let graph = crate::graph::TypedGraph::new();
+        let mut ctx = crate::term::EvalCtx::new(&graph, &interner);
+        let result = crate::term::evaluate(&arena, term, &mut Default::default(), &mut ctx);
+        assert_eq!(status(&result, &interner), "identified");
+        assert_eq!(interner.resolve(crate::sym::Sym::reserved("status").unwrap()), "status");
     }
 }

@@ -1,6 +1,6 @@
 # P5.E3 — Explicit finite structural causal models
 
-**Status:** E3.1 contract and development fixtures. `ScmPolicy.enabled=0` by default. No SCM runtime, causal-effect claim, or live-graph mutation is implemented by this specification.
+**Status:** E3.1 contract and R1–R4 native evaluator are implemented; E3.2 graph-resident query construction remains pending. `ScmPolicy.enabled=0` by default. No seed caller is active and no live-graph mutation is implemented.
 
 ## Model and bounds
 
@@ -23,6 +23,8 @@ Colliders and their descendants are not admissible merely because adjustment cha
 ## Isolation and provenance
 
 SCM evaluation consumes a detached, epoch-tagged model snapshot and returns a result record containing query kind, treatment/outcome, intervention value, mechanism/source IDs, source epoch, assumptions, result or `unknown` reason, and model digest. It never edits live CAN state, `CausalFact` nodes, mechanisms, observations or goals. Results do not become world facts or action authorization without a separate evidence promotion path. `ScmPolicy.enabled` remains disabled outside explicit cognition-on evaluation.
+
+The Rust Term obtains fixed result keys, statuses and abstention reasons from a reserved `Sym` vocabulary at the top of the symbol range. This keeps evaluation pure with the immutable `EvalCtx` interner and leaves ordinary per-substrate symbol allocation unchanged.
 
 ## Native term decision
 
