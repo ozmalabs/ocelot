@@ -1,0 +1,1919 @@
+{
+  "id": "analog_imagery",
+  "version": "1.0.0",
+  "depends_on": [
+    "thinking_budget"
+  ],
+  "description": "Default-off bounded, funded, detached quarter-turn imagery on exact lattice signatures.",
+  "microtheory": {
+    "name": "analog_imagery",
+    "description": "Compose exact lattice rotations as funded graph-native increments."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "AnalogImageryPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "max_steps": 3.0,
+        "max_buffer_size": 4.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_analog_imagery_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:analog_imagery:has_analog_imagery_policy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_analog_imagery_policy",
+      "tgt": {
+        "type": "AnalogImageryPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:analog_imagery:has_analog_imagery_request",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_analog_imagery_request",
+      "tgt": {
+        "type": "AnalogImageryRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:analog_imagery:has_thinking_budget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:analog_imagery:has_imagery_witness",
+      "src": {
+        "type": "AnalogImageryRequest",
+        "var": "src"
+      },
+      "edge_type": "has_imagery_witness",
+      "tgt": {
+        "type": "ImageryStepWitness",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ai_execute_funded_quarter_turn",
+      "batch": false,
+      "comment": "Execute exactly one funded 90-degree lattice transform and retain its intermediate witness.",
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_index"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_steps"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_index"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_count"
+              }
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "rotation_steps"
+              },
+              "index": {
+                "type": "Lit",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "step_index"
+                }
+              }
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                90,
+                -90
+              ]
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "buffer_size"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_buffer_size"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "witness",
+          "ImageryStepWitness",
+          {
+            "step_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_index"
+              }
+            },
+            "shape": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "MapList",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "current_shape"
+                  },
+                  "var_name": "point",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Gte",
+                      "a": {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "request"
+                          },
+                          "key": "rotation_steps"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "request"
+                            },
+                            "key": "step_index"
+                          }
+                        }
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    },
+                    "then": {
+                      "type": "Vec",
+                      "items": [
+                        {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "point"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        },
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "b": {
+                            "type": "IndexAt",
+                            "seq": {
+                              "type": "Var",
+                              "name": "point"
+                            },
+                            "index": {
+                              "type": "Lit",
+                              "value": 0
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    "other": {
+                      "type": "Vec",
+                      "items": [
+                        {
+                          "type": "Minus",
+                          "a": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "b": {
+                            "type": "IndexAt",
+                            "seq": {
+                              "type": "Var",
+                              "name": "point"
+                            },
+                            "index": {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          }
+                        },
+                        {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "point"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "var_name": "coord",
+                "value": {
+                  "type": "Vec",
+                  "items": [
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Var",
+                          "name": "coord"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      },
+                      "b": {
+                        "type": "Fold",
+                        "source": {
+                          "type": "MapList",
+                          "source": {
+                            "type": "MapList",
+                            "source": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "request"
+                              },
+                              "key": "current_shape"
+                            },
+                            "var_name": "point",
+                            "value": {
+                              "type": "IfThenElse",
+                              "cond": {
+                                "type": "Gte",
+                                "a": {
+                                  "type": "IndexAt",
+                                  "seq": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "request"
+                                    },
+                                    "key": "rotation_steps"
+                                  },
+                                  "index": {
+                                    "type": "Lit",
+                                    "value": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "request"
+                                      },
+                                      "key": "step_index"
+                                    }
+                                  }
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              },
+                              "then": {
+                                "type": "Vec",
+                                "items": [
+                                  {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 1
+                                    }
+                                  },
+                                  {
+                                    "type": "Minus",
+                                    "a": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    },
+                                    "b": {
+                                      "type": "IndexAt",
+                                      "seq": {
+                                        "type": "Var",
+                                        "name": "point"
+                                      },
+                                      "index": {
+                                        "type": "Lit",
+                                        "value": 0
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "other": {
+                                "type": "Vec",
+                                "items": [
+                                  {
+                                    "type": "Minus",
+                                    "a": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    },
+                                    "b": {
+                                      "type": "IndexAt",
+                                      "seq": {
+                                        "type": "Var",
+                                        "name": "point"
+                                      },
+                                      "index": {
+                                        "type": "Lit",
+                                        "value": 1
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "var_name": "coord",
+                          "value": {
+                            "type": "IndexAt",
+                            "seq": {
+                              "type": "Var",
+                              "name": "coord"
+                            },
+                            "index": {
+                              "type": "Lit",
+                              "value": 0
+                            }
+                          }
+                        },
+                        "var_name": "value",
+                        "acc_name": "best",
+                        "init": {
+                          "type": "Lit",
+                          "value": 1000000000
+                        },
+                        "body": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Lt",
+                            "a": {
+                              "type": "Var",
+                              "name": "value"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "best"
+                            }
+                          },
+                          "then": {
+                            "type": "Var",
+                            "name": "value"
+                          },
+                          "other": {
+                            "type": "Var",
+                            "name": "best"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Var",
+                          "name": "coord"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      },
+                      "b": {
+                        "type": "Fold",
+                        "source": {
+                          "type": "MapList",
+                          "source": {
+                            "type": "MapList",
+                            "source": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "request"
+                              },
+                              "key": "current_shape"
+                            },
+                            "var_name": "point",
+                            "value": {
+                              "type": "IfThenElse",
+                              "cond": {
+                                "type": "Gte",
+                                "a": {
+                                  "type": "IndexAt",
+                                  "seq": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "request"
+                                    },
+                                    "key": "rotation_steps"
+                                  },
+                                  "index": {
+                                    "type": "Lit",
+                                    "value": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "request"
+                                      },
+                                      "key": "step_index"
+                                    }
+                                  }
+                                },
+                                "b": {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              },
+                              "then": {
+                                "type": "Vec",
+                                "items": [
+                                  {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 1
+                                    }
+                                  },
+                                  {
+                                    "type": "Minus",
+                                    "a": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    },
+                                    "b": {
+                                      "type": "IndexAt",
+                                      "seq": {
+                                        "type": "Var",
+                                        "name": "point"
+                                      },
+                                      "index": {
+                                        "type": "Lit",
+                                        "value": 0
+                                      }
+                                    }
+                                  }
+                                ]
+                              },
+                              "other": {
+                                "type": "Vec",
+                                "items": [
+                                  {
+                                    "type": "Minus",
+                                    "a": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    },
+                                    "b": {
+                                      "type": "IndexAt",
+                                      "seq": {
+                                        "type": "Var",
+                                        "name": "point"
+                                      },
+                                      "index": {
+                                        "type": "Lit",
+                                        "value": 1
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          "var_name": "coord",
+                          "value": {
+                            "type": "IndexAt",
+                            "seq": {
+                              "type": "Var",
+                              "name": "coord"
+                            },
+                            "index": {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          }
+                        },
+                        "var_name": "value",
+                        "acc_name": "best",
+                        "init": {
+                          "type": "Lit",
+                          "value": 1000000000
+                        },
+                        "body": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Lt",
+                            "a": {
+                              "type": "Var",
+                              "name": "value"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "best"
+                            }
+                          },
+                          "then": {
+                            "type": "Var",
+                            "name": "value"
+                          },
+                          "other": {
+                            "type": "Var",
+                            "name": "best"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "source_observation": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_observation"
+              }
+            },
+            "grounded": 0
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_imagery_witness",
+          "witness"
+        ],
+        [
+          "set_attr",
+          "request",
+          "current_shape",
+          {
+            "__term__": {
+              "type": "MapList",
+              "source": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "current_shape"
+                },
+                "var_name": "point",
+                "value": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gte",
+                    "a": {
+                      "type": "IndexAt",
+                      "seq": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "rotation_steps"
+                      },
+                      "index": {
+                        "type": "Lit",
+                        "value": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "request"
+                          },
+                          "key": "step_index"
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "then": {
+                    "type": "Vec",
+                    "items": [
+                      {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Var",
+                          "name": "point"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      },
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "b": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "point"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "Vec",
+                    "items": [
+                      {
+                        "type": "Minus",
+                        "a": {
+                          "type": "Lit",
+                          "value": 0
+                        },
+                        "b": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "point"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Var",
+                          "name": "point"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "var_name": "coord",
+              "value": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Minus",
+                    "a": {
+                      "type": "IndexAt",
+                      "seq": {
+                        "type": "Var",
+                        "name": "coord"
+                      },
+                      "index": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    },
+                    "b": {
+                      "type": "Fold",
+                      "source": {
+                        "type": "MapList",
+                        "source": {
+                          "type": "MapList",
+                          "source": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "request"
+                            },
+                            "key": "current_shape"
+                          },
+                          "var_name": "point",
+                          "value": {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Gte",
+                              "a": {
+                                "type": "IndexAt",
+                                "seq": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "request"
+                                  },
+                                  "key": "rotation_steps"
+                                },
+                                "index": {
+                                  "type": "Lit",
+                                  "value": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "request"
+                                    },
+                                    "key": "step_index"
+                                  }
+                                }
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            },
+                            "then": {
+                              "type": "Vec",
+                              "items": [
+                                {
+                                  "type": "IndexAt",
+                                  "seq": {
+                                    "type": "Var",
+                                    "name": "point"
+                                  },
+                                  "index": {
+                                    "type": "Lit",
+                                    "value": 1
+                                  }
+                                },
+                                {
+                                  "type": "Minus",
+                                  "a": {
+                                    "type": "Lit",
+                                    "value": 0
+                                  },
+                                  "b": {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "other": {
+                              "type": "Vec",
+                              "items": [
+                                {
+                                  "type": "Minus",
+                                  "a": {
+                                    "type": "Lit",
+                                    "value": 0
+                                  },
+                                  "b": {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 1
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "IndexAt",
+                                  "seq": {
+                                    "type": "Var",
+                                    "name": "point"
+                                  },
+                                  "index": {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "var_name": "coord",
+                        "value": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "coord"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        }
+                      },
+                      "var_name": "value",
+                      "acc_name": "best",
+                      "init": {
+                        "type": "Lit",
+                        "value": 1000000000
+                      },
+                      "body": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Lt",
+                          "a": {
+                            "type": "Var",
+                            "name": "value"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "best"
+                          }
+                        },
+                        "then": {
+                          "type": "Var",
+                          "name": "value"
+                        },
+                        "other": {
+                          "type": "Var",
+                          "name": "best"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "Minus",
+                    "a": {
+                      "type": "IndexAt",
+                      "seq": {
+                        "type": "Var",
+                        "name": "coord"
+                      },
+                      "index": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    },
+                    "b": {
+                      "type": "Fold",
+                      "source": {
+                        "type": "MapList",
+                        "source": {
+                          "type": "MapList",
+                          "source": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "request"
+                            },
+                            "key": "current_shape"
+                          },
+                          "var_name": "point",
+                          "value": {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Gte",
+                              "a": {
+                                "type": "IndexAt",
+                                "seq": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "request"
+                                  },
+                                  "key": "rotation_steps"
+                                },
+                                "index": {
+                                  "type": "Lit",
+                                  "value": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "request"
+                                    },
+                                    "key": "step_index"
+                                  }
+                                }
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            },
+                            "then": {
+                              "type": "Vec",
+                              "items": [
+                                {
+                                  "type": "IndexAt",
+                                  "seq": {
+                                    "type": "Var",
+                                    "name": "point"
+                                  },
+                                  "index": {
+                                    "type": "Lit",
+                                    "value": 1
+                                  }
+                                },
+                                {
+                                  "type": "Minus",
+                                  "a": {
+                                    "type": "Lit",
+                                    "value": 0
+                                  },
+                                  "b": {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 0
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            "other": {
+                              "type": "Vec",
+                              "items": [
+                                {
+                                  "type": "Minus",
+                                  "a": {
+                                    "type": "Lit",
+                                    "value": 0
+                                  },
+                                  "b": {
+                                    "type": "IndexAt",
+                                    "seq": {
+                                      "type": "Var",
+                                      "name": "point"
+                                    },
+                                    "index": {
+                                      "type": "Lit",
+                                      "value": 1
+                                    }
+                                  }
+                                },
+                                {
+                                  "type": "IndexAt",
+                                  "seq": {
+                                    "type": "Var",
+                                    "name": "point"
+                                  },
+                                  "index": {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "var_name": "coord",
+                        "value": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "coord"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      "var_name": "value",
+                      "acc_name": "best",
+                      "init": {
+                        "type": "Lit",
+                        "value": 1000000000
+                      },
+                      "body": {
+                        "type": "IfThenElse",
+                        "cond": {
+                          "type": "Lt",
+                          "a": {
+                            "type": "Var",
+                            "name": "value"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "best"
+                          }
+                        },
+                        "then": {
+                          "type": "Var",
+                          "name": "value"
+                        },
+                        "other": {
+                          "type": "Var",
+                          "name": "best"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "request",
+          "step_index",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "step_index"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "request",
+          "buffer_size",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "buffer_size"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "budget"
+                  },
+                  "key": "remaining"
+                },
+                {
+                  "type": "Lit",
+                  "value": -1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "request",
+          "cost",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "cost"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ai_finish_verified_detached_rotation",
+      "batch": false,
+      "comment": "Mark exact shape match as a proposal only; imagery remains ungrounded.",
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_count"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "proposed"
+        ],
+        [
+          "set_attr",
+          "request",
+          "shape_verified",
+          {
+            "__term__": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "current_shape"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "expected_shape"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "request",
+          "grounded",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ai_stop_when_increment_unfunded",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_index"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_steps"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_index"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_count"
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "request",
+          "stop_reason",
+          "budget_exhausted"
+        ],
+        [
+          "set_attr",
+          "request",
+          "grounded",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ai_refuse_unsupported_rotation_increment",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_index"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "step_count"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "In",
+              "member": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "rotation_steps"
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "step_index"
+                  }
+                }
+              },
+              "container": {
+                "type": "Lit",
+                "value": [
+                  90,
+                  -90
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "request",
+          "stop_reason",
+          "unsupported_rotation_step"
+        ],
+        [
+          "set_attr",
+          "request",
+          "grounded",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ai_refuse_overlong_rotation_path",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "step_count"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_steps"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "request",
+          "stop_reason",
+          "path_exceeds_bound"
+        ],
+        [
+          "set_attr",
+          "request",
+          "grounded",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ai_expire_terminal_imagery_buffer",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_imagery_witness",
+          "witness"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "proposed",
+                "unresolved"
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "buffer_status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "expired"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "buffer_status",
+          "expired"
+        ],
+        [
+          "set_attr",
+          "witness",
+          "buffer_status",
+          "expired"
+        ]
+      ]
+    }
+  ]
+}

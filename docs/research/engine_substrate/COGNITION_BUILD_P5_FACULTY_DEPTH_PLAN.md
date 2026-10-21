@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1–E4.3 and A2.1–A2.2 are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out evaluations, D6 and H1–H4 remain open.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1–E4.3, A2.1–A2.2 and D6.1–D6.2 are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out evaluations and H1–H4 remain open.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -496,6 +496,8 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_analog_imagery_migrated.py tests/test_thought_manifold_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** a new arbitrary-angle solver; Python image transforms as agent reasoning.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+  **Complete:** the combined analog-imagery and ThoughtManifold gate passes 27 tests. The default-off graph seed executes quarter-turn transforms one step per shared ThinkingBudget unit, records every intermediate signature, caps each request at three increments/four buffer entries, verifies exact expected shape, leaves source observations unchanged, never marks imagery grounded, rejects unsupported increments and expires terminal buffers. Budget exhaustion leaves the request unresolved.
 
 ## Held-out evaluation specification
 
