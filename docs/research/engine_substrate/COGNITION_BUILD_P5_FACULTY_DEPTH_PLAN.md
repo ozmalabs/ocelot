@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1–E4.3, A2.1–A2.2, D6.1–D6.2 and H3 profile closure are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). H1/H2 harness reporting is complete with every item NOT_ESTABLISHED because all arm adapters are null; Bigville owner-context hookup, mechanism adapters, evidence-bearing evaluation and H4 closeout remain open.
+**Detailed on:** 2026-10-21. **Status:** Phase 5 implementation and reporting cycle complete; registered evaluation is NOT_ESTABLISHED because all arm adapters are null. H4 records the supported fixture classes, mechanism commit links and remaining adapter work. The missing owner-context hookup and item-specific evaluation adapters remain follow-up work; no held-out capability claim is made.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -592,6 +592,8 @@ The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.jso
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
 - **Non-goals:** promoting a mechanism fixture to a human capability claim; erasing null results.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+  **Complete:** parent plan, capability assessment and P5 results now record each mechanism's supported fixture class and implementation commits, the frozen `NOT_ESTABLISHED` result, inherited P4 C5 failure boundary, and follow-up adapter requirements. P5 is marked executed as a reporting cycle only; its registered behavioral hypotheses remain unestablished.
 
 ## Exit and handoff
 
