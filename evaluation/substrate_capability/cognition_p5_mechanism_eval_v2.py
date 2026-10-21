@@ -29,8 +29,6 @@ ITEM_ARMS = {
 }
 FROZEN = (
     "docs/research/engine_substrate/COGNITION_BUILD_P5_ADAPTERS_PREREG.md",
-    "docs/research/engine_substrate/COGNITION_BUILD_P5_PREREG.md",
-    "docs/research/engine_substrate/COGNITION_BUILD_P5_FACULTY_DEPTH_PLAN.md",
     "evaluation/substrate_capability/cognition_p5_mechanism_eval_v2.py",
     "evaluation/substrate_capability/cognition_p5_mechanism_analysis_v2.py",
     "evaluation/substrate_capability/cognition_p5_heldout_v1.py",
