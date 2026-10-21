@@ -73,6 +73,10 @@ def production_specs():
         ("CognitionPlanRequest", "has_frontier", "CognitionPlanFrontier"),
         ("CognitionPlanFrontier", "has_parent_frontier", "CognitionPlanFrontier"),
         ("CognitionPlanFrontier", "uses_transition", "CognitionPlanTransition"),
+        ("CognitionPlanFrontier", "has_path_arrival", "CognitionPlanPathArrival"),
+        ("CognitionPlanPathArrival", "from_frontier", "CognitionPlanFrontier"),
+        ("CognitionPlanPathArrival", "via_transition", "CognitionPlanTransition"),
+        ("CognitionPlanPathArrival", "to_frontier", "CognitionPlanFrontier"),
         ("CognitionPlanFrontier", "has_expansion_budget_request", "ThinkingBudgetRequest"),
         ("CognitionPlanFrontier", "expands_from_state", "CognitionPlanState"),
         ("CognitionPlanFrontier", "reaches_state", "CognitionPlanState"),
@@ -499,6 +503,15 @@ def expand_rule():
             ["add_edge", "child", "has_parent_frontier", "frontier", {}],
             ["add_edge", "child", "uses_transition", "transition", {}],
             ["add_edge", "child", "expands_from_state", "successor", {}],
+            ["add_node", "arrival", "CognitionPlanPathArrival", {
+                "status": "current", "model_epoch": T(A("request", "model_epoch")),
+                "source_epoch": T(A("request", "source_epoch")),
+                "action_key": T(A("transition", "action_key")),
+            }],
+            ["add_edge", "child", "has_path_arrival", "arrival", {}],
+            ["add_edge", "arrival", "from_frontier", "frontier", {}],
+            ["add_edge", "arrival", "via_transition", "transition", {}],
+            ["add_edge", "arrival", "to_frontier", "child", {}],
             ["set_attr", "frontier", "status", "expanded"],
             ["set_attr", "frontier", "expanded_epoch", T(A("budget_req", "debited_epoch"))],
         ],
@@ -541,6 +554,15 @@ def preserve_duplicate_state_path_rule():
         "effects": [
             ["add_edge", "existing", "has_parent_frontier", "frontier", {}],
             ["add_edge", "existing", "uses_transition", "transition", {}],
+            ["add_node", "arrival", "CognitionPlanPathArrival", {
+                "status": "current", "model_epoch": T(A("request", "model_epoch")),
+                "source_epoch": T(A("request", "source_epoch")),
+                "action_key": T(A("transition", "action_key")),
+            }],
+            ["add_edge", "existing", "has_path_arrival", "arrival", {}],
+            ["add_edge", "arrival", "from_frontier", "frontier", {}],
+            ["add_edge", "arrival", "via_transition", "transition", {}],
+            ["add_edge", "arrival", "to_frontier", "existing", {}],
         ],
     }
 

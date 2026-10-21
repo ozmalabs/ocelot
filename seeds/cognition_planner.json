@@ -359,6 +359,54 @@
       }
     },
     {
+      "provenance": "seed:cognition_planner:has_path_arrival:CognitionPlanFrontier:CognitionPlanPathArrival",
+      "src": {
+        "type": "CognitionPlanFrontier",
+        "var": "src"
+      },
+      "edge_type": "has_path_arrival",
+      "tgt": {
+        "type": "CognitionPlanPathArrival",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:from_frontier:CognitionPlanPathArrival:CognitionPlanFrontier",
+      "src": {
+        "type": "CognitionPlanPathArrival",
+        "var": "src"
+      },
+      "edge_type": "from_frontier",
+      "tgt": {
+        "type": "CognitionPlanFrontier",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:via_transition:CognitionPlanPathArrival:CognitionPlanTransition",
+      "src": {
+        "type": "CognitionPlanPathArrival",
+        "var": "src"
+      },
+      "edge_type": "via_transition",
+      "tgt": {
+        "type": "CognitionPlanTransition",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:to_frontier:CognitionPlanPathArrival:CognitionPlanFrontier",
+      "src": {
+        "type": "CognitionPlanPathArrival",
+        "var": "src"
+      },
+      "edge_type": "to_frontier",
+      "tgt": {
+        "type": "CognitionPlanFrontier",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:cognition_planner:has_expansion_budget_request:CognitionPlanFrontier:ThinkingBudgetRequest",
       "src": {
         "type": "CognitionPlanFrontier",
@@ -4738,6 +4786,72 @@
           {}
         ],
         [
+          "add_node",
+          "arrival",
+          "CognitionPlanPathArrival",
+          {
+            "status": "current",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "action_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "action_key"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "child",
+          "has_path_arrival",
+          "arrival",
+          {}
+        ],
+        [
+          "add_edge",
+          "arrival",
+          "from_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "add_edge",
+          "arrival",
+          "via_transition",
+          "transition",
+          {}
+        ],
+        [
+          "add_edge",
+          "arrival",
+          "to_frontier",
+          "child",
+          {}
+        ],
+        [
           "set_attr",
           "frontier",
           "status",
@@ -5278,6 +5392,72 @@
           "existing",
           "uses_transition",
           "transition",
+          {}
+        ],
+        [
+          "add_node",
+          "arrival",
+          "CognitionPlanPathArrival",
+          {
+            "status": "current",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "action_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "action_key"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "existing",
+          "has_path_arrival",
+          "arrival",
+          {}
+        ],
+        [
+          "add_edge",
+          "arrival",
+          "from_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "add_edge",
+          "arrival",
+          "via_transition",
+          "transition",
+          {}
+        ],
+        [
+          "add_edge",
+          "arrival",
+          "to_frontier",
+          "existing",
           {}
         ]
       ]

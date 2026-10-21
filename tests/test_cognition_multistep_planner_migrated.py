@@ -295,6 +295,17 @@ def test_graph_planner_preserves_alternate_paths_through_shared_intermediate():
     assert {adapter.s.node(transition)["attrs"]["action_key"] for transition in incoming} == {
         "merge_left", "merge_right"
     }
+    arrivals = adapter.inner.neighbours(shared[0], "has_path_arrival")
+    paired_arrivals = {
+        (adapter.s.node(adapter.inner.neighbours(arrival, "from_frontier")[0])["attrs"]["state_key"],
+         adapter.s.node(adapter.inner.neighbours(arrival, "via_transition")[0])["attrs"]["action_key"],
+         adapter.s.node(adapter.inner.neighbours(arrival, "to_frontier")[0])["attrs"]["state_key"])
+        for arrival in arrivals
+    }
+    assert paired_arrivals == {
+        ("left", "merge_left", "shared"),
+        ("right", "merge_right", "shared"),
+    }
     for parent in parents:
         earlier = adapter.inner.neighbours(parent, "has_parent_frontier")
         assert len(earlier) == 1
