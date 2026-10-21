@@ -1345,7 +1345,7 @@ fn collect_term_reads(
         T::ScalarAttrTriples { .. } => {
             *reads_any = true;
         }
-        T::ShapeRankSignature { .. } | T::RecallNearest { .. } => {
+        T::ShapeRankSignature { .. } | T::RecallNearest { .. } | T::SCMIntervene { .. } => {
             for child in crate::term::children(arena.get(idx)) {
                 collect_term_reads(arena, child, reads, reads_any);
             }
