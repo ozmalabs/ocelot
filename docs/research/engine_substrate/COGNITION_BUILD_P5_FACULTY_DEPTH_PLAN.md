@@ -1,0 +1,500 @@
+# Cognition build Phase 5 — Depth in existing faculties
+
+**Detailed on:** 2026-10-21. **Status:** execution started; P5.H0 reconciliation is recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). F1/F2 and the remaining P5 items are not yet implemented or evaluated.
+**Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
+
+## Scope and sequencing
+
+F1 shares typed attributed-state views across existing ToM systems. `domains/tom_meta_shape.py` and `tests/test_tom_meta_shape.py` already demonstrate a shared meta-shape; `TOM_SYSTEM_UNIFICATION_RESULTS.md` describes earlier scope, not the final current state. Preserve distinct domain belief stores and the retired Python psychology functions. F2 adds true nested attribution in rules; it does not infer that first-order belief worlds already imply recursion.
+
+E4 owns the deferred P1 `ImaginedCandidate` consumer and explicit dual-process candidate re-opening. A separate A2 task owns completion of decomposed axes; `child_mean_saturation` remains diagnostic until the completion contract is satisfied. Reappraisal changes appraisal interpretation while keeping observed events immutable. Response inhibition operates before irreversible emission; an already executed action cannot be withheld retroactively.
+
+After H0: `F1 → F2`; `E3` supplies optional causal models to `E4`, while `G3` must pass before E4's action arbitration integration. `G2`, `D6` and `A2` can be implemented independently using the P4 contracts. Every item has a spec and acceptance task before behavior implementation. After focused item tests, H3 integrates the guarded profile, H1 freezes all artifacts, H2 runs the held-out evaluation, then H4 closes the documentation. There is no dependency from the core planner to Track I invention: missing tools yield an explicit request/impasse; Track I I5 may consume it later.
+
+## Execution contract
+
+This document details the parent plan's §3 task contract. Tasks below are **planned**, including named acceptance tests; none is claimed implemented or passing by this document. Read references use `path:line` or `path::symbol`; symbol anchors are authoritative when lines move. New files are explicitly marked. Generator plus generated seed count as one touch point. Each task changes at most three touch points. Read this contract with each task; the per-task fields give its specific scope.
+
+- The agent's decisions and state live in seed rules and Rust. Python evaluation code may generate worlds, ingest events, tick to a declared limit, collect outputs and compute offline statistics. It must not select the agent's next action, perform recall, infer schemas or decide adoption.
+- Declare Γ productions for every new edge, test dependency-closure boot without permissive test grammars, and record provenance on inferred, imagined and observed objects. New runtime seeds are self-load-only and disabled by default. Add them only to the cognition-on profile at the final integration task; default and conversation boots remain isolated.
+- Before Rust edits, inspect `git status --short runners/dsl runners/wasm`. The 2026-10-21 checkout has concurrent uncommitted engine and Track I work. Use a clean worktree for engine implementation; never stage or regenerate over another author's changes. Read and apply `CLAUDE.md` and parent §1. No staging or commits are part of this planning update.
+- Reuse existing Terms first. Where a task specifies a new Term, its schema, error behavior, graph ownership, invalidation, serialization and cost bound must be frozen before implementation. Use the Rust integration tasks below; never hide changes to additional Rust files in a seed task.
+- A declared budget limits computation, not evidence standards. Each funded operation has one request, one approval and at most one debit, including retry and restart. Terminal paths restore temporary policy state. Commit confidence, conflict margins and safety vetoes cannot be relaxed to produce a success.
+- Tests are written before behavior changes where possible. Every task is done only after its named acceptance and the phase regression gate show no new failures. A timeout or skip is NOT_ESTABLISHED. Preserve P3's NOT_ESTABLISHED classification for `test_capability_control_fabric_migrated.py` until it is actually resolved; do not describe the inherited gate as fully green.
+
+### Commands for implementation, not commands executed by this plan
+
+Every `Verify cmd` below is prefixed by `OZMA_SEED_PERSIST_DISABLED=1`; use the repository `.venv/bin/python`. Run the focused tests for each task, then the phase gate at integration and after engine changes:
+
+```sh
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python scripts/failure_baseline.py verify --list results/cognition_gate_baseline.json
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python scripts/failure_baseline_sweep.py --files-from scripts/cognition_gate_suite.txt --workers 4 --timeout 420 --out /tmp/cognition-PHASE-gate.json
+```
+
+Replace `PHASE` with this phase number. Also retain P0–P3 acceptance tests, including `tests/test_extended_thinking_migrated.py`, `tests/test_inference_ladder_record_migrated.py` and `tests/test_cognition_profile_integration.py`. Before an engine build run `df -h /`; build only via `scripts/engine_build.sh`, run `scripts/engine_cargo_test.sh --lib -- --test-threads=4`, and run `tests/test_engine_provenance_migrated.py` with the built artifact. Compare known failures with `COGNITION_BUILD_P2_RESULTS.md`; changes to a baseline require a separate explained decision, never automatic acceptance. Record runtime, engine provenance, head commit, seed hashes and boot node/rule counts in results.
+
+### Evaluation contract
+
+Each phase has one preregistration document with a separate subsection per work item. Spec tasks fill and freeze those subsections; commit the complete preregistration alone **after** implementation and runner freeze, **before** any held-out draw. A spec task can use development fixtures only. The preregistration commit hash seeds a reproducible held-out split, disjoint from development and previous phases. Freeze runner, instance generators, analysis, engine and seeds. Draw index `i` uses `int(hash[:8],16) + 7919*i`; family and arm salts are declared in the preregistration. Use identical instances, training exposure and budgets across paired arms. Independent agents prevent cross-arm cache contamination. Repeat experiments explicitly retain the same agent within an arm.
+
+Report every registered metric, null, timeout and exclusion. For binary outcomes report paired differences, Wilson 95% intervals and exact McNemar tests; for work/latency report paired distributions and a prespecified paired bootstrap interval (10,000 resamples). Use Holm correction over each phase's primary superiority tests at family-wise α=.01. Zero-tolerance invariants fail on any violation. Fixed draws end without optional stopping. Report accuracy beside work saved, graph growth and budget spend. Wall time is secondary to deterministic work counters. Thresholds below are proposed decision criteria to freeze before draws, not observed results. Changing one after draws requires a new version and untouched holdout.
+
+Before freezing artifacts, run `scripts/lint_orphan_signals.py` and `scripts/report_seed_boot_status.py`; each new runtime seed must be SLO with its dependency closure tested. A write-only signal needs a consumer or an explicitly justified provenance-only allowlist entry. If an allowlist change is necessary, record a separate ≤3-file task before editing it; never suppress an unresolved decision signal merely to clear the lint.
+
+A phase can finish implementation with a negative capability result, provided every item is evaluated and limitations are recorded. Integration requires mechanism and invariant tests to pass with no new regressions. Downstream work requiring a failed capability must supply its own fixture-backed fallback or remain explicitly blocked. A result document never silently promotes a failed hypothesis to a pass. Human-level and beyond-human claims remain governed by Track I and require its human baselines.
+
+### P5.H0 — Reconcile Phase 4 results and freeze Phase 5 interfaces
+
+- **ID:** P5.H0
+- **Tier:** T1
+- **Goal:** Reconcile Phase 4 results and freeze Phase 5 interfaces.
+- **Read first:** `COGNITION_BUILD_P4_RESULTS.md` (created by P4); `COGNITION_BUILD_P1_RESULTS.md:26-40`; `domains/tom_meta_shape.py:1-70`; `COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md:115-130`.
+- **Touch:** this plan; new `COGNITION_BUILD_P5_PREREG.md`.
+- **Pattern to copy:** P3 explicit deferral ledger.
+- **Steps:** 1. Record which P4 capabilities are supported, failed or unavailable. 2. Freeze fallback local verification when transfer is unavailable and list native migration boundaries. 3. Assign every P1/P3 carryover to E4 or A2 below.
+- **Guard:** documentation only.
+- **Acceptance:** no dependent task assumes failed P4 evidence; all seven P5 work items and both carryovers are scheduled.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** inferring readiness from untracked Track I files.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.F1.1 — Specify a shared attributed-state view across ToM systems
+
+- **ID:** P5.F1.1
+- **Tier:** T1
+- **Goal:** Specify a shared attributed-state view across ToM systems.
+- **Read first:** `domains/tom_meta_shape.py:31-70`; `tests/test_tom_meta_shape.py:40-108`; `docs/research/engine_substrate/TOM_SYSTEM_UNIFICATION_RESULTS.md:1-100`; `domains/character_tom.py:340-396`; `seeds/interlocutor_shapes.json`.
+- **Touch:** `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_tom_unified_view_migrated.py`.
+- **Pattern to copy:** existing attributed_mental_state_signature and shared-meta-shape convergence.
+- **Steps:** 1. Map character beliefs, psychology vocabulary, interlocutor estimates and resident agency attribution to holder/target/content/modality/source/epoch. 2. Distinguish own affect, attributed affect and asserted world truth. 3. Write parity, contradiction and separate-owner fixtures.
+- **Guard:** planned `TomViewPolicy.enabled=0`.
+- **Acceptance:** planned `test_four_sources_project_without_merge`, `test_own_affect_is_not_other_belief`, `test_contradictions_preserved`, `test_source_epoch_refresh`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_tom_unified_view_migrated.py tests/test_tom_meta_shape.py -q -p no:cacheprovider`.
+- **Non-goals:** resurrecting retired psychology.py functions; structurally merging unrelated domain corpora.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.F1.2 — Wire native attributed-state projections
+
+- **ID:** P5.F1.2
+- **Tier:** T2
+- **Goal:** Wire native attributed-state projections.
+- **Read first:** `tests/test_tom_unified_view_migrated.py`; `domains/tom_meta_shape.py:31-70`; `scripts/gen_cognition_signature_seed.py` (P4); `seeds/psychology.json`.
+- **Touch:** new `scripts/gen_tom_unified_view_seed.py` + `seeds/tom_unified_view.json`; `tests/test_tom_unified_view_migrated.py`.
+- **Pattern to copy:** P4 source-descriptor epoch invalidation and existing ToM relation signatures.
+- **Steps:** 1. Create graph projections with domain-specific source references. 2. Recognize through the shared meta-shape without replacing original stores. 3. Register Γ edges and verify minimal dependency boot; adapters only translate fields.
+- **Guard:** `TomViewPolicy.enabled`, default 0.
+- **Acceptance:** F1.1 tests plus `test_dependency_boot`, `test_no_cross_owner_recall`, `test_generator_reproduction`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_tom_unified_view_migrated.py tests/test_tom_meta_shape.py tests/test_character_tom.py -q -p no:cacheprovider`.
+- **Non-goals:** adding a single truth field for incompatible beliefs; new Python ToM inference.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.F2.1 — Specify scoped recursive belief updates and queries
+
+- **ID:** P5.F2.1
+- **Tier:** T1
+- **Goal:** Specify scoped recursive belief updates and queries.
+- **Read first:** `domains/character_tom.py:340-396`; `tests/test_character_tom.py:68-101`; `tests/test_tom_unified_view_migrated.py`; `COGNITION_BUILD_P5_PREREG.md`.
+- **Touch:** `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_recursive_tom_migrated.py`.
+- **Pattern to copy:** character_tom nested entities and first-order Sally-Anne isolation.
+- **Steps:** 1. Freeze identity by complete holder path, referent and world version. 2. Specify observation/access events, mistaken beliefs, depth bound 2 initially, cycles and unknown answers. 3. Write second-order true/false belief minimal pairs, swapped names and update-access controls.
+- **Guard:** planned `RecursiveTomPolicy.enabled=0`.
+- **Acceptance:** planned `test_second_order_false_belief`, `test_actual_world_not_overwritten`, `test_no_access_no_belief_update`, `test_cycles_and_depth_bound`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_recursive_tom_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** an unbounded nesting claim; lexical answer templates keyed to test names.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.F2.2 — Implement recursive belief-world reasoning in rules
+
+- **ID:** P5.F2.2
+- **Tier:** T2
+- **Goal:** Implement recursive belief-world reasoning in rules.
+- **Read first:** `tests/test_recursive_tom_migrated.py`; `domains/character_tom.py::_nested_entity`; `scripts/gen_tom_unified_view_seed.py`.
+- **Touch:** new `scripts/gen_recursive_tom_seed.py` + `seeds/recursive_tom.json`; `tests/test_recursive_tom_migrated.py`.
+- **Pattern to copy:** scoped graph entities and native JOIN/Exists rules.
+- **Steps:** 1. Materialize path-scoped worlds and event-driven updates. 2. Resolve queries inside the requested holder path; preserve unknowns. 3. Prevent cycles, duplicate worlds and cross-level leakage through explicit guards.
+- **Guard:** `RecursiveTomPolicy.enabled`, default 0.
+- **Acceptance:** F2.1 tests plus `test_repeated_event_idempotent`, `test_holder_swap_changes_answer`, `test_minimal_dependency_boot`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_recursive_tom_migrated.py tests/test_character_tom.py -q -p no:cacheprovider`.
+- **Non-goals:** changing actual observations to match a character belief.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.F2.3 — Make the recursive ToM adapter mechanical
+
+- **ID:** P5.F2.3
+- **Tier:** T2
+- **Goal:** Make the recursive ToM adapter mechanical.
+- **Read first:** `domains/character_tom.py:340-522`; `tests/test_recursive_tom_migrated.py`; `tests/test_character_tom.py:245-279`.
+- **Touch:** `domains/character_tom.py`; `tests/test_recursive_tom_migrated.py`; `tests/test_character_tom.py`.
+- **Pattern to copy:** P4 regulated-thought adapter migration.
+- **Steps:** 1. Replace nested-world decision branches with event ingestion and graph query readback. 2. Keep sentence parsing as translation only where permitted by architecture. 3. Compare captured first-order public outputs and second-order cases.
+- **Guard:** explicit ToM API invocation; recursive policy opt-in.
+- **Acceptance:** `test_adapter_has_no_belief_update_decisions`, all first-order tests, and all F2 acceptance tests pass.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_recursive_tom_migrated.py tests/test_character_tom.py -q -p no:cacheprovider`.
+- **Non-goals:** a Python helper deciding who knows what.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.G2.1 — Specify evidence-preserving reappraisal
+
+- **ID:** P5.G2.1
+- **Tier:** T1
+- **Goal:** Specify evidence-preserving reappraisal.
+- **Read first:** `seeds/core_emotions.json`; `seeds/arousal_window_coreg.json`; `tests/test_core_emotions_migrated.py:50-98`; `COGNITION_APERTURE_ADAPTER_CONTRACT.md` (P4).
+- **Touch:** `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_reappraisal_migrated.py`.
+- **Pattern to copy:** core emotion minimal-pair discriminators and chosen-frame proposals.
+- **Steps:** 1. Define observed event, appraisal frame, competing interpretations and validity checks. 2. Separate reappraisal from arousal pull and unsupported denial. 3. Write beneficial valid frame, adverse evidence, no alternative and forced-frame fixtures.
+- **Guard:** planned `ReappraisalPolicy.enabled=0`.
+- **Acceptance:** planned `test_alternative_input_reappraised`, `test_event_unchanged`, `test_unsupported_optimism_rejected`, `test_no_frame_no_reappraisal`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_reappraisal_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** rewarding reduced distress alone; changing core emotion thresholds.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.G2.2 — Re-run core appraisal over verified alternative frames
+
+- **ID:** P5.G2.2
+- **Tier:** T2
+- **Goal:** Re-run core appraisal over verified alternative frames.
+- **Read first:** `tests/test_reappraisal_migrated.py`; `seeds/core_emotions.json`; `seeds/thinking_budget.json`; `scripts/gen_cognition_aperture_seed.py` (P4).
+- **Touch:** new `scripts/gen_reappraisal_seed.py` + `seeds/reappraisal.json`; `tests/test_reappraisal_migrated.py`.
+- **Pattern to copy:** funded chosen-frame probe and immutable source descriptor.
+- **Steps:** 1. Propose bounded alternative interpretations. 2. Check against grounded evidence and core appraisal rules in a separate view. 3. Adopt only the interpretation view with provenance; restore on failed/denied probe.
+- **Guard:** `ReappraisalPolicy.enabled`, default 0.
+- **Acceptance:** G2.1 tests plus `test_probe_funded_once`, `test_appraisal_provenance_retained`, `test_forced_constraints_preserved`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_reappraisal_migrated.py tests/test_core_emotions_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** editing the immutable source event or passing off relief as verified truth.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.G3.1 — Specify action inhibition before external emission
+
+- **ID:** P5.G3.1
+- **Tier:** T1
+- **Goal:** Specify action inhibition before external emission.
+- **Read first:** `seeds/dual_process_core.json`; `seeds/reflex_core.json`; `tests/test_dual_process_core_migrated.py`; `CLAUDE.md:40-65`.
+- **Touch:** new `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_response_inhibition_migrated.py`.
+- **Pattern to copy:** dual-process refusal provenance and engine commit boundary.
+- **Steps:** 1. Enumerate proposal, selected, authorized, emitted and observed action states. 2. Define conflict/stop event priority, late-stop outcome and retry identity. 3. Specify one common emission token check in the native dispatch path; graph inhibition cannot revoke an already emitted action.
+- **Guard:** planned `ResponseInhibitionPolicy.enabled=0`.
+- **Acceptance:** planned `test_stop_before_emit_withholds`, `test_go_executes_once`, `test_late_stop_reports_already_emitted`, `test_same_epoch_stop_wins`; exact dispatch file and symbol recorded in contract.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** a promise to undo physical effects; lowering action safety checks.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.G3.2 — Implement graph stop and withhold lifecycle
+
+- **ID:** P5.G3.2
+- **Tier:** T2
+- **Goal:** Implement graph stop and withhold lifecycle.
+- **Read first:** `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `tests/test_response_inhibition_migrated.py`; `seeds/dual_process_core.json`; `seeds/reflex_core.json`.
+- **Touch:** new `scripts/gen_response_inhibition_seed.py` + `seeds/response_inhibition.json`; `tests/test_response_inhibition_migrated.py`.
+- **Pattern to copy:** existing refusal marks with monotonic action states.
+- **Steps:** 1. Mint idempotent stop requests and revoke pending authorization tokens. 2. Emit explicit withheld/late terminal records. 3. Test priority and stale events at fixpoint.
+- **Guard:** `ResponseInhibitionPolicy.enabled`, default 0.
+- **Acceptance:** G3.1 tests pass for graph lifecycle; `test_withheld_cannot_rearm_from_same_request`, `test_default_off_parity`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** claiming emission safety before G3.3 dispatch integration.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.G3.3 — Enforce authorization at the native action boundary
+
+- **ID:** P5.G3.3
+- **Tier:** T2
+- **Goal:** Enforce authorization at the native action boundary.
+- **Read first:** `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `runners/dsl/src/py.rs`; `seeds/reflex_core.json`; `tests/test_response_inhibition_migrated.py`.
+- **Touch:** `runners/dsl/src/py.rs`; `runners/dsl/src/lib.rs`; `tests/test_response_inhibition_migrated.py`.
+- **Pattern to copy:** native dispatch ownership identified by G3.1; freeze exact symbol before edits.
+- **Steps:** 1. Route native dispatch through a monotonic authorization check that observes stop state immediately before emission. 2. Cover all active reflex/motor dispatch routes listed by the spec; if implementation lives elsewhere, revise this Touch list to ≤3 exact files before work. 3. Test an instrumented sink for zero stopped emissions and one go emission; rebuild and provenance-check.
+- **Guard:** policy guard preserves default path; hard host veto always enforced.
+- **Acceptance:** `test_native_sink_never_receives_stopped_action`, `test_same_epoch_stop_wins_at_sink`, `test_sink_idempotence`; graph-only assertions are insufficient.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_response_inhibition_migrated.py tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** host-side Python action selection; skipping a dispatch route because fixtures do not exercise it.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E3.1 — Specify an explicit SCM beside CAN and causal facts
+
+- **ID:** P5.E3.1
+- **Tier:** T1
+- **Goal:** Specify an explicit SCM beside CAN and causal facts.
+- **Read first:** `runners/dsl/src/can_ops.rs:40-119`; `domains/imagination.py:176-236`; `tests/test_remote_causal_migrated.py:42-62`; `tests/test_can_ops.py:96-137`.
+- **Touch:** new `COGNITION_SCM_CONTRACT.md`; `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_scm_intervention_migrated.py`.
+- **Pattern to copy:** remote causal do-contrast and detached grounding cut; no generic SCM precedent, so T1 spec.
+- **Steps:** 1. Define finite acyclic endogenous variables, exogenous inputs and structural equations; declare unsupported cycles. 2. Map CausalFacts to supported structural mechanisms only; CAN energy/couplings are not automatically causal equations. 3. Freeze do(X=x) edge surgery, shared exogenous assignment for counterfactuals and a valid observed backdoor adjustment set with positivity checks.
+- **Guard:** planned `ScmPolicy.enabled=0`.
+- **Acceptance:** planned `test_do_differs_from_conditioning`, `test_confounder_adjustment_matches_oracle`, `test_collider_not_adjusted`, `test_no_identification_returns_unknown`, `test_live_graph_unchanged`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_intervention_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** general do-calculus completeness; interpreting associative CAN edges as causal mechanisms.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+## P5.R — Rust integration for `SCMIntervene`
+
+These tasks run only if the corresponding spec establishes that existing Terms cannot express the operation. Each task is a single variant change. The spec freezes the argument and result schema first. No caller becomes active until R4 passes. If no new variant is needed, record all four tasks as not required with the existing expression and test evidence.
+
+### P5.R1 — Define and evaluate SCMIntervene
+
+- **ID:** P5.R1
+- **Tier:** T2
+- **Goal:** Define and evaluate SCMIntervene.
+- **Read first:** `runners/dsl/src/term.rs::TermNode`; `runners/dsl/src/can_ops.rs`; `COGNITION_SCM_CONTRACT.md`.
+- **Touch:** `runners/dsl/src/term.rs`; `runners/dsl/src/can_ops.rs`.
+- **Pattern to copy:** `term.rs::TimeInfer` dispatch and `shape_decode.rs::eval_time_infer`.
+- **Steps:** 1. Add the frozen variant and evaluator. 2. Add Rust unit tests for valid, empty, malformed and bounded inputs. 3. Cover every ownership and failure case in the spec.
+- **Guard:** new variant has no callers in default seeds.
+- **Acceptance:** Rust unit tests assert the frozen output and no mutation of the live graph.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** new Python decision code; changes to other variants.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.R2 — Wire SCMIntervene JSON and graph reflection
+
+- **ID:** P5.R2
+- **Tier:** T2
+- **Goal:** Wire SCMIntervene JSON and graph reflection.
+- **Read first:** `runners/dsl/src/jsonio.rs`; `runners/dsl/src/reflect.rs`; `COGNITION_SCM_CONTRACT.md`.
+- **Touch:** `runners/dsl/src/jsonio.rs`; `runners/dsl/src/reflect.rs`.
+- **Pattern to copy:** existing `TimeInfer` arms in both modules.
+- **Steps:** 1. Add parse and serialize arms. 2. Add reflection and reconstruction. 3. Test JSON and graph round trips without losing optional fields.
+- **Guard:** new variant only.
+- **Acceptance:** round-trip tests preserve every field and reject malformed forms.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** evaluator semantics changes.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.R3 — Wire SCMIntervene traversal and variant metadata
+
+- **ID:** P5.R3
+- **Tier:** T2
+- **Goal:** Wire SCMIntervene traversal and variant metadata.
+- **Read first:** `runners/dsl/src/rewrite.rs`; `runners/dsl/src/term.rs`; `runners/dsl/src/term_variants.rs`.
+- **Touch:** `runners/dsl/src/rewrite.rs`; `runners/dsl/src/term.rs`; `runners/dsl/src/term_variants.rs`.
+- **Pattern to copy:** existing `TimeInfer` substitution, free-variable and metadata arms.
+- **Steps:** 1. Cover substitution, clone/remap, free variables and stability. 2. Regenerate tracked variant metadata by its existing generator. 3. Audit all exhaustive dispatch sites; if additional sites are found, add separate ≤3-file task records before touching them.
+- **Guard:** new variant only.
+- **Acceptance:** free-variable isolation, graph-change invalidation, serialization and compile checks pass; no missing dispatch arm.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** unconditional memoization of graph mutation; copying another author’s generated artifacts.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.R4 — Build and expose SCMIntervene through the native evaluator
+
+- **ID:** P5.R4
+- **Tier:** T2
+- **Goal:** Build and expose SCMIntervene through the native evaluator.
+- **Read first:** `scripts/engine_build.sh`; `runners/dsl/src/py.rs`; `COGNITION_SCM_CONTRACT.md`.
+- **Touch:** new `tests/test_scm_intervention_migrated.py`; `runners/dsl/src/py.rs` only if generic evaluation is insufficient.
+- **Pattern to copy:** `tests/test_time_infer_migrated.py::_boot` and native Term evaluation.
+- **Steps:** 1. Build through engine_build.sh after disk check. 2. Evaluate JSON through the native API; add a thin binding only if required. 3. Run Rust tests, provenance and regression gates; record artifact hash.
+- **Guard:** no default feature or default seed changes.
+- **Acceptance:** native acceptance covers the full frozen spec; provenance identifies the new engine; Cargo baseline has no new failures.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_intervention_migrated.py tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** default Cargo feature changes; JIT or WASM semantic forks.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E3.2 — Wire causal queries through detached native SCM evaluation
+
+- **ID:** P5.E3.2
+- **Tier:** T2
+- **Goal:** Wire causal queries through detached native SCM evaluation.
+- **Read first:** `COGNITION_SCM_CONTRACT.md`; `tests/test_scm_intervention_migrated.py`; `seeds/remote_causal.json`; `seeds/thinking_budget.json`.
+- **Touch:** new `scripts/gen_scm_reasoning_seed.py` + `seeds/scm_reasoning.json`; `tests/test_scm_intervention_migrated.py`.
+- **Pattern to copy:** remote do-contrast with explicit detached query/result records.
+- **Steps:** 1. Build explicit SCM query objects from supported model facts. 2. Evaluate graph surgery on detached native data; charge computation and retain source model hash. 3. Return intervention, adjustment or nonidentification records without promoting them to observations.
+- **Guard:** `ScmPolicy.enabled`, default 0.
+- **Acceptance:** E3.1 tests plus `test_source_model_epoch_invalidates`, `test_query_budget_bound`, `test_detached_result_not_observed`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_intervention_migrated.py tests/test_remote_causal_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** rewriting imagination.py or existing remote causal semantics; hidden-variable identification without assumptions.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E4.1 — Specify a bounded planner and grounded candidate arbitration
+
+- **ID:** P5.E4.1
+- **Tier:** T1
+- **Goal:** Specify a bounded planner and grounded candidate arbitration.
+- **Read first:** `seeds/generative_world_model.json`; `seeds/goal_derivation.json`; `COGNITION_BUILD_P1_RESULTS.md:26-40`; `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `COGNITION_MANIFOLD_INTEGRATION_CONTRACT.md` (P4).
+- **Touch:** new `COGNITION_PLANNER_CONTRACT.md`; `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_cognition_multistep_planner_migrated.py`.
+- **Pattern to copy:** GWM bounded rollout requests and P1 advisory ImaginedCandidate.
+- **Steps:** 1. Freeze state/goal satisfaction, admissible successor generation, model version, frontier identity, cycle detection, depth=8 and max expanded states=256. 2. Preserve feasible alternatives; use manifold minimum-sufficient intervention selection and goal tie rules, never a sum of arbitrary costs. 3. Define terminal solved/exhausted/unknown/model-stale statuses, budget requests, candidate re-open tokens and observation-grounded settlement.
+- **Guard:** planned `CognitionPlannerPolicy.enabled=0`.
+- **Acceptance:** planned `test_two_step_delayed_reward`, `test_cycle_terminates`, `test_missing_transition_unknown`, `test_imagined_not_system_one`, `test_stale_model_replans`; exact re-open contract recorded.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** assuming stochastic GWM predictions are certainties; silently disabling frozen dual-process guards.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E4.2 — Implement graph-resident bounded multi-step search
+
+- **ID:** P5.E4.2
+- **Tier:** T2
+- **Goal:** Implement graph-resident bounded multi-step search.
+- **Read first:** `COGNITION_PLANNER_CONTRACT.md`; `seeds/generative_world_model.json`; `scripts/gen_impasse_simulation_bridge_seed.py`; `seeds/thinking_budget.json`.
+- **Touch:** new `scripts/gen_cognition_planner_seed.py` + `seeds/cognition_planner.json`; `tests/test_cognition_multistep_planner_migrated.py`.
+- **Pattern to copy:** GWM rollout expansion and P3 one-request-per-funded-step.
+- **Steps:** 1. Materialize frontier and parent/path state as graph data. 2. Expand only grammar-admissible model actions under depth, node and budget bounds; keep uncertainty branches. 3. Verify terminal goals and emit a candidate plan or explicit impasse/needs_tool request.
+- **Guard:** `CognitionPlannerPolicy.enabled`, default 0.
+- **Acceptance:** E4.1 search tests plus `test_frontier_bound`, `test_every_expansion_funded`, `test_same_state_model_epoch_dedup`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_goal_derivation_migrated.py tests/test_compositional_plan_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** Python beam search; duplicating Track I goal-directed invention.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E4.3 — Consume imagined candidates through System-2 arbitration
+
+- **ID:** P5.E4.3
+- **Tier:** T2
+- **Goal:** Consume imagined candidates through System-2 arbitration.
+- **Read first:** `COGNITION_PLANNER_CONTRACT.md`; `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `seeds/impasse_simulation_bridge.json`; `tests/test_cognition_multistep_planner_migrated.py`.
+- **Touch:** new `scripts/gen_imagined_candidate_arbitration_seed.py` + `seeds/imagined_candidate_arbitration.json`; `tests/test_cognition_multistep_planner_migrated.py`.
+- **Pattern to copy:** P1 proposal provenance and G3 authorization token.
+- **Steps:** 1. Consume has_imagined_candidate into a new System-2 decision revision tied to context/model epochs. 2. Re-open only candidates named by the explicit contract; verify current goal and manifold before authorizing through G3. 3. Keep imagined provenance through execution; create grounded evidence only after matching real receipt, then settle parent context.
+- **Guard:** `ImaginedArbitrationPolicy.enabled`, default 0.
+- **Acceptance:** `test_advisory_candidate_consumed_once`, `test_no_grounding_before_receipt`, `test_reopened_candidate_reverified`, `test_stop_blocks_imagined_action`, `test_model_change_cancels_authorization`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** editing frozen dual_process_core to weaken its confidence thresholds; treating a rollout as action success.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.A2.1 — Specify parent completion after capability decomposition
+
+- **ID:** P5.A2.1
+- **Tier:** T1
+- **Goal:** Specify parent completion after capability decomposition.
+- **Read first:** `COGNITION_BUILD_P1_RESULTS.md:26-40`; `seeds/decomposition_consumer.json`; `seeds/impasse_escalation.json`; `tests/test_decomposition_consumer_migrated.py`.
+- **Touch:** `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_decomposition_completion_migrated.py`.
+- **Pattern to copy:** dc_parent_progress_from_children diagnostic rollup.
+- **Steps:** 1. Require every required CapKey to be covered by verified completed child work in the same decomposition/model epoch. 2. Define empty-child, overlapping-child, partial and stale cases. 3. Separate parent saturation update from impasse resolution; require both completion evidence and no outstanding required child.
+- **Guard:** planned `DecompositionCompletionPolicy.enabled=0`.
+- **Acceptance:** planned `test_partial_children_do_not_complete`, `test_all_required_keys_complete_parent`, `test_stale_child_reopens`, `test_empty_children_never_complete`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_decomposition_completion_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** using child_mean_saturation alone as completion evidence.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.A2.2 — Resolve completed parent axes without premature de-escalation
+
+- **ID:** P5.A2.2
+- **Tier:** T2
+- **Goal:** Resolve completed parent axes without premature de-escalation.
+- **Read first:** `tests/test_decomposition_completion_migrated.py`; `seeds/decomposition_consumer.json`; `scripts/gen_decomposition_consumer_seed.py`.
+- **Touch:** new `scripts/gen_decomposition_completion_seed.py` + `seeds/decomposition_completion.json`; `tests/test_decomposition_completion_migrated.py`.
+- **Pattern to copy:** P1 deduplicated child axes and explicit provenance edges.
+- **Steps:** 1. Add completion witness rules and parent/impasse settlement. 2. Invalidate the witness when required coverage changes. 3. Test epoch changes and repeated fixpoints; preserve original diagnostic rollup.
+- **Guard:** `DecompositionCompletionPolicy.enabled`, default 0.
+- **Acceptance:** A2.1 tests plus `test_completion_idempotent`, `test_parent_impasse_settles_only_with_witness`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_decomposition_completion_migrated.py tests/test_decomposition_consumer_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** rewriting escalation order or declaring a parent solved from average progress.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.D6.1 — Specify analog rotation and detached imagery work
+
+- **ID:** P5.D6.1
+- **Tier:** T1
+- **Goal:** Specify analog rotation and detached imagery work.
+- **Read first:** `seeds/shape_decode_loop.json`; `domains/imagination.py:124-236`; `tests/test_geninfer_grain_migrated.py`; `runners/dsl/src/shape_decode.rs::eval_time_infer`.
+- **Touch:** `COGNITION_BUILD_P5_PREREG.md`; new `tests/test_analog_imagery_migrated.py`.
+- **Pattern to copy:** existing held rotation generators and detached grounding cut.
+- **Steps:** 1. Freeze shortest-angle path, angular quantum from representation resolution, intermediate witnesses and wrap-around. 2. Declare initial lattice-preserving domain; unsupported arbitrary angles remain unresolved until a sampled continuous representation is explicitly specified. 3. Measure actual bounded transform work per angular increment; a planted angle-based latency value is not evidence.
+- **Guard:** planned `AnalogImageryPolicy.enabled=0`.
+- **Acceptance:** planned `test_angle_wrap_and_identity`, `test_intermediate_witnesses`, `test_buffer_never_grounds`, `test_cost_counts_executed_transforms`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_analog_imagery_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** claiming human mental-rotation timing from a programmed cost counter.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.D6.2 — Run rotation trajectories in a bounded native imagery buffer
+
+- **ID:** P5.D6.2
+- **Tier:** T2
+- **Goal:** Run rotation trajectories in a bounded native imagery buffer.
+- **Read first:** `tests/test_analog_imagery_migrated.py`; `seeds/thought_manifold.json` (P4); `seeds/shape_decode_loop.json`; `COGNITION_MANIFOLD_INTEGRATION_CONTRACT.md` (P4).
+- **Touch:** new `scripts/gen_analog_imagery_seed.py` + `seeds/analog_imagery.json`; `tests/test_analog_imagery_migrated.py`.
+- **Pattern to copy:** P4 ThoughtManifold detached trajectory and existing exact rotation Terms.
+- **Steps:** 1. Compose held transforms in graph rules and retain intermediate witnesses. 2. Fund each increment, bound buffer size and expire terminal buffers. 3. Verify transformed shape before proposing a reading; source observations stay unchanged.
+- **Guard:** `AnalogImageryPolicy.enabled`, default 0.
+- **Acceptance:** D6.1 tests plus `test_budget_exhausts_unresolved`, `test_shape_verified_after_rotation`, `test_buffer_growth_bounded`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_analog_imagery_migrated.py tests/test_thought_manifold_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** a new arbitrary-angle solver; Python image transforms as agent reasoning.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+## Held-out evaluation specification
+
+Freeze 200 independently generated paired instances per primary family and 100 adverse/control cases per item. F1/E3 conformance checks may use exact finite oracles; all source identities, event orders and model parameters are held out. Register all families before the H1 commit.
+
+| Item | Arms and families | Primary decision criteria |
+|---|---|---|
+| F1 | Shared view on/off; four source representations, contradictions and owner permutations | ≥95% exact view conformance; zero belief-to-truth leaks; no loss of original source assertions |
+| F2 | Recursive rules on/off; second-order false/true belief minimal pairs, unseen holder names and access orders | ≥80% exact query accuracy and ≥20-point gain, corrected p<.01; zero actual-world overwrites |
+| G2 | Reappraisal on/off with identical arousal; valid alternative interpretation versus adverse evidence | ≥20-point gain in evidence-supported appraisal selection, corrected p<.01; zero source-event edits or accepted unsupported interpretations |
+| G3 | Inhibition on/off; randomized stop-before/go/late-stop orders at instrumented native sink | 100% timely stops withheld and ≥95% valid go emissions; zero duplicate emissions; late stops reported separately |
+| E3 | SCM do/query versus conditioning-only; confounder, collider, chain and nonidentified cases | ≥95% oracle agreement on identifiable finite models; all nonidentified/unsupported cases return unknown; live graph unchanged |
+| E4 | Planner versus one-step goal derivation, equal model exposure and budget; delayed reward, traps and missing transitions | ≥20-point solve gain on depth 2–8 cases, corrected p<.01; zero unapproved/unsafe emissions, false grounding or bound violations |
+| A2 | Completion consumer on/off; mixed required-key coverage and model-epoch changes | 100% valid completion decisions and zero premature settlements; stale evidence cannot complete a parent |
+| D6 | Buffered incremental versus direct exact transform; unseen lattice shapes and angles 0/90/180/270 | ≥95% exact shape verification, zero detached grounding; report actual work versus shortest angle. Any linear work trend is an implementation property; a human timing claim needs a separate protocol |
+
+G3 tests the action boundary even when E4 finds no good plan. E4 reports end-to-end observed success separately from predicted goal satisfaction. A2 and F1 are mechanism evidence without a claim of human cognition.
+
+### P5.H1 — Freeze Phase 5 evaluation artifacts
+
+- **ID:** P5.H1
+- **Tier:** T1
+- **Goal:** Freeze Phase 5 evaluation artifacts.
+- **Read first:** `COGNITION_BUILD_P5_PREREG.md`; `evaluation/substrate_capability/cognition_p4_heldout_v1.py` (P4); `evaluation/substrate_capability/cognition_p4_analysis_v1.py` (P4).
+- **Touch:** new `evaluation/substrate_capability/cognition_p5_heldout_v1.py`; new `evaluation/substrate_capability/cognition_p5_analysis_v1.py`; `COGNITION_BUILD_P5_PREREG.md`.
+- **Pattern to copy:** P4 seeded paired evaluation; native-sink assertions for inhibition.
+- **Steps:** 1. Implement deterministic families, external oracles and arm toggles; use max 64 epochs, planner depth 8 and 256 expansions. 2. Add development self-checks in each module, including null and unsafe-emission reports. 3. Freeze hashes and commit preregistration alone before draws.
+- **Guard:** evaluation only.
+- **Acceptance:** all eight item protocols represented; self-checks reject absent/altered hashes; intervention truth and belief answers never enter agent inputs.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** a Python planner or ToM oracle choosing actions.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+The H1 runner and analysis must implement `--self-check` for development-only checks. After H3 profile integration, run these checks before committing the preregistration; after that standalone commit, set `COGNITION_PREREG_HASH` to its full hash and run the registered draw:
+
+```sh
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_heldout_v1.py --self-check
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_analysis_v1.py --self-check
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_heldout_v1.py "$COGNITION_PREREG_HASH" 0 200
+```
+
+The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.json`; invoke `cognition_p5_analysis_v1.py` with that exact report path. It contains every registered subfamily, including separate ratio-bin draws where specified. Record the expanded commands and hashes in results. A self-check never uses registered held-out draw indices.
+
+### P5.H2 — Run and report every Phase 5 hypothesis
+
+- **ID:** P5.H2
+- **Tier:** T1
+- **Goal:** Run and report every Phase 5 hypothesis.
+- **Read first:** `COGNITION_BUILD_P5_PREREG.md`; `evaluation/substrate_capability/cognition_p5_heldout_v1.py`; `evaluation/substrate_capability/cognition_p5_analysis_v1.py`.
+- **Touch:** new `COGNITION_BUILD_P5_RESULTS.md`.
+- **Pattern to copy:** P3 honest results and P4 per-item status reporting.
+- **Steps:** 1. Run `<prereg_hash> 0 200` and the registered 100 control draws. 2. Analyze all outcomes, invariant failures and corrected tests. 3. Record predicted versus observed success, native work, boot cost and gate exceptions.
+- **Guard:** frozen evaluation only.
+- **Acceptance:** all eight items have a decision and claim boundary; generated reports remain uncommitted; no failed item disappears from summary.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** retuning on holdout; declaring recursive ToM or SCM general beyond the tested class.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.H3 — Integrate the Phase 5 cognition profile
+
+- **ID:** P5.H3
+- **Tier:** T2
+- **Goal:** Integrate the Phase 5 cognition profile.
+- **Read first:** `substrate/boot_profiles.py:769-796`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `COGNITION_BUILD_P5_PREREG.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** P4 guarded closure and G3 instrumented sink.
+- **Steps:** 1. Add mechanism-tested seed closures with explicit enablement. 2. Test impasse → plan → arbitration → stop/go → observed receipt → completion, with ToM and reappraisal provenance intact. 3. Run phase gates and record no new baseline failures.
+- **Guard:** cognition-on only.
+- **Acceptance:** `test_p5_planner_arbitration_receipt_chain`, `test_p5_stop_at_native_sink`, `test_p5_default_and_conversation_isolation`; no new regression failures.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_profile_integration.py tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** promoting imagined candidates to grounded System-1 habits before observation.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+
+### P5.H4 — Close Phase 5 documentation against actual evidence
+
+- **ID:** P5.H4
+- **Tier:** T3
+- **Goal:** Close Phase 5 documentation against actual evidence.
+- **Read first:** `COGNITION_BUILD_P5_RESULTS.md`; `COGNITION_BUILD_PLAN_20261010.md:1-25`; `COGNITION_CAPABILITY_ASSESSMENT_20261010.md:59-160`.
+- **Touch:** `COGNITION_BUILD_PLAN_20261010.md`; `COGNITION_CAPABILITY_ASSESSMENT_20261010.md`; `COGNITION_BUILD_P5_RESULTS.md`.
+- **Pattern to copy:** P3 parent status and assessment rows with explicit scope.
+- **Steps:** 1. Update each delivered item with mechanism, held-out outcome, supported input class and commit hashes. 2. Retain failed hypotheses and inherited gate exceptions. 3. Assign remaining limitations and downstream prerequisite decisions; mark phase executed only after its implementation and reporting obligations are complete.
+- **Guard:** documentation only.
+- **Acceptance:** all original work items and carryovers have evidence-scoped status; no future task is described as passed; all links resolve to completed artifacts.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** promoting a mechanism fixture to a human capability claim; erasing null results.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+## Exit and handoff
+
+P6 requires verified planning/rollout and attributed-agent interfaces for imitation. A failed held-out planner gain does not prevent a fixture-backed demonstration verifier, but that limitation must be named in P6 results. Hand off the native dispatch authorization boundary, SCM identification assumptions, supported rotation domain and parent-completion witness format. Update assessment maturity per item after results, retaining negative evidence.
