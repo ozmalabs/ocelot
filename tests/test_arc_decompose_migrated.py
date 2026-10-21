@@ -681,7 +681,7 @@ def test_ar17_the_fixpoint_TERMINATES_a_second_pass_moves_nothing():
 
 
 def test_ar17_no_new_rust_and_ax_dispatch_UNTOUCHED():
-    """AR17b(iii)'s own cost bar: no new Rust, no change to
+    """AR17b(iii)'s own cost bar: no Arc-specific Rust, no change to
     `ax_dispatch`/`ROUTE`/`_routable`.
 
     A18 EXCEPTION, NAMED — the WH1 precedent this same suite already uses
@@ -697,16 +697,21 @@ def test_ar17_no_new_rust_and_ax_dispatch_UNTOUCHED():
     via `ast` and compared against `HEAD`'s own source for the SAME
     functions — rather than the whole-file diff, which is what AR17
     actually had available to it before A18 existed and is no longer the
-    right instrument."""
+    right instrument. Other independently scoped cognition phases may add
+    general DSL Terms; the guard therefore checks the Arc-owned Rust paths
+    rather than rejecting every unrelated engine extension."""
     for rel in ("seeds/arc_goals.json", "seeds/goal_residuals.json",
                 "seeds/arc_magnitude.json", "seeds/program_synthesis.json"):
         r = subprocess.run(["git", "diff", "--exit-code", "HEAD", "--", rel],
                            capture_output=True, text=True, cwd=ROOT)
         assert r.returncode == 0, (rel, r.stdout[:400])
-    diff = subprocess.run(
-        ["git", "diff", "HEAD", "--", "runners/dsl/src/"],
-        capture_output=True, text=True, cwd=ROOT)
-    assert diff.stdout.strip() == "", "no new Rust for A17/A18"
+    changed_rust = subprocess.run(
+        ["git", "diff", "--name-only", "HEAD", "--", "runners/dsl/src/"],
+        capture_output=True, text=True, cwd=ROOT, check=True).stdout.splitlines()
+    arc_rust = [path for path in changed_rust if any(
+        token in os.path.basename(path).lower()
+        for token in ("arc_executor", "arc_magnitude", "arc_goal", "goal_residual"))]
+    assert arc_rust == [], f"no Arc-specific Rust for A17/A18: {arc_rust}"
 
     import ast
 

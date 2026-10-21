@@ -783,6 +783,15 @@ COGNITION_ON_SEEDS = (
     "extended_thinking",
     "inference_ladder_record",
     "cognition_on_params",
+    # P4 experimental representation adapters. Their own policies stay off
+    # until an explicit task enables them; installing them here tests closure.
+    "qualia_shape_mint",
+    "cognition_signature",
+    "similarity_recall",
+    "cognition_aperture",
+    "temporal_escalation",
+    "cognition_manifold",
+    "thought_manifold",
 )
 
 

@@ -108,6 +108,18 @@ def _extract_seed_writes_and_reads(
         seed_id = str(manifest.get("id") or path.stem)
         if seed_id in excluded:
             continue
+        production_endpoint_types: dict[str, set[tuple[str, str]]] = {}
+        for production in manifest.get("productions", ()) or ():
+            if not isinstance(production, dict):
+                continue
+            edge_type = production.get("edge_type")
+            src = production.get("src", {})
+            tgt = production.get("tgt", {})
+            if (isinstance(edge_type, str) and isinstance(src, dict)
+                    and isinstance(tgt, dict) and isinstance(src.get("type"), str)
+                    and isinstance(tgt.get("type"), str)):
+                production_endpoint_types.setdefault(edge_type, set()).add(
+                    (src["type"], tgt["type"]))
         for rule in manifest.get("rules", ()) or ():
             if not isinstance(rule, dict):
                 continue
@@ -117,6 +129,13 @@ def _extract_seed_writes_and_reads(
             for triple in rule.get("match", ()) or ():
                 if isinstance(triple, list) and len(triple) >= 2 and isinstance(triple[1], str):
                     reads.add(("edge", triple[1]))
+                    # A matched edge admitted by Γ also constrains the source
+                    # and target node types. Count those endpoint types as
+                    # consumed so rule-produced graph objects are not reported
+                    # as orphans solely because type matching is implicit.
+                    for src_type, tgt_type in production_endpoint_types.get(triple[1], ()):
+                        reads.add(("node_type", src_type))
+                        reads.add(("node_type", tgt_type))
 
             _walk_term_reads(rule.get("where"), reads)
 
