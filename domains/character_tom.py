@@ -474,7 +474,11 @@ _FIRST_PERSON_SUBJECTS = frozenset({"i", "we"})
 
 
 def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
-                             character_name: Optional[str] = None) -> Optional[dict]:
+                             character_name: Optional[str] = None,
+                             recursive_holder_path: Optional[list[str]] = None,
+                             actual_world_version: Optional[int] = None,
+                             recursive_event_id: Optional[str] = None,
+                             accessible: bool = True) -> Optional[dict]:
     """Try to ground `sentence` as a propositional-attitude construction.
     Returns None (not an attitude clause) so the caller falls through to the
     ordinary situation-model reading path — the discriminative case. A
@@ -508,6 +512,34 @@ def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
     else:
         subject_name = parsed_subject
     character_ent = smr._entity(agent, subject_name, unit=unit)  # REAL, shared SmEntity
+    if recursive_holder_path is not None and mem["flavor"] in ("belief", "knowledge"):
+        if actual_world_version is None:
+            raise ValueError("recursive ToM ingestion requires an explicit actual_world_version")
+        comp_read = rc.read_clause(agent, comp_words, write=False, learn=False)
+        predications = comp_read.get("predications") or []
+        content_ref = json.dumps(predications[0] if predications else comp_words,
+                                 ensure_ascii=False, separators=(",", ":"))
+        pred = predications[0] if predications else []
+        referent = str(pred[1]) if len(pred) > 1 else _clean_span(agent, comp_words)
+        value = str(pred[2]) if len(pred) > 2 else "true"
+        path = [str(holder) for holder in recursive_holder_path]
+        event_id = recursive_event_id or json.dumps(
+            [path, sentence, int(actual_world_version)], ensure_ascii=False,
+            separators=(",", ":"))
+        submit_recursive_tom_event(
+            agent, event_id=event_id, holder_path=path, referent=referent,
+            content_ref=content_ref, value=value,
+            actual_world_version=actual_world_version, accessible=accessible,
+        )
+        answer = query_recursive_tom(
+            agent, query_id=f"{event_id}:readback", holder_path=path,
+            referent=referent, content_ref=content_ref, expected_value=value,
+            actual_world_version=actual_world_version,
+        )
+        return {"sentence": sentence, "kind": "attitude", "subject": subject_name,
+                "attitude_verb": mem["lemma"], "membership": mem, "decode": decode,
+                "recursive_answer": answer, "recursive_event_id": event_id,
+                "complement_predications": predications}
     grounded = _ground_attitude_complement(agent, character_ent, subject_name,
                                            mem["flavor"], comp_words, t=t)
     return {"sentence": sentence, "kind": "attitude", "subject": subject_name,

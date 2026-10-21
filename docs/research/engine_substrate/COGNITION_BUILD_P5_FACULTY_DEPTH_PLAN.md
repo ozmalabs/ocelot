@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection, F2.1/F2.2, and the recursive adapter API are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). F2.3 first-order integration and F1/F2 held-out evaluations remain open; G2, G3, E3, E4, A2, and D6 have not started.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection, F2.1/F2.2, and F2.3's mechanical recursive adapter route are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Automatic F1 source projection and F1/F2 held-out evaluations remain open; G2, G3, E3, E4, A2, and D6 have not started.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -124,7 +124,7 @@ A phase can finish implementation with a negative capability result, provided ev
 - **Tier:** T2
 - **Goal:** Make the recursive ToM adapter mechanical.
 - **Read first:** `domains/character_tom.py:340-522`; `tests/test_recursive_tom_migrated.py`; `tests/test_character_tom.py:245-279`.
-- **Touch:** `domains/character_tom.py`; `tests/test_recursive_tom_migrated.py`; `tests/test_character_tom.py`.
+- **Touch:** `domains/character_tom.py`; `domains/wiktionary_reference.py` (English POS fallback when its optional slab is absent); `tests/test_character_tom.py` (recursive rule contract remains covered by the F2.2 fixture suite).
 - **Pattern to copy:** P4 regulated-thought adapter migration.
 - **Steps:** 1. Replace nested-world decision branches with event ingestion and graph query readback. 2. Keep sentence parsing as translation only where permitted by architecture. 3. Compare captured first-order public outputs and second-order cases.
 - **Guard:** explicit ToM API invocation; recursive policy opt-in.
