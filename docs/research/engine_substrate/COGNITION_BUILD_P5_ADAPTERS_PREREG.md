@@ -1,7 +1,7 @@
 # Phase 5 mechanism evaluation addendum v2
 
 **Protocol:** `cognition_p5_mechanism_eval_v2`  
-**Status:** draft; freeze this file alone after the adapter-backed self-checks, focused suites and full development panel pass.  
+**Status:** frozen by a standalone preregistration commit; registered draw not yet inspected.
 **Supersedes:** no prior result. The frozen v1 report at `0826089af64c38da3c34d3be2c96ca490364ffa3` remains an honest NOT_ESTABLISHED harness run; its null arms are not replaced or rescored.
 
 This addendum executes the original P5 held-out criteria through each shipped graph/native mechanism. It uses a new preregistration hash, seed derivation, and report namespace. The registered case counts and decision thresholds remain unchanged: 200 paired primary cases and 100 paired controls per item, with max 64 epochs, planner depth 8 and 256 expansions. Exact McNemar tests are reported for paired binary comparisons, Wilson 95% intervals for binary rates, and paired bootstrap 95% intervals from 10,000 deterministic resamples for work differences. Holm correction at family-wise α=.01 applies to the three superiority tests F2, G2 and E4. A new registered draw is permitted only after the standalone freeze commit and before inspecting any v2 outcome report.
