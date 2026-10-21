@@ -80,11 +80,45 @@ def verify_registered_freeze(prereg_hash):
 def _case(seed, item, index, control=False):
     rng = random.Random(seed ^ (index * 7919) ^ sum(map(ord, item)))
     kind = "adverse_control" if control else "primary"
+    if item == "F1":
+        agent_input = {"representation_count": 4, "owner_permutation": rng.sample(range(4), 4), "contradiction_control": control}
+        oracle = {"scoring_only": True, "preserve_source_assertions": True}
+    elif item == "F2":
+        belief = bool(index % 2)
+        agent_input = {"holder": f"unseen-holder-{index}", "report": f"door_open={belief}", "query": "holder_belief:door_open"}
+        oracle = {"scoring_only": True, "holder_belief": belief, "actual_world": not belief if control else belief}
+    elif item == "G2":
+        supported = bool(index % 2) and not control
+        agent_input = {"event": "message_not_received", "arousal": 0.7, "alternative": "recipient_offline", "evidence": "delivery_outage" if supported else "none"}
+        oracle = {"scoring_only": True, "alternative_supported": supported}
+    elif item == "G3":
+        events = ["stop", "go", "dispatch"] if index % 2 else ["go", "stop", "dispatch"]
+        if control:
+            events = ["go", "dispatch", "late_stop"]
+        agent_input = {"events": events, "requested_action": "move"}
+        oracle = {"scoring_only": True, "timely_stop": "stop" in events and events.index("stop") < events.index("dispatch")}
+    elif item == "E3":
+        graph = ("confounder", "collider", "chain", "nonidentified")[index % 4]
+        agent_input = {"graph_kind": graph, "query": {"do": "x=1", "outcome": "y"}}
+        oracle = {"scoring_only": True, "identified": graph != "nonidentified"}
+    elif item == "E4":
+        depth = 2 + index % 7
+        agent_input = {"depth": depth, "trap": f"trap-{index}", "missing_transition": control, "depth_limit": 8, "expansion_limit": 256}
+        oracle = {"scoring_only": True, "reachable": not control, "shortest_depth": depth if not control else None}
+    elif item == "A2":
+        required = ["alpha", "beta", "gamma"]
+        covered = len(required) if index % 4 == 0 and not control else index % len(required)
+        agent_input = {"required_keys": required, "covered_key_count": covered, "model_epoch_change": control}
+        oracle = {"scoring_only": True, "complete": covered == len(required) and not control}
+    else:
+        angle = (0, 90, 180, 270)[index % 4]
+        agent_input = {"lattice_angle": angle, "shape_index": index}
+        oracle = {"scoring_only": True, "shortest_work": angle // 90, "detached_grounding": False}
     return {"case_id": f"{item}-{kind}-{index:04d}", "kind": kind,
             "source_identity": hashlib.sha256(f"{seed}:{item}:{index}".encode()).hexdigest()[:16],
             "event_order": [rng.randrange(0, 8) for _ in range(4)],
             "model_parameter": rng.randrange(1, 100000),
-            "external_oracle": {"scoring_only": True, "expected_class": rng.choice(["valid", "invalid", "unknown"])}}
+            "agent_input": agent_input, "external_oracle": oracle}
 
 
 def run(prereg_hash, first, end, *, development=False):
@@ -120,6 +154,8 @@ def _self_check():
     assert report["development_only"] and set(report["items"]) == set(ITEMS)
     assert all(len(item["primary"]) == 3 and len(item["controls"]) == 100
                for item in report["items"].values())
+    assert all("external_oracle" not in row["inputs"] and "scoring_oracle" in row
+               for item in report["items"].values() for row in item["primary"])
     assert all(all(value is None for row in item["primary"] for value in row["arms"].values())
                for item in report["items"].values())
     manifest = artifact_hashes()

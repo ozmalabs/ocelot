@@ -531,6 +531,8 @@ G3 tests the action boundary even when E4 finds no good plan. E4 reports end-to-
 - **Non-goals:** a Python planner or ToM oracle choosing actions.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
+  **Harness ready; item adapters pending:** the runner and analysis cover all eight registered families, generate separate primary/control inputs, keep external oracles outside arm inputs, enforce frozen artifact hashes, and report null/unsafe emissions. Both development self-checks pass. All arm results are currently null, so the registered mechanism draw is deferred until the adapters exist; no H2 outcome is inferred from this harness-only check.
+
 The H1 runner and analysis must implement `--self-check` for development-only checks. After H3 profile integration, run these checks before committing the preregistration; after that standalone commit, set `COGNITION_PREREG_HASH` to its full hash and run the registered draw:
 
 ```sh
