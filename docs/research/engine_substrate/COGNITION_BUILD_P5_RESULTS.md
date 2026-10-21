@@ -71,6 +71,8 @@ Validation after the D6 receipt-boundary correction: 154 focused P5/profile test
 Reproduction commands:
 
 ```sh
+git worktree add --detach /tmp/ocelot-p5-v3-repro 483e6a302c875ffd6b139ff5ed3c1095625e21c7
+cd /tmp/ocelot-p5-v3-repro
 COGNITION_PREREG_HASH=483e6a302c875ffd6b139ff5ed3c1095625e21c7 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v3.py 483e6a302c875ffd6b139ff5ed3c1095625e21c7 0 200
 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_analysis_v3.py evaluation/reports/cognition_p5_mechanism_eval_v3_483e6a30_d0-200.json
 ```
