@@ -223,36 +223,6 @@ A phase can finish implementation with a negative capability result, provided ev
 - **Non-goals:** general do-calculus completeness; interpreting associative CAN edges as causal mechanisms.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-### P5.E3.1a — Freeze the native backdoor-adjustment query shape
-
-- **ID:** P5.E3.1a
-- **Tier:** T1
-- **Goal:** Extend the native SCM query contract to cover registered finite backdoor adjustment explicitly.
-- **Read first:** `COGNITION_SCM_CONTRACT.md`; P5.E3.1 adjustment and collider fixtures.
-- **Touch:** `COGNITION_SCM_CONTRACT.md`.
-- **Pattern to copy:** existing finite query/result shape and preregistered positivity and d-separation criteria.
-- **Steps:** 1. Add `adjustment` as a query kind with an explicit adjustment set and one treatment value. 2. Freeze standardized stratum-weight output and unknown conditions for descendants, open backdoor paths and failed positivity.
-- **Guard:** finite supplied exogenous assignments only; no general do-calculus or learned mechanisms.
-- **Acceptance:** the contract fixes exact query fields, output row shape, population weights and abstention reasons before implementation.
-- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_intervention_migrated.py -q -p no:cacheprovider`.
-- **Non-goals:** changing the held-out E3 thresholds or adding continuous variables.
-- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch.
-
-### P5.E3.1b — Implement finite native backdoor adjustment
-
-- **ID:** P5.E3.1b
-- **Tier:** T2
-- **Goal:** Evaluate registered backdoor adjustments in `SCMIntervene` with exact finite graph checks.
-- **Read first:** `COGNITION_SCM_CONTRACT.md`; `runners/dsl/src/can_ops.rs`; the native test fixture.
-- **Touch:** `runners/dsl/src/can_ops.rs`; `runners/dsl/src/sym.rs`; new `tests/test_scm_backdoor_adjustment_migrated.py`.
-- **Pattern to copy:** finite equation validation and exact detached model evaluation in P5.R1.
-- **Steps:** 1. Build the causal DAG from explicit endogenous-parent and exogenous-parent links. 2. Validate the backdoor set using descendant exclusion, treatment-mutilated d-separation and stratum positivity. 3. Emit weighted finite outcome rows or `unknown` with a typed reason.
-- **Guard:** reject malformed sets, missing adjustment values, cycles, unsupported variables and empty/unsupported populations.
-- **Acceptance:** native Term tests match the confounded oracle and reject collider/descendant and positivity failures; no graph handle is available to this evaluator.
-- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_backdoor_adjustment_migrated.py -q -p no:cacheprovider`.
-- **Non-goals:** general do-calculus completeness or adjustment-set search.
-- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch.
-
 ## P5.R — Rust integration for `SCMIntervene`
 
 These tasks run only if the corresponding spec establishes that existing Terms cannot express the operation. Each task is a single variant change. The spec freezes the argument and result schema first. No caller becomes active until R4 passes. If no new variant is needed, record all four tasks as not required with the existing expression and test evidence.
@@ -316,6 +286,51 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_intervention_migrated.py tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** default Cargo feature changes; JIT or WASM semantic forks.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E3.1a — Freeze the native backdoor-adjustment query shape
+
+- **ID:** P5.E3.1a
+- **Tier:** T1
+- **Goal:** Extend the native SCM query contract to cover registered finite backdoor adjustment explicitly.
+- **Read first:** `COGNITION_SCM_CONTRACT.md`; P5.E3.1 adjustment and collider fixtures.
+- **Touch:** `COGNITION_SCM_CONTRACT.md`.
+- **Pattern to copy:** existing finite query/result shape and preregistered positivity and d-separation criteria.
+- **Steps:** 1. Add `adjustment` as a query kind with an explicit adjustment set and one treatment value. 2. Freeze standardized stratum-weight output and unknown conditions for descendants, open backdoor paths and failed positivity.
+- **Guard:** finite supplied exogenous assignments only; no general do-calculus or learned mechanisms.
+- **Acceptance:** the contract fixes exact query fields, output row shape, population weights and abstention reasons before implementation.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_intervention_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** changing the held-out E3 thresholds or adding continuous variables.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch.
+
+### P5.E3.1b — Implement finite native backdoor adjustment
+
+- **ID:** P5.E3.1b
+- **Tier:** T2
+- **Goal:** Evaluate registered backdoor adjustments in `SCMIntervene` with exact finite graph checks.
+- **Read first:** `COGNITION_SCM_CONTRACT.md`; `runners/dsl/src/can_ops.rs`; the native test fixture.
+- **Touch:** `runners/dsl/src/can_ops.rs`; `runners/dsl/src/sym.rs`; generated native artifact pair `runners/dsl/python/substrate_rs/_native.abi3.so` + `_native.build.json`.
+- **Pattern to copy:** finite equation validation and exact detached model evaluation in P5.R1.
+- **Steps:** 1. Build the causal DAG from explicit endogenous-parent and exogenous-parent links. 2. Validate the backdoor set using descendant exclusion, treatment-mutilated d-separation and stratum positivity. 3. Emit weighted finite outcome rows or `unknown` with a typed reason.
+- **Guard:** reject malformed sets, missing adjustment values, cycles, unsupported variables and empty/unsupported populations.
+- **Acceptance:** native Rust Term tests match the confounded oracle and reject collider/descendant and positivity failures; no graph handle is available to this evaluator.
+- **Verify cmd:** `scripts/engine_cargo_test.sh --lib scm_backdoor_adjustment -- --test-threads=4`.
+- **Non-goals:** general do-calculus completeness or adjustment-set search.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch.
+
+### P5.E3.1c — Verify backdoor adjustment through the built Python engine
+
+- **ID:** P5.E3.1c
+- **Tier:** T2
+- **Goal:** Pin the finite adjustment result and abstentions through the public native Term API.
+- **Read first:** `tests/test_scm_backdoor_adjustment_migrated.py`; `COGNITION_SCM_CONTRACT.md`.
+- **Touch:** new `tests/test_scm_backdoor_adjustment_migrated.py`.
+- **Pattern to copy:** `test_scm_intervention_migrated.py` native `SCMIntervene` invocation.
+- **Steps:** 1. Assert standardized outcome weights on a held-out confounded fixture. 2. Assert collider/descendant and positivity cases return unknown.
+- **Guard:** use the provenance-verified release artifact; no Python SCM oracle supplies evaluator decisions.
+- **Acceptance:** all native adjustment API fixtures pass and provenance remains current.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scm_backdoor_adjustment_migrated.py tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** end-to-end causal claims outside the finite fixture class.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch.
 
 ### P5.E3.2 — Wire causal queries through detached native SCM evaluation
 
