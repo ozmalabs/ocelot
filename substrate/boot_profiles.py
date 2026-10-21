@@ -792,6 +792,12 @@ COGNITION_ON_SEEDS = (
     "temporal_escalation",
     "cognition_manifold",
     "thought_manifold",
+    # P5 planning, arbitration, verified decomposition completion, and
+    # bounded analog imagery are installed only in cognition-on.
+    "cognition_planner",
+    "imagined_candidate_arbitration",
+    "decomposition_completion",
+    "analog_imagery",
 )
 
 

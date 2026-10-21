@@ -128,6 +128,10 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
         ("has_consolidation_scheduler_policy", "ConsolidationSchedulerPolicy"),
         ("has_thinking_budget", "ThinkingBudget"),
         ("has_extended_thinking_policy", "ExtendedThinkingPolicy"),
+        ("has_cognition_planner_policy", "CognitionPlannerPolicy"),
+        ("has_imagined_arbitration_policy", "ImaginedArbitrationPolicy"),
+        ("has_decomposition_completion_policy", "DecompositionCompletionPolicy"),
+        ("has_analog_imagery_policy", "AnalogImageryPolicy"),
     ]
     for edge_type, node_type in expected_edges_and_types:
         targets = list(agent.inner.neighbours(agent.agent, edge_type))
@@ -164,6 +168,68 @@ def test_p4_default_and_conversation_isolation():
     assert p4_only.isdisjoint(installed_seeds(conversation.s))
     default.close()
     conversation.close()
+
+
+def test_p5_default_and_conversation_isolation():
+    p5 = {"cognition_planner", "imagined_candidate_arbitration",
+          "decomposition_completion", "analog_imagery"}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p5.isdisjoint(installed_seeds(default.s))
+    assert p5.isdisjoint(installed_seeds(conversation.s))
+    default.close()
+    conversation.close()
+
+
+def test_p5_planner_arbitration_receipt_chain():
+    from tests.test_cognition_multistep_planner_migrated import (
+        _imagined_arbitration_case, _run_to_fixpoint,
+    )
+    agent = boot_cognition_on()
+    for node_type in ("CognitionPlannerPolicy", "ImaginedArbitrationPolicy",
+                      "DecompositionCompletionPolicy", "AnalogImageryPolicy"):
+        enabled = [node for node in _nodes(agent, node_type)
+                   if agent.s.node(node)["attrs"].get("enabled") == 1.0]
+        assert enabled, f"cognition-on profile did not enable {node_type}"
+    # Existing focused mechanism fixture supplies an exact two-step model;
+    # this integration gate confirms the same planner/arbitration closure is
+    # available in the cognition-on profile.
+    adapter, request, context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    attrs = adapter.s.node(action_request)["attrs"]
+    adapter.inner.set_attr(action_request, "status", "emitted")
+    adapter.inner.set_attr(action_request, "sink_receipt_id", "p5-profile-receipt")
+    authorization = adapter.s.add_node("ActionAuthorization", {
+        "status": "consumed", "request_id": attrs["request_id"],
+        "source_epoch": attrs["source_epoch"], "action_key": attrs["action_key"],
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_authorization", authorization)
+    observation = adapter.s.add_node("ImaginedActionObservation", {
+        "status": "verified", "action_request_id": attrs["request_id"],
+        "source_epoch": attrs["source_epoch"], "sink_receipt_id": "p5-profile-receipt",
+        "observed_state_key": "middle",
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_observation", observation)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "grounded"
+    assert adapter.s.node(context)["attrs"]["status"] == "committed"
+    adapter.close()
+    agent.close()
+
+
+def test_p5_stop_at_native_sink():
+    from tests.test_response_inhibition_migrated import _native_graph, _request, _tick
+    substrate, agent = _native_graph(enabled=True)
+    request, authorization, stop = _request(substrate, agent)
+    _tick(substrate)
+    assert substrate.node(request)["attrs"]["status"] == "withheld"
+    assert substrate.node(authorization)["attrs"]["status"] == "revoked"
+    assert substrate.node(stop)["attrs"]["status"] == "withheld"
 
 
 def test_p4_budget_shared():
