@@ -480,6 +480,8 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Non-goals:** claiming human mental-rotation timing from a programmed cost counter.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
+  **Complete:** the executable D6.1 contract fixture passes five tests. The initial domain is the square lattice at 0/90/180/270 degrees, shortest signed quarter-turn paths, clockwise tie-breaking at 180 degrees, intermediate witnesses, detached buffers and transform-count cost. Unsupported angles remain unresolved.
+
 ### P5.D6.2 — Run rotation trajectories in a bounded native imagery buffer
 
 - **ID:** P5.D6.2
