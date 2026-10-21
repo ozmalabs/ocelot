@@ -112,13 +112,10 @@ def _runtime(shape, steps, *, budget=4):
     agent.s.set_attr(resource, "enabled", 1.0)
     agent.s.set_attr(resource, "remaining", float(budget))
     observation = agent.s.add_node("Observation", {"signature": [tuple(p) for p in sorted(shape)], "status": "observed"})
-    expected = sorted(shape)
-    for step in steps:
-        expected = rotate_ordered(expected, step)
     request = agent.s.add_node("AnalogImageryRequest", {
-        "rotation_steps": list(steps), "step_count": len(steps), "step_index": 0,
+        "request_id": "imagery-request", "rotation_steps": list(steps),
+        "step_count": len(steps), "step_index": 0,
         "buffer_size": 0, "current_shape": [list(point) for point in sorted(shape)],
-        "expected_shape": [tuple(point) for point in expected],
         "source_observation": str(observation), "status": "running", "cost": 0,
     })
     try:
@@ -126,6 +123,16 @@ def _runtime(shape, steps, *, budget=4):
     except TypeError:
         agent.inner.add_edge_unchecked(agent.s.nodes("Agent")[0], "has_analog_imagery_request", request)
     return agent, observation, request, resource
+
+
+def _verification_receipt(agent, request, observation, status):
+    receipt = agent.s.add_node("ImageryShapeVerification", {
+        "receipt_id": f"verify:{agent.s.node(request)['attrs']['request_id']}",
+        "request_id": agent.s.node(request)["attrs"]["request_id"],
+        "source_observation": str(observation), "verification_status": status,
+    })
+    agent.inner.add_edge_unchecked(request, "has_shape_verification", receipt)
+    return receipt
 
 
 def test_generator_reproduces_committed_seed_exactly():
@@ -149,9 +156,16 @@ def test_shape_verified_after_rotation():
     agent, observation, request, budget = _runtime(shape, (90,))
     agent.tick()
     attrs = agent.s.node(request)["attrs"]
+    expected = rotate_ordered(sorted(shape), 90)
+    assert attrs["status"] == "awaiting_verification"
+    assert attrs["current_shape"] == [tuple(point) for point in expected]
+    assert attrs["grounded"] == 0
+    assert "shape_verified" not in attrs
+    _verification_receipt(agent, request, observation, "verified")
+    agent.tick()
+    attrs = agent.s.node(request)["attrs"]
     assert attrs["status"] == "proposed"
     assert attrs["shape_verified"] is True
-    assert attrs["current_shape"] == attrs["expected_shape"]
     assert attrs["grounded"] == 0
     assert attrs["buffer_status"] == "expired"
     assert agent.s.node(observation)["attrs"]["signature"] == [tuple(p) for p in sorted(shape)]
@@ -163,10 +177,24 @@ def test_buffer_growth_bounded():
     agent, _, request, _ = _runtime(shape, (90, 90, 90), budget=8)
     agent.tick()
     attrs = agent.s.node(request)["attrs"]
-    assert attrs["status"] == "proposed"
+    assert attrs["status"] == "awaiting_verification"
     assert attrs["buffer_size"] == 3
     assert len(agent.s.neighbours(request, "has_imagery_witness")) == 3
-    assert attrs["buffer_status"] == "expired"
+    _verification_receipt(agent, request, agent.s.nodes("Observation")[0], "verified")
+    agent.tick()
+    assert agent.s.node(request)["attrs"]["buffer_status"] == "expired"
+
+
+def test_failed_verifier_rejects_shape_proposal():
+    shape = frozenset({(0, 0), (0, 1)})
+    agent, observation, request, _ = _runtime(shape, (90,))
+    agent.tick()
+    _verification_receipt(agent, request, observation, "mismatch")
+    agent.tick()
+    attrs = agent.s.node(request)["attrs"]
+    assert attrs["status"] == "unresolved"
+    assert attrs["stop_reason"] == "shape_verification_failed"
+    assert attrs["grounded"] == 0
 
 
 def test_runtime_refuses_arbitrary_increment():

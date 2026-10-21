@@ -96,14 +96,49 @@ def finish_rule():
     return {
         "name": "ai_finish_verified_detached_rotation",
         "batch": False,
-        "comment": "Mark exact shape match as a proposal only; imagery remains ungrounded.",
+        "comment": "Finish detached transform work but wait for a separate exact shape verifier receipt before proposing a reading.",
         "match": [["agent", "has_analog_imagery_policy", "policy"],
                   ["agent", "has_analog_imagery_request", "request"]],
         "where": And(Eq(A("policy", "enabled"), L(1)),
                       Eq(A("request", "status"), L("running")),
                       Eq(A("request", "step_index"), A("request", "step_count"))),
+        "effects": [["set_attr", "request", "status", "awaiting_verification"],
+                    ["set_attr", "request", "grounded", 0]],
+    }
+
+
+def verifier_receipt_rule():
+    return {
+        "name": "ai_accept_exact_shape_verifier_receipt",
+        "batch": False,
+        "match": [["agent", "has_analog_imagery_policy", "policy"],
+                  ["agent", "has_analog_imagery_request", "request"],
+                  ["request", "has_shape_verification", "receipt"]],
+        "where": And(Eq(A("policy", "enabled"), L(1)),
+                      Eq(A("request", "status"), L("awaiting_verification")),
+                      Eq(A("receipt", "request_id"), A("request", "request_id")),
+                      Eq(A("receipt", "source_observation"), A("request", "source_observation")),
+                      Eq(A("receipt", "verification_status"), L("verified"))),
         "effects": [["set_attr", "request", "status", "proposed"],
-                    ["set_attr", "request", "shape_verified", T(Eq(A("request", "current_shape"), A("request", "expected_shape")))],
+                    ["set_attr", "request", "shape_verified", True],
+                    ["set_attr", "request", "grounded", 0],
+                    ["set_attr", "request", "verification_receipt_id", T(A("receipt", "receipt_id"))]],
+    }
+
+
+def reject_failed_verifier_receipt_rule():
+    return {
+        "name": "ai_reject_failed_shape_verifier_receipt",
+        "batch": False,
+        "match": [["agent", "has_analog_imagery_policy", "policy"],
+                  ["agent", "has_analog_imagery_request", "request"],
+                  ["request", "has_shape_verification", "receipt"]],
+        "where": And(Eq(A("policy", "enabled"), L(1)),
+                      Eq(A("request", "status"), L("awaiting_verification")),
+                      Eq(A("receipt", "request_id"), A("request", "request_id")),
+                      Eq(A("receipt", "verification_status"), L("mismatch"))),
+        "effects": [["set_attr", "request", "status", "unresolved"],
+                    ["set_attr", "request", "stop_reason", "shape_verification_failed"],
                     ["set_attr", "request", "grounded", 0]],
     }
 
@@ -136,7 +171,7 @@ def expire_terminal_buffer_rule():
                   ["request", "has_imagery_witness", "witness"]],
         "where": And(Eq(A("policy", "enabled"), L(1)),
                       {"type": "In", "member": A("request", "status"),
-                       "container": L(["proposed", "unresolved"])},
+                       "container": L(["proposed", "unresolved", "awaiting_verification"])},
                       Not(Eq(A("request", "buffer_status"), L("expired")))),
         "effects": [["set_attr", "request", "buffer_status", "expired"],
                     ["set_attr", "witness", "buffer_status", "expired"]],
@@ -179,7 +214,8 @@ def build():
     specs = [("Agent", "has_analog_imagery_policy", "AnalogImageryPolicy"),
              ("Agent", "has_analog_imagery_request", "AnalogImageryRequest"),
              ("Agent", "has_thinking_budget", "ThinkingBudget"),
-             ("AnalogImageryRequest", "has_imagery_witness", "ImageryStepWitness")]
+             ("AnalogImageryRequest", "has_imagery_witness", "ImageryStepWitness"),
+             ("AnalogImageryRequest", "has_shape_verification", "ImageryShapeVerification")]
     return {
         "id": "analog_imagery", "version": "1.0.0", "depends_on": ["thinking_budget"],
         "description": "Default-off bounded, funded, detached quarter-turn imagery on exact lattice signatures.",
@@ -187,7 +223,7 @@ def build():
         "nodes": [{"local_id": 0, "type": "AnalogImageryPolicy", "attrs": {"enabled": 0.0, "max_steps": 3.0, "max_buffer_size": 4.0}}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_analog_imagery_policy", "tgt": {"local": 0}, "attrs": {}}],
         "productions": [{"provenance": f"seed:analog_imagery:{edge}", "src": {"type": src, "var": "src"}, "edge_type": edge, "tgt": {"type": tgt, "var": "tgt"}} for src, edge, tgt in specs],
-        "rules": [step_rule(), finish_rule(), exhausted_rule(), reject_unsupported_step_rule(), reject_overlong_path_rule(), expire_terminal_buffer_rule()],
+        "rules": [step_rule(), finish_rule(), verifier_receipt_rule(), reject_failed_verifier_receipt_rule(), exhausted_rule(), reject_unsupported_step_rule(), reject_overlong_path_rule(), expire_terminal_buffer_rule()],
     }
 
 

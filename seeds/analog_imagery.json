@@ -80,6 +80,18 @@
         "type": "ImageryStepWitness",
         "var": "tgt"
       }
+    },
+    {
+      "provenance": "seed:analog_imagery:has_shape_verification",
+      "src": {
+        "type": "AnalogImageryRequest",
+        "var": "src"
+      },
+      "edge_type": "has_shape_verification",
+      "tgt": {
+        "type": "ImageryShapeVerification",
+        "var": "tgt"
+      }
     }
   ],
   "rules": [
@@ -1351,7 +1363,7 @@
     {
       "name": "ai_finish_verified_detached_rotation",
       "batch": false,
-      "comment": "Mark exact shape match as a proposal only; imagery remains ungrounded.",
+      "comment": "Finish detached transform work but wait for a separate exact shape verifier receipt before proposing a reading.",
       "match": [
         [
           "agent",
@@ -1423,33 +1435,261 @@
           "set_attr",
           "request",
           "status",
+          "awaiting_verification"
+        ],
+        [
+          "set_attr",
+          "request",
+          "grounded",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ai_accept_exact_shape_verifier_receipt",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_shape_verification",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_verification"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "request_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "request_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_observation"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "source_observation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "verification_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
           "proposed"
         ],
         [
           "set_attr",
           "request",
           "shape_verified",
+          true
+        ],
+        [
+          "set_attr",
+          "request",
+          "grounded",
+          0
+        ],
+        [
+          "set_attr",
+          "request",
+          "verification_receipt_id",
           {
             "__term__": {
-              "type": "Eq",
-              "a": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
-                },
-                "key": "current_shape"
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
               },
-              "b": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
-                },
-                "key": "expected_shape"
-              }
+              "key": "receipt_id"
             }
           }
+        ]
+      ]
+    },
+    {
+      "name": "ai_reject_failed_shape_verifier_receipt",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_analog_imagery_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_analog_imagery_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_shape_verification",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_verification"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "request_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "request_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "verification_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "mismatch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "request",
+          "stop_reason",
+          "shape_verification_failed"
         ],
         [
           "set_attr",
@@ -1876,7 +2116,8 @@
               "type": "Lit",
               "value": [
                 "proposed",
-                "unresolved"
+                "unresolved",
+                "awaiting_verification"
               ]
             }
           },
