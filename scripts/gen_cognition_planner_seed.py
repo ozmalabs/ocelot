@@ -114,7 +114,10 @@ def terminalize_stale_request_rule():
                Not(Eq(A("request", "goal_epoch"), A("goal", "goal_epoch"))),
                Not(Eq(A("request", "model_id"), A("policy", "current_model_id"))),
                Not(Eq(A("request", "goal_id"), A("policy", "current_goal_id"))),
-               Not(Eq(A("request", "manifold_id"), A("policy", "current_manifold_id"))))
+               Not(Eq(A("request", "manifold_id"), A("policy", "current_manifold_id"))),
+               Not(Eq(A("request", "owner_id"), A("start", "owner_id"))),
+               Not(Eq(A("request", "owner_id"), A("goal", "owner_id"))),
+               Not(Eq(A("request", "start_state_id"), A("start", "state_key"))))
     return {
         "name": "cp_cancel_stale_request", "area": AREA, "order": 19,
         "latency_class": "hard_realtime", "batch": False,
@@ -171,6 +174,9 @@ def root_rule():
                       Eq(A("request", "goal_id"), A("policy", "current_goal_id")),
                       Eq(A("request", "manifold_id"), A("policy", "current_manifold_id")),
                       Eq(A("request", "goal_id"), A("goal", "goal_id")),
+                      Eq(A("request", "owner_id"), A("start", "owner_id")),
+                      Eq(A("request", "owner_id"), A("goal", "owner_id")),
+                      Eq(A("request", "start_state_id"), A("start", "state_key")),
                       Eq({"type": "Count", "source": N("request", "has_frontier")}, ZERO)),
         "effects": [
             ["add_node", "frontier", "CognitionPlanFrontier", {

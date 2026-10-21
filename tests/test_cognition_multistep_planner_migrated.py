@@ -131,17 +131,17 @@ def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0
     mode = adapter.s.add_node("NetworkModeState", {"epoch": 4.0, "mode": "awake"})
     adapter.inner.add_edge_unchecked(adapter.agent, "has_network_mode_state", mode)
     start = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "s0", "model_id": "model-1", "model_epoch": 2.0,
+        "state_key": "s0", "owner_id": "owner-1", "model_id": "model-1", "model_epoch": 2.0,
         "goal_epoch": 3.0, "projection_version": 1.0, "uncertainty": 0.0,
     })
     goal = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "goal", "model_id": "model-1", "model_epoch": 2.0,
+        "state_key": "goal", "owner_id": "owner-1", "model_id": "model-1", "model_epoch": 2.0,
         "goal_id": "goal-1", "goal_epoch": 3.0,
         "projection_version": 1.0, "uncertainty": 0.0,
     })
     request = adapter.s.add_node("CognitionPlanRequest", {
         "request_id": "plan-1", "status": "pending", "source_epoch": 4.0,
-        "model_id": "model-1", "model_epoch": 2.0, "goal_id": "goal-1",
+        "owner_id": "owner-1", "start_state_id": "s0", "model_id": "model-1", "model_epoch": 2.0, "goal_id": "goal-1",
         "goal_epoch": 3.0, "manifold_id": "manifold-1", "manifold_epoch": 5.0,
         "required_horizon": 2.0, "deadline_epoch": 10.0,
         "depth_limit": depth_limit, "expansion_limit": expansion_limit,
@@ -299,6 +299,16 @@ def test_graph_planner_rejects_stale_model_snapshot():
     adapter.inner.set_attr(policy, "current_model_epoch", 3.0)
     _run_to_fixpoint(adapter)
     assert adapter.s.node(request)["attrs"]["status"] == "model_stale"
+    assert not adapter.inner.neighbours(request, "has_frontier")
+
+
+def test_graph_planner_rejects_mismatched_owner_or_start_identity():
+    adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
+    start = adapter.inner.neighbours(request, "has_start_state")[0]
+    adapter.inner.set_attr(start, "owner_id", "different-owner")
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "model_stale"
+    assert adapter.s.node(request)["attrs"]["terminal_reason"] == "planning_epoch_changed"
     assert not adapter.inner.neighbours(request, "has_frontier")
 
 

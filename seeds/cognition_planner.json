@@ -710,6 +710,72 @@
                     "key": "current_manifold_id"
                   }
                 }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "owner_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "start"
+                    },
+                    "key": "owner_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "owner_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "owner_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "start_state_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "start"
+                    },
+                    "key": "state_key"
+                  }
+                }
               }
             ]
           }
@@ -984,6 +1050,63 @@
                 "name": "goal"
               },
               "key": "goal_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "start"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "start_state_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "start"
+              },
+              "key": "state_key"
             }
           },
           {
