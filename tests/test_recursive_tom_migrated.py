@@ -49,3 +49,99 @@ def test_cycles_and_depth_bound():
     assert len(set(cycle["holder_path"])) < len(cycle["holder_path"])
     assert len(over_depth["holder_path"]) > max_depth
     assert _world(["sally", "anne"]) != _world(["anne", "sally"])
+
+
+def _adapter():
+    from substrate.boot_core import CORE_SEEDS
+    from substrate.world_adapter import WorldAdapter
+    return WorldAdapter(seeds=CORE_SEEDS + ("recursive_tom",))
+
+
+def _graph_event(adapter, *, event_id="e1", path=("sally", "anne"),
+                 proposition="key=drawer", accessible=True, depth=None,
+                 has_cycle=False, version=1):
+    depth = len(path) if depth is None else depth
+    event = adapter.inner.add_node("RecursiveTomEvent", {
+        "schema_version": 1, "event_id": event_id,
+        "holder_path": list(path), "holder_path_key": "/".join(path),
+        "depth": depth, "referent": "key", "content_ref": proposition,
+        "value": "drawer", "actual_world_version": version,
+        "accessible": accessible, "has_cycle": has_cycle,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_recursive_tom_event", event)
+    return event
+
+
+def _query(adapter, query_id, path, *, content="key=drawer", expected="drawer", version=1):
+    query = adapter.inner.add_node("RecursiveTomQuery", {
+        "query_id": query_id, "holder_path_key": "/".join(path),
+        "content_ref": content, "expected_value": expected,
+        "actual_world_version": version,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_recursive_tom_query", query)
+    return query
+
+
+def test_native_update_requires_access_and_respects_depth_and_cycles():
+    a = _adapter()
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    _graph_event(a, event_id="no-access", accessible=False)
+    _graph_event(a, event_id="cycle", has_cycle=True)
+    _graph_event(a, event_id="deep", path=("sally", "anne", "bob"))
+    a.inner.set_attr(policy, "enabled", 1.0)
+    a.inner.run_rules()
+    assert list(a.inner.nodes("RecursiveTomBelief")) == []
+    _graph_event(a, event_id="valid")
+    a.inner.run_rules()
+    beliefs = list(a.inner.nodes("RecursiveTomBelief"))
+    assert len(beliefs) == 1
+    attrs = a.inner.node(beliefs[0])["attrs"]
+    assert attrs["holder_path"] == ["sally", "anne"]
+    assert attrs["access_event_id"] == "valid"
+
+
+def test_repeated_event_idempotent_and_holder_swap_changes_answer_scope():
+    a = _adapter()
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+    _graph_event(a, event_id="same", path=("sally", "anne"))
+    a.inner.run_rules()
+    _graph_event(a, event_id="same", path=("anne", "sally"))
+    a.inner.run_rules()
+    beliefs = [a.inner.node(n)["attrs"] for n in a.inner.nodes("RecursiveTomBelief")]
+    assert len(beliefs) == 1
+    assert beliefs[0]["holder_path_key"] == "sally/anne"
+
+
+def test_minimal_dependency_boot_and_actual_world_is_separate():
+    a = _adapter()
+    actual = a.inner.add_node("ActualWorldFact", {"referent": "key", "value": "shelf", "version": 1})
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+    _graph_event(a, proposition="key=drawer", version=1)
+    a.inner.run_rules()
+    belief = a.inner.node(a.inner.nodes("RecursiveTomBelief")[0])["attrs"]
+    assert belief["value"] == "drawer"
+    assert a.inner.node(actual)["attrs"]["value"] == "shelf"
+
+
+def test_scoped_query_returns_true_false_or_unknown():
+    a = _adapter()
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+    _graph_event(a, event_id="belief", path=("sally", "anne"))
+    _query(a, "true-query", ("sally", "anne"), expected="drawer")
+    _query(a, "false-query", ("sally", "anne"), expected="box")
+    _query(a, "unknown-query", ("anne", "sally"), expected="drawer")
+    a.inner.run_rules()
+    answers = {a.inner.node(n)["attrs"]["query_id"]:
+               a.inner.node(n)["attrs"]["status"]
+               for n in a.inner.nodes("RecursiveTomAnswer")}
+    assert answers == {"true-query": "true", "false-query": "false"}
+
+
+def test_generator_reproduction():
+    import json
+    from pathlib import Path
+    from scripts.gen_recursive_tom_seed import build_seed
+    assert json.loads(Path("seeds/recursive_tom.json").read_text()) == build_seed()
