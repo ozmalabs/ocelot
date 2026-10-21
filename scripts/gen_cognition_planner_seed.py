@@ -50,10 +50,24 @@ def production_specs():
         ("Agent", "has_cognition_planner_policy", "CognitionPlannerPolicy"),
         ("Agent", "has_cognition_plan_request", "CognitionPlanRequest"),
         ("Agent", "has_cognition_plan_transition", "CognitionPlanTransition"),
+        ("Agent", "has_cognition_manifold_episode", "CognitionManifoldEpisode"),
+        ("Agent", "has_transition_hypothesis", "TransitionHypothesis"),
         ("Agent", "has_thinking_budget", "ThinkingBudget"),
         ("Agent", "has_network_mode_state", "NetworkModeState"),
         ("CognitionPlanRequest", "has_start_state", "CognitionPlanState"),
         ("CognitionPlanRequest", "has_goal_state", "CognitionPlanState"),
+        ("CognitionPlanRequest", "has_model_start_state", "BeliefState"),
+        ("CognitionPlanRequest", "has_model_start_state", "PredictedBeliefState"),
+        ("CognitionPlanRequest", "has_model_goal_state", "PredictedBeliefState"),
+        ("CognitionPlanState", "represents_model_state", "BeliefState"),
+        ("CognitionPlanState", "represents_model_state", "PredictedBeliefState"),
+        ("PredictedBeliefState", "predicted_from_belief", "BeliefState"),
+        ("PredictedBeliefState", "predicted_from_belief", "PredictedBeliefState"),
+        ("PredictedBeliefState", "generated_by_transition", "TransitionHypothesis"),
+        ("CognitionManifoldEpisode", "has_cognition_manifold_candidate", "CognitionManifoldCandidate"),
+        ("CognitionManifoldCandidate", "projects_transition", "TransitionHypothesis"),
+        ("CognitionManifoldCandidate", "projects_predicted_state", "PredictedBeliefState"),
+        ("CognitionManifoldCandidate", "has_feasibility_receipt", "CognitionManifoldFeasibilityReceipt"),
         ("CognitionPlanState", "has_feasibility_receipt", "CognitionManifoldFeasibilityReceipt"),
         ("CognitionPlanTransition", "has_feasibility_receipt", "CognitionManifoldFeasibilityReceipt"),
         ("CognitionPlanRequest", "has_frontier", "CognitionPlanFrontier"),
@@ -102,6 +116,204 @@ def verified_receipt(receipt, request, transition=None, state=None):
 def state_has_verified_projection(state, request):
     return Exists(N(state, "has_feasibility_receipt"), "projection_receipt",
                   verified_receipt("projection_receipt", request, state=state))
+
+
+
+
+def terminalize_prebind_stale_request_rule():
+    stale = Or(
+        Not(Eq(A("request", "source_epoch"), A("mode", "epoch"))),
+        Not(Eq(A("request", "model_epoch"), A("policy", "current_model_epoch"))),
+        Not(Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch"))),
+        Not(Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch"))),
+        Not(Eq(A("request", "model_id"), A("policy", "current_model_id"))),
+        Not(Eq(A("request", "goal_id"), A("policy", "current_goal_id"))),
+        Not(Eq(A("request", "manifold_id"), A("policy", "current_manifold_id"))),
+    )
+    return {
+        "name": "cp_cancel_prebind_stale_request", "area": AREA, "order": 16,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["agent", "has_network_mode_state", "mode"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("pending")),
+                      Not(Gt(A("mode", "epoch"), A("request", "deadline_epoch"))),
+                      stale),
+        "effects": [["set_attr", "request", "status", "model_stale"],
+                    ["set_attr", "request", "terminal_reason", "planning_epoch_changed"]],
+    }
+
+
+def bind_model_start_state_rule():
+    return {
+        "name": "cp_bind_model_start_state", "area": AREA, "order": 17,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["agent", "has_network_mode_state", "mode"],
+                  ["request", "has_model_start_state", "model_start"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("pending")),
+                      Eq(A("request", "source_epoch"), A("mode", "epoch")),
+                      Eq(A("request", "model_epoch"), A("policy", "current_model_epoch")),
+                      Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch")),
+                      Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch")),
+                      Eq(A("request", "model_id"), A("policy", "current_model_id")),
+                      Eq(A("request", "goal_id"), A("policy", "current_goal_id")),
+                      Eq(A("request", "manifold_id"), A("policy", "current_manifold_id")),
+                      Eq({"type": "Count", "source": N("request", "has_start_state")}, ZERO)),
+        "effects": [
+            ["add_node", "start", "CognitionPlanState", {
+                "state_key": T(V("model_start")),
+                "owner_id": T(A("request", "owner_id")),
+                "model_id": T(A("request", "model_id")),
+                "model_epoch": T(A("request", "model_epoch")),
+                "goal_epoch": T(A("request", "goal_epoch")),
+                "uncertainty": T(A("model_start", "uncertainty")),
+            }],
+            ["add_edge", "request", "has_start_state", "start", {}],
+            ["add_edge", "start", "represents_model_state", "model_start", {}],
+            ["set_attr", "request", "start_state_id", T(V("model_start"))],
+        ],
+    }
+
+
+def bind_model_goal_state_rule():
+    return {
+        "name": "cp_bind_model_goal_state", "area": AREA, "order": 18,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["agent", "has_cognition_manifold_episode", "episode"],
+                  ["request", "has_model_goal_state", "model_goal"],
+                  ["episode", "has_cognition_manifold_candidate", "candidate"],
+                  ["candidate", "projects_predicted_state", "model_goal"],
+                  ["candidate", "projects_transition", "model_transition"],
+                  ["candidate", "has_feasibility_receipt", "receipt"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("pending")),
+                      Eq(A("candidate", "status"), L("audited")),
+                      Eq(A("request", "model_epoch"), A("policy", "current_model_epoch")),
+                      Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch")),
+                      Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch")),
+                      Eq(A("request", "model_id"), A("policy", "current_model_id")),
+                      Eq(A("request", "goal_id"), A("policy", "current_goal_id")),
+                      Eq(A("request", "manifold_id"), A("policy", "current_manifold_id")),
+                      verified_receipt("receipt", "request", "model_transition", "candidate"),
+                      Eq({"type": "Count", "source": N("request", "has_goal_state")}, ZERO)),
+        "effects": [
+            ["add_node", "goal", "CognitionPlanState", {
+                "state_key": T(V("model_goal")),
+                "owner_id": T(A("request", "owner_id")),
+                "model_id": T(A("request", "model_id")),
+                "model_epoch": T(A("request", "model_epoch")),
+                "goal_id": T(A("request", "goal_id")),
+                "goal_epoch": T(A("request", "goal_epoch")),
+                "projection_version": T(A("candidate", "projection_version")),
+                "uncertainty": T(A("model_goal", "uncertainty")),
+            }],
+            ["add_edge", "request", "has_goal_state", "goal", {}],
+            ["add_edge", "goal", "represents_model_state", "model_goal", {}],
+            ["add_edge", "goal", "has_feasibility_receipt", "receipt", {}],
+        ],
+    }
+
+
+def adapt_native_model_transition_rule():
+    known = Exists(
+        N("agent", "has_cognition_plan_transition"), "known_transition",
+        And(Eq(A("known_transition", "transition_id"), A("model_transition", "transition_id")),
+            Eq(A("known_transition", "source_state_key"), V("model_source")),
+            Eq(A("known_transition", "model_id"), A("request", "model_id")),
+            Eq(A("known_transition", "model_epoch"), A("request", "model_epoch")),
+            Eq(A("known_transition", "owner_id"), A("request", "owner_id")),
+            Eq(A("known_transition", "goal_id"), A("request", "goal_id")),
+            Eq(A("known_transition", "goal_epoch"), A("request", "goal_epoch")),
+            Eq(A("known_transition", "manifold_id"), A("request", "manifold_id")),
+            Eq(A("known_transition", "manifold_epoch"), A("request", "manifold_epoch"))),
+    )
+    return {
+        "name": "cp_adapt_verified_native_model_transition", "area": AREA, "order": 21,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["agent", "has_cognition_manifold_episode", "episode"],
+                  ["request", "has_frontier", "frontier"],
+                  ["frontier", "expands_from_state", "source_plan_state"],
+                  ["source_plan_state", "represents_model_state", "model_source"],
+                  ["episode", "has_cognition_manifold_candidate", "candidate"],
+                  ["candidate", "projects_transition", "model_transition"],
+                  ["candidate", "projects_predicted_state", "model_successor"],
+                  ["candidate", "has_feasibility_receipt", "receipt"],
+                  ["model_successor", "predicted_from_belief", "model_source"],
+                  ["model_successor", "generated_by_transition", "model_transition"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("searching")),
+                      Eq(A("frontier", "status"), L("ready")),
+                      Eq(A("candidate", "status"), L("audited")),
+                      Eq(A("request", "model_id"), A("policy", "current_model_id")),
+                      Eq(A("request", "model_epoch"), A("policy", "current_model_epoch")),
+                      Eq(A("request", "goal_id"), A("policy", "current_goal_id")),
+                      Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch")),
+                      Eq(A("request", "manifold_id"), A("policy", "current_manifold_id")),
+                      Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch")),
+                      Eq(A("model_transition", "model_id"), A("request", "model_id")),
+                      Eq(A("model_transition", "model_epoch"), A("request", "model_epoch")),
+                      verified_receipt("receipt", "request", "model_transition", "candidate"),
+                      Not(known)),
+        "effects": [
+            ["add_node", "successor", "CognitionPlanState", {
+                "state_key": T(V("model_successor")),
+                "owner_id": T(A("request", "owner_id")),
+                "model_id": T(A("request", "model_id")),
+                "model_epoch": T(A("request", "model_epoch")),
+                "goal_epoch": T(A("request", "goal_epoch")),
+                "projection_version": T(A("candidate", "projection_version")),
+                "uncertainty": T(A("model_successor", "uncertainty")),
+            }],
+            ["add_edge", "successor", "represents_model_state", "model_successor", {}],
+            ["add_edge", "successor", "has_feasibility_receipt", "receipt", {}],
+            ["add_node", "planner_transition", "CognitionPlanTransition", {
+                "transition_id": T(A("model_transition", "transition_id")),
+                "source_state_key": T(V("model_source")),
+                "action_key": T(A("model_transition", "action_kind")),
+                "model_id": T(A("request", "model_id")),
+                "model_epoch": T(A("request", "model_epoch")),
+                "owner_id": T(A("request", "owner_id")),
+                "goal_id": T(A("request", "goal_id")),
+                "goal_epoch": T(A("request", "goal_epoch")),
+                "manifold_id": T(A("request", "manifold_id")),
+                "manifold_epoch": T(A("request", "manifold_epoch")),
+                "uncertainty": T(A("model_successor", "uncertainty")),
+            }],
+            ["add_edge", "agent", "has_cognition_plan_transition", "planner_transition", {}],
+            ["add_edge", "planner_transition", "has_feasibility_receipt", "receipt", {}],
+            ["add_edge", "planner_transition", "has_successor_state", "successor", {}],
+        ],
+    }
+
+
+
+def terminalize_unbound_model_request_rule():
+    missing = Or(Eq({"type": "Count", "source": N("request", "has_start_state")}, ZERO),
+                 Eq({"type": "Count", "source": N("request", "has_goal_state")}, ZERO))
+    return {
+        "name": "cp_close_unbound_model_request", "area": AREA, "order": 19,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["agent", "has_network_mode_state", "mode"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("pending")),
+                      Eq(A("request", "source_epoch"), A("mode", "epoch")),
+                      Eq(A("request", "model_epoch"), A("policy", "current_model_epoch")),
+                      Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch")),
+                      Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch")),
+                      missing),
+        "effects": [["set_attr", "request", "status", "unknown"],
+                    ["set_attr", "request", "terminal_reason", "missing_model_state_or_goal_projection"]],
+    }
 
 
 def terminalize_stale_request_rule():
@@ -605,7 +817,7 @@ def terminalize_missing_transition_rule():
 def build_seed():
     specs = production_specs()
     return {
-        "id": "cognition_planner", "version": "1.0.0", "depends_on": ["thinking_budget", "generative_world_model", "default_mode_core"],
+        "id": "cognition_planner", "version": "1.1.0", "depends_on": ["thinking_budget", "generative_world_model", "cognition_manifold", "default_mode_core"],
         "self_load_only": True,
         "area": AREA,
         "description": "Opt-in graph-resident bounded planning over explicit versioned model transitions; emits advisory imagined candidates only.",
@@ -620,7 +832,7 @@ def build_seed():
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_cognition_planner_policy", "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(),
-        "rules": [terminalize_deadline_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), expand_rule(), preserve_duplicate_state_path_rule(), count_expansion_rule(), solve_rule(),
+        "rules": [terminalize_deadline_rule(), terminalize_prebind_stale_request_rule(), bind_model_start_state_rule(), bind_model_goal_state_rule(), terminalize_unbound_model_request_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), adapt_native_model_transition_rule(), expand_rule(), preserve_duplicate_state_path_rule(), count_expansion_rule(), solve_rule(),
                   emit_duplicate_goal_path_rule(), close_solved_request_rule(),
                   terminalize_depth_rule(), terminalize_expansion_bound_rule(), terminalize_unfunded_rule(),
                   terminalize_missing_transition_rule(), terminalize_model_dead_end_rule(),

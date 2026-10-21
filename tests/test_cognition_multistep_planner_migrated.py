@@ -347,6 +347,38 @@ def test_graph_planner_rejects_mismatched_owner_or_start_identity():
     assert not adapter.inner.neighbours(request, "has_frontier")
 
 
+
+def test_graph_planner_cancels_stale_snapshot_before_state_adaptation():
+    from scripts.gen_cognition_planner_seed import build_seed
+    from scripts.gen_thinking_budget_seed import build as build_budget_seed
+    from substrate.world_adapter import WorldAdapter
+
+    adapter = WorldAdapter(seeds=())
+    for manifest in (build_budget_seed(), build_seed()):
+        assert adapter.inner.load_seed_manifest(manifest, adapter.agent)["rules_skipped"] == []
+    policy = adapter.s.nodes("CognitionPlannerPolicy")[0]
+    for key, value in {
+        "enabled": 1.0, "current_model_epoch": 2.0, "current_goal_epoch": 3.0,
+        "current_manifold_epoch": 5.0, "current_model_id": "model-1",
+        "current_goal_id": "goal-1", "current_manifold_id": "manifold-1",
+    }.items():
+        adapter.inner.set_attr(policy, key, value)
+    mode = adapter.s.add_node("NetworkModeState", {"epoch": 4.0, "mode": "awake"})
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_network_mode_state", mode)
+    request = adapter.s.add_node("CognitionPlanRequest", {
+        "request_id": "stale-before-adaptation", "status": "pending", "source_epoch": 4.0,
+        "owner_id": "owner-1", "model_id": "model-1", "model_epoch": 1.0,
+        "goal_id": "goal-1", "goal_epoch": 3.0,
+        "manifold_id": "manifold-1", "manifold_epoch": 5.0,
+        "deadline_epoch": 10.0,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "model_stale"
+    assert not adapter.inner.neighbours(request, "has_start_state")
+    assert not adapter.inner.neighbours(request, "has_frontier")
+
+
 def test_graph_planner_does_not_solve_without_projection_feasibility():
     adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
     goal = adapter.inner.neighbours(request, "has_goal_state")[0]
@@ -473,49 +505,65 @@ def test_graph_planner_accepts_native_p4_projection_receipt():
     }.items():
         adapter.inner.set_attr(policy, key, value)
 
-    start = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "start", "owner_id": "owner-1", "model_id": "model-1",
-        "model_epoch": 2.0, "goal_epoch": 3.0, "projection_version": 1.0,
-    })
-    goal = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "goal", "owner_id": "owner-1", "model_id": "model-1",
-        "model_epoch": 2.0, "goal_id": "goal-1", "goal_epoch": 3.0,
-        "projection_version": float(receipt_attrs["projection_version"]),
-    })
-    successor = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "goal", "model_id": "model-1", "model_epoch": 2.0,
-        "goal_epoch": 3.0, "projection_version": float(receipt_attrs["projection_version"]),
-    })
-    adapter.inner.add_edge_unchecked(goal, "has_feasibility_receipt", receipt)
-    adapter.inner.add_edge_unchecked(successor, "has_feasibility_receipt", receipt)
-    transition = adapter.s.add_node("CognitionPlanTransition", {
-        "transition_id": receipt_attrs["transition_id"], "source_state_key": "start",
-        "action_key": "go", "model_id": receipt_attrs["model_id"],
-        "model_epoch": float(receipt_attrs["model_epoch"]),
-    })
-    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_transition", transition)
-    adapter.inner.add_edge_unchecked(transition, "has_feasibility_receipt", receipt)
-    adapter.inner.add_edge_unchecked(transition, "has_successor_state", successor)
+    model_goal = adapter.inner.neighbours(p4_candidate, "projects_predicted_state")[0]
     request = adapter.s.add_node("CognitionPlanRequest", {
         "request_id": "native-p4-plan", "status": "pending",
         "source_epoch": float(adapter.s.node(mode)["attrs"]["epoch"]),
-        "owner_id": "owner-1", "start_state_id": "start", "model_id": "model-1",
-        "model_epoch": 2.0, "goal_id": "goal-1", "goal_epoch": 3.0,
+        "owner_id": "owner-1", "model_id": "model-1", "model_epoch": 2.0,
+        "goal_id": "goal-1", "goal_epoch": 3.0,
         "manifold_id": "manifold-1", "manifold_epoch": 5.0,
         "required_horizon": 2.0, "deadline_epoch": 5.0,
         "depth_limit": 8.0, "expansion_limit": 256.0,
     })
     adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)
-    adapter.inner.add_edge_unchecked(request, "has_start_state", start)
-    adapter.inner.add_edge_unchecked(request, "has_goal_state", goal)
+    adapter.inner.add_edge_unchecked(request, "has_model_start_state", belief)
+    adapter.inner.add_edge_unchecked(request, "has_model_goal_state", model_goal)
     for _ in range(30):
         if not adapter.inner.run_rules(10000):
             break
     else:
         raise AssertionError("planner did not reach a fixpoint after native P4 projection")
 
+    start = adapter.inner.neighbours(request, "has_start_state")[0]
+    goal = adapter.inner.neighbours(request, "has_goal_state")[0]
+    assert belief in adapter.inner.neighbours(start, "represents_model_state")
+    assert model_goal in adapter.inner.neighbours(goal, "represents_model_state")
+    adapted = [node for node in adapter.inner.neighbours(adapter.agent, "has_cognition_plan_transition")
+               if adapter.s.node(node)["attrs"].get("transition_id") == receipt_attrs["transition_id"]]
+    assert adapted
+    assert receipt in adapter.inner.neighbours(adapted[0], "has_feasibility_receipt")
+    assert adapter.s.node(adapted[0])["attrs"]["action_key"] == adapter.s.node(
+        model_transition)["attrs"]["action_kind"]
+    assert adapter.s.node(adapted[0])["attrs"]["source_state_key"] == adapter.s.node(
+        start)["attrs"]["state_key"]
+    assert adapter.s.node(adapted[0])["attrs"]["uncertainty"] == adapter.s.node(
+        model_goal)["attrs"]["uncertainty"]
+
     assert adapter.s.node(request)["attrs"]["status"] == "solved"
     candidates = adapter.inner.neighbours(request, "has_imagined_plan_candidate")
     assert len(candidates) == 1
     assert adapter.s.node(candidates[0])["attrs"]["provenance_kind"] == "imagined"
     assert adapter.s.node(budget)["attrs"]["remaining"] == 9.0
+
+    unprojected_goal = adapter.s.add_node("PredictedBeliefState", {
+        "state_kind": "unprojected_goal", "uncertainty": 0.2,
+    })
+    unbound = adapter.s.add_node("CognitionPlanRequest", {
+        "request_id": "native-p4-plan-unprojected", "status": "pending",
+        "source_epoch": float(adapter.s.node(mode)["attrs"]["epoch"]),
+        "owner_id": "owner-1", "model_id": "model-1", "model_epoch": 2.0,
+        "goal_id": "goal-1", "goal_epoch": 3.0,
+        "manifold_id": "manifold-1", "manifold_epoch": 5.0,
+        "required_horizon": 2.0, "deadline_epoch": 5.0,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", unbound)
+    adapter.inner.add_edge_unchecked(unbound, "has_model_start_state", belief)
+    adapter.inner.add_edge_unchecked(unbound, "has_model_goal_state", unprojected_goal)
+    for _ in range(30):
+        if not adapter.inner.run_rules(10000):
+            break
+    else:
+        raise AssertionError("planner did not close an unprojected exact-goal request")
+    assert adapter.s.node(unbound)["attrs"]["status"] == "unknown"
+    assert adapter.s.node(unbound)["attrs"]["terminal_reason"] == "missing_model_state_or_goal_projection"
+    assert not adapter.inner.neighbours(unbound, "has_frontier")
