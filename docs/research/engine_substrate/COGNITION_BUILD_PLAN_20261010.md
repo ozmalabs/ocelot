@@ -11,7 +11,7 @@ Each detailed plan breaks its phase into tasks using the §3 template, records t
 | 0 — Baseline and guardrails | [`COGNITION_BUILD_P0_BASELINE_PLAN.md`](COGNITION_BUILD_P0_BASELINE_PLAN.md) | Executed (`d83fa140`); baseline in `COGNITION_BUILD_BASELINE.md` |
 | 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Executed (`5b52a38b`). Results in `COGNITION_BUILD_P1_RESULTS.md`; these are mechanism tests on fixtures, not capability evidence |
 | 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`). **No results doc was committed**; P3.0.1 writes `COGNITION_BUILD_P2_RESULTS.md` |
-| 3 — Extended-thinking executor | [`COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md`](COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md) | In execution; the time rung is deferred to Track I or P4 because Observations do not carry frame sequences |
+| 3 — Extended-thinking executor | [`COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md`](COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md) | Executed (`32143620`; pre-registration `eb34efb3`); H1/H2/H3/H5 pass, H4 partial (Family-A cache threshold fails); TimeInfer deferred to Track I or P4 |
 | 4–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
 | **Track I — Process understanding and invention** | [`COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md`](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) | Runs in parallel with P3–P6. Its levels L1–L7 run from understanding and invention up to measurable beyond-human criteria. I0 (the evaluation battery and a `ProcessSchema` decision shared with P3) comes first |
 
