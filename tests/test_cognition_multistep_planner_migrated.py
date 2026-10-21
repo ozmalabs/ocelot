@@ -400,3 +400,122 @@ def test_graph_planner_propagates_deadline_and_blocks_late_budget_debit():
     _run_to_fixpoint(adapter)
     assert adapter.s.node(budget_request)["attrs"]["status"] == "canceled"
     assert adapter.s.node(budget)["attrs"]["remaining"] == 4.0
+
+
+
+def test_graph_planner_accepts_native_p4_projection_receipt():
+    from scripts.gen_cognition_manifold_seed import build_seed as build_manifold_seed
+    from scripts.gen_cognition_planner_seed import build_seed as build_planner_seed
+    from scripts.gen_thinking_budget_seed import build as build_budget_seed
+    from substrate.world_adapter import WorldAdapter
+    from tests.test_generative_world_model_migrated import _model_fixture, _nodes, _perceive
+
+    adapter = WorldAdapter(seeds=("default_mode_core", "generative_world_model"))
+    for manifest in (build_budget_seed(), build_manifold_seed()):
+        summary = adapter.inner.load_seed_manifest(manifest, adapter.agent)
+        assert summary["rules_skipped"] == [], summary
+
+    _, belief = _perceive(adapter, epoch=1)
+    manifold_policy = adapter.s.nodes("CognitionManifoldPolicy")[0]
+    episode = adapter.s.nodes("CognitionManifoldEpisode")[0]
+    budget = adapter.s.nodes("ThinkingBudget")[0]
+    mode = adapter.inner.neighbours(adapter.agent, "has_network_mode_state")[0]
+    for node, values in (
+        (manifold_policy, {"enabled": 1.0, "future_manifold_projection_budget": 2.0,
+                           "future_manifold_physical_horizon": 2.0}),
+        (episode, {"future_manifold_target": [[1.0], [2.0]],
+                   "future_manifold_bounds": [[0.0], [0.0]]}),
+        (budget, {"enabled": 1.0, "remaining": 10.0, "capacity": 10.0,
+                  "refill_per_epoch": 0.0, "last_refill_epoch": 1.0}),
+    ):
+        for key, value in values.items():
+            adapter.inner.set_attr(node, key, value)
+
+    sim_request, _clock, model_transitions = _model_fixture(
+        adapter, belief, epoch=1, deadline=5, budget=6)
+    adapter.inner.set_attr(sim_request, "maximum_branching", 1.0)
+    adapter.inner.set_attr(sim_request, "horizon", 2.0)
+    model_transition = model_transitions[0]
+    for key, value in {
+        "future_manifold_supported": True, "transition_id": "gwm-native-transition",
+        "model_id": "model-1", "model_epoch": 2.0,
+        "future_manifold_values": [[1.0], [2.0]],
+        "future_manifold_times": [1, 2],
+        "future_manifold_widths": [[0.0], [0.0]],
+        "future_manifold_effort": [0.0, 0.0],
+    }.items():
+        adapter.inner.set_attr(model_transition, key, value)
+
+    for _ in range(30):
+        if not adapter.inner.run_rules(10000):
+            break
+    else:
+        raise AssertionError("GWM and native P4 projector did not reach a fixpoint")
+    p4_candidates = [node for node in _nodes(adapter, "CognitionManifoldCandidate")
+                     if adapter.s.node(node)["attrs"].get("status") == "audited"]
+    assert p4_candidates
+    p4_candidate = next(node for node in p4_candidates
+                        if model_transition in adapter.inner.neighbours(node, "projects_transition"))
+    receipt = adapter.inner.neighbours(p4_candidate, "has_feasibility_receipt")[0]
+    receipt_attrs = adapter.s.node(receipt)["attrs"]
+    assert receipt_attrs["status"] == "verified"
+    assert receipt_attrs["verifier_kind"] == "native_future_manifold_projection"
+    assert model_transition in adapter.inner.neighbours(receipt, "verifies_transition")
+
+    summary = adapter.inner.load_seed_manifest(build_planner_seed(), adapter.agent)
+    assert summary["rules_skipped"] == [], summary
+    policy = adapter.s.nodes("CognitionPlannerPolicy")[0]
+    for key, value in {
+        "enabled": 1.0, "maximum_depth": 8.0, "maximum_expansions": 256.0,
+        "current_model_epoch": 2.0, "current_goal_epoch": 3.0,
+        "current_manifold_epoch": 5.0, "current_model_id": "model-1",
+        "current_goal_id": "goal-1", "current_manifold_id": "manifold-1",
+    }.items():
+        adapter.inner.set_attr(policy, key, value)
+
+    start = adapter.s.add_node("CognitionPlanState", {
+        "state_key": "start", "owner_id": "owner-1", "model_id": "model-1",
+        "model_epoch": 2.0, "goal_epoch": 3.0, "projection_version": 1.0,
+    })
+    goal = adapter.s.add_node("CognitionPlanState", {
+        "state_key": "goal", "owner_id": "owner-1", "model_id": "model-1",
+        "model_epoch": 2.0, "goal_id": "goal-1", "goal_epoch": 3.0,
+        "projection_version": float(receipt_attrs["projection_version"]),
+    })
+    successor = adapter.s.add_node("CognitionPlanState", {
+        "state_key": "goal", "model_id": "model-1", "model_epoch": 2.0,
+        "goal_epoch": 3.0, "projection_version": float(receipt_attrs["projection_version"]),
+    })
+    adapter.inner.add_edge_unchecked(goal, "has_feasibility_receipt", receipt)
+    adapter.inner.add_edge_unchecked(successor, "has_feasibility_receipt", receipt)
+    transition = adapter.s.add_node("CognitionPlanTransition", {
+        "transition_id": receipt_attrs["transition_id"], "source_state_key": "start",
+        "action_key": "go", "model_id": receipt_attrs["model_id"],
+        "model_epoch": float(receipt_attrs["model_epoch"]),
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_transition", transition)
+    adapter.inner.add_edge_unchecked(transition, "has_feasibility_receipt", receipt)
+    adapter.inner.add_edge_unchecked(transition, "has_successor_state", successor)
+    request = adapter.s.add_node("CognitionPlanRequest", {
+        "request_id": "native-p4-plan", "status": "pending",
+        "source_epoch": float(adapter.s.node(mode)["attrs"]["epoch"]),
+        "owner_id": "owner-1", "start_state_id": "start", "model_id": "model-1",
+        "model_epoch": 2.0, "goal_id": "goal-1", "goal_epoch": 3.0,
+        "manifold_id": "manifold-1", "manifold_epoch": 5.0,
+        "required_horizon": 2.0, "deadline_epoch": 5.0,
+        "depth_limit": 8.0, "expansion_limit": 256.0,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)
+    adapter.inner.add_edge_unchecked(request, "has_start_state", start)
+    adapter.inner.add_edge_unchecked(request, "has_goal_state", goal)
+    for _ in range(30):
+        if not adapter.inner.run_rules(10000):
+            break
+    else:
+        raise AssertionError("planner did not reach a fixpoint after native P4 projection")
+
+    assert adapter.s.node(request)["attrs"]["status"] == "solved"
+    candidates = adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+    assert len(candidates) == 1
+    assert adapter.s.node(candidates[0])["attrs"]["provenance_kind"] == "imagined"
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 9.0
