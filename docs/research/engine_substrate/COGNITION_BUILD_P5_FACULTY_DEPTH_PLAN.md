@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** Phase 5 implementation and reporting cycle complete; registered evaluation is NOT_ESTABLISHED because all arm adapters are null. H4 records the supported fixture classes, mechanism commit links and remaining adapter work. The missing owner-context hookup and item-specific evaluation adapters remain follow-up work; no held-out capability claim is made.
+**Detailed on:** 2026-10-21. **Status:** Phase 5 implementation and reporting cycle complete. The original v1 harness run remains NOT_ESTABLISHED; the separately frozen v2 adapter-backed draw passes all eight registered mechanism-fixture criteria. H4 records the evidence limits and remaining follow-up work; no general capability claim is made.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -531,17 +531,17 @@ G3 tests the action boundary even when E4 finds no good plan. E4 reports end-to-
 - **Non-goals:** a Python planner or ToM oracle choosing actions.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Harness ready; item adapters pending:** the runner and analysis cover all eight registered families, generate separate primary/control inputs, keep external oracles outside arm inputs, enforce frozen artifact hashes, and report null/unsafe emissions. Both development self-checks pass. All arm results are currently null, so the registered mechanism draw is deferred until the adapters exist; no H2 outcome is inferred from this harness-only check.
+  **Complete:** the original v1 null-preserving harness remains archived. Adapter-backed v2 was frozen separately in commit `4b194b3c5c6a58e5d8765de2a4986e57156b2bd1`; self-checks and the focused P5/profile gate pass, and all eight mechanism adapters return structured outcomes.
 
-The H1 runner and analysis must implement `--self-check` for development-only checks. After H3 profile integration, run these checks before committing the preregistration; after that standalone commit, set `COGNITION_PREREG_HASH` to its full hash and run the registered draw:
+The v2 runner and analysis implement `--self-check` for development-only checks. H3 profile integration and focused tests passed before the standalone v2 freeze. The registered run used the frozen hash and command below:
 
 ```sh
-OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_heldout_v1.py --self-check
-OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_analysis_v1.py --self-check
-OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_heldout_v1.py "$COGNITION_PREREG_HASH" 0 200
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v2.py --self-check
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_analysis_v2.py --self-check
+COGNITION_PREREG_HASH=4b194b3c5c6a58e5d8765de2a4986e57156b2bd1 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v2.py 4b194b3c5c6a58e5d8765de2a4986e57156b2bd1 0 200
 ```
 
-The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.json`; invoke `cognition_p5_analysis_v1.py` with that exact report path. It contains every registered subfamily, including separate ratio-bin draws where specified. Record the expanded commands and hashes in results. A self-check never uses registered held-out draw indices.
+The runner writes `evaluation/reports/cognition_p5_mechanism_eval_v2_<hash8>_d0-200.json`; invoke `cognition_p5_mechanism_analysis_v2.py` with that exact report. A self-check never uses registered held-out draw indices. The earlier v1 report remains an independent historical NOT_ESTABLISHED result.
 
 ### P5.H2 — Run and report every Phase 5 hypothesis
 
@@ -558,7 +558,7 @@ The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.jso
 - **Non-goals:** retuning on holdout; declaring recursive ToM or SCM general beyond the tested class.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete with no established item:** frozen run `0826089af64c38da3c34d3be2c96ca490364ffa3`, indices 0–199 and 100 control inputs/family, produced 200 primary rows for each of eight families. Arm adapters were missing, leaving all 3,200 primary results null; the controls were generated but not executed. The analysis returns NOT_ESTABLISHED for every item. The report and analysis JSON remain uncommitted; the outcome and limitations are recorded in `COGNITION_BUILD_P5_RESULTS.md`.
+  **Complete:** v1 commit `0826089af64c38da3c34d3be2c96ca490364ffa3` remains NOT_ESTABLISHED with 3,200 null primary outcomes and unexecuted controls. V2 commit `4b194b3c5c6a58e5d8765de2a4986e57156b2bd1` executed 200 primary cases and 100 controls for all eight items; all eight criteria pass with zero nulls/errors. Full metrics and fixture boundaries are recorded in `COGNITION_BUILD_P5_RESULTS.md`; raw reports remain uncommitted.
 
 ### P5.H3 — Integrate the Phase 5 cognition profile
 
@@ -575,7 +575,7 @@ The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.jso
 - **Non-goals:** promoting imagined candidates to grounded System-1 habits before observation.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete:** the cognition-on profile now loads the P5 planner, imagined arbitration, decomposition completion and analog imagery seeds, with enabled policies attached only by `cognition_on_params`. The profile integration and G3 sink suite passes 28 tests, including policy closure, receipt-gated grounding, native stop withholding and default/conversation isolation. The P5 held-out harness is still a null-preserving scaffold; all eight outcome adapters remain open.
+  **Complete:** the cognition-on profile now loads the P5 planner, imagined arbitration, decomposition completion and analog imagery seeds, with enabled policies attached only by `cognition_on_params`. The profile integration and G3 sink suite passes 28 tests, including policy closure, receipt-gated grounding, native stop withholding and default/conversation isolation. The adapter-backed registered evaluation is complete; imagery proposals remain ungrounded absent an external receipt.
 
 
 ### P5.H4 — Close Phase 5 documentation against actual evidence
@@ -593,7 +593,7 @@ The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.jso
 - **Non-goals:** promoting a mechanism fixture to a human capability claim; erasing null results.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete:** parent plan, capability assessment and P5 results now record each mechanism's supported fixture class and implementation commits, the frozen `NOT_ESTABLISHED` result, inherited P4 C5 failure boundary, and follow-up adapter requirements. P5 is marked executed as a reporting cycle only; its registered behavioral hypotheses remain unestablished.
+  **Complete:** parent plan, capability assessment and P5 results record each mechanism's supported fixture class, the archived v1 NOT_ESTABLISHED result, the v2 fixture-level PASS results, inherited P4 C5 failure boundary, and remaining generalization limits. P5 is marked executed as an implementation and reporting cycle; the registered hypotheses establish only behavior on their frozen fixtures.
 
 ## Exit and handoff
 
