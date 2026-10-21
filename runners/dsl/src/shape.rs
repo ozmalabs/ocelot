@@ -780,6 +780,12 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
             v
         }
         Pick { source } => vec![*source],
+        ProcessCompose { a, b } => vec![*a, *b],
+        ProcessInverse { a } => vec![*a],
+        ProcessApply { p, state } => vec![*p, *state],
+        EffectSupport { p } | PermParity { p } => vec![*p],
+        EffectFingerprint { p, probes } => vec![*p, *probes],
+        MatDet { m } => vec![*m],
         Fold {
             source, init, body, ..
         } => vec![*source, *init, *body],

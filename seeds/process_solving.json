@@ -1,0 +1,1692 @@
+{
+  "id": "process_solving",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_schema"
+  ],
+  "self_load_only": true,
+  "area": "process_solving",
+  "description": "Track I: generic greedy means-ends solving of SolveTasks with a domain's held and invented processes; impasses are left for invention and wall explanation.",
+  "microtheory": {
+    "name": "process_solving",
+    "description": "Use the process that brings the state closest to the goal; stop when none helps."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SolverPolicy",
+      "attrs": {
+        "name": "core_solver_policy",
+        "enabled": 0.0,
+        "max_steps": 400.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_solver_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_solving:has_solver_policy:Agent:SolverPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_solver_policy",
+      "tgt": {
+        "type": "SolverPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_solving:has_solve_task:Agent:SolveTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_solve_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_solving:about_domain:SolveTask:ProcessDomain",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "about_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "sv_greedy_step",
+      "area": "process_solving",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "Apply the domain process that most reduces Hamming distance to the goal (cheapest on ties), only if it strictly reduces it. One step per pass per task.",
+      "match": [
+        [
+          "agent",
+          "has_solver_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Sum",
+              "source": {
+                "type": "ZipWith",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                },
+                "a_name": "hx",
+                "b_name": "hy",
+                "value": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "hx"
+                    },
+                    "b": {
+                      "type": "Var",
+                      "name": "hy"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "other": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                }
+              },
+              "var_name": "hd",
+              "value": {
+                "type": "Var",
+                "name": "hd"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "steps"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_steps"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "MinOver",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Union",
+                  "a": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "b": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_invented_process",
+                    "any_type": false
+                  }
+                },
+                "var_name": "c",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                }
+              },
+              "var_name": "c",
+              "value": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessApply",
+                    "p": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "params"
+                    },
+                    "state": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "state"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": 1000000000.0
+                },
+                "other": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "ZipWith",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "t"
+                        },
+                        "key": "state"
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    },
+                    "a_name": "hx",
+                    "b_name": "hy",
+                    "value": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "hx"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "hy"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 0
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  },
+                  "var_name": "hd",
+                  "value": {
+                    "type": "Var",
+                    "name": "hd"
+                  }
+                }
+              },
+              "default": {
+                "type": "Lit",
+                "value": 1000000000.0
+              }
+            },
+            "b": {
+              "type": "Sum",
+              "source": {
+                "type": "ZipWith",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                },
+                "a_name": "hx",
+                "b_name": "hy",
+                "value": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "hx"
+                    },
+                    "b": {
+                      "type": "Var",
+                      "name": "hy"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "other": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                }
+              },
+              "var_name": "hd",
+              "value": {
+                "type": "Var",
+                "name": "hd"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "state",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bp",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Union",
+                    "a": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_held_process",
+                      "any_type": false
+                    },
+                    "b": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_invented_process",
+                      "any_type": false
+                    }
+                  },
+                  "var_name": "c",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  }
+                },
+                "var_name": "c",
+                "value": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "ProcessApply",
+                              "p": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "params"
+                              },
+                              "state": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "t"
+                                },
+                                "key": "state"
+                              }
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 1000000000.0
+                          },
+                          "other": {
+                            "type": "Sum",
+                            "source": {
+                              "type": "ZipWith",
+                              "a": {
+                                "type": "ProcessApply",
+                                "p": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "params"
+                                },
+                                "state": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "t"
+                                  },
+                                  "key": "state"
+                                }
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "t"
+                                },
+                                "key": "goal"
+                              },
+                              "a_name": "hx",
+                              "b_name": "hy",
+                              "value": {
+                                "type": "IfThenElse",
+                                "cond": {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Var",
+                                    "name": "hx"
+                                  },
+                                  "b": {
+                                    "type": "Var",
+                                    "name": "hy"
+                                  }
+                                },
+                                "then": {
+                                  "type": "Lit",
+                                  "value": 0
+                                },
+                                "other": {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              }
+                            },
+                            "var_name": "hd",
+                            "value": {
+                              "type": "Var",
+                              "name": "hd"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "cost"
+                    }
+                  ]
+                }
+              },
+              "body": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "bp"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "steps",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "steps"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "moves",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bp",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Union",
+                    "a": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_held_process",
+                      "any_type": false
+                    },
+                    "b": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_invented_process",
+                      "any_type": false
+                    }
+                  },
+                  "var_name": "c",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  }
+                },
+                "var_name": "c",
+                "value": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "ProcessApply",
+                              "p": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "params"
+                              },
+                              "state": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "t"
+                                },
+                                "key": "state"
+                              }
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 1000000000.0
+                          },
+                          "other": {
+                            "type": "Sum",
+                            "source": {
+                              "type": "ZipWith",
+                              "a": {
+                                "type": "ProcessApply",
+                                "p": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "params"
+                                },
+                                "state": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "t"
+                                  },
+                                  "key": "state"
+                                }
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "t"
+                                },
+                                "key": "goal"
+                              },
+                              "a_name": "hx",
+                              "b_name": "hy",
+                              "value": {
+                                "type": "IfThenElse",
+                                "cond": {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Var",
+                                    "name": "hx"
+                                  },
+                                  "b": {
+                                    "type": "Var",
+                                    "name": "hy"
+                                  }
+                                },
+                                "then": {
+                                  "type": "Lit",
+                                  "value": 0
+                                },
+                                "other": {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              }
+                            },
+                            "var_name": "hd",
+                            "value": {
+                              "type": "Var",
+                              "name": "hd"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "cost"
+                    }
+                  ]
+                }
+              },
+              "body": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "moves"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "bp"
+                    },
+                    "key": "cost"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "trace",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bp",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Union",
+                    "a": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_held_process",
+                      "any_type": false
+                    },
+                    "b": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_invented_process",
+                      "any_type": false
+                    }
+                  },
+                  "var_name": "c",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  }
+                },
+                "var_name": "c",
+                "value": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "ProcessApply",
+                              "p": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "params"
+                              },
+                              "state": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "t"
+                                },
+                                "key": "state"
+                              }
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": null
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 1000000000.0
+                          },
+                          "other": {
+                            "type": "Sum",
+                            "source": {
+                              "type": "ZipWith",
+                              "a": {
+                                "type": "ProcessApply",
+                                "p": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "params"
+                                },
+                                "state": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "t"
+                                  },
+                                  "key": "state"
+                                }
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "t"
+                                },
+                                "key": "goal"
+                              },
+                              "a_name": "hx",
+                              "b_name": "hy",
+                              "value": {
+                                "type": "IfThenElse",
+                                "cond": {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Var",
+                                    "name": "hx"
+                                  },
+                                  "b": {
+                                    "type": "Var",
+                                    "name": "hy"
+                                  }
+                                },
+                                "then": {
+                                  "type": "Lit",
+                                  "value": 0
+                                },
+                                "other": {
+                                  "type": "Lit",
+                                  "value": 1
+                                }
+                              }
+                            },
+                            "var_name": "hd",
+                            "value": {
+                              "type": "Var",
+                              "name": "hd"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        }
+                      ]
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "cost"
+                    }
+                  ]
+                }
+              },
+              "body": {
+                "type": "Append",
+                "seq": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "trace"
+                },
+                "item": {
+                  "type": "Var",
+                  "name": "bp"
+                }
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sv_solved",
+      "area": "process_solving",
+      "order": 11,
+      "latency_class": "background",
+      "comment": "A task whose state equals its goal is solved.",
+      "match": [
+        [
+          "agent",
+          "has_solver_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Sum",
+              "source": {
+                "type": "ZipWith",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                },
+                "a_name": "hx",
+                "b_name": "hy",
+                "value": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "hx"
+                    },
+                    "b": {
+                      "type": "Var",
+                      "name": "hy"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "other": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                }
+              },
+              "var_name": "hd",
+              "value": {
+                "type": "Var",
+                "name": "hd"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "status",
+          "solved"
+        ]
+      ]
+    },
+    {
+      "name": "sv_stuck",
+      "area": "process_solving",
+      "order": 12,
+      "latency_class": "background",
+      "comment": "Impasse: no process in the domain reduces the distance (or the step bound is hit). Record how many processes the task has seen so it can retry when the library grows.",
+      "match": [
+        [
+          "agent",
+          "has_solver_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Sum",
+              "source": {
+                "type": "ZipWith",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                },
+                "a_name": "hx",
+                "b_name": "hy",
+                "value": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "hx"
+                    },
+                    "b": {
+                      "type": "Var",
+                      "name": "hy"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": 0
+                  },
+                  "other": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                }
+              },
+              "var_name": "hd",
+              "value": {
+                "type": "Var",
+                "name": "hd"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "MinOver",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Union",
+                      "a": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "d"
+                        },
+                        "edge_type": "has_held_process",
+                        "any_type": false
+                      },
+                      "b": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "d"
+                        },
+                        "edge_type": "has_invented_process",
+                        "any_type": false
+                      }
+                    },
+                    "var_name": "c",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "active"
+                      }
+                    }
+                  },
+                  "var_name": "c",
+                  "value": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "params"
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "state"
+                        }
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": 1000000000.0
+                    },
+                    "other": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "ZipWith",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "c"
+                            },
+                            "key": "params"
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "t"
+                            },
+                            "key": "state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "goal"
+                        },
+                        "a_name": "hx",
+                        "b_name": "hy",
+                        "value": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Var",
+                              "name": "hx"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "hy"
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      "var_name": "hd",
+                      "value": {
+                        "type": "Var",
+                        "name": "hd"
+                      }
+                    }
+                  },
+                  "default": {
+                    "type": "Lit",
+                    "value": 1000000000.0
+                  }
+                },
+                "b": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "ZipWith",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    },
+                    "a_name": "hx",
+                    "b_name": "hy",
+                    "value": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "hx"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "hy"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 0
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  },
+                  "var_name": "hd",
+                  "value": {
+                    "type": "Var",
+                    "name": "hd"
+                  }
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "steps"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "max_steps"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "status",
+          "stuck"
+        ],
+        [
+          "set_attr",
+          "t",
+          "tools_seen",
+          {
+            "__term__": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Union",
+                  "a": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "b": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_invented_process",
+                    "any_type": false
+                  }
+                },
+                "var_name": "c",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "stuck_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "stuck_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sv_retry_when_library_grows",
+      "area": "process_solving",
+      "order": 13,
+      "latency_class": "background",
+      "comment": "A stuck task retries once the domain holds more active processes than it last saw.",
+      "match": [
+        [
+          "agent",
+          "has_solver_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "steps"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_steps"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Union",
+                  "a": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "b": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_invented_process",
+                    "any_type": false
+                  }
+                },
+                "var_name": "c",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "tools_seen"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "status",
+          "active"
+        ]
+      ]
+    }
+  ]
+}

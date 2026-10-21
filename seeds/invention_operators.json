@@ -1,0 +1,178 @@
+{
+  "id": "invention_operators",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "Track I I2.1: the invention operators (inverse, compose, conjugate, commutator, powers, square root) as countable, selectable graph data.",
+  "microtheory": {
+    "name": "invention_operators",
+    "description": "New processes are built from held ones by compose and inverse."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "inverse",
+        "template": "a\u207b\u00b9",
+        "arity": 1.0,
+        "cost_formula": "cost(a)",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "compose",
+        "template": "a \u00b7 b",
+        "arity": 2.0,
+        "cost_formula": "cost(a) + cost(b)",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "conjugate",
+        "template": "b \u00b7 a \u00b7 b\u207b\u00b9",
+        "arity": 2.0,
+        "cost_formula": "cost(a) + 2\u00b7cost(b)",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 3,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "commutator",
+        "template": "a \u00b7 b \u00b7 a\u207b\u00b9 \u00b7 b\u207b\u00b9",
+        "arity": 2.0,
+        "cost_formula": "2\u00b7(cost(a) + cost(b))",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 4,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "power2",
+        "template": "a \u00b7 a",
+        "arity": 1.0,
+        "cost_formula": "2\u00b7cost(a)",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 5,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "power3",
+        "template": "a \u00b7 a \u00b7 a",
+        "arity": 1.0,
+        "cost_formula": "3\u00b7cost(a)",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 6,
+      "type": "InventionOperator",
+      "attrs": {
+        "name": "root2",
+        "template": "x such that x \u00b7 x = a (search, records root_of)",
+        "arity": 1.0,
+        "cost_formula": "cost(x)",
+        "enabled": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 2
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 3
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 4
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 5
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator",
+      "tgt": {
+        "local": 6
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:invention_operators:has_invention_operator:Agent:InventionOperator",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invention_operator",
+      "tgt": {
+        "type": "InventionOperator",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": []
+}

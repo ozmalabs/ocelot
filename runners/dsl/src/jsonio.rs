@@ -225,6 +225,13 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::ArgminUnique { .. } => "ArgminUnique",
         TermNode::ArgminRefusal { .. } => "ArgminRefusal",
         TermNode::SoftWeights { .. } => "SoftWeights",
+        TermNode::ProcessCompose { .. } => "ProcessCompose",
+        TermNode::ProcessInverse { .. } => "ProcessInverse",
+        TermNode::ProcessApply { .. } => "ProcessApply",
+        TermNode::EffectSupport { .. } => "EffectSupport",
+        TermNode::EffectFingerprint { .. } => "EffectFingerprint",
+        TermNode::PermParity { .. } => "PermParity",
+        TermNode::MatDet { .. } => "MatDet",
         TermNode::Fold { .. } => "Fold",
         TermNode::BitsAt { .. } => "BitsAt",
         TermNode::BitsWrite { .. } => "BitsWrite",
@@ -851,6 +858,27 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             m.insert("value".into(), child(*value, arena, interner));
             m.insert("temperature".into(), child(*temperature, arena, interner));
             m.insert("default".into(), opt_child(*default, arena, interner));
+        }
+        TermNode::ProcessCompose { a, b } => {
+            m.insert("a".into(), child(*a, arena, interner));
+            m.insert("b".into(), child(*b, arena, interner));
+        }
+        TermNode::ProcessInverse { a } => {
+            m.insert("a".into(), child(*a, arena, interner));
+        }
+        TermNode::ProcessApply { p, state } => {
+            m.insert("p".into(), child(*p, arena, interner));
+            m.insert("state".into(), child(*state, arena, interner));
+        }
+        TermNode::EffectSupport { p } | TermNode::PermParity { p } => {
+            m.insert("p".into(), child(*p, arena, interner));
+        }
+        TermNode::EffectFingerprint { p, probes } => {
+            m.insert("p".into(), child(*p, arena, interner));
+            m.insert("probes".into(), child(*probes, arena, interner));
+        }
+        TermNode::MatDet { m: mat } => {
+            m.insert("m".into(), child(*mat, arena, interner));
         }
         TermNode::Fold {
             source,
@@ -2199,6 +2227,30 @@ fn read_term(
             temperature: child_of("temperature", obj, arena, interner, variant)?,
             default: opt_child_of("default", obj, arena, interner)?,
         },
+        "ProcessCompose" => TermNode::ProcessCompose {
+            a: child_of("a", obj, arena, interner, variant)?,
+            b: child_of("b", obj, arena, interner, variant)?,
+        },
+        "ProcessInverse" => TermNode::ProcessInverse {
+            a: child_of("a", obj, arena, interner, variant)?,
+        },
+        "ProcessApply" => TermNode::ProcessApply {
+            p: child_of("p", obj, arena, interner, variant)?,
+            state: child_of("state", obj, arena, interner, variant)?,
+        },
+        "EffectSupport" => TermNode::EffectSupport {
+            p: child_of("p", obj, arena, interner, variant)?,
+        },
+        "EffectFingerprint" => TermNode::EffectFingerprint {
+            p: child_of("p", obj, arena, interner, variant)?,
+            probes: child_of("probes", obj, arena, interner, variant)?,
+        },
+        "PermParity" => TermNode::PermParity {
+            p: child_of("p", obj, arena, interner, variant)?,
+        },
+        "MatDet" => TermNode::MatDet {
+            m: child_of("m", obj, arena, interner, variant)?,
+        },
         "Fold" => TermNode::Fold {
             source: child_of("source", obj, arena, interner, variant)?,
             var_name: get_sym("var_name", interner)?,
@@ -3208,6 +3260,29 @@ mod tests {
             json,
             term_to_json(&rebuilt_arena, rebuilt, &rebuilt_interner)
         );
+    }
+
+    #[test]
+    fn process_algebra_terms_round_trip_via_json() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let a = arena.add(TermNode::Var { name: interner.intern("a") });
+        let b = arena.add(TermNode::Var { name: interner.intern("b") });
+        let probes = arena.add(TermNode::Var { name: interner.intern("probes") });
+        let comp = arena.add(TermNode::ProcessCompose { a, b });
+        let inv = arena.add(TermNode::ProcessInverse { a: comp });
+        let app = arena.add(TermNode::ProcessApply { p: inv, state: b });
+        let sup = arena.add(TermNode::EffectSupport { p: app });
+        let fp = arena.add(TermNode::EffectFingerprint { p: sup, probes });
+        let par = arena.add(TermNode::PermParity { p: fp });
+        let det = arena.add(TermNode::MatDet { m: par });
+        let json = term_to_json(&arena, det, &interner);
+        let mut rebuilt_arena = TermArena::new();
+        let mut rebuilt_interner = Interner::new();
+        let rebuilt = term_from_json(&json, &mut rebuilt_arena, &mut rebuilt_interner).unwrap();
+        assert_eq!(json, term_to_json(&rebuilt_arena, rebuilt, &rebuilt_interner));
+        assert_eq!(json["type"], "MatDet");
+        assert_eq!(json["m"]["p"]["p"]["p"]["p"]["a"]["type"], "ProcessCompose");
     }
 
     #[test]

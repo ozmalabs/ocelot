@@ -1291,6 +1291,22 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 },
             ],
         ),
+        TermNode::ProcessCompose { a, b } => (
+            "ProcessCompose",
+            vec![Child { name: "a", child: *a }, Child { name: "b", child: *b }],
+        ),
+        TermNode::ProcessInverse { a } => ("ProcessInverse", vec![Child { name: "a", child: *a }]),
+        TermNode::ProcessApply { p, state } => (
+            "ProcessApply",
+            vec![Child { name: "p", child: *p }, Child { name: "state", child: *state }],
+        ),
+        TermNode::EffectSupport { p } => ("EffectSupport", vec![Child { name: "p", child: *p }]),
+        TermNode::EffectFingerprint { p, probes } => (
+            "EffectFingerprint",
+            vec![Child { name: "p", child: *p }, Child { name: "probes", child: *probes }],
+        ),
+        TermNode::PermParity { p } => ("PermParity", vec![Child { name: "p", child: *p }]),
+        TermNode::MatDet { m } => ("MatDet", vec![Child { name: "m", child: *m }]),
         TermNode::Fold {
             source,
             var_name,
@@ -4511,6 +4527,22 @@ fn reconstruct(
             temperature: take_child!("temperature"),
             default: take_opt_child!("default"),
         },
+        "ProcessCompose" => TermNode::ProcessCompose {
+            a: take_child!("a"),
+            b: take_child!("b"),
+        },
+        "ProcessInverse" => TermNode::ProcessInverse { a: take_child!("a") },
+        "ProcessApply" => TermNode::ProcessApply {
+            p: take_child!("p"),
+            state: take_child!("state"),
+        },
+        "EffectSupport" => TermNode::EffectSupport { p: take_child!("p") },
+        "EffectFingerprint" => TermNode::EffectFingerprint {
+            p: take_child!("p"),
+            probes: take_child!("probes"),
+        },
+        "PermParity" => TermNode::PermParity { p: take_child!("p") },
+        "MatDet" => TermNode::MatDet { m: take_child!("m") },
         "Fold" => TermNode::Fold {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,

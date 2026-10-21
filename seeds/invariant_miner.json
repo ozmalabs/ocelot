@@ -1,0 +1,2007 @@
+{
+  "id": "invariant_miner",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_schema"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "Track I I2.4/I2.5/I4.5: invariants as candidate homomorphisms, wall explanations that name why an invented family cannot finish a task, the cheapest wall-breaking held process, and structural proof certificates for family invariants.",
+  "microtheory": {
+    "name": "invariant_miner",
+    "description": "Explain a wall by an invariant before fighting it."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "InvariantMinerPolicy",
+      "attrs": {
+        "name": "core_invariant_miner_policy",
+        "enabled": 0.0,
+        "max_walls": 3.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "InvariantCandidate",
+      "attrs": {
+        "name": "perm_parity",
+        "applies_to_kind": "permutation",
+        "homomorphism": "PermParity",
+        "codomain": "Z2"
+      }
+    },
+    {
+      "local_id": 2,
+      "type": "InvariantCandidate",
+      "attrs": {
+        "name": "det_sign",
+        "applies_to_kind": "integer_matrix",
+        "homomorphism": "MatDet sign",
+        "codomain": "{-1, 1}",
+        "note": "data only: no matrix domain is in PMB v1 yet"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invariant_miner_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invariant_candidate",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invariant_candidate",
+      "tgt": {
+        "local": 2
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:invariant_miner:has_invariant_miner_policy:Agent:InvariantMinerPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invariant_miner_policy",
+      "tgt": {
+        "type": "InvariantMinerPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invariant_miner:has_invariant_candidate:Agent:InvariantCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invariant_candidate",
+      "tgt": {
+        "type": "InvariantCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invariant_miner:preserves_invariant:ProcessSchema:InvariantCandidate",
+      "src": {
+        "type": "ProcessSchema",
+        "var": "src"
+      },
+      "edge_type": "preserves_invariant",
+      "tgt": {
+        "type": "InvariantCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invariant_miner:explained_by_wall:SolveTask:WallExplanation",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "explained_by_wall",
+      "tgt": {
+        "type": "WallExplanation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invariant_miner:has_wall_explanation:Agent:WallExplanation",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_wall_explanation",
+      "tgt": {
+        "type": "WallExplanation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invariant_miner:has_process_law:Agent:ProcessLaw",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_law",
+      "tgt": {
+        "type": "ProcessLaw",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "im_parity_of_schema",
+      "area": "memory_consolidation",
+      "order": 80,
+      "latency_class": "background",
+      "comment": "I2.4: compute the perm_parity homomorphism of every permutation schema.",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "params"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "parity_checked"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "parity",
+          {
+            "__term__": {
+              "type": "PermParity",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "params"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "parity_checked",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "im_preserves_parity",
+      "area": "memory_consolidation",
+      "order": 81,
+      "latency_class": "background",
+      "comment": "I2.4: an even permutation preserves the parity of every state it acts on.",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_invariant_candidate",
+          "inv"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "inv"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "perm_parity"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "parity_checked"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "parity"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "In",
+              "member": {
+                "type": "Var",
+                "name": "inv"
+              },
+              "container": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "edge_type": "preserves_invariant",
+                "any_type": false
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "s",
+          "preserves_invariant",
+          "inv",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "im_explain_parity_wall",
+      "area": "process_solving",
+      "order": 20,
+      "latency_class": "background",
+      "comment": "I2.5: a stuck task whose state and goal differ in parity, in a domain whose every invented process is even, cannot be finished by the invented family. Name the wall.",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_invariant_candidate",
+          "inv"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "inv"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "perm_parity"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_invented_process",
+                      "any_type": false
+                    },
+                    "var_name": "iv",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "iv"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "active"
+                      }
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_invented_process",
+                      "any_type": false
+                    },
+                    "var_name": "iv",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "iv"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "active"
+                      }
+                    }
+                  },
+                  "var_name": "fx",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "fx"
+                        },
+                        "key": "parity"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "PermParity",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              },
+              "b": {
+                "type": "PermParity",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                }
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "edge_type": "explained_by_wall",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_walls"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "edge_type": "explained_by_wall",
+                "any_type": false
+              },
+              "var_name": "ow",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ow"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "open"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "w",
+          "WallExplanation",
+          {
+            "invariant": "perm_parity",
+            "family": "invented",
+            "family_size": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_invented_process",
+                    "any_type": false
+                  },
+                  "var_name": "iv",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "iv"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  }
+                }
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "state_parity": {
+              "__term__": {
+                "type": "PermParity",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              }
+            },
+            "goal_parity": {
+              "__term__": {
+                "type": "PermParity",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                }
+              }
+            },
+            "status": "open"
+          }
+        ],
+        [
+          "add_edge",
+          "t",
+          "explained_by_wall",
+          "w",
+          {}
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_wall_explanation",
+          "w",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "im_break_parity_wall",
+      "area": "process_solving",
+      "order": 21,
+      "latency_class": "background",
+      "comment": "I2.5: break the wall with the cheapest held process that changes the invariant (an odd permutation), then resume solving.",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "explained_by_wall",
+          "w"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "edge_type": "has_held_process",
+                  "any_type": false
+                },
+                "var_name": "h",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "h"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "active"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "h"
+                        },
+                        "key": "parity"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "state",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bk",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "var_name": "h",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "parity"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "h",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "cost"
+                }
+              },
+              "body": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "bk"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "steps",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "steps"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "moves",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bk",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "var_name": "h",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "parity"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "h",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "cost"
+                }
+              },
+              "body": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "moves"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "bk"
+                    },
+                    "key": "cost"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "trace",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bk",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "var_name": "h",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "parity"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "h",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "cost"
+                }
+              },
+              "body": {
+                "type": "Append",
+                "seq": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "trace"
+                },
+                "item": {
+                  "type": "Var",
+                  "name": "bk"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "w",
+          "breaking_process",
+          {
+            "__term__": {
+              "type": "Let",
+              "name": "bk",
+              "value": {
+                "type": "Argmin",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_held_process",
+                    "any_type": false
+                  },
+                  "var_name": "h",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "parity"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "h",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "cost"
+                }
+              },
+              "body": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "bk"
+                },
+                "key": "name"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "w",
+          "status",
+          "broken"
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          "active"
+        ]
+      ]
+    },
+    {
+      "name": "im_wall_unbreakable",
+      "area": "process_solving",
+      "order": 21,
+      "latency_class": "background",
+      "comment": "I2.5: no held process changes the invariant; the wall stands (reported, not fought).",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "explained_by_wall",
+          "w"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "edge_type": "has_held_process",
+                  "any_type": false
+                },
+                "var_name": "h",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "h"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "active"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "h"
+                        },
+                        "key": "parity"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "w",
+          "status",
+          "unbreakable"
+        ]
+      ]
+    },
+    {
+      "name": "im_proof_commutator_even",
+      "area": "memory_consolidation",
+      "order": 85,
+      "latency_class": "background",
+      "comment": "I4.5 certificate step: a commutator [a,b] is even for any a, b (parity is a homomorphism into the abelian group Z2).",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "parity_proof"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "even_by_construction"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "parity_proof",
+          "even_by_construction"
+        ]
+      ]
+    },
+    {
+      "name": "im_proof_conjugate_preserves",
+      "area": "memory_consolidation",
+      "order": 86,
+      "latency_class": "background",
+      "comment": "I4.5 certificate step: a conjugate s\u00b7t\u00b7s\u207b\u00b9 has the parity of t; it is proven even when t is a held process of exact parity 0 or t is itself proven even.",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ],
+        [
+          "s",
+          "has_arg0",
+          "x"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "operator"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "conjugate"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "operator"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "conjugate_closure"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "x"
+                  },
+                  "key": "parity_proof"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "even_by_construction"
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "x"
+                      },
+                      "key": "provenance"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "held"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "x"
+                      },
+                      "key": "parity_checked"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "x"
+                      },
+                      "key": "parity"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "parity_proof"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "even_by_construction"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "parity_proof",
+          "even_by_construction"
+        ]
+      ]
+    },
+    {
+      "name": "im_family_parity_law",
+      "area": "memory_consolidation",
+      "order": 87,
+      "latency_class": "background",
+      "comment": "I4.5: when every active invented process in a permutation domain carries the structural certificate, promote 'the invented family is even' to a proven law.",
+      "match": [
+        [
+          "agent",
+          "has_invariant_miner_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "edge_type": "has_invented_process",
+                  "any_type": false
+                },
+                "var_name": "iv",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iv"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "edge_type": "has_invented_process",
+                  "any_type": false
+                },
+                "var_name": "iv",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "iv"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                }
+              },
+              "var_name": "fx",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "fx"
+                    },
+                    "key": "parity_proof"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "even_by_construction"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_law",
+                "any_type": false
+              },
+              "var_name": "lw",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "lw"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "family_invariant"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "lw"
+                      },
+                      "key": "domain"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "name"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "lw"
+                      },
+                      "key": "family_size"
+                    },
+                    "b": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Filter",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_invented_process",
+                          "any_type": false
+                        },
+                        "var_name": "iv",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "iv"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "active"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "law",
+          "ProcessLaw",
+          {
+            "kind": "family_invariant",
+            "statement": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "every invented process in "
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": " preserves perm_parity"
+                  }
+                ]
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "family_size": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "edge_type": "has_invented_process",
+                    "any_type": false
+                  },
+                  "var_name": "iv",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "iv"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  }
+                }
+              }
+            },
+            "invariant": "perm_parity",
+            "proof_kind": "structural_induction",
+            "proof_steps": "commutator_even; conjugate_preserves_parity",
+            "proven": 1,
+            "status": "proven"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_law",
+          "law",
+          {}
+        ]
+      ],
+      "batch": true
+    }
+  ]
+}

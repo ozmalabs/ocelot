@@ -1279,7 +1279,7 @@ fn apply_generator_k(
     apply_generator_k_with_coefficients(kind, coord_dims, sig, modulus, matrix, &[], offset, k)
 }
 
-fn apply_generator_k_with_coefficients(
+pub(crate) fn apply_generator_k_with_coefficients(
     kind: &str,
     coord_dims: &[i64],
     sig: &[Value],

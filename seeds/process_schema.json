@@ -1,0 +1,3388 @@
+{
+  "id": "process_schema",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "Track I I1: one ProcessSchema representation for every held process, minted by view rules over the six native forms, fingerprinted on each domain's probe battery, and deduplicated by effect keeping the cheapest.",
+  "microtheory": {
+    "name": "process_schema",
+    "description": "A process is known by its effect on a fixed battery of probe states."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessSchemaPolicy",
+      "attrs": {
+        "name": "core_process_schema_policy",
+        "enabled": 0.0,
+        "view_enabled": 1.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "ProcessDomain",
+      "attrs": {
+        "name": "shape_coords_2d",
+        "kind": "generator_step",
+        "probes": [
+          [
+            [
+              "cell",
+              0,
+              1
+            ],
+            [
+              "cell",
+              0,
+              2
+            ],
+            [
+              "cell",
+              1,
+              0
+            ],
+            [
+              "cell",
+              1,
+              1
+            ],
+            [
+              "cell",
+              2,
+              1
+            ]
+          ],
+          [
+            [
+              "cell",
+              0,
+              0
+            ],
+            [
+              "cell",
+              0,
+              1
+            ],
+            [
+              "cell",
+              1,
+              0
+            ],
+            [
+              "cell",
+              2,
+              0
+            ],
+            [
+              "cell",
+              3,
+              0
+            ],
+            [
+              "cell",
+              3,
+              1
+            ]
+          ]
+        ],
+        "description": "Shape signatures ['cell', r, c]; the DimensionGenerator view domain."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_schema_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_domain",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_schema:has_process_schema_policy:Agent:ProcessSchemaPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema_policy",
+      "tgt": {
+        "type": "ProcessSchemaPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_schema:has_process_schema:Agent:ProcessSchema",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_schema:has_process_domain:Agent:ProcessDomain",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_schema:has_held_process:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "has_held_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_schema:has_invented_process:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "has_invented_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_schema:merged_into:ProcessSchema:ProcessSchema",
+      "src": {
+        "type": "ProcessSchema",
+        "var": "src"
+      },
+      "edge_type": "merged_into",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ps_view_dimension_generator",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "I1.1 view rule: mint the ProcessSchema view of one DimensionGenerator per pass (no migration; the native node stays authoritative and is recorded as `realised_by`).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "view_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "DimensionGenerator"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ProcessSchema"
+                    },
+                    "var_name": "vs",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vs"
+                        },
+                        "key": "realised_by"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "g"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": "generator_step",
+            "domain": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "DimensionGenerator"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "shape_coords_2d"
+                }
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "DimensionGenerator"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "DimensionGenerator"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Vec",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": "gen"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "kind"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "coord_dims"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "modulus"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "matrix"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "g"
+                      },
+                      "key": "offset"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            },
+            "pre": null,
+            "post": null,
+            "invariants": [],
+            "cost": 1.0,
+            "provenance": "held",
+            "source_type": "DimensionGenerator",
+            "realised_by": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "DimensionGenerator"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Var",
+                  "name": "g"
+                }
+              }
+            },
+            "status": "active"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ps_view_program",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "I1.1 view rule: mint the ProcessSchema view of one Program per pass (no migration; the native node stays authoritative and is recorded as `realised_by`).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "view_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "Program"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ProcessSchema"
+                    },
+                    "var_name": "vs",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vs"
+                        },
+                        "key": "realised_by"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "g"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": "program",
+            "domain": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "Program"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "native:Program"
+                }
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "Program"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "Program"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": null
+                }
+              }
+            },
+            "pre": null,
+            "post": null,
+            "invariants": [],
+            "cost": 1.0,
+            "provenance": "held",
+            "source_type": "Program",
+            "realised_by": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "Program"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Var",
+                  "name": "g"
+                }
+              }
+            },
+            "status": "active",
+            "construction": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "Program"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "construction"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ps_view_capability_program",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "I1.1 view rule: mint the ProcessSchema view of one CapabilityProgram per pass (no migration; the native node stays authoritative and is recorded as `realised_by`).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "view_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "CapabilityProgram"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ProcessSchema"
+                    },
+                    "var_name": "vs",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vs"
+                        },
+                        "key": "realised_by"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "g"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": "capability",
+            "domain": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "CapabilityProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "native:CapabilityProgram"
+                }
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "CapabilityProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "CapabilityProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": null
+                }
+              }
+            },
+            "pre": null,
+            "post": null,
+            "invariants": [],
+            "cost": 1.0,
+            "provenance": "held",
+            "source_type": "CapabilityProgram",
+            "realised_by": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "CapabilityProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Var",
+                  "name": "g"
+                }
+              }
+            },
+            "status": "active",
+            "order": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "CapabilityProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "order"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ps_view_transition_hypothesis",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "I1.1 view rule: mint the ProcessSchema view of one TransitionHypothesis per pass (no migration; the native node stays authoritative and is recorded as `realised_by`).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "view_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "TransitionHypothesis"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ProcessSchema"
+                    },
+                    "var_name": "vs",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vs"
+                        },
+                        "key": "realised_by"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "g"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": "transition",
+            "domain": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "native:TransitionHypothesis"
+                }
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": null
+                }
+              }
+            },
+            "pre": null,
+            "post": null,
+            "invariants": [],
+            "cost": 1.0,
+            "provenance": "held",
+            "source_type": "TransitionHypothesis",
+            "realised_by": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Var",
+                  "name": "g"
+                }
+              }
+            },
+            "status": "active",
+            "pre_state_kind": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "source_state_kind"
+                }
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "action_kind"
+                }
+              }
+            },
+            "post_state_kind": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "successor_state_kind"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ps_view_embodied_motor_program",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "I1.1 view rule: mint the ProcessSchema view of one EmbodiedMotorProgram per pass (no migration; the native node stays authoritative and is recorded as `realised_by`).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "view_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "EmbodiedMotorProgram"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ProcessSchema"
+                    },
+                    "var_name": "vs",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vs"
+                        },
+                        "key": "realised_by"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "g"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": "motor",
+            "domain": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "EmbodiedMotorProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "native:EmbodiedMotorProgram"
+                }
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "EmbodiedMotorProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "EmbodiedMotorProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": null
+                }
+              }
+            },
+            "pre": null,
+            "post": null,
+            "invariants": [],
+            "cost": 1.0,
+            "provenance": "held",
+            "source_type": "EmbodiedMotorProgram",
+            "realised_by": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "EmbodiedMotorProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Var",
+                  "name": "g"
+                }
+              }
+            },
+            "status": "active"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ps_view_family_program",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "I1.1 view rule: mint the ProcessSchema view of one FamilyProgram per pass (no migration; the native node stays authoritative and is recorded as `realised_by`).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "view_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "NodesOfType",
+                  "node_type": "FamilyProgram"
+                },
+                "var_name": "g",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "ProcessSchema"
+                    },
+                    "var_name": "vs",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "vs"
+                        },
+                        "key": "realised_by"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "g"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": "family_program",
+            "domain": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FamilyProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "native:FamilyProgram"
+                }
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FamilyProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FamilyProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": null
+                }
+              }
+            },
+            "pre": null,
+            "post": null,
+            "invariants": [],
+            "cost": 1.0,
+            "provenance": "held",
+            "source_type": "FamilyProgram",
+            "realised_by": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FamilyProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Var",
+                  "name": "g"
+                }
+              }
+            },
+            "status": "active"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ps_domain_identity_fingerprint",
+      "area": "memory_consolidation",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "Record the identity process's fingerprint on a domain's probe battery (the empty sequence applied to every probe), so laws and identity checks compare like with like. A permutation domain whose probes include the identity state has EXACT fingerprints: the identity probe's image is the permutation itself.",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "identity_checked"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "d",
+          "identity_fingerprint",
+          {
+            "__term__": {
+              "type": "EffectFingerprint",
+              "p": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": "seq"
+                  }
+                ]
+              },
+              "probes": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probes"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "d",
+          "exact_probes",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "permutation"
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "probes"
+                    },
+                    "var_name": "pr",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "IndexedMap",
+                          "source": {
+                            "type": "Var",
+                            "name": "pr"
+                          },
+                          "item_name": "px",
+                          "index_name": "pi",
+                          "value": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Var",
+                              "name": "px"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "pi"
+                            }
+                          }
+                        },
+                        "var_name": "pb",
+                        "predicate": {
+                          "type": "Not",
+                          "arg": {
+                            "type": "Var",
+                            "name": "pb"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1
+              },
+              "other": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "d",
+          "identity_checked",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ps_fingerprint_from_domain_probes",
+      "area": "memory_consolidation",
+      "order": 11,
+      "latency_class": "background",
+      "comment": "I1.3: a schema's effect is its behaviour on its domain's fixed probe battery. Unevaluable kinds get fingerprint None (honest: no exact evaluator).",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "fingerprint_checked"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "fingerprint",
+          {
+            "__term__": {
+              "type": "EffectFingerprint",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "params"
+              },
+              "probes": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probes"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "support",
+          {
+            "__term__": {
+              "type": "EffectSupport",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "params"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "fingerprint_checked",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ps_index_held_process",
+      "area": "memory_consolidation",
+      "order": 12,
+      "latency_class": "background",
+      "comment": "Link each active held schema to its domain (`has_held_process`), so invention rules join over distinct edge types and stay semi-naive.",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "domain"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "name"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "provenance"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "held"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "indexed"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "d",
+          "has_held_process",
+          "s",
+          {}
+        ],
+        [
+          "set_attr",
+          "s",
+          "indexed",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ps_merge_newcomer_into_cheaper_effect",
+      "area": "memory_consolidation",
+      "order": 13,
+      "latency_class": "background",
+      "comment": "I1.4: a newly fingerprinted schema whose effect is already held at lower cost (or equal cost by an already-checked or older schema) is the same process; mark it merged into the cheaper one.",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "b"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "a"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "fingerprint_checked"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "dedup_checked"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "domain"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "domain"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "b": {
+                    "type": "Var",
+                    "name": "b"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "fingerprint"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "fingerprint"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "fingerprint"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "cost"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "cost"
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "cost"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "b"
+                      },
+                      "key": "cost"
+                    }
+                  },
+                  {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "dedup_checked"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      },
+                      {
+                        "type": "Lt",
+                        "a": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "b"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "b",
+          "status",
+          "merged"
+        ],
+        [
+          "add_edge",
+          "b",
+          "merged_into",
+          "a",
+          {}
+        ],
+        [
+          "set_attr",
+          "b",
+          "dedup_checked",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "ps_merge_older_costlier_effect",
+      "area": "memory_consolidation",
+      "order": 14,
+      "latency_class": "background",
+      "comment": "I1.4: a newly fingerprinted schema that is CHEAPER than an already-checked schema with the same effect replaces it; the older, costlier one is merged.",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "b"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "a"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "fingerprint_checked"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "b"
+                },
+                "key": "dedup_checked"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "a"
+              },
+              "key": "dedup_checked"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "domain"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "domain"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "b": {
+                    "type": "Var",
+                    "name": "b"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "fingerprint"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "fingerprint"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "fingerprint"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "cost"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "a"
+              },
+              "key": "cost"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "a",
+          "status",
+          "merged"
+        ],
+        [
+          "add_edge",
+          "a",
+          "merged_into",
+          "b",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ps_settle_dedup_check",
+      "area": "memory_consolidation",
+      "order": 15,
+      "latency_class": "background",
+      "comment": "Close the dedup check for a fingerprinted schema once the merge rules have run.",
+      "match": [
+        [
+          "agent",
+          "has_process_schema_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "fingerprint_checked"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "dedup_checked"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "dedup_checked",
+          1
+        ]
+      ]
+    }
+  ]
+}

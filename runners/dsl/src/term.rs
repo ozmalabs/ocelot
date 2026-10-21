@@ -3327,6 +3327,28 @@ pub enum TermNode {
         temperature: TermIdx,
         default: Option<TermIdx>,
     },
+
+    // --- Track I process algebra (I1.2; `process_algebra.rs`) ---
+    /// `ProcessCompose{a, b}` — the process "a then b". Permutations and
+    /// square integer matrices compose in closed form; mismatched or
+    /// generator-step processes compose into a `["seq", ...]` value.
+    ProcessCompose { a: TermIdx, b: TermIdx },
+    /// `ProcessInverse{a}` — exact inverse, `None` if the process has none
+    /// (non-unimodular matrix, `scale2`, unknown kinds).
+    ProcessInverse { a: TermIdx },
+    /// `ProcessApply{p, state}` — run process `p` on `state`.
+    ProcessApply { p: TermIdx, state: TermIdx },
+    /// `EffectSupport{p}` — how much of the world `p` touches (moved points
+    /// for a permutation); `None` where support is only probe-relative.
+    EffectSupport { p: TermIdx },
+    /// `EffectFingerprint{p, probes}` — `p`'s outputs on a probe battery,
+    /// the identity of a process by its effect.
+    EffectFingerprint { p: TermIdx, probes: TermIdx },
+    /// `PermParity{p}` — parity of the permutation sorting a sequence of
+    /// distinct values (0 even, 1 odd).
+    PermParity { p: TermIdx },
+    /// `MatDet{m}` — exact integer determinant.
+    MatDet { m: TermIdx },
 }
 
 /// Arena for a Term tree. Childless to outside callers — construction
@@ -5083,6 +5105,30 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             value: copy_subtree(src, dst, value),
             temperature: copy_subtree(src, dst, temperature),
             default: default.map(|d| copy_subtree(src, dst, d)),
+        },
+        TermNode::ProcessCompose { a, b } => TermNode::ProcessCompose {
+            a: copy_subtree(src, dst, a),
+            b: copy_subtree(src, dst, b),
+        },
+        TermNode::ProcessInverse { a } => TermNode::ProcessInverse {
+            a: copy_subtree(src, dst, a),
+        },
+        TermNode::ProcessApply { p, state } => TermNode::ProcessApply {
+            p: copy_subtree(src, dst, p),
+            state: copy_subtree(src, dst, state),
+        },
+        TermNode::EffectSupport { p } => TermNode::EffectSupport {
+            p: copy_subtree(src, dst, p),
+        },
+        TermNode::EffectFingerprint { p, probes } => TermNode::EffectFingerprint {
+            p: copy_subtree(src, dst, p),
+            probes: copy_subtree(src, dst, probes),
+        },
+        TermNode::PermParity { p } => TermNode::PermParity {
+            p: copy_subtree(src, dst, p),
+        },
+        TermNode::MatDet { m } => TermNode::MatDet {
+            m: copy_subtree(src, dst, m),
         },
         // --- Program IR (P1) ---
         TermNode::ProgSeq { stmts } => TermNode::ProgSeq {
@@ -9090,6 +9136,39 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             env,
             ctx,
         ),
+
+        // --- Track I process algebra (I1.2) ---
+        TermNode::ProcessCompose { a, b } => {
+            let av = evaluate(arena, *a, env, ctx);
+            let bv = evaluate(arena, *b, env, ctx);
+            crate::process_algebra::compose(&av, &bv, ctx.interner)
+        }
+        TermNode::ProcessInverse { a } => {
+            let av = evaluate(arena, *a, env, ctx);
+            crate::process_algebra::inverse(&av, ctx.interner)
+        }
+        TermNode::ProcessApply { p, state } => {
+            let pv = evaluate(arena, *p, env, ctx);
+            let sv = evaluate(arena, *state, env, ctx);
+            crate::process_algebra::apply(&pv, &sv, ctx.interner)
+        }
+        TermNode::EffectSupport { p } => {
+            let pv = evaluate(arena, *p, env, ctx);
+            crate::process_algebra::support(&pv, ctx.interner)
+        }
+        TermNode::EffectFingerprint { p, probes } => {
+            let pv = evaluate(arena, *p, env, ctx);
+            let qv = evaluate(arena, *probes, env, ctx);
+            crate::process_algebra::fingerprint(&pv, &qv, ctx.interner)
+        }
+        TermNode::PermParity { p } => {
+            let pv = evaluate(arena, *p, env, ctx);
+            crate::process_algebra::parity(&pv)
+        }
+        TermNode::MatDet { m } => {
+            let mv = evaluate(arena, *m, env, ctx);
+            crate::process_algebra::mat_det(&mv)
+        }
 
         // --- Program IR (P1): STRUCTURAL variants are INERT here. ---
         // The main evaluator does NOT execute statement/expression IR —
@@ -14671,6 +14750,21 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
                 out.push(*d);
             }
         }
+        TermNode::ProcessCompose { a, b } => {
+            out.push(*a);
+            out.push(*b);
+        }
+        TermNode::ProcessInverse { a } => out.push(*a),
+        TermNode::ProcessApply { p, state } => {
+            out.push(*p);
+            out.push(*state);
+        }
+        TermNode::EffectSupport { p } | TermNode::PermParity { p } => out.push(*p),
+        TermNode::EffectFingerprint { p, probes } => {
+            out.push(*p);
+            out.push(*probes);
+        }
+        TermNode::MatDet { m } => out.push(*m),
         TermNode::Fold {
             source, init, body, ..
         } => {

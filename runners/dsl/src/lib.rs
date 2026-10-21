@@ -192,6 +192,7 @@ pub mod selector_audit;
 /// `term.rs`'s already-huge evaluator match arm body per the project's
 /// "primitive in Rust, composition in graph" split.
 pub mod shape_decode;
+pub mod process_algebra;
 pub mod stage_a;
 pub mod sym;
 pub mod term;
