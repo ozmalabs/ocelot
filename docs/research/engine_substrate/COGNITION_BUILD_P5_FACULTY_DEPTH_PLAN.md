@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** Phase 5 implementation and reporting cycle complete. The original v1 harness run remains NOT_ESTABLISHED; the separately frozen v2 adapter-backed draw passes all eight registered mechanism-fixture criteria. H4 records the evidence limits and remaining follow-up work; no general capability claim is made.
+**Detailed on:** 2026-10-21. **Status:** Phase 5 implementation and reporting cycle complete. V1 remains NOT_ESTABLISHED; v2's E4 comparison is invalidated by its depth-shortcut comparator; corrected v3 passes all eight registered mechanism-fixture criteria. H4 records evidence limits and follow-up work; no general capability claim is made.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -362,6 +362,19 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Non-goals:** hiding an unconsumed signal that later drives a decision; promoting a query result into world evidence.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch.
 
+### P5.E3.2b — Classify detached SCM source-provenance readouts
+
+- **ID:** P5.E3.2b
+- **Tier:** T1
+- **Goal:** Record the two model-provenance attributes returned with detached SCM query results as caller-visible diagnostics.
+- **Read first:** `scripts/lint_orphan_signals.py`; `scripts/orphan_signal_allowlist.json`; `seeds/scm_reasoning.json`; `COGNITION_SCM_CONTRACT.md`.
+- **Touch:** this plan; `scripts/orphan_signal_allowlist.json`.
+- **Reason:** the P5 completion audit found `model_hash_used` and `evaluated_source_epoch` are returned and asserted by the caller, but the seed-only linter cannot observe those external reads. They must be classified narrowly beside `scm_result`/`scm_reason`; they remain provenance-only and cannot become observations or decision inputs.
+- **Acceptance:** allowlist exactly those two attribute names with caller-readout explanations; rerun seed-only orphan lint and verify no remaining `scm_reasoning` orphans.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python scripts/lint_orphan_signals.py --seed-only --exclude-allowlisted`.
+- **Non-goals:** suppressing unrelated orphans or adding node-type/general SCM exemptions.
+- **Done:** the P5 completion audit reproduced both orphan reports. The separate allowlist correction is recorded and verified below.
+
 ### P5.E4.1 — Specify a bounded planner and grounded candidate arbitration
 
 - **ID:** P5.E4.1
@@ -531,17 +544,17 @@ G3 tests the action boundary even when E4 finds no good plan. E4 reports end-to-
 - **Non-goals:** a Python planner or ToM oracle choosing actions.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete:** the original v1 null-preserving harness remains archived. Adapter-backed v2 was frozen separately in commit `4b194b3c5c6a58e5d8765de2a4986e57156b2bd1`; self-checks and the focused P5/profile gate pass, and all eight mechanism adapters return structured outcomes.
+  **Complete:** v1's null-preserving harness and v2's superseded E4 comparison remain archived. Corrected v3 was frozen separately in commit `483e6a302c875ffd6b139ff5ed3c1095625e21c7`; self-checks and the focused P5/profile gate pass, all eight adapters return structured outcomes, and both one-step and planner inspect the same edge list.
 
-The v2 runner and analysis implement `--self-check` for development-only checks. H3 profile integration and focused tests passed before the standalone v2 freeze. The registered run used the frozen hash and command below:
+The v3 runner and analysis implement `--self-check` for development-only checks. H3 profile integration, the wrong-source verifier regression and focused tests passed before the standalone v3 freeze. The registered run used the frozen hash and command below:
 
 ```sh
-OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v2.py --self-check
-OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_analysis_v2.py --self-check
-COGNITION_PREREG_HASH=4b194b3c5c6a58e5d8765de2a4986e57156b2bd1 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v2.py 4b194b3c5c6a58e5d8765de2a4986e57156b2bd1 0 200
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v3.py --self-check
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_analysis_v3.py --self-check
+COGNITION_PREREG_HASH=483e6a302c875ffd6b139ff5ed3c1095625e21c7 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v3.py 483e6a302c875ffd6b139ff5ed3c1095625e21c7 0 200
 ```
 
-The runner writes `evaluation/reports/cognition_p5_mechanism_eval_v2_<hash8>_d0-200.json`; invoke `cognition_p5_mechanism_analysis_v2.py` with that exact report. A self-check never uses registered held-out draw indices. The earlier v1 report remains an independent historical NOT_ESTABLISHED result.
+The runner writes `evaluation/reports/cognition_p5_mechanism_eval_v3_<hash8>_d0-200.json`; invoke `cognition_p5_mechanism_analysis_v3.py` with that exact report. Development checks use indices above 200 and a separate seed. V1 and v2 reports remain unmodified historical artifacts; v2's E4 result is NOT_ESTABLISHED on audit because its comparator was not graph-backed.
 
 ### P5.H2 — Run and report every Phase 5 hypothesis
 
@@ -558,7 +571,7 @@ The runner writes `evaluation/reports/cognition_p5_mechanism_eval_v2_<hash8>_d0-
 - **Non-goals:** retuning on holdout; declaring recursive ToM or SCM general beyond the tested class.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete:** v1 commit `0826089af64c38da3c34d3be2c96ca490364ffa3` remains NOT_ESTABLISHED with 3,200 null primary outcomes and unexecuted controls. V2 commit `4b194b3c5c6a58e5d8765de2a4986e57156b2bd1` executed 200 primary cases and 100 controls for all eight items; all eight criteria pass with zero nulls/errors. Full metrics and fixture boundaries are recorded in `COGNITION_BUILD_P5_RESULTS.md`; raw reports remain uncommitted.
+  **Complete:** v1 commit `0826089af64c38da3c34d3be2c96ca490364ffa3` remains NOT_ESTABLISHED. V2's E4 comparison is invalidated on audit. V3 commit `483e6a302c875ffd6b139ff5ed3c1095625e21c7` executed 200 primary cases and 100 controls for all eight items; all eight criteria pass with zero nulls/errors. Full metrics and fixture boundaries are recorded in `COGNITION_BUILD_P5_RESULTS.md`; raw reports remain uncommitted.
 
 ### P5.H3 — Integrate the Phase 5 cognition profile
 
@@ -575,7 +588,7 @@ The runner writes `evaluation/reports/cognition_p5_mechanism_eval_v2_<hash8>_d0-
 - **Non-goals:** promoting imagined candidates to grounded System-1 habits before observation.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete:** the cognition-on profile now loads the P5 planner, imagined arbitration, decomposition completion and analog imagery seeds, with enabled policies attached only by `cognition_on_params`. The profile integration and G3 sink suite passes 28 tests, including policy closure, receipt-gated grounding, native stop withholding and default/conversation isolation. The adapter-backed registered evaluation is complete; imagery proposals remain ungrounded absent an external receipt.
+  **Complete:** the cognition-on profile now loads the P5 planner, imagined arbitration, decomposition completion and analog imagery seeds, with enabled policies attached only by `cognition_on_params`. The profile integration and G3 sink suite passes 28 tests, including policy closure, receipt-gated grounding, native stop withholding and default/conversation isolation. The adapter-backed registered evaluation is complete; imagery proposals remain ungrounded absent a matching external receipt, and wrong-source receipts are rejected terminally.
 
 
 ### P5.H4 — Close Phase 5 documentation against actual evidence
@@ -593,8 +606,25 @@ The runner writes `evaluation/reports/cognition_p5_mechanism_eval_v2_<hash8>_d0-
 - **Non-goals:** promoting a mechanism fixture to a human capability claim; erasing null results.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-  **Complete:** parent plan, capability assessment and P5 results record each mechanism's supported fixture class, the archived v1 NOT_ESTABLISHED result, the v2 fixture-level PASS results, inherited P4 C5 failure boundary, and remaining generalization limits. P5 is marked executed as an implementation and reporting cycle; the registered hypotheses establish only behavior on their frozen fixtures.
+  **Complete:** parent plan, capability assessment and P5 results record each mechanism's supported fixture class, the archived v1 result, v2's invalid E4 comparator, corrected v3 fixture-level PASS results, inherited P4 C5 failure boundary, and remaining generalization limits. P5 is marked executed as an implementation and reporting cycle; the registered hypotheses establish only behavior on their frozen fixtures.
 
 ## Exit and handoff
 
-P6 requires verified planning/rollout and attributed-agent interfaces for imitation. A failed held-out planner gain does not prevent a fixture-backed demonstration verifier, but that limitation must be named in P6 results. Hand off the native dispatch authorization boundary, SCM identification assumptions, supported rotation domain and parent-completion witness format. Update assessment maturity per item after results, retaining negative evidence.
+### Completion evidence audit
+
+| Work items | Implementation/spec evidence | Acceptance evidence on this branch |
+|---|---|---|
+| H0 | P4 results and frozen P5 interfaces in `COGNITION_BUILD_P5_PREREG.md`; commit `ec36b316` | Profile/contract tests in the 268-test acceptance run; P4 C5 failure retained. |
+| F1.1–F1.2 | `18647818`, `35c78e1f` | Unified-view, MetaShape and character-ToM tests pass; shared views preserve source rows and ownership. |
+| F2.1–F2.3 | `545a51ba`, `3d30220d`, `457979b1`, `2f9f9c41`, `96a6850a` | Recursive-ToM and first-order character tests pass; v3 has 200/200 accuracy and 100 inaccessible controls abstaining. |
+| G2.1–G2.2 | `19a7df99`, `b7225e93` | Reappraisal/core-emotion tests pass; v3 supported-frame result and unsupported controls pass. |
+| G3.1–G3.3 | `90c44d28`, `7a15326d`, `6ea3ab94`, `e3fff962` | Inhibition and engine-provenance tests pass; v3 stop/go/late-stop sink measures pass. |
+| E3.1, R1–R4, E3.1a–c, E3.2, E3.2a–b | `031c9ef5`, `3abbba6e`, `956fabf9`, `74f592f6`, `b47a60de`, `846f93d5`, `64118d55`, `f6bff8fa`, `432c902f`, `1bfe1c65`; narrow provenance follow-up in this audit | SCM intervention, backdoor and engine-provenance tests pass; targeted Rust SCM/backdoor tests pass; seed-only lint has no remaining SCM orphans. Full Rust library gate reports 860 passed, 4 ignored and the single known P2 baseline failure `graph_rule_patch_node_receives_durable_commit_receipt` (P2 recorded two failures). |
+| E4.1–E4.3, including E4.2a–b | `ba866884`, `303fb4d4`, `fb15103a`, `a3207840`, `9b028b91` | Planner, budget, goal-derivation, compositional-plan and manifold tests pass; corrected v3 compares against the same graph and reports additional expansion work. |
+| A2.1–A2.2 | `d157dfc0`, `5fa6e603` | Completion/legacy-consumer tests pass; v3 validates 300/300 primary/control decisions with no premature settlement. |
+| D6.1–D6.2 | `5e86399e`, `4719bcb9`; receipt-source rejection `1feac532` | Analog-imagery/ThoughtManifold tests pass; v3 verifies 200 primary transforms and rejects 100 wrong-source receipt controls. |
+| H1–H4 | v3 freeze `483e6a30`; result and parent-document reconciliation in this ledger | Both v3 self-checks pass; registered run covers all eight items with zero nulls/errors; 268-task acceptance run and additional SCM backdoor/provenance checks pass. |
+
+The completion suite used 268 tests across the named P5 ToM, reappraisal, inhibition, SCM, planner, budget, manifold, decomposition, imagery and profile suites; an additional 13-test SCM-backdoor/provenance command passed. The full Rust library run retains only the documented baseline failure, with no P5-specific Rust test failures. Raw v1/v2/v3 reports remain uncommitted.
+
+P6 requires verified planning/rollout and attributed-agent interfaces for imitation. V3 shows a solve gain on its bounded depth-2–8 graph fixtures, while planner expansion work is higher than the one-step arm; this does not establish open-world rollout performance. Hand off the native dispatch authorization boundary, SCM identification assumptions, supported rotation domain and parent-completion witness format. Update assessment maturity per item after results, retaining negative evidence.

@@ -28,9 +28,9 @@ COGNITION_PREREG_HASH=0826089af64c38da3c34d3be2c96ca490364ffa3 OZMA_SEED_PERSIST
 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_analysis_v1.py evaluation/reports/cognition_p5_heldout_v1_0826089a_d0-200.json
 ```
 
-The profile integration gate passes 28 tests. This v1 verdict remains `NOT_ESTABLISHED`; the later v2 result below is a separately frozen protocol and does not replace or rescore this report.
+The profile integration gate passes 28 tests. This v1 verdict remains `NOT_ESTABLISHED`; later versions are separately frozen protocols and do not replace or rescore this report.
 
-## Adapter-backed v2 registered evaluation
+## Superseded v2 run
 
 **Protocol:** `cognition_p5_mechanism_eval_v2`
 **Frozen preregistration commit:** `4b194b3c5c6a58e5d8765de2a4986e57156b2bd1`
@@ -38,28 +38,39 @@ The profile integration gate passes 28 tests. This v1 verdict remains `NOT_ESTAB
 **Registered draw:** indices 0–199, plus 100 executed controls per family.
 **Report:** `evaluation/reports/cognition_p5_mechanism_eval_v2_4b194b3c_d0-200.json`
 **Analysis:** `evaluation/reports/cognition_p5_mechanism_eval_v2_4b194b3c_d0-200_analysis.json`
+The v2 analyzer printed PASS for each item, but a later audit found a comparator defect: the E4 one-step arm returned its outcome from a depth check instead of reading the shared transition graph. The v2 E4 gain is therefore `NOT_ESTABLISHED`, and the v2 all-item result is not used as final evidence. Its D6 controls also did not test rejection of a verifier receipt bound to a different source. The raw v2 report and analysis remain preserved; v3 reruns all families with those contracts exercised.
+
+## Corrected v3 registered evaluation
+
+**Protocol:** `cognition_p5_mechanism_eval_v3`
+**Frozen preregistration commit:** `483e6a302c875ffd6b139ff5ed3c1095625e21c7`
+**Runtime boundary correction:** `1feac532`
+**Adapter implementation commit:** `0e001d60`
+**Registered draw:** indices 0–199, plus 100 executed controls per family.
+**Report:** `evaluation/reports/cognition_p5_mechanism_eval_v3_483e6a30_d0-200.json`
+**Analysis:** `evaluation/reports/cognition_p5_mechanism_eval_v3_483e6a30_d0-200_analysis.json`
 **Overall decision:** PASS for the registered mechanism fixtures.
 
-The runner exercised the shipped graph/native mechanisms for all eight families. All 4,800 arm executions (300 paired cases × two arms × eight families) returned structured results. There were zero null arm results, adapter errors, or coverage gaps. The scoring oracle remained outside each mechanism input. The artifact SHA-256 manifest, limits and complete per-case outcomes are in the uncommitted report; the analyzer reports Wilson 95% intervals, exact McNemar tests, Holm-adjusted p values for F2/G2/E4, and paired 10,000-resample bootstrap intervals for work.
+All 4,800 arm executions (300 paired cases × two arms × eight families) returned structured outcomes. Coverage is complete, with zero nulls or arm errors. Oracles remain outside mechanism inputs. The report contains artifact hashes and limits; analysis includes Wilson 95% intervals, exact McNemar tests, Holm adjustment for F2/G2/E4, and paired 10,000-resample work intervals.
 
-| Item | Registered result | Key evidence and limits |
+| Item | Result | Evidence |
 |---|---|---|
-| F1 shared attributed-state view | PASS | 200/200 exact conformance (Wilson 95%: 98.12–100%); 100/100 control conformance; no source loss or belief-to-truth leaks. |
-| F2 recursive ToM | PASS | 200/200 query accuracy on vs 0/200 off; +100 pp; exact McNemar p=1.24e-60, Holm-adjusted p=3.73e-60; no actual-world overwrites. All 100 inaccessible controls returned unknown. |
-| G2 evidence-preserving reappraisal | PASS | Supported-appraisal selection 100/100 on vs 0/100 off; +100 pp; exact McNemar p=1.58e-30, Holm-adjusted p=1.58e-30; no unsupported acceptance or source edits. |
-| G3 native action inhibition | PASS | Timely stops withheld 167/167; valid go emissions 66/66; zero duplicate emissions and late-stop anomalies. The valid-go Wilson lower bound is 94.50% because this deterministic panel contains 66 go cases; the registered point-rate criterion passes. |
-| E3 SCM intervention | PASS | 225/225 identified finite models matched the oracle; 75/75 nonidentified cases returned unknown; no truth leakage or live-model mutation. This is the tested finite confounder/collider/chain fixture class. |
-| E4 planner | PASS | Observed success 200/200 for planner vs 0/200 for one-step on depth 2–8; +100 pp; exact McNemar p=1.24e-60, Holm-adjusted p=3.73e-60; all 100 missing-edge controls were rejected. Planner expansions were 4.97 higher on average than one-step (paired bootstrap 95%: 4.69–5.25), so this result establishes solve gain on the registered graph family, not work savings. |
-| A2 decomposition completion | PASS | 300/300 valid completion decisions across primary and stale/partial controls; zero premature settlements. |
-| D6 analog imagery | PASS | 300/300 exact externally verified transforms (Wilson 95%: 98.74–100%); zero grounded buffers. Actual transform work was 300 units and shortest-angle work was also 300, so no work advantage over the registered baseline was observed. |
+| F1 shared attributed-state view | PASS | 200/200 exact conformance (Wilson 95%: 98.12–100%), 100/100 control conformance, no source loss or belief-to-truth leaks. |
+| F2 recursive ToM | PASS | 200/200 query accuracy on vs 0/200 off; +100 pp; exact McNemar p=1.24e-60, Holm-adjusted p=3.73e-60; no actual-world overwrites; all 100 inaccessible controls unknown. |
+| G2 evidence-preserving reappraisal | PASS | Supported selection 100/100 on vs 0/100 off; +100 pp; exact McNemar p=1.58e-30, Holm-adjusted p=1.58e-30; no unsupported acceptance or source edits. |
+| G3 native action inhibition | PASS | Timely stops withheld 167/167; go emissions 66/66; no duplicate emissions or late-stop anomalies. The valid-go Wilson lower bound is 94.50% for this 66-case denominator; the registered point-rate criterion passes. |
+| E3 SCM intervention | PASS | 225/225 identified models matched the oracle; 75/75 unsupported models returned unknown; no truth leakage or source mutation. |
+| E4 planner | PASS | 200/200 observed planner solves vs 0/200 one-step on depth 2–8; +100 pp; exact McNemar p=1.24e-60, Holm-adjusted p=3.73e-60; 100/100 missing-edge controls rejected. Planner used 3.97 more expansions on average (paired bootstrap 95%: 3.695–4.25), so the registered solve gain does not show work savings. |
+| A2 decomposition completion | PASS | 300/300 valid decisions across primary and stale/partial controls; no premature settlement. |
+| D6 analog imagery | PASS | 200/200 exact verified primary transforms (Wilson 95%: 98.12–100%); 100/100 wrong-source receipts rejected; no grounding. Actual work (200 units) equaled shortest-angle work (200 units). |
 
-These are fixture-level mechanism results, not evidence of general human-like cognition. F2 uses bounded accessible second-order paths; E3 uses explicit finite models; E4's one-step baseline is restricted to direct-goal transitions, while the planner receives depth-2–8 graphs; D6 uses sampled four-point shapes on a 4×4 lattice and an external request/source-bound verifier. G3's valid-go denominator is only 66. Boot-time cost was not instrumented. P4's registered C5 failure and the inherited P3 NOT_ESTABLISHED gate remain unchanged.
+These are fixture-level mechanism results, not evidence of general human-like cognition. F2 covers bounded accessible second-order paths; E3 uses explicit finite models; E4's comparator reads the same graph but only executes a direct goal edge, while tested primary graphs have depth 2–8; D6 uses sampled four-point shapes on a 4×4 lattice and an external request/source-bound verifier. G3 has 66 valid-go cases. Boot-time cost was not instrumented. P4's registered C5 failure and the inherited P3 NOT_ESTABLISHED gate remain unchanged.
 
-Validation after the D6 receipt-boundary correction: 153 focused P5/profile tests passed; both v2 development self-checks passed; the full 200-primary/100-control development panel passed before freeze. Registered report files remain uncommitted.
+Validation after the D6 receipt-boundary correction: 154 focused P5/profile tests passed; the broader named acceptance bundle passed 268 tests, with an additional 13-test SCM backdoor/provenance command; all seven targeted Rust `SCMIntervene` tests passed; both v3 self-checks and the 200-primary/100-control development panel passed before freeze. Seed-only orphan lint now reports no SCM entries after the separately recorded provenance-readout allowlist task. The full Rust library run reports 860 passed, 4 ignored and the one known P2 baseline failure (`graph_rule_patch_node_receives_durable_commit_receipt`); P2 had this and one additional failure, so no new Cargo failure was introduced. Registered report files remain uncommitted.
 
 Reproduction commands:
 
 ```sh
-COGNITION_PREREG_HASH=4b194b3c5c6a58e5d8765de2a4986e57156b2bd1 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v2.py 4b194b3c5c6a58e5d8765de2a4986e57156b2bd1 0 200
-OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_analysis_v2.py evaluation/reports/cognition_p5_mechanism_eval_v2_4b194b3c_d0-200.json
+COGNITION_PREREG_HASH=483e6a302c875ffd6b139ff5ed3c1095625e21c7 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_eval_v3.py 483e6a302c875ffd6b139ff5ed3c1095625e21c7 0 200
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python evaluation/substrate_capability/cognition_p5_mechanism_analysis_v3.py evaluation/reports/cognition_p5_mechanism_eval_v3_483e6a30_d0-200.json
 ```
