@@ -17606,7 +17606,16 @@ class WorldAdapter:
             excluded.append(int(nid_value))
             fn = self._master["reflex_responses"].get(response)
             if fn is not None:
-                fn(self)
+                reflex_id = int(nid_value)
+                if not self.inner.authorize_reflex_emission(agent_id, reflex_id):
+                    continue
+                try:
+                    fn(self)
+                except BaseException:
+                    self.inner.complete_reflex_emission(agent_id, reflex_id, False)
+                    raise
+                else:
+                    self.inner.complete_reflex_emission(agent_id, reflex_id, True)
             fired.append(name)
         return fired
 

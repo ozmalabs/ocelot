@@ -6,6 +6,9 @@ import json
 
 from substrate_rs import _native
 from scripts.gen_response_inhibition_seed import OUT, build_seed
+from substrate.dsl import Lit
+from substrate.jsonio import term_to_json
+from substrate.world_adapter import WorldAdapter
 
 
 @dataclass
@@ -104,6 +107,8 @@ def _request(substrate, agent, *, status="selected", epoch=4):
     substrate.add_edge(agent, "has_action_request", request)
     authorization = substrate.add_node("ActionAuthorization", {
         "authorization_id": "auth-native", "status": "pending",
+        "request_id": "move-native", "source_epoch": float(epoch),
+        "action_key": "advance", "sink_route": "count",
     })
     substrate.add_edge(request, "has_action_authorization", authorization)
     stop = substrate.add_node("ActionStopEvent", {
@@ -166,3 +171,64 @@ def test_stale_stop_does_not_withhold_current_epoch():
 
 def test_generator_reproduces_seed():
     assert json.loads(OUT.read_text()) == build_seed()
+
+
+def _world_case(*, stopped=False):
+    adapter = WorldAdapter(seeds=())
+    summary = adapter.inner.load_seed_manifest(build_seed(), adapter.agent)
+    assert summary.get("rules_skipped") == [], summary
+    policy = adapter.s.nodes("ResponseInhibitionPolicy")[0]
+    adapter.inner.set_attr(policy, "enabled", 1.0)
+    mode = adapter.s.add_node("NetworkModeState", {"epoch": 4.0, "mode": "awake"})
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_network_mode_state", mode)
+    request, authorization, stop = _request(adapter.s._inner, adapter.agent, status="authorized", epoch=4)
+    if not stopped:
+        adapter.inner.remove_edge(request, "has_action_stop", stop)
+    log = []
+    adapter.register_reflex_response("count", lambda _adapter: log.append("sink"))
+    reflex = adapter.install_reflex("advance", term_to_json(Lit(True)), "count")
+    return adapter, request, authorization, stop, reflex, log
+
+
+def test_native_sink_never_receives_stopped_action():
+    adapter, request, authorization, _stop, _reflex, log = _world_case(stopped=True)
+    adapter.fire_reflexes()
+    assert log == []
+    assert adapter.s.node(request)["attrs"]["status"] == "withheld"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "revoked"
+
+
+def test_same_epoch_stop_wins_at_sink():
+    adapter, request, _authorization, stop, _reflex, log = _world_case(stopped=True)
+    adapter.fire_reflexes()
+    assert log == []
+    assert adapter.s.node(request)["attrs"]["source_epoch"] == adapter.s.node(
+        adapter.inner.neighbours(adapter.agent, "has_network_mode_state")[0])["attrs"]["epoch"]
+    assert adapter.s.node(stop)["attrs"]["status"] == "withheld"
+
+
+def test_sink_idempotence():
+    adapter, request, authorization, _stop, _reflex, log = _world_case(stopped=False)
+    adapter.fire_reflexes()
+    adapter.fire_reflexes()
+    assert log == ["sink"]
+    assert adapter.s.node(request)["attrs"]["status"] == "emitted"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "consumed"
+    assert adapter.s.node(request)["attrs"]["sink_receipt_id"].startswith("reflex-sink:advance:")
+
+
+def test_sink_failure_consumes_authorization_without_retry():
+    adapter, request, authorization, _stop, _reflex, _log = _world_case(stopped=False)
+
+    def fail(_adapter):
+        raise RuntimeError("sink failure")
+
+    adapter.register_reflex_response("count", fail)
+    try:
+        adapter.fire_reflexes()
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("sink exception must propagate")
+    assert adapter.s.node(request)["attrs"]["status"] == "emission_failed"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "consumed"

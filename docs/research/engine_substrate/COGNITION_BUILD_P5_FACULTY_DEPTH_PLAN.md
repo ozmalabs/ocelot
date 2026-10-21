@@ -199,7 +199,7 @@ A phase can finish implementation with a negative capability result, provided ev
 - **Tier:** T2
 - **Goal:** Enforce authorization at the native action boundary.
 - **Read first:** `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `runners/dsl/src/py.rs`; `seeds/reflex_core.json`; `tests/test_response_inhibition_migrated.py`.
-- **Touch:** `runners/dsl/src/py.rs`; `runners/dsl/src/lib.rs`; `tests/test_response_inhibition_migrated.py`.
+- **Touch:** `substrate/world_adapter.py` (`WorldAdapter.fire_reflexes`); `runners/dsl/src/py.rs` (`PySubstrate` authorization/commit methods); `tests/test_response_inhibition_migrated.py`. `lib.rs` is not required because the gate uses the existing reflex dispatch API and adds no Rust module.
 - **Pattern to copy:** native dispatch ownership identified by G3.1; freeze exact symbol before edits.
 - **Steps:** 1. Route native dispatch through a monotonic authorization check that observes stop state immediately before emission. 2. Cover all active reflex/motor dispatch routes listed by the spec; if implementation lives elsewhere, revise this Touch list to ≤3 exact files before work. 3. Test an instrumented sink for zero stopped emissions and one go emission; rebuild and provenance-check.
 - **Guard:** policy guard preserves default path; hard host veto always enforced.

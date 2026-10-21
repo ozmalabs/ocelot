@@ -1,7 +1,7 @@
 # Cognition build Phase 5 — Faculty depth preregistration
 
 **Protocol:** `cognition_p5_heldout_v1`
-**Status:** H0, F1.1/F1.2 projections and agent-owned source hooks, F2.1–F2.3, G2.1/G2.2, and G3.1/G3.2 recorded; automatic Bigville source discovery, held-out evaluation and later item work, runner freeze and draw remain pending.
+**Status:** H0, F1.1/F1.2 projections and agent-owned source hooks, F2.1–F2.3, G2.1/G2.2, G3.1/G3.2, and the reflex portion of G3.3 recorded; world-action sink coverage, automatic Bigville source discovery, held-out evaluation and later item work, runner freeze and draw remain pending.
 **Entry merge:** `9def1187f42f74489e4c2833c0bbae34e63df584` (P4 merged onto the committed `main` base in the isolated continuation branch).
 **P4 freeze:** `199583ca6c4fe861dae90dd5814d3f0ad3b9f5ed`.
 **P4 result/H4 record:** [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md).
@@ -84,11 +84,15 @@ The generated `reappraisal` seed depends on `core_emotions` and the merged P4 `c
 
 ## P5.G3.1 — Action inhibition contract
 
-The G3 state model separates proposal, selection, revocable authorization, sink-confirmed emission, and later observation; stop-before-commit ends in a terminal withheld state, while a post-commit stop reports `already_emitted` and never claims physical undo. Stop and go for the same request and source epoch resolve stop-first before sink commit regardless of insertion order. Authorization is request/epoch/action/route-specific, single-use, and cannot be reused after sink failure or withholding; a retry requires a fresh request identity. The dispatch inventory identifies `WorldAdapter.fire_reflexes` and Rust `PySubstrate::next_ready_reflex` as the common reflex selection/callback path; the selector's scheduling stamp is not an emission receipt. G3.3 must check and consume authorization immediately before effect invocation and audit motor routes. Contract fixtures pass four transition cases; they are not runtime safety evidence. G3.2/G3.3 and the registered G3 held-out evaluation remain pending.
+The G3 state model separates proposal, selection, revocable authorization, sink-confirmed emission, and later observation; stop-before-commit ends in a terminal withheld state, while a post-commit stop reports `already_emitted` and never claims physical undo. Stop and go for the same request and source epoch resolve stop-first before sink commit regardless of insertion order. Authorization is request/epoch/action/route-specific, single-use, and cannot be reused after sink failure or withholding; a retry requires a fresh request identity. G3.1 identifies `WorldAdapter.fire_reflexes` and Rust `PySubstrate::next_ready_reflex` as the common reflex selection/callback path; the selector's scheduling stamp is not an emission receipt. G3.2 implements graph stop/withhold lifecycle. G3.3 adds a native authorization check immediately before reflex callbacks and consumes authorization once; instrumented reflex sink tests pass. The inventory also found `live`/`live_examined` world `apply_action` behind `_authorize_world_action` and a direct `live_gamma` `apply_action` route; these do not yet cross the common native token gate. G3.3 and the registered G3 held-out evaluation remain pending until those routes are covered.
 
 ### G3.2 graph lifecycle implementation
 
 The generated self-load-only `response_inhibition` seed keeps `ResponseInhibitionPolicy.enabled=0` by default. When explicitly enabled, a same-request/same-epoch stop changes proposed, selected or authorized requests to terminal `withheld`, revokes a pending authorization, and marks the stop event `withheld`; a stop linked to an already `emitted` request is recorded as `already_emitted` without changing the request. A stale stop does not affect the request. Terminal withheld requests cannot be rearmed by a later authorization. The contract and native graph lifecycle suite passes 10 tests. This implements graph records only; G3.3 sink enforcement and held-out evaluation remain pending.
+
+### G3.3 reflex callback gate (partial)
+
+Rust `PySubstrate::authorize_reflex_emission` now checks the policy, selected action identity, sink route, current epoch, one pending matching authorization, and same-epoch stop state under the graph mutex. It consumes the authorization before callback invocation; `complete_reflex_emission` records `emitted` plus a sink receipt ID on callback return, or terminal `emission_failed` without restoring authorization. `WorldAdapter.fire_reflexes` is the only caller of `next_ready_reflex` and now routes every registered response callback through this gate. Focused native sink and reflex tests pass 23 cases. A route audit found `live`/`live_examined` world `apply_action` commits and a direct `live_gamma` `apply_action` path that do not use this token gate. G3.3 remains incomplete until these action sinks are covered; no general emission-safety claim is made.
 
 ## Held-out decision criteria (inherited from the detailed plan)
 
