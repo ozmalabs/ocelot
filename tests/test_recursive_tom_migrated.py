@@ -52,9 +52,8 @@ def test_cycles_and_depth_bound():
 
 
 def _adapter():
-    from substrate.boot_core import CORE_SEEDS
     from substrate.world_adapter import WorldAdapter
-    return WorldAdapter(seeds=CORE_SEEDS + ("recursive_tom",))
+    return WorldAdapter(seeds=("recursive_tom",))
 
 
 def _graph_event(adapter, *, event_id="e1", path=("sally", "anne"),
