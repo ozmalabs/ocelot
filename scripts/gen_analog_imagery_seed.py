@@ -9,7 +9,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
-from gen_capability_collapse_seed import A, And, Eq, Gte, L, N, Not, Plus, T, V
+from gen_capability_collapse_seed import A, And, Eq, Gte, L, N, Not, Or, Plus, T, V
 
 
 def Lt(a, b):
@@ -135,8 +135,9 @@ def reject_failed_verifier_receipt_rule():
                   ["request", "has_shape_verification", "receipt"]],
         "where": And(Eq(A("policy", "enabled"), L(1)),
                       Eq(A("request", "status"), L("awaiting_verification")),
-                      Eq(A("receipt", "request_id"), A("request", "request_id")),
-                      Eq(A("receipt", "verification_status"), L("mismatch"))),
+                      Or(Not(Eq(A("receipt", "request_id"), A("request", "request_id"))),
+                         Not(Eq(A("receipt", "source_observation"), A("request", "source_observation"))),
+                         Not(Eq(A("receipt", "verification_status"), L("verified"))))),
         "effects": [["set_attr", "request", "status", "unresolved"],
                     ["set_attr", "request", "stop_reason", "shape_verification_failed"],
                     ["set_attr", "request", "grounded", 0]],

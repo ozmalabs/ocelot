@@ -197,6 +197,19 @@ def test_failed_verifier_rejects_shape_proposal():
     assert attrs["grounded"] == 0
 
 
+def test_verifier_receipt_bound_to_wrong_source_is_terminally_rejected():
+    shape = frozenset({(0, 0), (0, 1)})
+    agent, _observation, request, _ = _runtime(shape, (90,))
+    agent.tick()
+    unrelated = agent.s.add_node("Observation", {"signature": [[9, 9]], "status": "observed"})
+    _verification_receipt(agent, request, unrelated, "verified")
+    agent.tick()
+    attrs = agent.s.node(request)["attrs"]
+    assert attrs["status"] == "unresolved"
+    assert attrs["stop_reason"] == "shape_verification_failed"
+    assert attrs["grounded"] == 0
+
+
 def test_runtime_refuses_arbitrary_increment():
     agent, _, request, _ = _runtime(frozenset({(0, 0), (0, 1)}), (45,), budget=4)
     agent.tick()

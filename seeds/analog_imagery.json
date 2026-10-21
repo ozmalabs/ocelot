@@ -1643,38 +1643,71 @@
             }
           },
           {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "receipt"
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                    },
+                    "key": "request_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "request_id"
+                  }
+                }
               },
-              "key": "request_id"
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                    },
+                    "key": "source_observation"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "source_observation"
+                  }
+                }
               },
-              "key": "request_id"
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "receipt"
-              },
-              "key": "verification_status"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "mismatch"
-            }
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                    },
+                    "key": "verification_status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "verified"
+                  }
+                }
+              }
+            ]
           }
         ]
       },
