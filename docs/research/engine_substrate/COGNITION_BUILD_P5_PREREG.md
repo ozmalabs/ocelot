@@ -1,7 +1,7 @@
 # Cognition build Phase 5 — Faculty depth preregistration
 
 **Protocol:** `cognition_p5_heldout_v1`
-**Status:** H0, F1 and F2.1/F2.2 recorded; F2.3 and later item work, runner freeze and held-out draw remain pending.
+**Status:** H0, F1, F2.1/F2.2 and recursive adapter API recorded; F2.3 first-order integration/gate and later item work, runner freeze and held-out draw remain pending.
 **Entry merge:** `9def1187f42f74489e4c2833c0bbae34e63df584` (P4 merged onto the committed `main` base in the isolated continuation branch).
 **P4 freeze:** `199583ca6c4fe861dae90dd5814d3f0ad3b9f5ed`.
 **P4 result/H4 record:** [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md).
@@ -70,7 +70,7 @@ F2.1 fixtures cover a second-order false belief against an unchanged actual worl
 
 ## P5.F2 implementation record
 
-F2.2's generated `recursive_tom` seed adds a disabled-by-default, dependency-free native rule path. It materializes an attributed record only for accessible events with no cycle and depth below 3; it retains the ordered path/key, event ID and actual-world version, and never matches or edits `ActualWorldFact`. Native scoped queries return true or false only when a belief matches the complete path key, content reference and actual-world version; no matching record yields no answer, which the adapter must expose as unknown. Tests cover idempotent event identity, path swapping, access/depth/cycle guards and world isolation. F2.3 adapter readback and F2 held-out evaluation remain pending.
+F2.2's generated `recursive_tom` seed adds a disabled-by-default, dependency-free native rule path. It materializes an attributed record only for accessible events with no cycle and depth below 3; it retains the ordered path/key, referent, event ID and actual-world version, and never matches or edits `ActualWorldFact`. Native scoped queries return true or false only when a belief matches the complete path key, referent, content reference and actual-world version; no matching record yields no answer, which the adapter exposes as unknown. F2.3 now provides mechanical event submission and query readback APIs in `character_tom`; the API-level tests pass. The existing first-order sentence adapter has not yet been replaced or validated: its prescribed suite has 9 failures that reproduce on the P4 branch, where Wiktionary POS lookups for English return empty readings. This gate and F2 held-out evaluation remain pending.
 
 ## Held-out decision criteria (inherited from the detailed plan)
 

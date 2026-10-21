@@ -605,6 +605,66 @@ def character_goal(agent, character_name: str):
     return sub.node(char_ent)["attrs"].get("goal")
 
 
+def submit_recursive_tom_event(agent, *, event_id: str, holder_path: list[str],
+                               referent: str, content_ref: str, value: str,
+                               actual_world_version: int, accessible: bool,
+                               has_cycle: bool = False):
+    """Translate a parsed/access event into the native recursive-ToM graph.
+
+    This is a mechanical adapter: it copies caller-supplied fields and runs
+    the seeded rules. Access, cycle, depth and path decisions belong to the
+    event producer and native rule guards; this function does no inference.
+    The recursive_tom seed must be loaded and its policy explicitly enabled.
+    """
+    sub, native, ag_node = _resolve(agent)
+    path = [str(holder) for holder in holder_path]
+    event = sub.add_node("RecursiveTomEvent", {
+        "schema_version": 1,
+        "event_id": str(event_id),
+        "holder_path": path,
+        "holder_path_key": json.dumps(path, separators=(",", ":")),
+        "depth": len(path),
+        "referent": str(referent),
+        "content_ref": str(content_ref),
+        "value": str(value),
+        "actual_world_version": int(actual_world_version),
+        "accessible": bool(accessible),
+        "has_cycle": bool(has_cycle),
+    })
+    native.add_edge_unchecked(ag_node, "has_recursive_tom_event", event)
+    native.run_rules()
+    return event
+
+
+def query_recursive_tom(agent, *, query_id: str, holder_path: list[str],
+                        referent: str, content_ref: str, expected_value: str,
+                        actual_world_version: int) -> dict:
+    """Submit a scoped recursive query and read back its native answer.
+
+    An absent answer is returned as unknown. The adapter does not search for
+    beliefs or decide their truth; the matching is performed by native rules.
+    """
+    sub, native, ag_node = _resolve(agent)
+    path = [str(holder) for holder in holder_path]
+    query = sub.add_node("RecursiveTomQuery", {
+        "query_id": str(query_id),
+        "holder_path_key": json.dumps(path, separators=(",", ":")),
+        "referent": str(referent),
+        "content_ref": str(content_ref),
+        "expected_value": str(expected_value),
+        "actual_world_version": int(actual_world_version),
+    })
+    native.add_edge_unchecked(ag_node, "has_recursive_tom_query", query)
+    native.run_rules()
+    for answer in sub.nodes("RecursiveTomAnswer"):
+        answer_node = sub.node(answer)["attrs"]
+        if answer_node.get("query_id") == str(query_id):
+            return {"query_id": str(query_id), "status": answer_node.get("status", "unknown"),
+                    "evidence_event_id": answer_node.get("evidence_event_id")}
+    return {"query_id": str(query_id), "status": "unknown", "evidence_event_id": None}
+
+
 __all__ = ["ensure_seeds", "attitude_membership", "decode_attitude_construction",
            "ingest_attitude_sentence", "read_character_tom",
-           "character_belief_world", "character_goal"]
+           "character_belief_world", "character_goal",
+           "submit_recursive_tom_event", "query_recursive_tom"]

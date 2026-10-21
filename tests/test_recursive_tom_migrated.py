@@ -75,6 +75,7 @@ def _graph_event(adapter, *, event_id="e1", path=("sally", "anne"),
 def _query(adapter, query_id, path, *, content="key=drawer", expected="drawer", version=1):
     query = adapter.inner.add_node("RecursiveTomQuery", {
         "query_id": query_id, "holder_path_key": "/".join(path),
+        "referent": "key",
         "content_ref": content, "expected_value": expected,
         "actual_world_version": version,
     })
@@ -145,3 +146,39 @@ def test_generator_reproduction():
     from pathlib import Path
     from scripts.gen_recursive_tom_seed import build_seed
     assert json.loads(Path("seeds/recursive_tom.json").read_text()) == build_seed()
+
+
+def test_adapter_has_no_belief_update_decisions():
+    import ast
+    import inspect
+    from domains import character_tom
+    source = inspect.getsource(character_tom.submit_recursive_tom_event)
+    tree = ast.parse(source)
+    assert not any(isinstance(node, (ast.If, ast.For, ast.While, ast.IfExp))
+                   for node in ast.walk(tree))
+    assert "RecursiveTomBelief" not in source
+
+
+def test_character_tom_adapter_submits_and_reads_native_recursive_state():
+    from domains import character_tom
+    a = _adapter()
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+    character_tom.submit_recursive_tom_event(
+        a, event_id="adapter-event", holder_path=["sally", "anne"],
+        referent="key", content_ref="key=drawer", value="drawer",
+        actual_world_version=1, accessible=True,
+    )
+    result = character_tom.query_recursive_tom(
+        a, query_id="adapter-query", holder_path=["sally", "anne"],
+        referent="key", content_ref="key=drawer", expected_value="drawer",
+        actual_world_version=1,
+    )
+    assert result == {"query_id": "adapter-query", "status": "true",
+                      "evidence_event_id": "adapter-event"}
+    unknown = character_tom.query_recursive_tom(
+        a, query_id="adapter-unknown", holder_path=["anne", "sally"],
+        referent="key", content_ref="key=drawer", expected_value="drawer",
+        actual_world_version=1,
+    )
+    assert unknown["status"] == "unknown"
