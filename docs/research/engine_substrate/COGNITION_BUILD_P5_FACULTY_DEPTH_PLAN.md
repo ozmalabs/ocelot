@@ -233,9 +233,9 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Tier:** T2
 - **Goal:** Define and evaluate SCMIntervene.
 - **Read first:** `runners/dsl/src/term.rs::TermNode`; `runners/dsl/src/can_ops.rs`; `COGNITION_SCM_CONTRACT.md`.
-- **Touch:** `runners/dsl/src/term.rs`; `runners/dsl/src/can_ops.rs`.
+- **Touch:** `runners/dsl/src/can_ops.rs`; `COGNITION_SCM_CONTRACT.md` (freeze the concrete finite dict layout and implement/test the pure evaluator helper; the TermNode wiring is R2).
 - **Pattern to copy:** `term.rs::TimeInfer` dispatch and `shape_decode.rs::eval_time_infer`.
-- **Steps:** 1. Add the frozen variant and evaluator. 2. Add Rust unit tests for valid, empty, malformed and bounded inputs. 3. Cover every ownership and failure case in the spec.
+- **Steps:** 1. Implement the frozen pure finite-model evaluator helper. 2. Add Rust unit tests for valid, empty, malformed and bounded inputs. 3. Cover every ownership and failure case in the spec; TermNode/dispatch wiring follows in R2 so each bounded file touch remains reviewable.
 - **Guard:** new variant has no callers in default seeds.
 - **Acceptance:** Rust unit tests assert the frozen output and no mutation of the live graph.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
