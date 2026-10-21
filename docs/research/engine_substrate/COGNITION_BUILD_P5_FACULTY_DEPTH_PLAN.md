@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection, F2.1/F2.2, and F2.3's mechanical recursive adapter route are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Automatic F1 source projection and F1/F2 held-out evaluations remain open; G2, G3, E3, E4, A2, and D6 have not started.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection and agent-owned source hooks, F2.1/F2.2, and F2.3's mechanical recursive adapter route are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup and F1/F2 held-out evaluations remain open; G2, G3, E3, E4, A2, and D6 have not started.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -79,7 +79,7 @@ A phase can finish implementation with a negative capability result, provided ev
 - **Tier:** T2
 - **Goal:** Wire native attributed-state projections.
 - **Read first:** `tests/test_tom_unified_view_migrated.py`; `domains/tom_meta_shape.py:31-70`; `scripts/gen_cognition_signature_seed.py` (P4); `seeds/psychology.json`.
-- **Touch:** new `scripts/gen_tom_unified_view_seed.py` + `seeds/tom_unified_view.json`; `tests/test_tom_unified_view_migrated.py`.
+- **Touch:** `scripts/gen_tom_unified_view_seed.py`; `seeds/tom_unified_view.json`; `domains/tom_meta_shape.py`; `domains/character_tom.py`; `domains/interlocutor_model.py`; `substrate/world_adapter.py`; `domains/bigville_theory_of_mind.py`; `tests/test_tom_unified_view_migrated.py`.
 - **Pattern to copy:** P4 source-descriptor epoch invalidation and existing ToM relation signatures.
 - **Steps:** 1. Create graph projections with domain-specific source references. 2. Recognize through the shared meta-shape without replacing original stores. 3. Register Γ edges and verify minimal dependency boot; adapters only translate fields.
 - **Guard:** `TomViewPolicy.enabled`, default 0.

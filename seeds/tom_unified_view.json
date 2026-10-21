@@ -1,7 +1,9 @@
 {
   "id": "tom_unified_view",
   "version": "1.0.0",
-  "depends_on": [],
+  "depends_on": [
+    "meta_shape_growth"
+  ],
   "description": "P5.F1.2 opt-in, provenance-preserving projection of standardized TomAttributedStateSource graph events. Domain adapters translate source fields; native rules own projection and epoch retirement.",
   "microtheory": {
     "name": "tom_unified_view",
@@ -78,6 +80,21 @@
             "b": {
               "type": "Lit",
               "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_is_current"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
             }
           },
           {
@@ -332,6 +349,21 @@
             }
           },
           {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_is_current"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
             "type": "Not",
             "arg": {
               "type": "Eq",
@@ -397,6 +429,21 @@
                         "type": "Var",
                         "name": "same_epoch"
                       },
+                      "key": "source_is_current"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": true
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "same_epoch"
+                      },
                       "key": "source_epoch"
                     },
                     "b": {
@@ -420,6 +467,143 @@
           "view",
           "status",
           "stale"
+        ]
+      ]
+    },
+    {
+      "name": "tuv_link_shared_meta_shape_observation",
+      "area": "tom_unified_view",
+      "order": 12,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_tom_view_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_tom_attributed_source",
+          "src"
+        ],
+        [
+          "ag",
+          "has_tom_attributed_view",
+          "view"
+        ],
+        [
+          "src",
+          "has_tom_source_observation",
+          "obs"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_is_current"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "view"
+              },
+              "key": "source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "view"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "view"
+                },
+                "edge_type": "uses_meta_shape_observation",
+                "any_type": false
+              },
+              "var_name": "old_obs",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "old_obs"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "obs"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "view",
+          "uses_meta_shape_observation",
+          "obs",
+          {}
         ]
       ]
     }

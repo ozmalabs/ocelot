@@ -34,7 +34,8 @@ def rules():
         "match": [["ag", "has_tom_view_policy", "pol"],
                   ["ag", "has_tom_attributed_source", "src"]],
         "where": And(Eq(A("pol", "enabled"), L(1.0)),
-                      Eq(A("src", "schema_version"), L(1)), Not(current)),
+                      Eq(A("src", "schema_version"), L(1)),
+                      Eq(A("src", "source_is_current"), L(True)), Not(current)),
         "effects": [
             ["add_node", "view", "TomAttributedStateView", {
                 "schema_version": 1,
@@ -64,20 +65,40 @@ def rules():
                   ["ag", "has_tom_attributed_source", "src"]],
         "where": And(Eq(A("view", "status"), L("current")),
                       Eq(A("view", "source_key"), A("src", "source_key")),
+                      Eq(A("src", "source_is_current"), L(True)),
                       Not(Eq(A("view", "source_epoch"), A("src", "source_epoch"))),
                       Not(Exists(N("ag", "has_tom_attributed_source"), "same_epoch",
                                   And(Eq(A("same_epoch", "source_key"), A("view", "source_key")),
+                                      Eq(A("same_epoch", "source_is_current"), L(True)),
                                       Eq(A("same_epoch", "source_epoch"), A("view", "source_epoch")))))),
         "effects": [["set_attr", "view", "status", "stale"]],
     }
-    return [project, retire]
+    prior_shape_link = Exists(N("view", "uses_meta_shape_observation"), "old_obs",
+                              Eq(V("old_obs"), V("obs")))
+    link_shape = {
+        "name": "tuv_link_shared_meta_shape_observation",
+        "area": AREA,
+        "order": 12,
+        "latency_class": "hard_realtime",
+        "match": [["ag", "has_tom_view_policy", "pol"],
+                  ["ag", "has_tom_attributed_source", "src"],
+                  ["ag", "has_tom_attributed_view", "view"],
+                  ["src", "has_tom_source_observation", "obs"]],
+        "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                      Eq(A("src", "source_is_current"), L(True)),
+                      Eq(A("view", "source_key"), A("src", "source_key")),
+                      Eq(A("view", "source_epoch"), A("src", "source_epoch")),
+                      Not(prior_shape_link)),
+        "effects": [["add_edge", "view", "uses_meta_shape_observation", "obs", {}]],
+    }
+    return [project, retire, link_shape]
 
 
 def build_seed():
     return {
         "id": "tom_unified_view",
         "version": "1.0.0",
-        "depends_on": [],
+        "depends_on": ["meta_shape_growth"],
         "description": (
             "P5.F1.2 opt-in, provenance-preserving projection of standardized "
             "TomAttributedStateSource graph events. Domain adapters translate "

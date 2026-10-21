@@ -8818,6 +8818,8 @@ class WorldAdapter:
                 self.inner.add_edge_unchecked(assertion, "asserted_in", mid)
                 if party is not None:
                     self.inner.add_edge_unchecked(party, "asserted", assertion)
+                    from domains.tom_meta_shape import project_interlocutor_assertion
+                    project_interlocutor_assertion(self, party, assertion)
                     prior_n = int(self.s.node(party)["attrs"].get("self_report_count", 0) or 0)
                     self.inner.set_attr(party, "self_report_count", prior_n + 1)
 

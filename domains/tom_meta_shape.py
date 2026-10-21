@@ -23,9 +23,142 @@ precedent), not wired into either domain's runtime ingest flow.
 """
 from __future__ import annotations
 
+import json
+
 from domains.meta_shape import observe
 
 ATTRIBUTED_MENTAL_STATE_TYPE = "AttributedMentalState"
+UNKNOWN_SOURCE_EPOCH = {"known": False}
+
+
+def _emit_source(agent, *, source_kind: str, source_node, holder: str,
+                 target, content_ref: str, modality: str,
+                 epistemic_kind: str, source_epoch=None):
+    """Mechanically translate one source record into the opt-in source schema.
+
+    No source is emitted unless the caller's graph has explicitly loaded
+    `tom_unified_view`; the native policy still controls whether it becomes a
+    view. The source record and shared MetaShape observation retain separate
+    provenance and do not replace the domain node.
+    """
+    sub = getattr(agent, "s", None)
+    native = getattr(agent, "inner", None)
+    root = getattr(agent, "agent", None)
+    if sub is None or native is None or root is None:
+        return None
+    policies = list(native.neighbours(root, "has_tom_view_policy"))
+    if not policies:
+        return None
+    owner_id = str(root)
+    source_node_id = str(source_node)
+    epoch = UNKNOWN_SOURCE_EPOCH if source_epoch is None else source_epoch
+    source_key = json.dumps([source_kind, owner_id, source_node_id],
+                            ensure_ascii=False, separators=(",", ":"))
+    source_attrs = {
+        "schema_version": 1,
+        "source_key": source_key,
+        "source_is_current": True,
+        "source_kind": source_kind,
+        "source_node": source_node_id,
+        "source_epoch": epoch,
+        "owner_id": owner_id,
+        "holder": str(holder),
+        "target": None if target is None else str(target),
+        "content_ref": str(content_ref),
+        "modality": str(modality),
+        "epistemic_kind": str(epistemic_kind),
+    }
+    sources = [n for n in native.nodes("TomAttributedStateSource")
+               if native.node(n)["attrs"].get("source_key") == source_key]
+    source = next((n for n in sources
+                   if native.node(n)["attrs"].get("source_epoch") == epoch), None)
+    policy_enabled = native.node(policies[0])["attrs"].get("enabled", 0.0) >= 1.0
+    observation = None
+    if source is None:
+        for prior in sources:
+            if native.node(prior)["attrs"].get("source_is_current"):
+                native.set_attr(prior, "source_is_current", False)
+        source = sub.add_node("TomAttributedStateSource", source_attrs)
+        native.add_edge_unchecked(root, "has_tom_attributed_source", source)
+    existing_observations = list(native.neighbours(source, "has_tom_source_observation"))
+    if policy_enabled and not existing_observations:
+        observation = observe(agent, ATTRIBUTED_MENTAL_STATE_TYPE,
+                              attributed_mental_state_signature(
+                                  str(holder), "" if target is None else str(target),
+                                  str(epistemic_kind)))
+        if observation is not None:
+            native.add_edge_unchecked(source, "has_tom_source_observation", observation)
+    elif existing_observations:
+        observation = existing_observations[0]
+    native.run_rules()
+    return {"source": source, "observation": observation}
+
+
+def project_character_tom_node(agent, source_node):
+    """Translate an existing nested `SmEntity` without changing it."""
+    sub = getattr(agent, "s", None)
+    if sub is None:
+        return None
+    attrs = sub.node(source_node)["attrs"]
+    content = attrs.get("proposition") or attrs.get("proposition_span") or attrs.get("referent") or ""
+    return _emit_source(
+        agent, source_kind="character_tom", source_node=source_node,
+        holder=attrs.get("belief_holder", "unknown"), target=attrs.get("referent"),
+        content_ref=content, modality=attrs.get("flavor", "belief"),
+        epistemic_kind="attributed", source_epoch=attrs.get("source_epoch"),
+    )
+
+
+def project_interlocutor_estimate(agent, party):
+    """Translate the agent's accumulated estimate of an interlocutor."""
+    sub = getattr(agent, "s", None)
+    if sub is None:
+        return None
+    attrs = sub.node(party)["attrs"]
+    content = json.dumps({"feat_counts": attrs.get("feat_counts", {}),
+                          "known_concepts": attrs.get("known_concepts", [])},
+                         ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return _emit_source(
+        agent, source_kind="interlocutor_estimate", source_node=party,
+        holder="agent", target=attrs.get("name", str(party)), content_ref=content,
+        modality="estimate", epistemic_kind="estimate",
+        source_epoch=attrs.get("estimate_epoch", attrs.get("turns")),
+    )
+
+
+def project_interlocutor_assertion(agent, party, assertion):
+    """Translate an immutable self-report record, separate from belief estimates."""
+    sub = getattr(agent, "s", None)
+    if sub is None:
+        return None
+    party_attrs = sub.node(party)["attrs"]
+    attrs = sub.node(assertion)["attrs"]
+    return _emit_source(
+        agent, source_kind="interlocutor_assertion", source_node=assertion,
+        holder=party_attrs.get("name", str(party)), target=None,
+        content_ref=attrs.get("content", ""), modality=attrs.get("flavor", "asserted"),
+        epistemic_kind="world_assertion", source_epoch=attrs.get("turn"),
+    )
+
+
+def project_resident_agency_belief(agent, concept, *, resident: str, target: str):
+    """Translate only resident ToM concepts; own-affect concepts are excluded."""
+    sub = getattr(agent, "s", None)
+    if sub is None:
+        return None
+    attrs = sub.node(concept)["attrs"]
+    name = str(attrs.get("name", ""))
+    if not name.startswith("controllability_for:"):
+        return None
+    content = json.dumps({"name": name, "state": attrs.get("state"),
+                          "external_field": attrs.get("external_field")},
+                         ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return _emit_source(
+        agent, source_kind="bigville_tom", source_node=concept,
+        holder=resident, target=target, content_ref=content,
+        modality="attributed", epistemic_kind="attributed",
+        source_epoch=attrs.get("source_epoch"),
+    )
 
 
 def attributed_mental_state_signature(attributor: str, target: str, content_kind: str) -> dict:
@@ -74,4 +207,8 @@ __all__ = [
     "resident_tom_mental_state_signature",
     "register_character_tom_attitude",
     "register_resident_tom_belief",
+    "project_character_tom_node",
+    "project_interlocutor_estimate",
+    "project_interlocutor_assertion",
+    "project_resident_agency_belief",
 ]

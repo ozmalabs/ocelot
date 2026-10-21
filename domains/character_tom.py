@@ -387,6 +387,8 @@ def _nested_entity(agent, character_ent, character_name: str, flavor: str, pred:
         sub.set_attr(nested, a1, 1)
     smr._edge(native, character_ent, "belief_world", nested)
     smr._edge(native, nested, "is_attitude_level2", nested)
+    from domains.tom_meta_shape import project_character_tom_node
+    project_character_tom_node(agent, nested)
     flavor_concept = _concept_node(sub, flavor)
     if flavor_concept is not None:
         smr._edge(native, nested, "is_a", flavor_concept)
@@ -431,6 +433,8 @@ def _ground_attitude_complement(agent, character_ent, character_name: str,
             nested = sub.add_node("SmEntity", attrs)
             smr._edge(native, character_ent, "belief_world", nested)
             smr._edge(native, nested, "is_attitude_level2", nested)
+            from domains.tom_meta_shape import project_character_tom_node
+            project_character_tom_node(agent, nested)
             flavor_concept = _concept_node(sub, flavor)
             if flavor_concept is not None:
                 smr._edge(native, nested, "is_a", flavor_concept)
@@ -473,12 +477,12 @@ def _ground_attitude_complement(agent, character_ent, character_name: str,
 _FIRST_PERSON_SUBJECTS = frozenset({"i", "we"})
 
 
-def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
-                             character_name: Optional[str] = None,
-                             recursive_holder_path: Optional[list[str]] = None,
-                             actual_world_version: Optional[int] = None,
-                             recursive_event_id: Optional[str] = None,
-                             accessible: bool = True) -> Optional[dict]:
+def _ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
+                              character_name: Optional[str] = None,
+                              recursive_holder_path: Optional[list[str]] = None,
+                              actual_world_version: Optional[int] = None,
+                              recursive_event_id: Optional[str] = None,
+                              accessible: bool = True) -> Optional[dict]:
     """Try to ground `sentence` as a propositional-attitude construction.
     Returns None (not an attitude clause) so the caller falls through to the
     ordinary situation-model reading path — the discriminative case. A
@@ -545,6 +549,27 @@ def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
     return {"sentence": sentence, "kind": "attitude", "subject": subject_name,
             "attitude_verb": mem["lemma"], "membership": mem, "decode": decode,
             **grounded}
+
+
+def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
+                             character_name: Optional[str] = None,
+                             recursive_holder_path: Optional[list[str]] = None,
+                             actual_world_version: Optional[int] = None,
+                             recursive_event_id: Optional[str] = None,
+                             accessible: bool = True) -> Optional[dict]:
+    """Run the ToM reader with its scoped English lexical fallback enabled.
+
+    The fallback is active only for this attitude-reading transaction; normal
+    dialogue parsing continues to use its existing POS reference behavior.
+    """
+    from domains.wiktionary_reference import english_pos_fallback_scope
+    with english_pos_fallback_scope():
+        return _ingest_attitude_sentence(
+            agent, sentence, t=t, unit=unit, character_name=character_name,
+            recursive_holder_path=recursive_holder_path,
+            actual_world_version=actual_world_version,
+            recursive_event_id=recursive_event_id, accessible=accessible,
+        )
 
 
 # --------------------------------------------------------------------------- #

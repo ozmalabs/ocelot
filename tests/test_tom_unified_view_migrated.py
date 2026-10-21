@@ -77,16 +77,16 @@ def test_source_epoch_refresh():
     assert old["source_node"] == new["source_node"]
 
 
-def _adapter():
-    from substrate.boot_core import CORE_SEEDS
+def _adapter(seeds=None):
     from substrate.world_adapter import WorldAdapter
-    return WorldAdapter(seeds=CORE_SEEDS + ("tom_unified_view",))
+    return WorldAdapter(seeds=("tom_unified_view",) if seeds is None else seeds)
 
 
 def _source(adapter, epoch, content):
     node = adapter.inner.add_node("TomAttributedStateSource", {
         "schema_version": 1,
         "source_key": "character:sally:belief:17",
+        "source_is_current": True,
         "source_kind": "character_tom",
         "source_node": "belief:17",
         "source_epoch": epoch,
@@ -137,6 +137,8 @@ def test_dependency_boot_and_no_cross_owner_recall():
     a, b = _adapter(), _adapter()
     assert len(list(a.inner.nodes("TomViewPolicy"))) == 1
     assert len(list(b.inner.nodes("TomViewPolicy"))) == 1
+    assert list(a.inner.nodes("MetaShape"))
+    assert list(a.inner.nodes("ShapePrinciple"))
     pa, pb = a.inner.nodes("TomViewPolicy")[0], b.inner.nodes("TomViewPolicy")[0]
     a.inner.set_attr(pa, "enabled", 1.0)
     _source(a, 1, "private:belief")
@@ -151,3 +153,106 @@ def test_generator_reproduction():
     from scripts.gen_tom_unified_view_seed import build_seed
     checked_in = json.loads(Path("seeds/tom_unified_view.json").read_text())
     assert checked_in == build_seed()
+
+
+def test_domain_source_adapters_create_distinct_native_views_and_meta_observations():
+    from substrate.boot_core import CORE_SEEDS
+    from substrate.world_adapter import WorldAdapter
+    from domains.tom_meta_shape import (
+        project_character_tom_node, project_interlocutor_estimate,
+        project_interlocutor_assertion,
+    )
+
+    a = WorldAdapter(seeds=CORE_SEEDS + ("tom_unified_view",))
+    policy = a.inner.nodes("TomViewPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+
+    nested = a.s.add_node("SmEntity", {
+        "name": "key#sally_belief", "referent": "key", "nested": 1,
+        "belief_holder": "sally", "flavor": "belief",
+        "proposition": '["in","key","drawer"]',
+    })
+    party = a.s.add_node("Interlocutor", {
+        "name": "alex", "turns": 3,
+        "feat_counts": {"register": {"formal": 2}},
+        "known_concepts": ["key"],
+    })
+    assertion = a.s.add_node("Assertion", {
+        "content": "I think the key is in the drawer.", "turn": 4,
+        "flavor": "belief",
+    })
+    mt = a.s.add_node("Microtheory", {"name": "bea_beliefs"})
+    concept = a.s.add_node("Concept", {
+        "name": "controllability_for:alex", "state": 0.7,
+        "external_field": 0.4,
+    })
+    a.inner.add_edge_unchecked(mt, "has_concept", concept)
+    own_affect = a.s.add_node("Concept", {
+        "name": "desire_for:alex", "state": 0.8, "external_field": 0.2,
+    })
+
+    project_character_tom_node(a, nested)
+    project_interlocutor_estimate(a, party)
+    project_interlocutor_assertion(a, party, assertion)
+    from domains.bigville_theory_of_mind import mint_resident_tom_belief
+    projected = mint_resident_tom_belief(
+        a.inner, mt, "controllability", "alex", projection_agent=a,
+        resident="bea")
+    assert projected == concept
+    from domains.tom_meta_shape import project_resident_agency_belief
+    assert project_resident_agency_belief(
+        a, own_affect, resident="bea", target="alex") is None
+
+    views = [a.inner.node(n)["attrs"] for n in a.inner.nodes("TomAttributedStateView")]
+    assert len(views) == 4
+    assert {v["source_kind"] for v in views} == {
+        "character_tom", "interlocutor_estimate", "interlocutor_assertion", "bigville_tom",
+    }
+    assert len({v["source_key"] for v in views}) == 4
+    assert sum(v["epistemic_kind"] == "world_assertion" for v in views) == 1
+    assert sum(v["epistemic_kind"] == "estimate" for v in views) == 1
+    assert sum(v["epistemic_kind"] == "attributed" for v in views) == 2
+    assert len(list(a.inner.nodes("ShapeObservation"))) == 4
+    assert len(list(a.inner.nodes("TomAttributedStateSource"))) == 4
+    observations = [a.inner.node(n)["attrs"] for n in a.inner.nodes("ShapeObservation")]
+    assert any(o.get("status") == "recognized" for o in observations)
+    assert all(o.get("status") in {"recognized", "residual"} for o in observations)
+    for view in a.inner.nodes("TomAttributedStateView"):
+        linked = list(a.inner.neighbours(view, "uses_meta_shape_observation"))
+        assert len(linked) == 1
+        assert a.inner.node(linked[0])["attrs"]["status"] in {"recognized", "residual"}
+    assert all(not a.inner.node(n)["attrs"].get("nested")
+               for n in a.inner.nodes("TomAttributedStateView"))
+
+
+def test_character_runtime_emits_source_only_when_opt_in_seed_is_loaded():
+    from substrate.boot_core import CORE_SEEDS
+    from substrate.world_adapter import WorldAdapter
+    from domains.character_tom import read_character_tom
+
+    a = WorldAdapter(seeds=CORE_SEEDS + ("tom_unified_view",))
+    a.inner.set_attr(a.inner.nodes("TomViewPolicy")[0], "enabled", 1.0)
+    read_character_tom(a, "Sally thinks the ball is in the basket.")
+    views = [a.inner.node(n)["attrs"] for n in a.inner.nodes("TomAttributedStateView")]
+    assert len(views) == 1
+    assert views[0]["source_kind"] == "character_tom"
+
+
+def test_interlocutor_runtime_projects_accumulated_estimate():
+    from substrate.boot_core import CORE_SEEDS
+    from substrate.world_adapter import WorldAdapter
+    from domains.interlocutor_model import observe_turn
+
+    a = WorldAdapter(seeds=CORE_SEEDS + ("tom_unified_view",))
+    a.inner.set_attr(a.inner.nodes("TomViewPolicy")[0], "enabled", 1.0)
+    observe_turn(a, "I enjoy hiking and music.")
+    observe_turn(a, "I enjoy hiking and music.")
+    views = [a.inner.node(n)["attrs"] for n in a.inner.nodes("TomAttributedStateView")]
+    estimate_views = [v for v in views if v["source_kind"] == "interlocutor_estimate"]
+    assert len(estimate_views) == 2
+    assert {v["status"] for v in estimate_views} == {"current", "stale"}
+    estimate_sources = [a.inner.node(n)["attrs"]
+                        for n in a.inner.nodes("TomAttributedStateSource")
+                        if a.inner.node(n)["attrs"].get("source_kind") == "interlocutor_estimate"]
+    assert len(estimate_sources) == 2
+    assert {s["source_is_current"] for s in estimate_sources} == {True, False}
