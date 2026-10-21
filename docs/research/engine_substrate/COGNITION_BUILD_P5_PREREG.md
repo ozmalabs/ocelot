@@ -1,7 +1,7 @@
 # Cognition build Phase 5 — Faculty depth preregistration
 
 **Protocol:** `cognition_p5_heldout_v1`
-**Status:** H0 reconciliation recorded; per-item specifications, runner freeze and held-out draw remain pending.
+**Status:** H0 and F1 implementation recorded; per-item evaluation specifications, runner freeze and held-out draw remain pending.
 **Entry merge:** `9def1187f42f74489e4c2833c0bbae34e63df584` (P4 merged onto the committed `main` base in the isolated continuation branch).
 **P4 freeze:** `199583ca6c4fe861dae90dd5814d3f0ad3b9f5ed`.
 **P4 result/H4 record:** [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md).
@@ -40,6 +40,27 @@ Python may translate source data into graph events and format readouts. The grap
 | P3 temporal rung deferred | P4.D1 now covers regular measured windows; irregular sampling remains explicitly unsupported | No P5 claim depends on irregular temporal inference |
 
 The execution order is F1.1 → F1.2 → F2.1 → F2.2 → F2.3. G2, G3, E3, A2 and D6 start only after their item specifications; G3 is a hard prerequisite for E4 action arbitration, while E3 supplies optional causal models to E4. E4 planning cannot authorize emission until G3 is implemented and tested. All eight P5 evaluation items (F1, F2, G2, G3, E3, E4, A2, D6) remain in scope; none is omitted because an outcome is inconvenient.
+
+## P5.F1.1 — Attributed-state view contract
+
+The shared view is a provenance-preserving projection, not a shared belief store and not a new truth layer. Each projected row has a stable `view_id`, `source_kind`, `source_node`, `source_epoch` (including an explicit unknown marker), `holder`, optional `target`, `content_ref`, `modality`, and `epistemic_kind`. Rows remain separate when content or holder differs; disagreement is represented by coexisting rows. The projection may add `projects_source` and `uses_vocabulary` lineage edges, but does not edit source records. `TomViewPolicy.enabled` is registered disabled by default; F1.2 must not activate it in CORE/default boot.
+
+The four source forms are mapped as follows:
+
+| Source form | Holder / target | Content and modality | Epistemic kind and boundary |
+|---|---|---|---|
+| `character_tom` nested `SmEntity` | `belief_holder` / target parsed from the nested proposition when available | source entity plus `flavor` and proposition | `attributed`; character belief-world content is not actual-world truth |
+| psychology seed | no holder or target on its own | vocabulary concept reference only | vocabulary-only; it creates no attributed-state row without a separate live state source |
+| interlocutor model | observing agent / modeled `Party` | feature estimate or self-report assertion reference | estimates are the agent's `estimate` of the party; the interlocutor's `Assertion` separately records `world_assertion` by its speaker and does not certify truth |
+| Bigville resident agency attribution | resident / target resident | `controllability_for:<target>` Concept and its owning Microtheory | `attributed`; resident-owned `regard_for`, `desire_for`, `removal_desire_for`, and `pity_for` are own affect/motivation and must not enter this view as beliefs about the target |
+
+Epoch is copied from a source's explicit revision/version field if present; absent source epochs remain explicitly unknown and must not be fabricated from wall time or a different owner's clock. Revisions produce a fresh projection identity for that source epoch and leave the prior projection/provenance intact. A vocabulary reference can annotate a live state row but cannot supply its holder, target, modality, or epoch. F1.1's contract tests exercise fixtures; F1.2 separately verifies the native graph projection path.
+
+The migration preserves the existing `tom_meta_shape` observation behavior and its two domain-specific translators. The shared attributed-state view does not make unrelated domain corpora structurally identical, and retired Python psychology functions remain retired.
+
+## P5.F1 implementation record
+
+F1.1 contract fixtures and F1.2's generated `tom_unified_view` seed are implemented. The native rule projects standardized `TomAttributedStateSource` graph events only when `TomViewPolicy.enabled=1`, retains source identity/epoch/owner and a `projects_tom_source` edge, and marks superseded epochs stale. The policy seed has no dependencies and is disabled by default. Domain runtime hooks remain explicit adapter work; the current acceptance supplies standardized source events and does not claim automatic ingestion from all four source stores. Psychology vocabulary alone is deliberately not a source event. The F1 item evaluation and held-out performance criterion remain pending.
 
 ## Held-out decision criteria (inherited from the detailed plan)
 
