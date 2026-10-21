@@ -418,22 +418,22 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Acceptance:** `test_path_projection_composes_contiguous_segments_and_uses_native_shape_audit`, `test_path_projection_rejects_missing_or_gapped_segment`, `test_path_projection_ranks_by_measured_effort_and_keeps_ties`, `test_path_arrival_lineage_keeps_distinct_shared_prefix_paths`, `test_path_arrival_limit_closes_without_partial_candidates`, and `test_single_candidate_projection_compatibility_unchanged`, plus the complete E4.2 acceptance list.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_cognition_manifold_migrated.py tests/test_future_manifold_projection_native.py tests/test_goal_derivation_migrated.py tests/test_compositional_plan_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** Python path construction or scoring; a new TermNode variant; approximate time alignment; goal rank overriding intervention; policy/default activation.
-- **Done when:** named native and graph acceptance passes; same-source P4 projection regressions pass; generator/serialization and boot checks pass; path and projection gaps are either closed or explicitly returned as unknown. Verified: 76 combined Python acceptance tests and 24 focused Rust future-manifold tests pass; seed load tests report no skipped planner rules.
+- **Done when:** named native and graph acceptance passes; same-source P4 projection regressions pass; generator/serialization and boot checks pass; path and projection gaps are either closed or explicitly returned as unknown. Verified: 85 combined Python acceptance tests and 24 focused Rust future-manifold tests pass; seed load tests report no skipped planner rules.
 
-### P5.E4.3 — Consume imagined candidates through System-2 arbitration
+### P5.E4.3 — Consume imagined candidates through System-2 arbitration (complete)
 
 - **ID:** P5.E4.3
 - **Tier:** T2
 - **Goal:** Consume imagined candidates through System-2 arbitration.
 - **Read first:** `COGNITION_PLANNER_CONTRACT.md`; `COGNITION_ACTION_ARBITRATION_CONTRACT.md`; `seeds/impasse_simulation_bridge.json`; `tests/test_cognition_multistep_planner_migrated.py`.
-- **Touch:** new `scripts/gen_imagined_candidate_arbitration_seed.py` + `seeds/imagined_candidate_arbitration.json`; `tests/test_cognition_multistep_planner_migrated.py`.
+- **Touch:** new `scripts/gen_imagined_candidate_arbitration_seed.py` + `seeds/imagined_candidate_arbitration.json`; `scripts/gen_cognition_planner_seed.py` + `seeds/cognition_planner.json` (preserve the first action/state and stable path identity); `tests/test_cognition_multistep_planner_migrated.py`.
 - **Pattern to copy:** P1 proposal provenance and G3 authorization token.
 - **Steps:** 1. Consume has_imagined_candidate into a new System-2 decision revision tied to context/model epochs. 2. Re-open only candidates named by the explicit contract; verify current goal and manifold before authorizing through G3. 3. Keep imagined provenance through execution; create grounded evidence only after matching real receipt, then settle parent context.
 - **Guard:** `ImaginedArbitrationPolicy.enabled`, default 0.
-- **Acceptance:** `test_advisory_candidate_consumed_once`, `test_no_grounding_before_receipt`, `test_reopened_candidate_reverified`, `test_stop_blocks_imagined_action`, `test_model_change_cancels_authorization`.
+- **Acceptance:** `test_advisory_candidate_consumed_once`, `test_tied_minimum_candidates_keep_distinct_system_two_action_ids`, `test_no_grounding_before_receipt`, `test_matching_observation_after_sink_receipt_grounds_candidate`, `test_mismatched_observed_state_does_not_ground_candidate`, `test_reopened_candidate_reverified`, `test_stop_blocks_imagined_action`, `test_model_change_cancels_authorization`, and `test_imagined_arbitration_policy_is_disabled_by_default`.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** editing frozen dual_process_core to weaken its confidence thresholds; treating a rollout as action success.
-- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. The 53-test E4.3 planner/G3 command and the 85-test E4.2b combined command pass. The opt-in seed selects a concrete first path action but does not mint G3 authorization; only the native G3 dispatch boundary may consume that token. Grounding requires the sink receipt plus the expected first-step state observation. Held-out evidence is produced at the phase evaluation task.
 
 ### P5.A2.1 — Specify parent completion after capability decomposition
 

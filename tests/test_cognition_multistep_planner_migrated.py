@@ -628,3 +628,213 @@ def test_graph_planner_accepts_native_p4_projection_receipt():
     assert adapter.s.node(unbound)["attrs"]["status"] == "unknown"
     assert adapter.s.node(unbound)["attrs"]["terminal_reason"] == "missing_model_state_or_goal_projection"
     assert not adapter.inner.neighbours(unbound, "has_frontier")
+
+
+def _imagined_arbitration_case(transitions):
+    from scripts.gen_imagined_candidate_arbitration_seed import build_seed
+
+    adapter, request, _budget = _graph_planner(transitions, required_horizon=2.0)
+    _run_to_fixpoint(adapter)
+    context = adapter.s.add_node("DualProcessContext", {
+        "status": "escalated", "epoch": 4.0,
+        "active_model_id": "model-1", "active_goal_id": "goal-1",
+    })
+    escalation = adapter.s.add_node("SystemTwoEscalation", {
+        "status": "requested", "epoch": 4.0, "reason": "candidate_reopen",
+    })
+    policy = adapter.s.add_node("ImaginedArbitrationPolicy", {
+        "enabled": 1.0, "current_source_epoch": 4.0,
+        "current_model_id": "model-1", "current_model_epoch": 2.0,
+        "current_goal_id": "goal-1", "current_goal_epoch": 3.0,
+        "current_manifold_id": "manifold-1", "current_manifold_epoch": 5.0,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_imagined_arbitration_policy", policy)
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_system_two_escalation", escalation)
+    adapter.inner.add_edge_unchecked(context, "has_system_two_escalation", escalation)
+    adapter.inner.add_edge_unchecked(request, "has_dual_process_context", context)
+    summary = adapter.inner.load_seed_manifest(build_seed(), adapter.agent)
+    assert summary["rules_skipped"] == [], summary
+    _run_to_fixpoint(adapter)
+    return adapter, request, context, policy
+
+
+def test_imagined_arbitration_policy_is_disabled_by_default():
+    from scripts.gen_imagined_candidate_arbitration_seed import build_seed
+    from substrate.world_adapter import WorldAdapter
+
+    adapter = WorldAdapter(seeds=())
+    summary = adapter.inner.load_seed_manifest(build_seed(), adapter.agent)
+    assert summary["rules_skipped"] == [], summary
+    policy = adapter.s.nodes("ImaginedArbitrationPolicy")[0]
+    assert adapter.s.node(policy)["attrs"]["enabled"] == 0.0
+
+
+def test_advisory_candidate_consumed_once():
+    import json
+    from scripts.gen_imagined_candidate_arbitration_seed import OUT, build_seed
+
+    adapter, request, _context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    revisions = adapter.inner.neighbours(request, "has_system_two_decision_revision")
+    assert len(revisions) == 1
+    assert adapter.s.node(candidate)["attrs"]["arbitration_consumed"] == 1.0
+    assert adapter.s.node(revisions[0])["attrs"]["status"] == "reopened"
+    action_requests = adapter.inner.neighbours(revisions[0], "has_action_request")
+    assert len(action_requests) == 1
+    assert adapter.s.node(action_requests[0])["attrs"]["status"] == "selected"
+    assert adapter.s.node(action_requests[0])["attrs"]["action_key"] == "prepare"
+    assert json.loads(OUT.read_text()) == build_seed()
+    _run_to_fixpoint(adapter)
+    assert len(adapter.inner.neighbours(request, "has_system_two_decision_revision")) == 1
+
+
+def test_tied_minimum_candidates_keep_distinct_system_two_action_ids():
+    adapter, request, _context, _policy = _imagined_arbitration_case([
+        ("s0", "left", "left", 2), ("s0", "right", "right", 2),
+        ("left", "finish_left", "goal", 2), ("right", "finish_right", "goal", 2),
+    ])
+    candidates = adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+    revisions = adapter.inner.neighbours(request, "has_system_two_decision_revision")
+    assert len(candidates) == len(revisions) == 2
+    action_requests = [adapter.inner.neighbours(revision, "has_action_request")[0]
+                       for revision in revisions]
+    assert len({adapter.s.node(item)["attrs"]["request_id"] for item in action_requests}) == 2
+    assert {adapter.s.node(item)["attrs"]["action_key"] for item in action_requests} == {
+        "left", "right",
+    }
+
+
+def test_no_grounding_before_receipt():
+    adapter, request, _context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    assert adapter.s.node(action_request)["attrs"]["status"] == "selected"
+    assert adapter.inner.neighbours(action_request, "has_action_authorization") == []
+    assert adapter.s.node(candidate)["attrs"]["provenance_kind"] == "imagined"
+    assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "ungrounded"
+    assert adapter.s.node(candidate)["attrs"]["observation_status"] == "not_observed"
+
+
+def test_matching_observation_after_sink_receipt_grounds_candidate():
+    adapter, request, context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    action_attrs = adapter.s.node(action_request)["attrs"]
+    adapter.inner.set_attr(action_request, "status", "emitted")
+    adapter.inner.set_attr(action_request, "sink_receipt_id", "sink-receipt-1")
+    authorization = adapter.s.add_node("ActionAuthorization", {
+        "status": "consumed", "request_id": action_attrs["request_id"],
+        "source_epoch": action_attrs["source_epoch"], "action_key": action_attrs["action_key"],
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_authorization", authorization)
+    observation = adapter.s.add_node("ImaginedActionObservation", {
+        "status": "verified", "action_request_id": action_attrs["request_id"],
+        "source_epoch": action_attrs["source_epoch"],
+        "sink_receipt_id": "sink-receipt-1",
+        "observed_state_key": "middle",
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_observation", observation)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "grounded"
+    assert adapter.s.node(candidate)["attrs"]["observation_status"] == "observed"
+    assert adapter.s.node(context)["attrs"]["status"] == "committed"
+
+
+def test_mismatched_observed_state_does_not_ground_candidate():
+    adapter, request, context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    attrs = adapter.s.node(action_request)["attrs"]
+    adapter.inner.set_attr(action_request, "status", "emitted")
+    adapter.inner.set_attr(action_request, "sink_receipt_id", "sink-receipt-1")
+    authorization = adapter.s.add_node("ActionAuthorization", {
+        "status": "consumed", "request_id": attrs["request_id"],
+        "source_epoch": attrs["source_epoch"], "action_key": attrs["action_key"],
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_authorization", authorization)
+    observation = adapter.s.add_node("ImaginedActionObservation", {
+        "status": "verified", "action_request_id": attrs["request_id"],
+        "source_epoch": attrs["source_epoch"], "sink_receipt_id": "sink-receipt-1",
+        "observed_state_key": "unrelated-state",
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_observation", observation)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "ungrounded"
+    assert adapter.s.node(context)["attrs"]["status"] == "escalated"
+
+
+def test_reopened_candidate_reverified():
+    adapter, request, _context, policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    adapter.inner.set_attr(policy, "current_manifold_epoch", 6.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(action_request)["attrs"]["status"] == "withheld"
+    assert adapter.s.node(action_request)["attrs"]["terminal_reason"] == "snapshot_changed"
+
+
+def test_stop_blocks_imagined_action():
+    from scripts.gen_response_inhibition_seed import build_seed as build_inhibition_seed
+    from substrate.dsl import Lit
+    from substrate.jsonio import term_to_json
+
+    adapter, request, _context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    attrs = adapter.s.node(action_request)["attrs"]
+    adapter.inner.set_attr(action_request, "status", "selected")
+    authorization = adapter.s.add_node("ActionAuthorization", {
+        "authorization_id": "auth-imagined", "status": "pending",
+        "request_id": attrs["request_id"], "source_epoch": attrs["source_epoch"],
+        "action_key": attrs["action_key"], "sink_route": "imagined_sink",
+    })
+    stop = adapter.s.add_node("ActionStopEvent", {
+        "request_id": attrs["request_id"], "source_epoch": attrs["source_epoch"],
+        "status": "pending",
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_authorization", authorization)
+    adapter.inner.add_edge_unchecked(action_request, "has_action_stop", stop)
+    summary = adapter.inner.load_seed_manifest(build_inhibition_seed(), adapter.agent)
+    assert summary["rules_skipped"] == [], summary
+    inhibition_policy = adapter.s.nodes("ResponseInhibitionPolicy")[0]
+    adapter.inner.set_attr(inhibition_policy, "enabled", 1.0)
+    sink_calls = []
+    adapter.register_reflex_response("imagined_sink", lambda _adapter: sink_calls.append("called"))
+    adapter.install_reflex("prepare", term_to_json(Lit(True)), "imagined_sink")
+    _run_to_fixpoint(adapter)
+    adapter.fire_reflexes()
+    assert sink_calls == []
+    assert adapter.s.node(action_request)["attrs"]["status"] == "withheld"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "revoked"
+
+
+def test_model_change_cancels_authorization():
+    adapter, request, _context, policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    authorization = adapter.s.add_node("ActionAuthorization", {
+        "authorization_id": "auth-stale-model", "status": "pending",
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_authorization", authorization)
+    adapter.inner.set_attr(policy, "current_model_epoch", 3.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(revision)["attrs"]["status"] == "cancelled"
+    assert adapter.s.node(action_request)["attrs"]["status"] == "withheld"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "revoked"

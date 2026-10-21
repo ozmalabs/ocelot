@@ -439,6 +439,7 @@ def root_rule():
             ["add_edge", "frontier", "expands_from_state", "start", {}],
             ["add_node", "origin", "CognitionPlanPathArrival", {
                 "status": "current", "path_kind": "origin", "depth": 0.0,
+                "path_identity": "",
                 "candidate_emitted": 0.0,
                 "model_epoch": T(A("request", "model_epoch")),
                 "source_epoch": T(A("request", "source_epoch")),
@@ -640,6 +641,11 @@ def materialize_path_arrival_rule():
                 "status": "current", "model_epoch": T(A("request", "model_epoch")),
                 "source_epoch": T(A("request", "source_epoch")),
                 "action_key": T(A("transition", "action_key")),
+                "root_action_key": T(A("transition", "action_key")),
+                "root_successor_state_key": T(A("destination", "state_key")),
+                "path_identity": T({"type": "StringConcat", "parts": [
+                    A("parent_arrival", "path_identity"), L("/"),
+                    A("transition", "action_key")]}),
                 "path_kind": "step", "depth": T(A("destination", "depth")),
                 "candidate_emitted": 0.0,
                 "intervention_unit": T(A("request", "intervention_unit")),
@@ -651,6 +657,26 @@ def materialize_path_arrival_rule():
             ["add_edge", "arrival", "via_transition", "transition", {}],
             ["add_edge", "arrival", "to_frontier", "destination", {}],
         ],
+    }
+
+
+def inherit_path_root_action_rule():
+    return {
+        "name": "cp_inherit_root_action_through_path", "area": AREA, "order": 23,
+        "latency_class": "hard_realtime", "batch": True,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["request", "has_path_arrival", "arrival"],
+                  ["arrival", "parent_path_arrival", "parent"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("searching")),
+                      Eq(A("parent", "path_kind"), L("step")),
+                      Or(Not(Eq(A("arrival", "root_action_key"), A("parent", "root_action_key"))),
+                         Not(Eq(A("arrival", "root_successor_state_key"),
+                                A("parent", "root_successor_state_key"))))),
+        "effects": [["set_attr", "arrival", "root_action_key", T(A("parent", "root_action_key"))],
+                    ["set_attr", "arrival", "root_successor_state_key",
+                     T(A("parent", "root_successor_state_key"))]],
     }
 
 
@@ -698,12 +724,16 @@ def solve_rule():
             ["add_node", "candidate", "ImaginedPlanCandidate", {
                 "status": "pending_path_projection", "projection_status": "pending",
                 "provenance_kind": "imagined",
+                "arbitration_consumed": 0.0,
                 "observation_status": "not_observed", "grounding_status": "ungrounded",
                 "model_epoch": T(A("request", "model_epoch")),
                 "source_epoch": T(A("request", "source_epoch")),
                 "goal_epoch": T(A("request", "goal_epoch")),
                 "manifold_epoch": T(A("request", "manifold_epoch")),
                 "intervention_unit": T(A("request", "intervention_unit")),
+                "first_action_key": T(A("terminal_arrival", "root_action_key")),
+                "first_successor_state_key": T(A("terminal_arrival", "root_successor_state_key")),
+                "path_identity": T(A("terminal_arrival", "path_identity")),
             }],
             ["add_edge", "request", "has_imagined_plan_candidate", "candidate", {}],
             ["add_edge", "candidate", "derived_from_frontier", "frontier", {}],
@@ -1094,7 +1124,7 @@ def build_seed():
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_cognition_planner_policy", "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(),
-        "rules": [terminalize_deadline_rule(), terminalize_prebind_stale_request_rule(), bind_model_start_state_rule(), bind_model_goal_state_rule(), terminalize_unbound_model_request_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), adapt_native_model_transition_rule(), expand_rule(), preserve_duplicate_state_path_rule(), materialize_path_arrival_rule(), count_expansion_rule(), solve_rule(),
+        "rules": [terminalize_deadline_rule(), terminalize_prebind_stale_request_rule(), bind_model_start_state_rule(), bind_model_goal_state_rule(), terminalize_unbound_model_request_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), adapt_native_model_transition_rule(), expand_rule(), preserve_duplicate_state_path_rule(), materialize_path_arrival_rule(), inherit_path_root_action_rule(), count_expansion_rule(), solve_rule(),
                   audit_path_projection_rule(),
                   classify_path_projection_rule("feasible_path", And(
                       Eq(A("candidate", "projection_support"), L(1.0)),

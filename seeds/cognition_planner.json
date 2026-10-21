@@ -2789,6 +2789,7 @@
             "status": "current",
             "path_kind": "origin",
             "depth": 0.0,
+            "path_identity": "",
             "candidate_emitted": 0.0,
             "model_epoch": {
               "__term__": {
@@ -6097,6 +6098,53 @@
                 "key": "action_key"
               }
             },
+            "root_action_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "action_key"
+              }
+            },
+            "root_successor_state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "destination"
+                },
+                "key": "state_key"
+              }
+            },
+            "path_identity": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "parent_arrival"
+                    },
+                    "key": "path_identity"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "/"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "transition"
+                    },
+                    "key": "action_key"
+                  }
+                ]
+              }
+            },
             "path_kind": "step",
             "depth": {
               "__term__": {
@@ -6162,6 +6210,166 @@
           "to_frontier",
           "destination",
           {}
+        ]
+      ]
+    },
+    {
+      "name": "cp_inherit_root_action_through_path",
+      "area": "cognition_planner",
+      "order": 23,
+      "latency_class": "hard_realtime",
+      "batch": true,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_path_arrival",
+          "arrival"
+        ],
+        [
+          "arrival",
+          "parent_path_arrival",
+          "parent"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "parent"
+              },
+              "key": "path_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "step"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "arrival"
+                    },
+                    "key": "root_action_key"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "parent"
+                    },
+                    "key": "root_action_key"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "arrival"
+                    },
+                    "key": "root_successor_state_key"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "parent"
+                    },
+                    "key": "root_successor_state_key"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "arrival",
+          "root_action_key",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "parent"
+              },
+              "key": "root_action_key"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "arrival",
+          "root_successor_state_key",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "parent"
+              },
+              "key": "root_successor_state_key"
+            }
+          }
         ]
       ]
     },
@@ -6885,6 +7093,7 @@
             "status": "pending_path_projection",
             "projection_status": "pending",
             "provenance_kind": "imagined",
+            "arbitration_consumed": 0.0,
             "observation_status": "not_observed",
             "grounding_status": "ungrounded",
             "model_epoch": {
@@ -6935,6 +7144,36 @@
                   "name": "request"
                 },
                 "key": "intervention_unit"
+              }
+            },
+            "first_action_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "terminal_arrival"
+                },
+                "key": "root_action_key"
+              }
+            },
+            "first_successor_state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "terminal_arrival"
+                },
+                "key": "root_successor_state_key"
+              }
+            },
+            "path_identity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "terminal_arrival"
+                },
+                "key": "path_identity"
               }
             }
           }
