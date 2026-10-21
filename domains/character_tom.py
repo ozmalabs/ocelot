@@ -387,6 +387,8 @@ def _nested_entity(agent, character_ent, character_name: str, flavor: str, pred:
         sub.set_attr(nested, a1, 1)
     smr._edge(native, character_ent, "belief_world", nested)
     smr._edge(native, nested, "is_attitude_level2", nested)
+    from domains.tom_meta_shape import project_character_tom_node
+    project_character_tom_node(agent, nested)
     flavor_concept = _concept_node(sub, flavor)
     if flavor_concept is not None:
         smr._edge(native, nested, "is_a", flavor_concept)
@@ -431,6 +433,8 @@ def _ground_attitude_complement(agent, character_ent, character_name: str,
             nested = sub.add_node("SmEntity", attrs)
             smr._edge(native, character_ent, "belief_world", nested)
             smr._edge(native, nested, "is_attitude_level2", nested)
+            from domains.tom_meta_shape import project_character_tom_node
+            project_character_tom_node(agent, nested)
             flavor_concept = _concept_node(sub, flavor)
             if flavor_concept is not None:
                 smr._edge(native, nested, "is_a", flavor_concept)
@@ -473,8 +477,12 @@ def _ground_attitude_complement(agent, character_ent, character_name: str,
 _FIRST_PERSON_SUBJECTS = frozenset({"i", "we"})
 
 
-def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
-                             character_name: Optional[str] = None) -> Optional[dict]:
+def _ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
+                              character_name: Optional[str] = None,
+                              recursive_holder_path: Optional[list[str]] = None,
+                              actual_world_version: Optional[int] = None,
+                              recursive_event_id: Optional[str] = None,
+                              accessible: bool = True) -> Optional[dict]:
     """Try to ground `sentence` as a propositional-attitude construction.
     Returns None (not an attitude clause) so the caller falls through to the
     ordinary situation-model reading path — the discriminative case. A
@@ -508,11 +516,60 @@ def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
     else:
         subject_name = parsed_subject
     character_ent = smr._entity(agent, subject_name, unit=unit)  # REAL, shared SmEntity
+    if recursive_holder_path is not None and mem["flavor"] in ("belief", "knowledge"):
+        if actual_world_version is None:
+            raise ValueError("recursive ToM ingestion requires an explicit actual_world_version")
+        comp_read = rc.read_clause(agent, comp_words, write=False, learn=False)
+        predications = comp_read.get("predications") or []
+        content_ref = json.dumps(predications[0] if predications else comp_words,
+                                 ensure_ascii=False, separators=(",", ":"))
+        pred = predications[0] if predications else []
+        referent = str(pred[1]) if len(pred) > 1 else _clean_span(agent, comp_words)
+        value = str(pred[2]) if len(pred) > 2 else "true"
+        path = [str(holder) for holder in recursive_holder_path]
+        event_id = recursive_event_id or json.dumps(
+            [path, sentence, int(actual_world_version)], ensure_ascii=False,
+            separators=(",", ":"))
+        submit_recursive_tom_event(
+            agent, event_id=event_id, holder_path=path, referent=referent,
+            content_ref=content_ref, value=value,
+            actual_world_version=actual_world_version, accessible=accessible,
+        )
+        answer = query_recursive_tom(
+            agent, query_id=f"{event_id}:readback", holder_path=path,
+            referent=referent, content_ref=content_ref, expected_value=value,
+            actual_world_version=actual_world_version,
+        )
+        return {"sentence": sentence, "kind": "attitude", "subject": subject_name,
+                "attitude_verb": mem["lemma"], "membership": mem, "decode": decode,
+                "recursive_answer": answer, "recursive_event_id": event_id,
+                "complement_predications": predications}
     grounded = _ground_attitude_complement(agent, character_ent, subject_name,
                                            mem["flavor"], comp_words, t=t)
     return {"sentence": sentence, "kind": "attitude", "subject": subject_name,
             "attitude_verb": mem["lemma"], "membership": mem, "decode": decode,
             **grounded}
+
+
+def ingest_attitude_sentence(agent, sentence: str, *, t: int = 0, unit=None,
+                             character_name: Optional[str] = None,
+                             recursive_holder_path: Optional[list[str]] = None,
+                             actual_world_version: Optional[int] = None,
+                             recursive_event_id: Optional[str] = None,
+                             accessible: bool = True) -> Optional[dict]:
+    """Run the ToM reader with its scoped English lexical fallback enabled.
+
+    The fallback is active only for this attitude-reading transaction; normal
+    dialogue parsing continues to use its existing POS reference behavior.
+    """
+    from domains.wiktionary_reference import english_pos_fallback_scope
+    with english_pos_fallback_scope():
+        return _ingest_attitude_sentence(
+            agent, sentence, t=t, unit=unit, character_name=character_name,
+            recursive_holder_path=recursive_holder_path,
+            actual_world_version=actual_world_version,
+            recursive_event_id=recursive_event_id, accessible=accessible,
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -605,6 +662,66 @@ def character_goal(agent, character_name: str):
     return sub.node(char_ent)["attrs"].get("goal")
 
 
+def submit_recursive_tom_event(agent, *, event_id: str, holder_path: list[str],
+                               referent: str, content_ref: str, value: str,
+                               actual_world_version: int, accessible: bool,
+                               has_cycle: bool = False):
+    """Translate a parsed/access event into the native recursive-ToM graph.
+
+    This is a mechanical adapter: it copies caller-supplied fields and runs
+    the seeded rules. Access, cycle, depth and path decisions belong to the
+    event producer and native rule guards; this function does no inference.
+    The recursive_tom seed must be loaded and its policy explicitly enabled.
+    """
+    sub, native, ag_node = _resolve(agent)
+    path = [str(holder) for holder in holder_path]
+    event = sub.add_node("RecursiveTomEvent", {
+        "schema_version": 1,
+        "event_id": str(event_id),
+        "holder_path": path,
+        "holder_path_key": json.dumps(path, separators=(",", ":")),
+        "depth": len(path),
+        "referent": str(referent),
+        "content_ref": str(content_ref),
+        "value": str(value),
+        "actual_world_version": int(actual_world_version),
+        "accessible": bool(accessible),
+        "has_cycle": bool(has_cycle),
+    })
+    native.add_edge_unchecked(ag_node, "has_recursive_tom_event", event)
+    native.run_rules()
+    return event
+
+
+def query_recursive_tom(agent, *, query_id: str, holder_path: list[str],
+                        referent: str, content_ref: str, expected_value: str,
+                        actual_world_version: int) -> dict:
+    """Submit a scoped recursive query and read back its native answer.
+
+    An absent answer is returned as unknown. The adapter does not search for
+    beliefs or decide their truth; the matching is performed by native rules.
+    """
+    sub, native, ag_node = _resolve(agent)
+    path = [str(holder) for holder in holder_path]
+    query = sub.add_node("RecursiveTomQuery", {
+        "query_id": str(query_id),
+        "holder_path_key": json.dumps(path, separators=(",", ":")),
+        "referent": str(referent),
+        "content_ref": str(content_ref),
+        "expected_value": str(expected_value),
+        "actual_world_version": int(actual_world_version),
+    })
+    native.add_edge_unchecked(ag_node, "has_recursive_tom_query", query)
+    native.run_rules()
+    for answer in sub.nodes("RecursiveTomAnswer"):
+        answer_node = sub.node(answer)["attrs"]
+        if answer_node.get("query_id") == str(query_id):
+            return {"query_id": str(query_id), "status": answer_node.get("status", "unknown"),
+                    "evidence_event_id": answer_node.get("evidence_event_id")}
+    return {"query_id": str(query_id), "status": "unknown", "evidence_event_id": None}
+
+
 __all__ = ["ensure_seeds", "attitude_membership", "decode_attitude_construction",
            "ingest_attitude_sentence", "read_character_tom",
-           "character_belief_world", "character_goal"]
+           "character_belief_world", "character_goal",
+           "submit_recursive_tom_event", "query_recursive_tom"]

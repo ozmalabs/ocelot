@@ -147,6 +147,144 @@ fn time_coordinates(
     Some(times)
 }
 
+struct ComposedPlanPath {
+    values: Vec<Vec<f64>>,
+    widths: Vec<Vec<f64>>,
+    times: Vec<usize>,
+    intervention: f64,
+}
+
+/// Compose the explicitly timed transition segments named by one terminal
+/// planner path arrival. Path edges are graph data; this function only reads
+/// them and refuses missing, ambiguous, malformed, or over-depth ancestry.
+fn composed_plan_path(
+    graph: &TypedGraph,
+    interner: &Interner,
+    candidate: NodeID,
+) -> Option<ComposedPlanPath> {
+    let terminal_edge = interner.lookup("has_terminal_path_arrival")?;
+    crate::access_trace::note_out_edges(graph, candidate, Some(terminal_edge));
+    let terminals = graph.neighbours(candidate, Some(terminal_edge));
+    if terminals.len() != 1 {
+        return None;
+    }
+    let parent_edge = interner.lookup("parent_path_arrival")?;
+    let transition_edge = interner.lookup("via_transition")?;
+    let arrival_frontier_edge = interner.lookup("to_frontier")?;
+    let origin_attr = interner.lookup("path_kind")?;
+    let effort_attr = interner.lookup("future_manifold_effort")?;
+    let unit_attr = interner.lookup("intervention_unit")?;
+    let expected_unit = match graph.node(candidate).attrs.get(&unit_attr)? {
+        Value::Str(unit) => *unit,
+        _ => return None,
+    };
+
+    let mut cursor = terminals[0];
+    let mut seen = std::collections::HashSet::new();
+    let mut segments = Vec::new();
+    let mut reached_origin = false;
+    for _ in 0..=8 {
+        if !seen.insert(cursor) {
+            return None;
+        }
+        crate::access_trace::note(2, cursor.0, origin_attr.0, crate::access_trace::NO_ID);
+        if matches!(graph.node(cursor).attrs.get(&origin_attr), Some(Value::Str(kind)) if interner.resolve(*kind) == "origin")
+        {
+            let parents = graph.neighbours(cursor, Some(parent_edge));
+            reached_origin = parents.is_empty();
+            break;
+        }
+        crate::access_trace::note_out_edges(graph, cursor, Some(transition_edge));
+        let transitions = graph.neighbours(cursor, Some(transition_edge));
+        crate::access_trace::note_out_edges(graph, cursor, Some(parent_edge));
+        let parents = graph.neighbours(cursor, Some(parent_edge));
+        crate::access_trace::note_out_edges(graph, cursor, Some(arrival_frontier_edge));
+        let destinations = graph.neighbours(cursor, Some(arrival_frontier_edge));
+        if transitions.len() != 1 || parents.len() != 1 || destinations.len() != 1 {
+            return None;
+        }
+        let transition = transitions[0];
+        let duration = scalar(graph, interner, transition, "future_manifold_duration")?;
+        if duration < 1.0 || duration.fract() != 0.0 || duration > 4096.0 {
+            return None;
+        }
+        let duration = duration as usize;
+        let values = matrix(graph, interner, transition, "future_manifold_values")?;
+        let widths = matrix(graph, interner, transition, "future_manifold_widths")?;
+        if values.len() != duration
+            || widths.len() != duration
+            || flat_shape(&values).is_none()
+            || flat_shape(&widths).is_none()
+            || width(&values) != width(&widths)
+            || !all_finite(&values)
+            || !all_finite(&widths)
+            || widths.iter().flatten().any(|v| *v < 0.0)
+            || time_coordinates(graph, interner, transition, duration)?
+                != (1..=duration).collect::<Vec<_>>()
+        {
+            return None;
+        }
+        crate::access_trace::note(2, transition.0, unit_attr.0, crate::access_trace::NO_ID);
+        if !matches!(graph.node(transition).attrs.get(&unit_attr), Some(Value::Str(unit)) if *unit == expected_unit)
+        {
+            return None;
+        }
+        crate::access_trace::note(2, transition.0, effort_attr.0, crate::access_trace::NO_ID);
+        let effort_values = sequence(graph.node(transition).attrs.get(&effort_attr)?)?;
+        let mut effort = 0.0;
+        let mut effort_valid = true;
+        for value in &effort_values {
+            let amount = number(value)?;
+            if amount < 0.0 || !amount.is_finite() {
+                effort_valid = false;
+                break;
+            }
+            effort += amount;
+        }
+        if !effort_valid || effort_values.is_empty() || !effort.is_finite() {
+            return None;
+        }
+        segments.push((values, widths, duration, effort));
+        cursor = parents[0];
+    }
+    if !reached_origin || segments.is_empty() || segments.len() > 8 {
+        return None;
+    }
+    segments.reverse();
+    let dimensions = width(&segments[0].0)?;
+    if segments
+        .iter()
+        .any(|(values, _, _, _)| width(values) != Some(dimensions))
+    {
+        return None;
+    }
+    let total_rows: usize = segments.iter().map(|(_, _, duration, _)| *duration).sum();
+    if total_rows > 4096 {
+        return None;
+    }
+    let mut values = Vec::with_capacity(total_rows);
+    let mut widths = Vec::with_capacity(total_rows);
+    let mut times = Vec::with_capacity(total_rows);
+    let mut offset = 0;
+    let mut intervention = 0.0;
+    for (segment_values, segment_widths, duration, effort) in segments {
+        values.extend(segment_values);
+        widths.extend(segment_widths);
+        times.extend((offset + 1)..=(offset + duration));
+        offset += duration;
+        intervention += effort;
+    }
+    if !intervention.is_finite() {
+        return None;
+    }
+    Some(ComposedPlanPath {
+        values,
+        widths,
+        times,
+        intervention,
+    })
+}
+
 /// Return a graph-native future-manifold field when the generic contract is
 /// present.  `None` means the caller should use its legacy/domain adapter.
 pub fn projection_field(
@@ -159,7 +297,39 @@ pub fn projection_field(
     field: Sym,
 ) -> Option<Value> {
     let candidate = addition.unwrap_or(source);
-    let predicted = matrix(graph, interner, candidate, "future_manifold_values")?;
+    let path_edge = interner.lookup("has_terminal_path_arrival");
+    let has_path = path_edge
+        .map(|edge| !graph.neighbours(candidate, Some(edge)).is_empty())
+        .unwrap_or(false);
+    let composed = if has_path {
+        composed_plan_path(graph, interner, candidate)
+    } else {
+        None
+    };
+    let name = interner.resolve(field);
+    if has_path && composed.is_none() {
+        return Some(if name == "path_intervention" {
+            Value::Float(0.0)
+        } else if name == "shape_snapshot" {
+            Value::Tuple(std::sync::Arc::new(
+                (0..21)
+                    .map(|_| Value::Float(0.0))
+                    .collect::<Vec<_>>()
+                    .into(),
+            ))
+        } else {
+            Value::Float(match name {
+                "termination_code" => 4.0,
+                "ambiguous_interval_count" => 1.0,
+                _ => 0.0,
+            })
+        });
+    }
+    let predicted = if let Some(path) = &composed {
+        path.values.clone()
+    } else {
+        matrix(graph, interner, candidate, "future_manifold_values")?
+    };
     let target = matrix(graph, interner, episode, "future_manifold_target")?;
     let bounds = matrix(graph, interner, episode, "future_manifold_bounds")?;
     // Optional orientation of each manifold dimension.  Zero preserves the
@@ -168,11 +338,18 @@ pub fn projection_field(
     // a graph express a partial order (height/support versus load/time) without
     // inventing a scalar score or an arbitrary finite opposite bound.
     let directions = matrix(graph, interner, episode, "future_manifold_directions");
-    let widths = matrix(graph, interner, candidate, "future_manifold_widths")
-        .unwrap_or_else(|| vec![vec![0.0; predicted.first().map_or(0, Vec::len)]; predicted.len()]);
-    let times = time_coordinates(graph, interner, candidate, predicted.len())?;
-
-    let name = interner.resolve(field);
+    let widths = if let Some(path) = &composed {
+        path.widths.clone()
+    } else {
+        matrix(graph, interner, candidate, "future_manifold_widths").unwrap_or_else(|| {
+            vec![vec![0.0; predicted.first().map_or(0, Vec::len)]; predicted.len()]
+        })
+    };
+    let times = if let Some(path) = &composed {
+        path.times.clone()
+    } else {
+        time_coordinates(graph, interner, candidate, predicted.len())?
+    };
     let budget_raw =
         scalar(graph, interner, policy, "future_manifold_projection_budget").unwrap_or(0.0);
     let budget = budget_raw.round() as usize;
@@ -413,6 +590,9 @@ pub fn projection_field(
     let manifold_compression = compression_dimension_count > 0.0;
     let effort_authorized = !effort_supported || effort_residual <= 0.0 || manifold_compression;
     let field_name = name;
+    if field_name == "path_intervention" {
+        return Some(Value::Float(composed.as_ref()?.intervention));
+    }
     if field_name == "shape_snapshot" {
         let decisive_row = times
             .iter()
@@ -1274,6 +1454,185 @@ mod feasible_selection_tests {
         let mut out = v.to_vec();
         out.sort();
         out
+    }
+
+    fn value_list(values: &[f64]) -> Value {
+        Value::Tuple(std::sync::Arc::new(
+            values.iter().map(|value| Value::Float(*value)).collect(),
+        ))
+    }
+
+    fn matrix_value(rows: &[&[f64]]) -> Value {
+        Value::Tuple(std::sync::Arc::new(
+            rows.iter().map(|row| value_list(row)).collect(),
+        ))
+    }
+
+    fn path_projection_fixture(
+        first_times: &[f64],
+    ) -> (TypedGraph, Interner, NodeID, NodeID, NodeID) {
+        let (mut graph, mut interner, episode, policy, _held, _escaping) = bench();
+        let node_type = interner.intern("CognitionPlanNode");
+        let candidate = graph.insert_node(node_type, FxHashMap::default());
+        let origin = graph.insert_node(node_type, FxHashMap::default());
+        let first = graph.insert_node(node_type, FxHashMap::default());
+        let last = graph.insert_node(node_type, FxHashMap::default());
+        let first_transition = graph.insert_node(node_type, FxHashMap::default());
+        let last_transition = graph.insert_node(node_type, FxHashMap::default());
+        let first_frontier = graph.insert_node(node_type, FxHashMap::default());
+        let last_frontier = graph.insert_node(node_type, FxHashMap::default());
+        let set_value = |graph: &mut TypedGraph, interner: &mut Interner, node, key, value| {
+            graph.set_node_attr(node, interner.intern(key), value);
+        };
+        let unit = interner.intern("joule");
+        set_value(
+            &mut graph,
+            &mut interner,
+            candidate,
+            "intervention_unit",
+            Value::Str(unit),
+        );
+        let origin_kind = interner.intern("origin");
+        set_value(
+            &mut graph,
+            &mut interner,
+            origin,
+            "path_kind",
+            Value::Str(origin_kind),
+        );
+        for (transition, times, duration, effort) in [
+            (first_transition, first_times, 2.0, 1.0),
+            (last_transition, &[1.0][..], 1.0, 2.0),
+        ] {
+            set_value(
+                &mut graph,
+                &mut interner,
+                transition,
+                "future_manifold_duration",
+                Value::Float(duration),
+            );
+            set_value(
+                &mut graph,
+                &mut interner,
+                transition,
+                "future_manifold_times",
+                value_list(times),
+            );
+            set_value(
+                &mut graph,
+                &mut interner,
+                transition,
+                "future_manifold_values",
+                if duration == 2.0 {
+                    matrix_value(&[&[0.0], &[0.0]])
+                } else {
+                    matrix_value(&[&[0.0]])
+                },
+            );
+            set_value(
+                &mut graph,
+                &mut interner,
+                transition,
+                "future_manifold_widths",
+                if duration == 2.0 {
+                    matrix_value(&[&[0.0], &[0.0]])
+                } else {
+                    matrix_value(&[&[0.0]])
+                },
+            );
+            set_value(
+                &mut graph,
+                &mut interner,
+                transition,
+                "future_manifold_effort",
+                value_list(&[effort]),
+            );
+            set_value(
+                &mut graph,
+                &mut interner,
+                transition,
+                "intervention_unit",
+                Value::Str(unit),
+            );
+        }
+        for (src, edge, dst) in [
+            (candidate, "has_terminal_path_arrival", last),
+            (last, "parent_path_arrival", first),
+            (first, "parent_path_arrival", origin),
+            (last, "via_transition", last_transition),
+            (first, "via_transition", first_transition),
+            (last, "to_frontier", last_frontier),
+            (first, "to_frontier", first_frontier),
+        ] {
+            graph
+                .insert_edge(src, interner.intern(edge), dst, FxHashMap::default())
+                .unwrap();
+        }
+        (graph, interner, episode, policy, candidate)
+    }
+
+    #[test]
+    fn planner_path_projection_composes_timed_segments_and_effort() {
+        let (graph, mut interner, episode, policy, candidate) =
+            path_projection_fixture(&[1.0, 2.0]);
+        let path = composed_plan_path(&graph, &interner, candidate).expect("valid path");
+        assert_eq!(path.times, vec![1, 2, 3]);
+        assert_eq!(path.values, vec![vec![0.0], vec![0.0], vec![0.0]]);
+        assert_eq!(path.intervention, 3.0);
+        let resolved_field = interner.intern("resolved");
+        let resolved = projection_field(
+            &graph,
+            &interner,
+            episode,
+            policy,
+            candidate,
+            None,
+            resolved_field,
+        )
+        .expect("projection field");
+        assert_eq!(resolved, Value::Float(1.0));
+        let intervention_field = interner.intern("path_intervention");
+        let intervention = projection_field(
+            &graph,
+            &interner,
+            episode,
+            policy,
+            candidate,
+            None,
+            intervention_field,
+        )
+        .expect("path intervention");
+        assert_eq!(intervention, Value::Float(3.0));
+    }
+
+    #[test]
+    fn planner_path_projection_rejects_time_gaps() {
+        let (graph, interner, _episode, _policy, candidate) = path_projection_fixture(&[1.0, 3.0]);
+        assert!(composed_plan_path(&graph, &interner, candidate).is_none());
+    }
+
+    #[test]
+    fn planner_path_projection_rejects_missing_effort_and_mixed_units() {
+        let (mut graph, mut interner, _episode, _policy, candidate) =
+            path_projection_fixture(&[1.0, 2.0]);
+        let terminal_edge = interner.intern("has_terminal_path_arrival");
+        let terminal = graph.neighbours(candidate, Some(terminal_edge))[0];
+        let transition_edge = interner.intern("via_transition");
+        let transition = graph.neighbours(terminal, Some(transition_edge))[0];
+        let effort_attr = interner.intern("future_manifold_effort");
+        graph.set_node_attr(transition, effort_attr, Value::None);
+        assert!(composed_plan_path(&graph, &interner, candidate).is_none());
+
+        let (mut graph, mut interner, _episode, _policy, candidate) =
+            path_projection_fixture(&[1.0, 2.0]);
+        let terminal_edge = interner.intern("has_terminal_path_arrival");
+        let terminal = graph.neighbours(candidate, Some(terminal_edge))[0];
+        let transition_edge = interner.intern("via_transition");
+        let transition = graph.neighbours(terminal, Some(transition_edge))[0];
+        let unit_attr = interner.intern("intervention_unit");
+        let mixed_unit = interner.intern("second");
+        graph.set_node_attr(transition, unit_attr, Value::Str(mixed_unit));
+        assert!(composed_plan_path(&graph, &interner, candidate).is_none());
     }
 
     #[test]

@@ -597,6 +597,98 @@ pub fn categorical_neighbour_threshold(_n: usize) -> i64 {
     2
 }
 
+/// One immutable, individual signature record offered to RecallNearest.
+/// This is deliberately separate from `ShapeIndex`, whose leaves are
+/// clusters and whose most-recent leaf key cannot answer record-level top-k.
+#[derive(Clone, Debug)]
+pub struct RecallCoordinate {
+    pub dimension: String,
+    pub value_kind: String,
+    pub value: Value,
+    pub missing: bool,
+    pub tolerance: f64,
+}
+
+#[derive(Clone, Debug)]
+pub struct RecallRecord {
+    pub record_key: String,
+    pub owner_id: String,
+    pub source_id: String,
+    pub frame_id: Option<String>,
+    pub schema_version: String,
+    pub source_epoch: i64,
+    pub live: bool,
+    pub coordinates: Vec<RecallCoordinate>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RecallCandidate {
+    pub record_key: String,
+    pub distance: i64,
+    pub source_epoch: i64,
+}
+
+/// Bounded exhaustive record recall. A cap hit is reported separately so a
+/// caller cannot mistake a partial scan for the nearest result globally.
+pub fn recall_nearest_records(
+    records: &[RecallRecord],
+    query: &RecallRecord,
+    k: usize,
+    candidate_cap: usize,
+) -> (Vec<RecallCandidate>, usize, bool) {
+    if k == 0 || candidate_cap == 0 { return (Vec::new(), 0, true); }
+    let mut ranked = Vec::new();
+    let mut checked = 0usize;
+    for record in records {
+        if checked >= candidate_cap { break; }
+        checked += 1;
+        if !record.live
+            || record.owner_id != query.owner_id
+            || record.source_id != query.source_id
+            || record.frame_id != query.frame_id
+            || record.schema_version != query.schema_version
+            || record.source_epoch != query.source_epoch
+            || record.coordinates.len() != query.coordinates.len()
+        { continue; }
+        let mut distance = 0i64;
+        let mut dimensions = std::collections::HashSet::new();
+        let mut valid = true;
+        for (stored, wanted) in record.coordinates.iter().zip(&query.coordinates) {
+            if stored.dimension != wanted.dimension
+                || stored.value_kind != wanted.value_kind
+                || !dimensions.insert(wanted.dimension.as_str())
+                || stored.missing != wanted.missing
+                || !wanted.tolerance.is_finite() || wanted.tolerance < 0.0
+            { valid = false; break; }
+            if stored.missing { continue; }
+            let delta = match (&stored.value_kind[..], &stored.value, &wanted.value) {
+                ("finite_number", Value::Int(a), Value::Int(b)) => (*a as f64 - *b as f64).abs(),
+                ("finite_number", Value::Int(a), Value::Float(b)) if b.is_finite() => (*a as f64 - *b).abs(),
+                ("finite_number", Value::Float(a), Value::Int(b)) if a.is_finite() => (*a - *b as f64).abs(),
+                ("finite_number", Value::Float(a), Value::Float(b)) if a.is_finite() && b.is_finite() => (*a - *b).abs(),
+                ("integer" | "ordinal_rank", Value::Int(a), Value::Int(b)) => (*a as i128 - *b as i128).abs() as f64,
+                ("token" | "sequence_ref", a, b) if a == b => 0.0,
+                _ => { valid = false; break; }
+            };
+            if delta > wanted.tolerance || !delta.is_finite() || delta > i64::MAX as f64 {
+                valid = false; break;
+            }
+            // Keep sub-unit numeric distances deterministic in the returned
+            // integer metric by representing distance in micro-units.
+            distance = match distance.checked_add((delta * 1_000_000.0).round() as i64) {
+                Some(total) => total,
+                None => { valid = false; break; }
+            };
+        }
+        if valid && !dimensions.is_empty() {
+            ranked.push(RecallCandidate { record_key: record.record_key.clone(), distance, source_epoch: record.source_epoch });
+        }
+    }
+    ranked.sort_by(|a, b| (a.distance, &a.record_key).cmp(&(b.distance, &b.record_key)));
+    ranked.truncate(k);
+    (ranked, checked, checked == records.len())
+}
+
 /// One cluster (drawer) in the shape index: its category + leaf shape keys
 /// plus the disk paths of its records. The index footprint == #clusters.
 #[derive(Clone, Debug)]
@@ -1282,6 +1374,44 @@ impl MemoryFaculty {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn recall_record(key: &str, owner: &str, epoch: i64, value: i64) -> RecallRecord {
+        RecallRecord {
+            record_key: key.into(), owner_id: owner.into(), source_id: "source".into(), frame_id: Some("f".into()),
+            schema_version: "1".into(), source_epoch: epoch, live: true,
+            coordinates: vec![RecallCoordinate {
+                dimension: "numeric:x".into(), value_kind: "integer".into(),
+                value: Value::Int(value), missing: false, tolerance: 2.0,
+            }],
+        }
+    }
+
+    #[test]
+    fn recall_nearest_is_record_scoped_bounded_and_stably_tied() {
+        let query = recall_record("q", "owner", 7, 10);
+        let records = vec![recall_record("z", "owner", 7, 11), recall_record("a", "owner", 7, 9),
+            recall_record("foreign", "other", 7, 10), recall_record("stale", "owner", 6, 10)];
+        let (got, checked, complete) = recall_nearest_records(&records, &query, 2, 8);
+        assert_eq!(checked, 4);
+        assert!(complete);
+        assert_eq!(got.iter().map(|c| c.record_key.as_str()).collect::<Vec<_>>(), vec!["a", "z"]);
+        assert_eq!(recall_nearest_records(&records, &query, 0, 8).0.len(), 0);
+        let (partial, checked, complete) = recall_nearest_records(&records, &query, 4, 2);
+        assert_eq!(checked, 2);
+        assert!(!complete);
+        assert_eq!(partial.len(), 2);
+    }
+
+    #[test]
+    fn recall_nearest_rejects_dimension_and_missing_mismatches() {
+        let query = recall_record("q", "owner", 7, 10);
+        let mut wrong = recall_record("wrong", "owner", 7, 10);
+        wrong.coordinates[0].dimension = "numeric:y".into();
+        let mut missing = recall_record("missing", "owner", 7, 10);
+        missing.coordinates[0].missing = true;
+        let (got, _, _) = recall_nearest_records(&[wrong, missing], &query, 10, 10);
+        assert!(got.is_empty());
+    }
 
     #[test]
     fn salience_flat_is_zero_varied_is_high() {

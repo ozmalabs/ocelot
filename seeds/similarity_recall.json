@@ -1,0 +1,2383 @@
+{
+  "id": "similarity_recall",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [
+    "cognition_signature"
+  ],
+  "area": "similarity_recall",
+  "description": "Bounded exhaustive record-level recall from typed Observation sources. Candidates settle only with a current exact-verification receipt; all other outcomes hand off to the existing funded ladder.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SimilarityRecallPolicy",
+      "attrs": {
+        "name": "similarity_recall_policy",
+        "enabled": 0.0,
+        "candidate_cap": 256,
+        "k": 8
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_similarity_recall_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {},
+      "provenance": "similarity_recall:policy"
+    }
+  ],
+  "productions": [
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_similarity_recall_policy",
+      "tgt": {
+        "type": "SimilarityRecallPolicy",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_similarity_recall_policy:Agent:SimilarityRecallPolicy"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_similarity_query",
+      "tgt": {
+        "type": "CognitionSignatureQuery",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_similarity_query:Agent:CognitionSignatureQuery"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_signature",
+      "tgt": {
+        "type": "CognitionSignatureDescriptor",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_cognition_signature:Agent:CognitionSignatureDescriptor"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_similarity_recall_result",
+      "tgt": {
+        "type": "SimilarityRecallResult",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_similarity_recall_result:Agent:SimilarityRecallResult"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_similarity_recall_fallback",
+      "tgt": {
+        "type": "SimilarityRecallFallback",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_similarity_recall_fallback:Agent:SimilarityRecallFallback"
+    },
+    {
+      "src": {
+        "type": "SimilarityRecallResult",
+        "var": "src"
+      },
+      "edge_type": "recall_for_query",
+      "tgt": {
+        "type": "CognitionSignatureQuery",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:recall_for_query:SimilarityRecallResult:CognitionSignatureQuery"
+    },
+    {
+      "src": {
+        "type": "SimilarityRecallResult",
+        "var": "src"
+      },
+      "edge_type": "verified_signature",
+      "tgt": {
+        "type": "CognitionSignatureDescriptor",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:verified_signature:SimilarityRecallResult:CognitionSignatureDescriptor"
+    },
+    {
+      "src": {
+        "type": "SimilarityRecallFallback",
+        "var": "src"
+      },
+      "edge_type": "fallback_for_query",
+      "tgt": {
+        "type": "CognitionSignatureQuery",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:fallback_for_query:SimilarityRecallFallback:CognitionSignatureQuery"
+    },
+    {
+      "src": {
+        "type": "CognitionSignatureQuery",
+        "var": "src"
+      },
+      "edge_type": "projects_query_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:projects_query_source:CognitionSignatureQuery:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "CognitionSignatureQuery",
+        "var": "src"
+      },
+      "edge_type": "projects_observation",
+      "tgt": {
+        "type": "Observation",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:projects_observation:CognitionSignatureQuery:Observation"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "observed",
+      "tgt": {
+        "type": "Observation",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:observed:Agent:Observation"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "observed",
+      "tgt": {
+        "type": "ShapeObservation",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:observed:Agent:ShapeObservation"
+    },
+    {
+      "src": {
+        "type": "Observation",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_signature_source:Observation:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "ShapeObservation",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_signature_source:ShapeObservation:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "Observation",
+        "var": "src"
+      },
+      "edge_type": "has_signature_verification_receipt",
+      "tgt": {
+        "type": "CognitionSignatureVerificationReceipt",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_signature_verification_receipt:Observation:CognitionSignatureVerificationReceipt"
+    },
+    {
+      "src": {
+        "type": "ShapeObservation",
+        "var": "src"
+      },
+      "edge_type": "has_signature_verification_receipt",
+      "tgt": {
+        "type": "CognitionSignatureVerificationReceipt",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_signature_verification_receipt:ShapeObservation:CognitionSignatureVerificationReceipt"
+    },
+    {
+      "src": {
+        "type": "CognitionSignatureVerificationReceipt",
+        "var": "src"
+      },
+      "edge_type": "verifies_signature",
+      "tgt": {
+        "type": "CognitionSignatureDescriptor",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:verifies_signature:CognitionSignatureVerificationReceipt:CognitionSignatureDescriptor"
+    },
+    {
+      "src": {
+        "type": "Observation",
+        "var": "src"
+      },
+      "edge_type": "has_similarity_recall_fallback",
+      "tgt": {
+        "type": "SimilarityRecallFallback",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:has_similarity_recall_fallback:Observation:SimilarityRecallFallback"
+    },
+    {
+      "src": {
+        "type": "SimilarityRecallFallback",
+        "var": "src"
+      },
+      "edge_type": "hands_off_to_episode",
+      "tgt": {
+        "type": "ExtendedThinkingEpisode",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "similarity_recall:hands_off_to_episode:SimilarityRecallFallback:ExtendedThinkingEpisode"
+    }
+  ],
+  "rules": [
+    {
+      "name": "sr_project_observed_signature_query",
+      "area": "similarity_recall",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_similarity_recall_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "observed",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_signature_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "schema_version"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_similarity_query",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "observation_key"
+                },
+                "b": {
+                  "type": "ToJsonString",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "key"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "q",
+          "CognitionSignatureQuery",
+          {
+            "query_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "signature_key"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "schema_version": "1",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "live": true,
+            "coordinates": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "coordinates"
+              }
+            },
+            "observation_key": {
+              "__term__": {
+                "type": "ToJsonString",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "key"
+                }
+              }
+            },
+            "k": 8,
+            "candidate_cap": 256,
+            "status": "ready"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_similarity_query",
+          "q",
+          {}
+        ],
+        [
+          "add_edge",
+          "q",
+          "projects_query_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "q",
+          "projects_observation",
+          "obs",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "sr_publish_bounded_candidate_recall",
+      "area": "similarity_recall",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_similarity_recall_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_similarity_query",
+          "q"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_similarity_recall_result",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "observation_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "observation_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "query_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "query_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "result",
+          "SimilarityRecallResult",
+          {
+            "query_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "query_key"
+              }
+            },
+            "query_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "observation_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "observation_key"
+              }
+            },
+            "candidate_scan": {
+              "__term__": {
+                "type": "RecallNearest",
+                "records": {
+                  "type": "MapList",
+                  "source": {
+                    "type": "FilterList",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "ag"
+                      },
+                      "edge_type": "has_cognition_signature",
+                      "any_type": false
+                    },
+                    "var_name": "sig",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "sig"
+                          },
+                          "key": "record_key"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "q"
+                          },
+                          "key": "query_key"
+                        }
+                      }
+                    }
+                  },
+                  "var_name": "sig",
+                  "value": {
+                    "type": "MkDict",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": "record_key"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "record_key"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "owner_id"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "owner_id"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "source_id"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "source_id"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "frame_id"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "frame_id"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "schema_version"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "schema_version"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "source_epoch"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "source_epoch"
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "live"
+                      },
+                      {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "sig"
+                              },
+                              "key": "status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "current"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "sig"
+                              },
+                              "key": "live"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Lit",
+                        "value": "coordinates"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "sig"
+                        },
+                        "key": "coordinates"
+                      }
+                    ]
+                  }
+                },
+                "query": {
+                  "type": "MkDict",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": "record_key"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "query_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "owner_id"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "owner_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "source_id"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "source_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "frame_id"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "frame_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "schema_version"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "schema_version"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "source_epoch"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "source_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "live"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "live"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "coordinates"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "coordinates"
+                    }
+                  ]
+                },
+                "k": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "k"
+                },
+                "candidate_cap": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "candidate_cap"
+                }
+              }
+            },
+            "status": "candidate_only",
+            "requires_verification": true
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_similarity_recall_result",
+          "result",
+          {}
+        ],
+        [
+          "add_edge",
+          "result",
+          "recall_for_query",
+          "q",
+          {}
+        ],
+        [
+          "set_attr",
+          "q",
+          "status",
+          "recalled"
+        ]
+      ]
+    },
+    {
+      "name": "sr_mint_receipt_from_verified_shape_outcome",
+      "area": "similarity_recall",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_similarity_recall_result",
+          "result"
+        ],
+        [
+          "result",
+          "recall_for_query",
+          "q"
+        ],
+        [
+          "q",
+          "projects_observation",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_signature_source",
+          "source"
+        ],
+        [
+          "ag",
+          "has_cognition_signature",
+          "sig"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate_only"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "requires_verification"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "result"
+                },
+                "key": "candidate_scan"
+              },
+              "index": {
+                "type": "Lit",
+                "value": 2
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "FilterList",
+                "source": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "result"
+                    },
+                    "key": "candidate_scan"
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sig"
+                },
+                "key": "record_key"
+              }
+            },
+            "b": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "result"
+                      },
+                      "key": "candidate_scan"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "live"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "coordinates"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "coordinates"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "source_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "source_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "frame_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "frame_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "source_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "qualia_shape"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "outcome_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "outcome_id"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "has_signature_verification_receipt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "record_key"
+                    },
+                    "b": {
+                      "type": "IndexAt",
+                      "seq": {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "result"
+                            },
+                            "key": "candidate_scan"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      },
+                      "index": {
+                        "type": "Lit",
+                        "value": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "observation_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "observation_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "CognitionSignatureVerificationReceipt",
+          {
+            "status": "verified",
+            "record_key": {
+              "__term__": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "result"
+                      },
+                      "key": "candidate_scan"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            },
+            "observation_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "observation_key"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "verifier_kind": "verified_shape_outcome",
+            "verifier_evidence_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "outcome_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_signature_verification_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "verifies_signature",
+          "sig",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "sr_verify_unique_exact_signature_hit",
+      "area": "similarity_recall",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_similarity_recall_result",
+          "result"
+        ],
+        [
+          "result",
+          "recall_for_query",
+          "q"
+        ],
+        [
+          "q",
+          "projects_observation",
+          "obs"
+        ],
+        [
+          "ag",
+          "has_cognition_signature",
+          "sig"
+        ],
+        [
+          "obs",
+          "has_signature_verification_receipt",
+          "receipt"
+        ],
+        [
+          "receipt",
+          "verifies_signature",
+          "sig"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate_only"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "requires_verification"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "result"
+                },
+                "key": "candidate_scan"
+              },
+              "index": {
+                "type": "Lit",
+                "value": 2
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "FilterList",
+                "source": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "result"
+                    },
+                    "key": "candidate_scan"
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "var_name": "candidate",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sig"
+                },
+                "key": "record_key"
+              }
+            },
+            "b": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "result"
+                      },
+                      "key": "candidate_scan"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "coordinates"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "coordinates"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "record_key"
+              }
+            },
+            "b": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "result"
+                      },
+                      "key": "candidate_scan"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "observation_key"
+              }
+            },
+            "b": {
+              "type": "ToJsonString",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "observation_key"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "source_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "result",
+          "status",
+          "accepted_verified_exact"
+        ],
+        [
+          "set_attr",
+          "result",
+          "verified_record_key",
+          {
+            "__term__": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "result"
+                    },
+                    "key": "candidate_scan"
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "result",
+          "verified_signature",
+          "sig",
+          {}
+        ],
+        [
+          "set_attr",
+          "q",
+          "status",
+          "accepted"
+        ],
+        [
+          "set_attr",
+          "obs",
+          "dim_explained",
+          1
+        ],
+        [
+          "set_attr",
+          "obs",
+          "status",
+          "recognized_duplicate"
+        ]
+      ]
+    },
+    {
+      "name": "sr_request_funded_ladder_fallback_on_unverified_miss",
+      "area": "similarity_recall",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_similarity_recall_result",
+          "result"
+        ],
+        [
+          "result",
+          "recall_for_query",
+          "q"
+        ],
+        [
+          "q",
+          "projects_observation",
+          "obs"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate_only"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "result"
+                    },
+                    "key": "requires_verification"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "IndexAt",
+                    "seq": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "result"
+                      },
+                      "key": "candidate_scan"
+                    },
+                    "index": {
+                      "type": "Lit",
+                      "value": 2
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "FilterList",
+                      "source": {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "result"
+                          },
+                          "key": "candidate_scan"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      },
+                      "var_name": "candidate",
+                      "predicate": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "candidate"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 0
+                        }
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "edge_type": "has_signature_verification_receipt",
+                    "any_type": false
+                  },
+                  "var_name": "receipt",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "receipt"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "verified"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "receipt"
+                          },
+                          "key": "record_key"
+                        },
+                        "b": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "IndexAt",
+                            "seq": {
+                              "type": "IndexAt",
+                              "seq": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "result"
+                                },
+                                "key": "candidate_scan"
+                              },
+                              "index": {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            },
+                            "index": {
+                              "type": "Lit",
+                              "value": 0
+                            }
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 0
+                          }
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "receipt"
+                          },
+                          "key": "observation_key"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "q"
+                          },
+                          "key": "observation_key"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "receipt"
+                          },
+                          "key": "source_epoch"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "q"
+                          },
+                          "key": "source_epoch"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "result",
+          "status",
+          "fallback_required"
+        ],
+        [
+          "set_attr",
+          "q",
+          "status",
+          "fallback_required"
+        ],
+        [
+          "add_node",
+          "fallback",
+          "SimilarityRecallFallback",
+          {
+            "query_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "query_key"
+              }
+            },
+            "observation_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "observation_key"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "status": "funded_ladder_required",
+            "funding_required": true
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_similarity_recall_fallback",
+          "fallback",
+          {}
+        ],
+        [
+          "add_edge",
+          "fallback",
+          "fallback_for_query",
+          "q",
+          {}
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_similarity_recall_fallback",
+          "fallback",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "sr_record_fallback_handoff_to_funded_episode",
+      "area": "similarity_recall",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_similarity_recall_fallback",
+          "fallback"
+        ],
+        [
+          "fallback",
+          "fallback_for_query",
+          "query"
+        ],
+        [
+          "query",
+          "projects_observation",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_extended_thinking_episode",
+          "episode"
+        ]
+      ],
+      "where": {
+        "type": "Eq",
+        "a": {
+          "type": "Attr",
+          "node": {
+            "type": "Var",
+            "name": "fallback"
+          },
+          "key": "status"
+        },
+        "b": {
+          "type": "Lit",
+          "value": "funded_ladder_required"
+        }
+      },
+      "effects": [
+        [
+          "set_attr",
+          "fallback",
+          "status",
+          "funded_ladder_opened"
+        ],
+        [
+          "add_edge",
+          "fallback",
+          "hands_off_to_episode",
+          "episode",
+          {}
+        ]
+      ]
+    }
+  ]
+}

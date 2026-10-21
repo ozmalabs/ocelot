@@ -16,7 +16,8 @@ for path in (ROOT, ROOT / "runners" / "dsl" / "python"):
 pytest.importorskip("substrate_rs")
 
 from substrate.boot_core import installed_seeds
-from substrate.boot_profiles import COGNITION_ON_SEEDS, boot_cognition_on
+from substrate.boot_profiles import (COGNITION_ON_SEEDS, boot_cognition_on,
+                                     load_conversation_seed_profile)
 from substrate.seed_loader import manifest_for
 from substrate.world_adapter import WorldAdapter
 from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
@@ -34,6 +35,35 @@ def _nodes(agent, node_type):
         nid for nid in agent.s.nodes()
         if agent.s.node(nid)["type"] == node_type
     ]
+
+
+def _p4_tick(agent):
+    for _ in range(64):
+        if not agent.inner.run_rules(10000):
+            return
+    raise AssertionError("P4 cognition-on graph did not reach a fixpoint")
+
+
+def _p4_regular_window(agent, window_id="profile-denial", epoch=4.0):
+    base = [["cell", 0, 0, "red"], ["cell", 1, 0, "red"],
+            ["cell", 2, 0, "red"], ["cell", 2, 1, "red"]]
+    frames = [base]
+    for ix in range(1, 5):
+        frames.append([["cell", row[1] + ix, row[2], row[3]] for row in base])
+    source = agent.s.add_node("Observation", {
+        "key": f"source:{window_id}", "status": "decoded",
+        "dim_checked": 1, "dim_explained": 0, "decoded_epoch": epoch,
+    })
+    _edge(agent, agent.agent, "observed", source)
+    window = agent.s.add_node("TemporalSequenceWindow", {
+        "window_id": window_id, "owner_id": "agent-root", "source_epoch": epoch,
+        "first_event_id": f"event:{window_id}:0", "last_event_id": f"event:{window_id}:n",
+        "frames": frames, "dim_types": ["pred", "coord:r", "coord:c", "val"],
+        "regular_sampling": True, "status": "ready",
+    })
+    _edge(agent, agent.agent, "has_temporal_window", window)
+    _edge(agent, window, "escalates_observation", source)
+    return window, source
 
 
 def test_default_world_adapter_loads_none_of_cognition_on_seeds():
@@ -98,6 +128,10 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
         ("has_consolidation_scheduler_policy", "ConsolidationSchedulerPolicy"),
         ("has_thinking_budget", "ThinkingBudget"),
         ("has_extended_thinking_policy", "ExtendedThinkingPolicy"),
+        ("has_cognition_planner_policy", "CognitionPlannerPolicy"),
+        ("has_imagined_arbitration_policy", "ImaginedArbitrationPolicy"),
+        ("has_decomposition_completion_policy", "DecompositionCompletionPolicy"),
+        ("has_analog_imagery_policy", "AnalogImageryPolicy"),
     ]
     for edge_type, node_type in expected_edges_and_types:
         targets = list(agent.inner.neighbours(agent.agent, edge_type))
@@ -109,7 +143,239 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
         assert len(matching) >= 1, (
             f"Expected enabled {node_type} reachable via {edge_type} from agent_root"
         )
+    # P4 experimental adapters are cognition-on-only and remain inert by default.
+    for node_type in ("QualiaShapeMintPolicy", "CognitionSignaturePolicy",
+                      "SimilarityRecallPolicy", "CognitionAperturePolicy",
+                      "TemporalEscalationPolicy", "ThoughtManifoldPolicy"):
+        nodes = _nodes(agent, node_type)
+        assert len(nodes) == 1
+        assert agent.s.node(nodes[0])["attrs"].get("enabled") == 0.0
+    manifold_policy = _nodes(agent, "CognitionManifoldPolicy")
+    assert len(manifold_policy) == 1
+    assert agent.s.node(manifold_policy[0])["attrs"].get("enabled") == 0.0
     assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 5
+
+
+def test_p4_default_and_conversation_isolation():
+    p4_only = {"qualia_shape_mint", "cognition_signature", "similarity_recall",
+               "cognition_aperture", "temporal_escalation", "cognition_manifold",
+               "thought_manifold"}
+    default = WorldAdapter()
+    assert p4_only.isdisjoint(installed_seeds(default.s))
+    conversation = WorldAdapter(seeds=())
+    report = load_conversation_seed_profile(conversation)
+    assert report.get("failed") in (None, [])
+    assert p4_only.isdisjoint(installed_seeds(conversation.s))
+    default.close()
+    conversation.close()
+
+
+def test_p5_default_and_conversation_isolation():
+    p5 = {"cognition_planner", "imagined_candidate_arbitration",
+          "decomposition_completion", "analog_imagery"}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p5.isdisjoint(installed_seeds(default.s))
+    assert p5.isdisjoint(installed_seeds(conversation.s))
+    default.close()
+    conversation.close()
+
+
+def test_p5_planner_arbitration_receipt_chain():
+    from tests.test_cognition_multistep_planner_migrated import (
+        _imagined_arbitration_case, _run_to_fixpoint,
+    )
+    agent = boot_cognition_on()
+    for node_type in ("CognitionPlannerPolicy", "ImaginedArbitrationPolicy",
+                      "DecompositionCompletionPolicy", "AnalogImageryPolicy"):
+        enabled = [node for node in _nodes(agent, node_type)
+                   if agent.s.node(node)["attrs"].get("enabled") == 1.0]
+        assert enabled, f"cognition-on profile did not enable {node_type}"
+    # Existing focused mechanism fixture supplies an exact two-step model;
+    # this integration gate confirms the same planner/arbitration closure is
+    # available in the cognition-on profile.
+    adapter, request, context, _policy = _imagined_arbitration_case([
+        ("s0", "prepare", "middle", 2), ("middle", "finish", "goal", 2),
+    ])
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    revision = adapter.inner.neighbours(request, "has_system_two_decision_revision")[0]
+    action_request = adapter.inner.neighbours(revision, "has_action_request")[0]
+    attrs = adapter.s.node(action_request)["attrs"]
+    adapter.inner.set_attr(action_request, "status", "emitted")
+    adapter.inner.set_attr(action_request, "sink_receipt_id", "p5-profile-receipt")
+    authorization = adapter.s.add_node("ActionAuthorization", {
+        "status": "consumed", "request_id": attrs["request_id"],
+        "source_epoch": attrs["source_epoch"], "action_key": attrs["action_key"],
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_authorization", authorization)
+    observation = adapter.s.add_node("ImaginedActionObservation", {
+        "status": "verified", "action_request_id": attrs["request_id"],
+        "source_epoch": attrs["source_epoch"], "sink_receipt_id": "p5-profile-receipt",
+        "observed_state_key": "middle",
+    })
+    adapter.inner.add_edge_unchecked(action_request, "has_action_observation", observation)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "grounded"
+    assert adapter.s.node(context)["attrs"]["status"] == "committed"
+    adapter.close()
+    agent.close()
+
+
+def test_p5_stop_at_native_sink():
+    from tests.test_response_inhibition_migrated import _native_graph, _request, _tick
+    substrate, agent = _native_graph(enabled=True)
+    request, authorization, stop = _request(substrate, agent)
+    _tick(substrate)
+    assert substrate.node(request)["attrs"]["status"] == "withheld"
+    assert substrate.node(authorization)["attrs"]["status"] == "revoked"
+    assert substrate.node(stop)["attrs"]["status"] == "withheld"
+
+
+def test_p4_budget_shared():
+    agent = boot_cognition_on()
+    budgets = [node for node in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+               if agent.s.node(node)["type"] == "ThinkingBudget"
+               and agent.s.node(node)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    budget = budgets[0]
+    agent.s.set_attr(budget, "enabled", 1.0)
+    agent.s.set_attr(budget, "remaining", 1.0)
+    agent.s.set_attr(budget, "refill_per_epoch", 0.0)
+    agent.s.set_attr(budget, "last_refill_epoch", 4.0)
+    mode = _nodes(agent, "NetworkModeState")[0]
+    agent.s.set_attr(mode, "epoch", 4.0)
+
+    # A P4 Observer question consumes one unit from the profile's shared node.
+    policy = _nodes(agent, "CognitionAperturePolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    observer = agent.s.add_node("Observer", {
+        "name": "profile-shared-budget", "resolves": ["pred"], "ap_full": ["pred"],
+        "ap_scope_n": 0.0, "ap_gen": 0.0, "ap_chosen_dwell": 1.0,
+        "ap_question_after": 1.0,
+    })
+    aperture = agent.s.add_node("Aperture", {"name": "chosen", "resolves": []})
+    _edge(agent, observer, "chose_aperture", aperture)
+    source = agent.s.add_node("CognitionApertureSource", {
+        "adapter_id": "reading", "source_key": "shared-budget-source",
+        "owner_id": "profile-shared-budget", "frame_id": "frame:shared",
+        "source_epoch": 4.0, "value_kind": "integer", "value": 1,
+        "missing": False, "tolerance": 0, "authority": "chosen",
+        "voi_status": "positive", "voi_evidence_id": "voi:shared",
+        "dimension_id": "observer:reading",
+    })
+    _edge(agent, agent.agent, "has_cognition_aperture_source", source)
+    _edge(agent, source, "applies_to_observer", observer)
+    _p4_tick(agent)
+    aperture_requests = [node for node in _nodes(agent, "ThinkingBudgetRequest")
+                         if agent.s.node(node)["attrs"].get("requester_kind")
+                         == "cognition_aperture_probe"]
+    assert len(aperture_requests) == 1
+    assert _nodes(agent, "ThinkingBudgetDenial") == []
+    assert agent.s.node(budget)["attrs"]["remaining"] == pytest.approx(0.0)
+    assert list(agent.inner.neighbours(aperture_requests[0], "draws_on_thinking_budget")) == [budget]
+
+    # Temporal escalation is then denied against that same exhausted budget.
+    temporal_policy = _nodes(agent, "TemporalEscalationPolicy")[0]
+    agent.s.set_attr(temporal_policy, "enabled", 1.0)
+    window, _source = _p4_regular_window(agent, epoch=4.0)
+    _p4_tick(agent)
+    temporal_requests = [node for node in _nodes(agent, "ThinkingBudgetRequest")
+                         if agent.s.node(node)["attrs"].get("requester_kind")
+                         == "temporal_escalation"]
+    assert len(temporal_requests) == 1
+    assert agent.s.node(temporal_requests[0])["attrs"]["status"] == "denied"
+    assert list(agent.inner.neighbours(temporal_requests[0], "draws_on_thinking_budget")) == [budget]
+    assert agent.s.node(window)["attrs"]["status"] != "time_inferred"
+    agent.close()
+
+
+def test_p4_profile_chain():
+    agent = boot_cognition_on()
+    mode = _nodes(agent, "NetworkModeState")[0]
+    agent.s.set_attr(mode, "epoch", 4.0)
+    budget = next(node for node in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+                  if agent.s.node(node)["type"] == "ThinkingBudget"
+                  and agent.s.node(node)["attrs"].get("enabled") == 1.0)
+    for node_type in ("QualiaShapeMintPolicy", "CognitionSignaturePolicy",
+                      "SimilarityRecallPolicy"):
+        policy = _nodes(agent, node_type)[0]
+        agent.s.set_attr(policy, "enabled", 1.0)
+    agent.s.set_attr(budget, "enabled", 1.0)
+    agent.s.set_attr(budget, "remaining", 8.0)
+    agent.s.set_attr(budget, "refill_per_epoch", 0.0)
+    agent.s.set_attr(budget, "last_refill_epoch", 4.0)
+
+    observation = agent.s.add_node("Observation", {
+        "key": "p4-profile-chain", "status": "decoded", "outcome_status": "verified",
+        "outcome_id": "p4-profile-chain-outcome", "coordinate": [0, 1, 5, 14],
+        "order": 2, "owner_id": "profile-owner", "frame_id": "profile-frame",
+        "source_epoch": 4.0, "decoded_epoch": 4.0, "valence": 1.0,
+        "reading": "profile-verified-reading",
+    })
+    _edge(agent, agent.agent, "observed", observation)
+    _p4_tick(agent)
+
+    shapes = _nodes(agent, "QualiaShape")
+    assert len(shapes) == 1
+    assert agent.s.node(shapes[0])["attrs"]["evidence_status"] == "verified"
+    descriptors = [node for node in _nodes(agent, "CognitionSignatureDescriptor")
+                   if agent.s.node(node)["attrs"].get("source_id") == "qualia_shape"
+                   and agent.s.node(node)["attrs"].get("status") == "current"]
+    assert descriptors
+    results = [node for node in _nodes(agent, "SimilarityRecallResult")
+               if agent.s.node(node)["attrs"].get("observation_key") == '"p4-profile-chain"']
+    assert len(results) == 1
+    result_attrs = agent.s.node(results[0])["attrs"]
+    assert result_attrs["status"] == "accepted_verified_exact"
+    assert list(agent.inner.neighbours(results[0], "verified_signature"))
+    receipts = [node for node in _nodes(agent, "CognitionSignatureVerificationReceipt")
+                if agent.s.node(node)["attrs"].get("verifier_kind")
+                == "verified_shape_outcome"]
+    assert receipts
+
+    # Feed a measured numeric GWM transition through the native manifold path.
+    manifold_policy = _nodes(agent, "CognitionManifoldPolicy")[0]
+    episode = _nodes(agent, "CognitionManifoldEpisode")[0]
+    agent.s.set_attr(manifold_policy, "enabled", 1.0)
+    agent.s.set_attr(manifold_policy, "future_manifold_projection_budget", 2.0)
+    agent.s.set_attr(manifold_policy, "future_manifold_physical_horizon", 2.0)
+    agent.s.set_attr(episode, "future_manifold_target", [[1.0], [2.0]])
+    agent.s.set_attr(episode, "future_manifold_bounds", [[0.0], [0.0]])
+    request = agent.s.add_node("SimulationRequest", {"status": "completed", "horizon": 2.0})
+    trajectory = agent.s.add_node("PredictionTrajectory", {})
+    state = agent.s.add_node("PredictedBeliefState", {"uncertainty": 0.0})
+    transition = agent.s.add_node("TransitionHypothesis", {
+        "future_manifold_supported": True, "transition_id": "profile-transition",
+        "model_id": "profile-model", "model_epoch": 4,
+        "future_manifold_values": [[1.0], [2.0]], "future_manifold_times": [1, 2],
+        "future_manifold_widths": [[0.0], [0.0]], "future_manifold_effort": [0.0, 0.0],
+    })
+    for src, edge, tgt in ((agent.agent, "has_simulation_request", request),
+                           (request, "has_prediction_trajectory", trajectory),
+                           (trajectory, "has_predicted_belief_state", state),
+                           (state, "generated_by_transition", transition)):
+        _edge(agent, src, edge, tgt)
+    _p4_tick(agent)
+    candidates = _nodes(agent, "CognitionManifoldCandidate")
+    assert len(candidates) == 1
+    assert agent.s.node(candidates[0])["attrs"]["projection_resolved"] == 1.0
+    assert len(_nodes(agent, "CognitionManifoldFeasibilityReceipt")) == 1
+
+    # The same profile denies a sealed temporal rung after the shared budget is exhausted.
+    temporal_policy = _nodes(agent, "TemporalEscalationPolicy")[0]
+    agent.s.set_attr(temporal_policy, "enabled", 1.0)
+    agent.s.set_attr(budget, "remaining", 0.0)
+    window, source = _p4_regular_window(agent, window_id="profile-chain-denied", epoch=4.0)
+    _p4_tick(agent)
+    temporal_requests = [node for node in _nodes(agent, "ThinkingBudgetRequest")
+                         if agent.s.node(node)["attrs"].get("requester_kind")
+                         == "temporal_escalation"]
+    assert len(temporal_requests) == 1
+    assert agent.s.node(temporal_requests[0])["attrs"]["status"] == "denied"
+    assert agent.s.node(window)["attrs"]["status"] != "time_inferred"
+    assert agent.s.node(source)["attrs"].get("dim_explained") == 0
+    agent.close()
 
 
 def test_cognition_on_runs_a_funded_dim_grain_episode():

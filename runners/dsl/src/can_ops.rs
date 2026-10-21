@@ -30,9 +30,10 @@
 //! Substrate owns the interner; we don't).
 
 use crate::graph::{EdgeIdx, NodeID, TypedGraph};
-use crate::sym::Sym;
+use crate::sym::{Interner, Sym};
 use crate::value::Value;
 use rustc_hash::FxHashMap;
+use std::sync::Arc;
 
 /// Bundle of interned Sym keys + edge types this module reads. Built
 /// once by the caller from the live interner and passed in to every op.
@@ -301,4 +302,606 @@ pub fn apply_evidence_h(
         keys.external_field_attr,
         current + alpha * evidence,
     );
+}
+
+// ============================================================================
+// Detached finite SCM evaluation (P5.E3/R1).
+// ============================================================================
+
+#[derive(Clone)]
+struct ScmEquation {
+    target: String,
+    parents: Vec<String>,
+    exogenous: Vec<String>,
+    rows: Vec<(Vec<(String, Value)>, Value)>,
+}
+
+fn scm_seq(value: &Value) -> Option<&[Value]> {
+    match value {
+        Value::List(items) | Value::Tuple(items) => Some(items.as_slice()),
+        _ => None,
+    }
+}
+
+fn scm_dict<'a>(value: &'a Value) -> Option<&'a [(Value, Value)]> {
+    match value {
+        Value::Dict(items) => Some(items.as_ref()),
+        _ => None,
+    }
+}
+
+fn scm_string(value: &Value, interner: &Interner) -> Option<String> {
+    match value {
+        Value::Str(value) => Some(interner.resolve(*value).to_owned()),
+        _ => None,
+    }
+}
+
+fn scm_get<'a>(value: &'a Value, key: &str, interner: &Interner) -> Option<&'a Value> {
+    scm_dict(value)?.iter().find_map(|(k, v)| {
+        (scm_string(k, interner).as_deref() == Some(key)).then_some(v)
+    })
+}
+
+fn scm_record(fields: Vec<(&str, Value)>) -> Value {
+    Value::Dict(Arc::from(fields.into_iter().map(|(key, value)| {
+        (Value::Str(crate::sym::Sym::reserved(key).expect("SCM result symbols are reserved")), value)
+    }).collect::<Vec<_>>()))
+}
+
+fn scm_strings(value: &Value, interner: &Interner) -> Option<Vec<String>> {
+    scm_seq(value)?.iter().map(|item| scm_string(item, interner)).collect()
+}
+
+fn scm_unknown(interner: &Interner, reason: &str, model: &Value) -> Value {
+    let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
+    let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
+    let status = Value::Str(crate::sym::Sym::reserved("unknown").expect("reserved SCM status"));
+    let reason = Value::Str(crate::sym::Sym::reserved(reason).expect("reserved SCM reason"));
+    let empty = || Value::List(Arc::new(smallvec::SmallVec::new()));
+    scm_record(vec![
+        ("status", status),
+        ("values", empty()),
+        ("assumptions", empty()),
+        ("source_ids", source_ids), ("source_epoch", source_epoch),
+        ("reason", reason),
+    ])
+}
+
+fn scm_invalid(interner: &Interner, reason: &str, model: &Value) -> Value {
+    let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
+    let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
+    let status = Value::Str(crate::sym::Sym::reserved("invalid").expect("reserved SCM status"));
+    let reason = Value::Str(crate::sym::Sym::reserved(reason).expect("reserved SCM reason"));
+    let empty = || Value::List(Arc::new(smallvec::SmallVec::new()));
+    scm_record(vec![
+        ("status", status),
+        ("values", empty()),
+        ("assumptions", empty()),
+        ("source_ids", source_ids), ("source_epoch", source_epoch),
+        ("reason", reason),
+    ])
+}
+
+fn scm_parse_named_values(value: &Value, interner: &Interner) -> Option<Vec<(String, Value)>> {
+    let mut result = Vec::new();
+    for (key, item) in scm_dict(value)? {
+        result.push((scm_string(key, interner)?, item.clone()));
+    }
+    result.sort_by(|a, b| a.0.cmp(&b.0));
+    if result.windows(2).any(|pair| pair[0].0 == pair[1].0) {
+        return None;
+    }
+    Some(result)
+}
+
+fn scm_assignment_matches(
+    row: &[(String, Value)],
+    values: &[(String, Value)],
+) -> bool {
+    row.len() == values.len() && row.iter().all(|(key, value)| {
+        values.iter().any(|(other_key, other_value)| key == other_key && value == other_value)
+    })
+}
+
+fn scm_eval_one(
+    order: &[String],
+    equations: &[ScmEquation],
+    exogenous: &[(String, Value)],
+    intervention: &[(String, Value)],
+) -> Option<Vec<(String, Value)>> {
+    let mut values = exogenous.to_vec();
+    for target in order {
+        if let Some((_, forced)) = intervention.iter().find(|(key, _)| key == target) {
+            values.push((target.clone(), forced.clone()));
+            continue;
+        }
+        let equation = equations.iter().find(|equation| &equation.target == target)?;
+        let mut inputs = Vec::new();
+        for key in equation.parents.iter().chain(equation.exogenous.iter()) {
+            inputs.push((key.clone(), values.iter().find(|(k, _)| k == key)?.1.clone()));
+        }
+        let output = equation.rows.iter().find(|(row, _)| scm_assignment_matches(row, &inputs))?.1.clone();
+        values.push((target.clone(), output));
+    }
+    Some(values)
+}
+
+fn scm_valid_backdoor_adjustment(
+    treatment: &str,
+    outcome: &str,
+    adjustment: &[String],
+    equations: &[ScmEquation],
+) -> bool {
+    if adjustment.iter().any(|id| id == treatment || id == outcome)
+        || adjustment.iter().collect::<rustc_hash::FxHashSet<_>>().len() != adjustment.len()
+    {
+        return false;
+    }
+    let mut edges = Vec::new();
+    for equation in equations {
+        edges.extend(equation.parents.iter().map(|parent| (parent.clone(), equation.target.clone())));
+        edges.extend(equation.exogenous.iter().map(|parent| (parent.clone(), equation.target.clone())));
+    }
+    let known: rustc_hash::FxHashSet<&str> = edges.iter()
+        .flat_map(|(a, b)| [a.as_str(), b.as_str()])
+        .chain([treatment, outcome])
+        .collect();
+    if adjustment.iter().any(|id| !known.contains(id.as_str())) { return false; }
+
+    // The backdoor graph removes all outgoing treatment edges. A treatment
+    // descendant is forbidden independently of its numeric effect.
+    let mut descendants = rustc_hash::FxHashSet::default();
+    let mut frontier = vec![treatment.to_owned()];
+    while let Some(parent) = frontier.pop() {
+        for (from, to) in &edges {
+            if from == &parent && descendants.insert(to.clone()) { frontier.push(to.clone()); }
+        }
+    }
+    if adjustment.iter().any(|id| descendants.contains(id)) { return false; }
+    let backdoor: Vec<_> = edges.into_iter().filter(|(from, _)| from != treatment).collect();
+    let mut parents: FxHashMap<&str, Vec<&str>> = FxHashMap::default();
+    for (from, to) in &backdoor { parents.entry(to).or_default().push(from); }
+
+    let mut ancestral = rustc_hash::FxHashSet::default();
+    let mut todo = vec![treatment.to_owned(), outcome.to_owned()];
+    todo.extend(adjustment.iter().cloned());
+    while let Some(node) = todo.pop() {
+        if !ancestral.insert(node.clone()) { continue; }
+        if let Some(node_parents) = parents.get(node.as_str()) {
+            todo.extend(node_parents.iter().map(|parent| (*parent).to_owned()));
+        }
+    }
+
+    // Moralize the ancestral graph, remove conditioned vertices, then search
+    // for a treatment-outcome path. This is exact d-separation for a finite DAG.
+    let mut undirected: FxHashMap<String, rustc_hash::FxHashSet<String>> = FxHashMap::default();
+    for (from, to) in &backdoor {
+        if ancestral.contains(from) && ancestral.contains(to) {
+            undirected.entry(from.clone()).or_default().insert(to.clone());
+            undirected.entry(to.clone()).or_default().insert(from.clone());
+        }
+    }
+    for child in &ancestral {
+        if let Some(node_parents) = parents.get(child.as_str()) {
+            for (i, a) in node_parents.iter().enumerate() {
+                if !ancestral.contains(*a) { continue; }
+                for b in node_parents.iter().skip(i + 1) {
+                    if !ancestral.contains(*b) { continue; }
+                    undirected.entry((*a).to_owned()).or_default().insert((*b).to_owned());
+                    undirected.entry((*b).to_owned()).or_default().insert((*a).to_owned());
+                }
+            }
+        }
+    }
+    let blocked: rustc_hash::FxHashSet<&str> = adjustment.iter().map(String::as_str).collect();
+    let mut seen = rustc_hash::FxHashSet::default();
+    let mut todo = vec![treatment.to_owned()];
+    while let Some(node) = todo.pop() {
+        if node == outcome { return false; }
+        if !seen.insert(node.clone()) { continue; }
+        if let Some(neighbors) = undirected.get(&node) {
+            todo.extend(neighbors.iter().filter(|neighbor| {
+                !blocked.contains(neighbor.as_str()) && !seen.contains(*neighbor)
+            }).cloned());
+        }
+    }
+    true
+}
+
+/// Evaluate a finite SCM over detached Value records. There is deliberately
+/// no graph argument here: intervention is equation replacement, not mutation.
+pub fn scm_intervene(
+    model: &Value,
+    query: &Value,
+    intervention_value: &Value,
+    assignments_value: &Value,
+    assignment_cap_value: &Value,
+    interner: &Interner,
+) -> Value {
+    let Some(cap) = (match assignment_cap_value { Value::Int(n) => usize::try_from(*n).ok(), _ => None }) else {
+        return scm_invalid(interner, "assignment_cap_must_be_positive_integer", model);
+    };
+    if cap == 0 { return scm_invalid(interner, "assignment_cap_must_be_positive", model); }
+    if cap > 4096 { return scm_unknown(interner, "assignment_cap_exceeds_4096", model); }
+
+    let Some(kind) = scm_get(query, "kind", interner).and_then(|v| scm_string(v, interner)) else {
+        return scm_invalid(interner, "query_kind_missing_or_invalid", model);
+    };
+    if !matches!(kind.as_str(), "effect" | "condition" | "unit_counterfactual" | "adjustment") {
+        return scm_invalid(interner, "unsupported_query_kind", model);
+    }
+    let Some(outcome) = scm_get(query, "outcome", interner).and_then(|v| scm_string(v, interner)) else {
+        return scm_invalid(interner, "query_outcome_missing_or_invalid", model);
+    };
+
+    let Some(variable_values) = scm_get(model, "variables", interner).and_then(scm_seq) else {
+        return scm_invalid(interner, "variables_missing_or_invalid", model);
+    };
+    if variable_values.is_empty() { return scm_unknown(interner, "empty_endogenous_model", model); }
+    if variable_values.len() > 16 { return scm_unknown(interner, "endogenous_variable_bound_exceeded", model); }
+    let mut domains: Vec<(String, Vec<Value>)> = Vec::new();
+    for variable in variable_values {
+        let Some(id) = scm_get(variable, "id", interner).and_then(|v| scm_string(v, interner)) else {
+            return scm_invalid(interner, "variable_id_missing", model);
+        };
+        let Some(domain) = scm_get(variable, "domain", interner).and_then(scm_seq) else {
+            return scm_invalid(interner, "variable_domain_missing", model);
+        };
+        if domain.is_empty() || domain.len() > 8 { return scm_unknown(interner, "variable_domain_bound_exceeded", model); }
+        if domains.iter().any(|(known, _)| known == &id) { return scm_invalid(interner, "duplicate_variable_id", model); }
+        domains.push((id, domain.to_vec()));
+    }
+    let Some(exogenous_values) = scm_get(model, "exogenous", interner).and_then(scm_seq) else {
+        return scm_invalid(interner, "exogenous_variables_missing", model);
+    };
+    let mut exogenous_domains: Vec<(String, Vec<Value>)> = Vec::new();
+    for variable in exogenous_values {
+        let Some(id) = scm_get(variable, "id", interner).and_then(|v| scm_string(v, interner)) else {
+            return scm_invalid(interner, "exogenous_id_missing", model);
+        };
+        let Some(domain) = scm_get(variable, "domain", interner).and_then(scm_seq) else {
+            return scm_invalid(interner, "exogenous_domain_missing", model);
+        };
+        if domain.is_empty() || domain.len() > 8 { return scm_unknown(interner, "exogenous_domain_bound_exceeded", model); }
+        if domains.iter().any(|(known, _)| known == &id) || exogenous_domains.iter().any(|(known, _)| known == &id) {
+            return scm_invalid(interner, "duplicate_variable_id", model);
+        }
+        exogenous_domains.push((id, domain.to_vec()));
+    }
+    if !domains.iter().any(|(id, _)| id == &outcome) { return scm_invalid(interner, "outcome_not_endogenous", model); }
+
+    let Some(equation_values) = scm_get(model, "equations", interner).and_then(scm_seq) else {
+        return scm_invalid(interner, "equations_missing_or_invalid", model);
+    };
+    if equation_values.len() != domains.len() { return scm_unknown(interner, "incomplete_equation_set", model); }
+    let mut equations = Vec::new();
+    for equation in equation_values {
+        let Some(target) = scm_get(equation, "target", interner).and_then(|v| scm_string(v, interner)) else {
+            return scm_invalid(interner, "equation_target_missing", model);
+        };
+        if !domains.iter().any(|(id, _)| id == &target) || equations.iter().any(|e: &ScmEquation| e.target == target) {
+            return scm_invalid(interner, "unknown_or_duplicate_equation_target", model);
+        }
+        let Some(parents) = scm_get(equation, "parents", interner).and_then(|v| scm_strings(v, interner)) else {
+            return scm_invalid(interner, "equation_parents_invalid", model);
+        };
+        let Some(used_exogenous) = scm_get(equation, "exogenous", interner).and_then(|v| scm_strings(v, interner)) else {
+            return scm_invalid(interner, "equation_exogenous_invalid", model);
+        };
+        if parents.iter().any(|id| !domains.iter().any(|(known, _)| known == id) || id == &target)
+            || used_exogenous.iter().any(|id| !exogenous_domains.iter().any(|(known, _)| known == id)) {
+            return scm_invalid(interner, "equation_references_unknown_variable", model);
+        }
+        let Some(rows) = scm_get(equation, "rows", interner).and_then(scm_seq) else {
+            return scm_invalid(interner, "equation_rows_invalid", model);
+        };
+        let mut parsed_rows: Vec<(Vec<(String, Value)>, Value)> = Vec::new();
+        for row in rows {
+            let Some(inputs) = scm_get(row, "inputs", interner).and_then(|v| scm_parse_named_values(v, interner)) else {
+                return scm_invalid(interner, "equation_row_inputs_invalid", model);
+            };
+            let Some(output) = scm_get(row, "value", interner).cloned() else {
+                return scm_invalid(interner, "equation_row_value_missing", model);
+            };
+            if inputs.len() != parents.len() + used_exogenous.len()
+                || inputs.iter().any(|(id, value)| {
+                    if let Some((_, domain)) = domains.iter().find(|(known, _)| known == id) {
+                        !parents.contains(id) || !domain.contains(value)
+                    } else if let Some((_, domain)) = exogenous_domains.iter().find(|(known, _)| known == id) {
+                        !used_exogenous.contains(id) || !domain.contains(value)
+                    } else { true }
+                })
+                || domains.iter().find(|(id, _)| id == &target).is_some_and(|(_, d)| !d.contains(&output)) {
+                return scm_invalid(interner, "equation_row_out_of_domain_or_wrong_inputs", model);
+            }
+            if parsed_rows.iter().any(|(old, _)| scm_assignment_matches(old, &inputs)) {
+                return scm_invalid(interner, "duplicate_equation_row", model);
+            }
+            parsed_rows.push((inputs, output));
+        }
+        let expected_rows = parents.iter().chain(used_exogenous.iter()).try_fold(1usize, |n, id| {
+            let size = domains.iter().chain(exogenous_domains.iter()).find(|(known, _)| known == id)?.1.len();
+            n.checked_mul(size)
+        });
+        let Some(expected_rows) = expected_rows else { return scm_unknown(interner, "equation_table_bound_exceeded", model); };
+        if expected_rows > cap { return scm_unknown(interner, "equation_table_bound_exceeded", model); }
+        if parsed_rows.len() != expected_rows { return scm_unknown(interner, "incomplete_equation_table", model); }
+        equations.push(ScmEquation { target, parents, exogenous: used_exogenous, rows: parsed_rows });
+    }
+
+    let mut order = Vec::new();
+    while order.len() < domains.len() {
+        let next = equations.iter().find(|equation| !order.contains(&equation.target)
+            && equation.parents.iter().all(|parent| order.contains(parent))
+            && equation.exogenous.iter().all(|id| exogenous_domains.iter().any(|(known, _)| known == id)))
+            .map(|equation| equation.target.clone());
+        let Some(next) = next else { return scm_unknown(interner, "cyclic_or_unresolved_model", model); };
+        order.push(next);
+    }
+
+    let Some(intervention) = scm_parse_named_values(intervention_value, interner) else {
+        return scm_invalid(interner, "intervention_not_a_dict", model);
+    };
+    if intervention.iter().any(|(id, value)| !domains.iter().any(|(known, domain)| known == id && domain.contains(value))) {
+        return scm_invalid(interner, "intervention_out_of_domain", model);
+    }
+    let Some(assignments) = scm_seq(assignments_value) else { return scm_invalid(interner, "exogenous_assignments_not_a_list", model); };
+    if assignments.is_empty() { return scm_unknown(interner, "empty_exogenous_assignment_set", model); }
+    if assignments.len() > cap { return scm_unknown(interner, "assignment_bound_exceeded", model); }
+    let mut parsed_assignments = Vec::new();
+    for assignment in assignments {
+        let Some(parsed) = scm_parse_named_values(assignment, interner) else { return scm_invalid(interner, "exogenous_assignment_invalid", model); };
+        if parsed.len() != exogenous_domains.len() || parsed.iter().any(|(id, value)| {
+            !exogenous_domains.iter().any(|(known, domain)| known == id && domain.contains(value))
+        }) { return scm_invalid(interner, "exogenous_assignment_out_of_domain", model); }
+        if parsed_assignments.iter().any(|old: &Vec<(String, Value)>| scm_assignment_matches(old, &parsed)) {
+            return scm_invalid(interner, "duplicate_exogenous_assignment", model);
+        }
+        parsed_assignments.push(parsed);
+    }
+
+    let mut output_values = Vec::new();
+    if kind == "adjustment" {
+        if intervention.len() != 1 {
+            return scm_invalid(interner, "adjustment_requires_one_treatment", model);
+        }
+        let treatment = &intervention[0].0;
+        let treatment_value = &intervention[0].1;
+        let adjustment = scm_get(query, "adjustment", interner)
+            .and_then(|value| scm_strings(value, interner)).unwrap_or_default();
+        if !scm_valid_backdoor_adjustment(treatment, &outcome, &adjustment, &equations) {
+            return scm_unknown(interner, "invalid_backdoor_adjustment", model);
+        }
+        let mut strata: Vec<(Vec<Value>, usize, usize, Vec<Value>)> = Vec::new();
+        for exogenous in &parsed_assignments {
+            let Some(result) = scm_eval_one(&order, &equations, exogenous, &[]) else {
+                return scm_unknown(interner, "equation_evaluation_failed", model);
+            };
+            let Some(observed_treatment) = result.iter().find(|(id, _)| id == treatment).map(|(_, v)| v) else {
+                return scm_unknown(interner, "outcome_unavailable", model);
+            };
+            let Some(observed_outcome) = result.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()) else {
+                return scm_unknown(interner, "outcome_unavailable", model);
+            };
+            let mut stratum = Vec::new();
+            for id in &adjustment {
+                let value = exogenous.iter().find(|(name, _)| name == id)
+                    .or_else(|| result.iter().find(|(name, _)| name == id)).map(|(_, v)| v.clone());
+                let Some(value) = value else { return scm_invalid(interner, "adjustment_value_missing", model); };
+                stratum.push(value);
+            }
+            let row = strata.iter_mut().find(|(known, _, _, _)| known == &stratum);
+            let row = if let Some(row) = row { row } else {
+                strata.push((stratum, 0, 0, Vec::new()));
+                strata.last_mut().expect("just pushed stratum")
+            };
+            row.1 += 1;
+            if observed_treatment == treatment_value {
+                row.2 += 1;
+                row.3.push(observed_outcome);
+            }
+        }
+        for (stratum, population_count, selected_count, outcomes) in strata {
+            if selected_count == 0 { return scm_unknown(interner, "positivity_violation", model); }
+            let weight = population_count as f64 / parsed_assignments.len() as f64;
+            let per_sample_weight = weight / selected_count as f64;
+            let stratum = Value::Tuple(Arc::new(stratum.into()));
+            for outcome_value in outcomes {
+                output_values.push(Value::Tuple(Arc::new(smallvec::smallvec![
+                    stratum.clone(), Value::Float(per_sample_weight), outcome_value,
+                ])));
+            }
+        }
+    } else {
+      for exogenous in &parsed_assignments {
+        match kind.as_str() {
+            "effect" => {
+                let Some(result) = scm_eval_one(&order, &equations, exogenous, &intervention) else {
+                    return scm_unknown(interner, "equation_evaluation_failed", model);
+                };
+                let Some(value) = result.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()) else {
+                    return scm_unknown(interner, "outcome_unavailable", model);
+                };
+                output_values.push(value);
+            }
+            "condition" => {
+                let Some(result) = scm_eval_one(&order, &equations, exogenous, &[]) else {
+                    return scm_unknown(interner, "equation_evaluation_failed", model);
+                };
+                if intervention.iter().all(|(id, expected)| result.iter().any(|(key, value)| key == id && value == expected)) {
+                    let Some(value) = result.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()) else {
+                        return scm_unknown(interner, "outcome_unavailable", model);
+                    };
+                    output_values.push(value);
+                }
+            }
+            "unit_counterfactual" => {
+                let Some(factual) = scm_eval_one(&order, &equations, exogenous, &[]) else {
+                    return scm_unknown(interner, "factual_evaluation_failed", model);
+                };
+                let Some(counterfactual) = scm_eval_one(&order, &equations, exogenous, &intervention) else {
+                    return scm_unknown(interner, "counterfactual_evaluation_failed", model);
+                };
+                let factual = factual.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()).unwrap_or(Value::None);
+                let counterfactual = counterfactual.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()).unwrap_or(Value::None);
+                output_values.push(scm_record(vec![("factual", factual), ("counterfactual", counterfactual)]));
+            }
+            _ => unreachable!(),
+        }
+      }
+    }
+    let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
+    let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
+    let assumption = match kind.as_str() {
+        "effect" => "uniform_exogenous_assignments",
+        "adjustment" => "valid_backdoor_adjustment",
+        _ => "shared_supplied_exogenous_assignments",
+    };
+    let status = Value::Str(crate::sym::Sym::reserved("identified").expect("reserved SCM status"));
+    let assumption = Value::Str(crate::sym::Sym::reserved(assumption).expect("reserved SCM assumption"));
+    scm_record(vec![
+        ("status", status),
+        ("values", Value::List(Arc::new(output_values.into()))),
+        ("assumptions", Value::List(Arc::new(smallvec::smallvec![assumption]))),
+        ("source_ids", source_ids), ("source_epoch", source_epoch), ("reason", Value::None),
+    ])
+}
+
+#[cfg(test)]
+mod scm_intervene_tests {
+    use super::*;
+    fn value(json: serde_json::Value, interner: &mut Interner) -> Value {
+        match json {
+            serde_json::Value::Null => Value::None,
+            serde_json::Value::Bool(v) => Value::Bool(v),
+            serde_json::Value::Number(v) => Value::Int(v.as_i64().unwrap()),
+            serde_json::Value::String(v) => Value::Str(interner.intern(&v)),
+            serde_json::Value::Array(v) => Value::List(Arc::new(v.into_iter().map(|x| value(x, interner)).collect::<Vec<_>>().into())),
+            serde_json::Value::Object(v) => Value::Dict(Arc::from(v.into_iter().map(|(k, x)| (Value::Str(interner.intern(&k)), value(x, interner))).collect::<Vec<_>>())),
+        }
+    }
+
+    fn fixtures(interner: &mut Interner) -> (Value, Value, Value, Value) {
+        let model = serde_json::json!({
+            "variables":[{"id":"X","domain":[0,1]},{"id":"Y","domain":[0,1]}],
+            "exogenous":[{"id":"U","domain":[0,1]}],
+            "equations":[
+                {"target":"X","parents":[],"exogenous":["U"],"rows":[{"inputs":{"U":0},"value":0},{"inputs":{"U":1},"value":1}]},
+                {"target":"Y","parents":[],"exogenous":["U"],"rows":[{"inputs":{"U":0},"value":0},{"inputs":{"U":1},"value":1}]}
+            ],
+            "source_ids":["mechanism-1"],"source_epoch":7
+        });
+        let assignments = serde_json::json!([{"U":0},{"U":1}]);
+        let intervention = serde_json::json!({"X":1});
+        let query = |kind: &str| serde_json::json!({"kind":kind,"outcome":"Y"});
+        (value(model, interner), value(assignments, interner), value(intervention, interner), value(query("effect"), interner))
+    }
+
+    fn status<'a>(result: &'a Value, interner: &'a Interner) -> String {
+        scm_get(result, "status", interner).and_then(|v| scm_string(v, interner)).unwrap()
+    }
+
+    #[test]
+    fn scm_do_cuts_equation_and_condition_filters_population() {
+        let mut interner = Interner::new();
+        let (model, assignments, intervention, query) = fixtures(&mut interner);
+        let effect = scm_intervene(&model, &query, &intervention, &assignments, &Value::Int(16), &mut interner);
+        assert_eq!(status(&effect, &interner), "identified");
+        assert_eq!(scm_get(&effect, "values", &interner).and_then(scm_seq).unwrap(),
+                   &[Value::Int(0), Value::Int(1)]);
+        let condition_query = value(serde_json::json!({"kind":"condition","outcome":"Y"}), &mut interner);
+        let condition = scm_intervene(&model, &condition_query, &intervention, &assignments, &Value::Int(16), &mut interner);
+        assert_eq!(scm_get(&condition, "values", &interner).and_then(scm_seq).unwrap(),
+                   &[Value::Int(1)]);
+    }
+
+    #[test]
+    fn scm_counterfactual_reuses_each_exogenous_assignment() {
+        let mut interner = Interner::new();
+        let (model, assignments, intervention, _) = fixtures(&mut interner);
+        let query = value(serde_json::json!({"kind":"unit_counterfactual","outcome":"Y"}), &mut interner);
+        let result = scm_intervene(&model, &query, &intervention, &assignments, &Value::Int(16), &mut interner);
+        let values = scm_get(&result, "values", &interner).and_then(scm_seq).unwrap();
+        assert_eq!(scm_get(&values[0], "factual", &interner), Some(&Value::Int(0)));
+        assert_eq!(scm_get(&values[0], "counterfactual", &interner), Some(&Value::Int(0)));
+        assert_eq!(scm_get(&values[1], "factual", &interner), Some(&Value::Int(1)));
+        assert_eq!(scm_get(&values[1], "counterfactual", &interner), Some(&Value::Int(1)));
+    }
+
+    #[test]
+    fn scm_empty_malformed_cyclic_and_bounded_inputs_abstain_or_refuse() {
+        let mut interner = Interner::new();
+        let (valid, assignments, intervention, query_effect) = fixtures(&mut interner);
+        let empty = scm_intervene(&valid, &query_effect, &intervention, &Value::List(Arc::new(smallvec::SmallVec::new())),
+                                  &Value::Int(16), &mut interner);
+        assert_eq!(status(&empty, &interner), "unknown");
+        let cyc = value(serde_json::json!({
+            "variables":[{"id":"X","domain":[0,1]},{"id":"Y","domain":[0,1]}],
+            "exogenous":[],
+            "equations":[
+                {"target":"X","parents":["Y"],"exogenous":[],"rows":[{"inputs":{"Y":0},"value":0},{"inputs":{"Y":1},"value":1}]},
+                {"target":"Y","parents":["X"],"exogenous":[],"rows":[{"inputs":{"X":0},"value":0},{"inputs":{"X":1},"value":1}]}
+            ], "source_ids":[],"source_epoch":1
+        }), &mut interner);
+        let cycle_result = scm_intervene(&cyc, &query_effect, &intervention, &assignments,
+            &Value::Int(16), &mut interner);
+        assert_eq!(status(&cycle_result, &interner), "unknown");
+        let bounded = scm_intervene(&valid, &query_effect, &intervention, &assignments,
+            &Value::Int(1), &mut interner);
+        assert_eq!(status(&bounded, &interner), "unknown");
+        let malformed = scm_intervene(&Value::None, &query_effect, &intervention,
+            &assignments, &Value::Int(16), &mut interner);
+        assert_eq!(status(&malformed, &interner), "invalid");
+    }
+
+    #[test]
+    fn scm_intervene_term_executes_with_immutable_interner() {
+        let mut interner = Interner::new();
+        let (model, assignments, intervention, query) = fixtures(&mut interner);
+        let mut arena = crate::term::TermArena::new();
+        let lit = |arena: &mut crate::term::TermArena, value| arena.add(crate::term::TermNode::Lit { value });
+        let model = lit(&mut arena, model);
+        let query = lit(&mut arena, query);
+        let intervention = lit(&mut arena, intervention);
+        let assignments = lit(&mut arena, assignments);
+        let cap = lit(&mut arena, Value::Int(16));
+        let term = arena.add(crate::term::TermNode::SCMIntervene {
+            model, query, intervention, exogenous_assignments: assignments, assignment_cap: cap,
+        });
+        let graph = crate::graph::TypedGraph::new();
+        let mut ctx = crate::term::EvalCtx::new(&graph, &interner);
+        let result = crate::term::evaluate(&arena, term, &mut Default::default(), &mut ctx);
+        assert_eq!(status(&result, &interner), "identified");
+        assert_eq!(interner.resolve(crate::sym::Sym::reserved("status").unwrap()), "status");
+    }
+
+    #[test]
+    fn scm_backdoor_adjustment_checks_finite_confounder_population() {
+        let mut interner = Interner::new();
+        let model = value(serde_json::json!({
+            "variables":[{"id":"X","domain":[0,1]},{"id":"Y","domain":[0,1]}],
+            "exogenous":[{"id":"U","domain":[0,1]},{"id":"V","domain":[0,1]}],
+            "equations":[
+                {"target":"X","parents":[],"exogenous":["U","V"],"rows":[
+                    {"inputs":{"U":0,"V":0},"value":0},{"inputs":{"U":0,"V":1},"value":1},
+                    {"inputs":{"U":1,"V":0},"value":1},{"inputs":{"U":1,"V":1},"value":0}]},
+                {"target":"Y","parents":[],"exogenous":["U"],"rows":[
+                    {"inputs":{"U":0},"value":0},{"inputs":{"U":1},"value":1}]}
+            ], "source_ids":["m-confounded"],"source_epoch":3
+        }), &mut interner);
+        let query = value(serde_json::json!({"kind":"adjustment","outcome":"Y","adjustment":["U"]}), &mut interner);
+        let intervention = value(serde_json::json!({"X":1}), &mut interner);
+        let assignments = value(serde_json::json!([{"U":0,"V":0},{"U":0,"V":1},{"U":1,"V":0},{"U":1,"V":1}]), &mut interner);
+        let result = scm_intervene(&model, &query, &intervention, &assignments, &Value::Int(16), &interner);
+        assert_eq!(status(&result, &interner), "identified");
+        let values = scm_get(&result, "values", &interner).and_then(scm_seq).unwrap();
+        assert_eq!(values.len(), 2);
+        let first = match &values[0] { Value::Tuple(items) => items, _ => panic!("weighted adjustment row expected") };
+        assert_eq!(first[1], Value::Float(0.5));
+        assert_eq!(first[2], Value::Int(0));
+        let second = match &values[1] { Value::Tuple(items) => items, _ => panic!("weighted adjustment row expected") };
+        assert_eq!(second[1], Value::Float(0.5));
+        assert_eq!(second[2], Value::Int(1));
+    }
 }

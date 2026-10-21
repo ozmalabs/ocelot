@@ -234,6 +234,8 @@ def _consolidate(agent, party, feats):
     # a pre-grounded party stays grounded, an unobserved one is not grounded by a single turn.
     if turns_now >= 2 or feats.get("_name"):
         agent.inner.set_attr(party, "observed", True)
+    from domains.tom_meta_shape import project_interlocutor_estimate
+    project_interlocutor_estimate(agent, party)
 
 
 def _reattribute(agent, feats):

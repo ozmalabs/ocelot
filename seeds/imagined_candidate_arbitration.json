@@ -1,0 +1,2090 @@
+{
+  "id": "imagined_candidate_arbitration",
+  "version": "0.1.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "description": "P5.E4.3 opt-in System-2 reopen and G3 action-request handoff for imagined plans.",
+  "microtheory": {
+    "name": "imagined_candidate_arbitration",
+    "description": "Current-snapshot arbitration of imagined planner candidates."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ImaginedArbitrationPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "current_source_epoch": -1.0,
+        "current_model_id": "",
+        "current_model_epoch": -1.0,
+        "current_goal_id": "",
+        "current_goal_epoch": -1.0,
+        "current_manifold_id": "",
+        "current_manifold_epoch": -1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_imagined_arbitration_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "imagined_candidate_arbitration:has_imagined_arbitration_policy:Agent:ImaginedArbitrationPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_imagined_arbitration_policy",
+      "tgt": {
+        "type": "ImaginedArbitrationPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_action_request:Agent:ActionRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_cognition_plan_request:Agent:CognitionPlanRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_plan_request",
+      "tgt": {
+        "type": "CognitionPlanRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_imagined_plan_candidate:CognitionPlanRequest:ImaginedPlanCandidate",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_imagined_plan_candidate",
+      "tgt": {
+        "type": "ImaginedPlanCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_dual_process_context:CognitionPlanRequest:DualProcessContext",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_dual_process_context",
+      "tgt": {
+        "type": "DualProcessContext",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_system_two_escalation:DualProcessContext:SystemTwoEscalation",
+      "src": {
+        "type": "DualProcessContext",
+        "var": "src"
+      },
+      "edge_type": "has_system_two_escalation",
+      "tgt": {
+        "type": "SystemTwoEscalation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_cognition_manifold_policy:Agent:CognitionManifoldPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_manifold_policy",
+      "tgt": {
+        "type": "CognitionManifoldPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_cognition_manifold_episode:Agent:CognitionManifoldEpisode",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_manifold_episode",
+      "tgt": {
+        "type": "CognitionManifoldEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_terminal_path_arrival:ImaginedPlanCandidate:CognitionPlanPathArrival",
+      "src": {
+        "type": "ImaginedPlanCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_terminal_path_arrival",
+      "tgt": {
+        "type": "CognitionPlanPathArrival",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:parent_path_arrival:CognitionPlanPathArrival:CognitionPlanPathArrival",
+      "src": {
+        "type": "CognitionPlanPathArrival",
+        "var": "src"
+      },
+      "edge_type": "parent_path_arrival",
+      "tgt": {
+        "type": "CognitionPlanPathArrival",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:via_transition:CognitionPlanPathArrival:CognitionPlanTransition",
+      "src": {
+        "type": "CognitionPlanPathArrival",
+        "var": "src"
+      },
+      "edge_type": "via_transition",
+      "tgt": {
+        "type": "CognitionPlanTransition",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_system_two_decision_revision:CognitionPlanRequest:SystemTwoDecisionRevision",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_system_two_decision_revision",
+      "tgt": {
+        "type": "SystemTwoDecisionRevision",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_system_two_decision_revision:DualProcessContext:SystemTwoDecisionRevision",
+      "src": {
+        "type": "DualProcessContext",
+        "var": "src"
+      },
+      "edge_type": "has_system_two_decision_revision",
+      "tgt": {
+        "type": "SystemTwoDecisionRevision",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_system_two_decision_revision:ImaginedPlanCandidate:SystemTwoDecisionRevision",
+      "src": {
+        "type": "ImaginedPlanCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_system_two_decision_revision",
+      "tgt": {
+        "type": "SystemTwoDecisionRevision",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_action_request:SystemTwoDecisionRevision:ActionRequest",
+      "src": {
+        "type": "SystemTwoDecisionRevision",
+        "var": "src"
+      },
+      "edge_type": "has_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_action_authorization:ActionRequest:ActionAuthorization",
+      "src": {
+        "type": "ActionRequest",
+        "var": "src"
+      },
+      "edge_type": "has_action_authorization",
+      "tgt": {
+        "type": "ActionAuthorization",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "imagined_candidate_arbitration:has_action_observation:ActionRequest:ImaginedActionObservation",
+      "src": {
+        "type": "ActionRequest",
+        "var": "src"
+      },
+      "edge_type": "has_action_observation",
+      "tgt": {
+        "type": "ImaginedActionObservation",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ica_cancel_stale_unopened_candidate",
+      "area": "imagined_candidate_arbitration",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_imagined_arbitration_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "planner_request"
+        ],
+        [
+          "planner_request",
+          "has_imagined_plan_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "solved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposal"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "arbitration_consumed"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "source_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_model_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "model_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_goal_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "goal_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_goal_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "goal_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_manifold_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "manifold_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_manifold_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "manifold_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "goal_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "goal_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "manifold_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "manifold_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "cancelled"
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "arbitration_consumed",
+          1.0
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "cancellation_reason",
+          "snapshot_changed"
+        ]
+      ]
+    },
+    {
+      "name": "ica_reopen_current_feasible_imagined_candidate",
+      "area": "imagined_candidate_arbitration",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_imagined_arbitration_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "planner_request"
+        ],
+        [
+          "planner_request",
+          "has_imagined_plan_candidate",
+          "candidate"
+        ],
+        [
+          "planner_request",
+          "has_dual_process_context",
+          "context"
+        ],
+        [
+          "context",
+          "has_system_two_escalation",
+          "escalation"
+        ],
+        [
+          "agent",
+          "has_cognition_manifold_policy",
+          "manifold_policy"
+        ],
+        [
+          "agent",
+          "has_cognition_manifold_episode",
+          "episode"
+        ],
+        [
+          "candidate",
+          "has_terminal_path_arrival",
+          "terminal_arrival"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "solved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposal"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "provenance_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "imagined"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "grounding_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ungrounded"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "observation_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "not_observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "arbitration_consumed"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "context"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "escalated"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "escalation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "context"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "context"
+              },
+              "key": "active_goal_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "goal_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "context"
+              },
+              "key": "active_model_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "model_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_model_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "model_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_goal_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "goal_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_manifold_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "manifold_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_manifold_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "manifold_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "manifold_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "planner_request"
+              },
+              "key": "manifold_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "first_action_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "terminal_arrival"
+              },
+              "key": "root_action_key"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "FutureManifoldProjection",
+                  "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "policy": {
+                    "type": "Var",
+                    "name": "manifold_policy"
+                  },
+                  "source": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "field": "support"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "FutureManifoldProjection",
+                  "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "policy": {
+                    "type": "Var",
+                    "name": "manifold_policy"
+                  },
+                  "source": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "field": "resolved"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "FutureManifoldProjection",
+                  "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "policy": {
+                    "type": "Var",
+                    "name": "manifold_policy"
+                  },
+                  "source": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "field": "loss"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "FutureManifoldProjection",
+                  "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "policy": {
+                    "type": "Var",
+                    "name": "manifold_policy"
+                  },
+                  "source": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "field": "information_loss"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "FutureManifoldProjection",
+                  "episode": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "policy": {
+                    "type": "Var",
+                    "name": "manifold_policy"
+                  },
+                  "source": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "field": "horizon"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "planner_request"
+                  },
+                  "key": "required_horizon"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "revision",
+          "SystemTwoDecisionRevision",
+          {
+            "status": "reopened",
+            "decision_kind": "imagined_plan",
+            "request_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "request_id"
+              }
+            },
+            "candidate_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "path_identity"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "model_id"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "goal_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "goal_id"
+              }
+            },
+            "goal_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "goal_epoch"
+              }
+            },
+            "manifold_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "manifold_id"
+              }
+            },
+            "manifold_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "manifold_epoch"
+              }
+            },
+            "action_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "first_action_key"
+              }
+            },
+            "path_identity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "path_identity"
+              }
+            },
+            "provenance_kind": "imagined",
+            "grounding_status": "ungrounded"
+          }
+        ],
+        [
+          "add_edge",
+          "planner_request",
+          "has_system_two_decision_revision",
+          "revision",
+          {}
+        ],
+        [
+          "add_edge",
+          "context",
+          "has_system_two_decision_revision",
+          "revision",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "has_system_two_decision_revision",
+          "revision",
+          {}
+        ],
+        [
+          "add_node",
+          "action_request",
+          "ActionRequest",
+          {
+            "status": "selected",
+            "request_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "imagined:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_request"
+                    },
+                    "key": "request_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "path_identity"
+                  }
+                ]
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "planner_request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "action_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "first_action_key"
+              }
+            },
+            "expected_state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "first_successor_state_key"
+              }
+            },
+            "candidate_provenance": "imagined",
+            "observation_status": "not_observed"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_action_request",
+          "action_request",
+          {}
+        ],
+        [
+          "add_edge",
+          "revision",
+          "has_action_request",
+          "action_request",
+          {}
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "arbitration_consumed",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "ica_cancel_stale_action_and_revoke_authorization",
+      "area": "imagined_candidate_arbitration",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_imagined_arbitration_policy",
+          "policy"
+        ],
+        [
+          "planner_request",
+          "has_system_two_decision_revision",
+          "revision"
+        ],
+        [
+          "revision",
+          "has_action_request",
+          "action_request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "revision"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "reopened"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "action_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposed"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "action_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "selected"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "action_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "authorized"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_goal_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "goal_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_manifold_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "manifold_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "source_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_model_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "model_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_goal_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "goal_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_manifold_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "revision"
+                    },
+                    "key": "manifold_id"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "revision",
+          "status",
+          "cancelled"
+        ],
+        [
+          "set_attr",
+          "action_request",
+          "status",
+          "withheld"
+        ],
+        [
+          "set_attr",
+          "action_request",
+          "terminal_reason",
+          "snapshot_changed"
+        ]
+      ]
+    },
+    {
+      "name": "ica_revoke_authorization_after_snapshot_change",
+      "area": "imagined_candidate_arbitration",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_imagined_arbitration_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_action_request",
+          "action_request"
+        ],
+        [
+          "action_request",
+          "has_action_authorization",
+          "authorization"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "withheld"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "terminal_reason"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "snapshot_changed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "authorization",
+          "status",
+          "revoked"
+        ]
+      ]
+    },
+    {
+      "name": "ica_ground_after_matching_sink_receipt_and_observation",
+      "area": "imagined_candidate_arbitration",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_imagined_arbitration_policy",
+          "policy"
+        ],
+        [
+          "planner_request",
+          "has_imagined_plan_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_system_two_decision_revision",
+          "revision"
+        ],
+        [
+          "revision",
+          "has_action_request",
+          "action_request"
+        ],
+        [
+          "action_request",
+          "has_action_authorization",
+          "authorization"
+        ],
+        [
+          "action_request",
+          "has_action_observation",
+          "observation"
+        ],
+        [
+          "context",
+          "has_system_two_decision_revision",
+          "revision"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "emitted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "candidate_provenance"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "imagined"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consumed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "request_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "request_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "action_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "action_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "observation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "observation"
+              },
+              "key": "action_request_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "request_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "observation"
+              },
+              "key": "sink_receipt_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "sink_receipt_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "observation"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "observation"
+              },
+              "key": "observed_state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "expected_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "grounding_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ungrounded"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "grounding_status",
+          "grounded"
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "observation_status",
+          "observed"
+        ],
+        [
+          "set_attr",
+          "revision",
+          "status",
+          "observed"
+        ],
+        [
+          "set_attr",
+          "revision",
+          "grounding_status",
+          "grounded"
+        ],
+        [
+          "set_attr",
+          "context",
+          "status",
+          "committed"
+        ],
+        [
+          "set_attr",
+          "context",
+          "route",
+          "system_two"
+        ]
+      ]
+    }
+  ]
+}

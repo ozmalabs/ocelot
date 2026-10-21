@@ -3103,6 +3103,29 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 },
             ],
         ),
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => (
+            "SCMIntervene",
+            vec![
+                Child { name: "model", child: *model },
+                Child { name: "query", child: *query },
+                Child { name: "intervention", child: *intervention },
+                Child { name: "exogenous_assignments", child: *exogenous_assignments },
+                Child { name: "assignment_cap", child: *assignment_cap },
+            ],
+        ),
+        TermNode::ShapeRankSignature { samples, order, width } => (
+            "ShapeRankSignature",
+            vec![
+                Child { name: "samples", child: *samples },
+                Child { name: "order", child: *order },
+                Child { name: "width", child: *width },
+            ],
+        ),
+        TermNode::RecallNearest { records, query, k, candidate_cap } => (
+            "RecallNearest",
+            vec![Child { name: "records", child: *records }, Child { name: "query", child: *query },
+                 Child { name: "k", child: *k }, Child { name: "candidate_cap", child: *candidate_cap }],
+        ),
         TermNode::DepthInfer {
             sequence,
             codebook_type,
@@ -5079,6 +5102,22 @@ fn reconstruct(
             max_steps: get_int("max_steps")?,
             robust: get_bool("robust"),
         },
+        "SCMIntervene" => TermNode::SCMIntervene {
+            model: take_child!("model"),
+            query: take_child!("query"),
+            intervention: take_child!("intervention"),
+            exogenous_assignments: take_child!("exogenous_assignments"),
+            assignment_cap: take_child!("assignment_cap"),
+        },
+        "ShapeRankSignature" => TermNode::ShapeRankSignature {
+            samples: take_child!("samples"),
+            order: take_child!("order"),
+            width: take_child!("width"),
+        },
+        "RecallNearest" => TermNode::RecallNearest {
+            records: take_child!("records"), query: take_child!("query"),
+            k: take_child!("k"), candidate_cap: take_child!("candidate_cap"),
+        },
         "DepthInfer" => TermNode::DepthInfer {
             sequence: take_child!("sequence"),
             codebook_type: get_sym("codebook_type")?,
@@ -5557,6 +5596,57 @@ mod tests {
             arena2.get(*rt_tree),
             TermNode::FromJsonString { .. }
         ));
+    }
+
+    #[test]
+    fn shape_rank_signature_reflection_round_trip_preserves_children() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let samples = arena.add(TermNode::Var { name: interner.intern("samples") });
+        let order = arena.add(TermNode::Var { name: interner.intern("order") });
+        let width = arena.add(TermNode::Lit { value: Value::Int(8) });
+        let term = arena.add(TermNode::ShapeRankSignature { samples, order, width });
+        let mut graph = TypedGraph::new();
+        let node = term_to_subgraph(&arena, term, &mut graph, &mut interner);
+        let mut rebuilt = TermArena::new();
+        let idx = term_from_subgraph(&graph, &interner, node, &mut rebuilt).unwrap();
+        assert!(matches!(rebuilt.get(idx), TermNode::ShapeRankSignature { .. }));
+        assert_eq!(crate::term::free_vars(&rebuilt, idx, None).len(), 2);
+    }
+
+    #[test]
+    fn recall_nearest_reflection_round_trip_preserves_children() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let records = arena.add(TermNode::Var { name: interner.intern("records") });
+        let query = arena.add(TermNode::Var { name: interner.intern("query") });
+        let k = arena.add(TermNode::Var { name: interner.intern("k") });
+        let cap = arena.add(TermNode::Var { name: interner.intern("cap") });
+        let term = arena.add(TermNode::RecallNearest { records, query, k, candidate_cap: cap });
+        let mut graph = TypedGraph::new();
+        let node = term_to_subgraph(&arena, term, &mut graph, &mut interner);
+        let mut rebuilt = TermArena::new();
+        let idx = term_from_subgraph(&graph, &interner, node, &mut rebuilt).unwrap();
+        assert!(matches!(rebuilt.get(idx), TermNode::RecallNearest { .. }));
+        assert_eq!(crate::term::free_vars(&rebuilt, idx, None).len(), 4);
+    }
+
+    #[test]
+    fn scm_intervene_reflection_round_trip_preserves_children() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let model = arena.add(TermNode::Var { name: interner.intern("model") });
+        let query = arena.add(TermNode::Var { name: interner.intern("query") });
+        let intervention = arena.add(TermNode::Var { name: interner.intern("intervention") });
+        let exogenous_assignments = arena.add(TermNode::Var { name: interner.intern("assignments") });
+        let assignment_cap = arena.add(TermNode::Var { name: interner.intern("cap") });
+        let term = arena.add(TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap });
+        let mut graph = TypedGraph::new();
+        let node = term_to_subgraph(&arena, term, &mut graph, &mut interner);
+        let mut rebuilt = TermArena::new();
+        let idx = term_from_subgraph(&graph, &interner, node, &mut rebuilt).unwrap();
+        assert!(matches!(rebuilt.get(idx), TermNode::SCMIntervene { .. }));
+        assert_eq!(crate::term::free_vars(&rebuilt, idx, None).len(), 5);
     }
 
     #[test]

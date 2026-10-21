@@ -1,0 +1,822 @@
+{
+  "id": "recursive_tom",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "P5.F2.2 opt-in native materialization of bounded, access-backed recursive ToM events; actual-world records are never targets of update rules.",
+  "microtheory": {
+    "name": "recursive_tom",
+    "description": "bounded recursive belief worlds"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "RecursiveTomPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "max_depth": 2
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_recursive_tom_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [],
+  "rules": [
+    {
+      "name": "rtom_materialize_accessed_belief",
+      "area": "recursive_tom",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_recursive_tom_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_recursive_tom_event",
+          "ev"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "schema_version"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "accessible"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "has_cycle"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "depth"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_recursive_tom_belief",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "event_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "event_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "actual_world_version"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "actual_world_version"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "belief",
+          "RecursiveTomBelief",
+          {
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "holder_path": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "holder_path"
+              }
+            },
+            "holder_path_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "holder_path_key"
+              }
+            },
+            "depth": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "depth"
+              }
+            },
+            "referent": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "referent"
+              }
+            },
+            "content_ref": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "content_ref"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "value"
+              }
+            },
+            "actual_world_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "actual_world_version"
+              }
+            },
+            "access_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_recursive_tom_belief",
+          "belief",
+          {}
+        ],
+        [
+          "add_edge",
+          "belief",
+          "derived_from_access_event",
+          "ev",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "rtom_answer_true",
+      "area": "recursive_tom",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_recursive_tom_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_recursive_tom_query",
+          "q"
+        ],
+        [
+          "ag",
+          "has_recursive_tom_belief",
+          "belief"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "holder_path_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "holder_path_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "referent"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "referent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "content_ref"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "content_ref"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "actual_world_version"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "actual_world_version"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "expected_value"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_recursive_tom_answer",
+                "any_type": false
+              },
+              "var_name": "old_answer",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old_answer"
+                  },
+                  "key": "query_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "q"
+                  },
+                  "key": "query_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "answer",
+          "RecursiveTomAnswer",
+          {
+            "query_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "query_id"
+              }
+            },
+            "holder_path_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "holder_path_key"
+              }
+            },
+            "referent": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "referent"
+              }
+            },
+            "content_ref": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "content_ref"
+              }
+            },
+            "actual_world_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "actual_world_version"
+              }
+            },
+            "status": "true",
+            "evidence_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "belief"
+                },
+                "key": "access_event_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_recursive_tom_answer",
+          "answer",
+          {}
+        ],
+        [
+          "add_edge",
+          "answer",
+          "answers_recursive_tom_query",
+          "q",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "rtom_answer_false",
+      "area": "recursive_tom",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_recursive_tom_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_recursive_tom_query",
+          "q"
+        ],
+        [
+          "ag",
+          "has_recursive_tom_belief",
+          "belief"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "holder_path_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "holder_path_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "referent"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "referent"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "content_ref"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "content_ref"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "actual_world_version"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "belief"
+              },
+              "key": "actual_world_version"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "belief"
+                },
+                "key": "value"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "expected_value"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_recursive_tom_answer",
+                "any_type": false
+              },
+              "var_name": "old_answer",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old_answer"
+                  },
+                  "key": "query_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "q"
+                  },
+                  "key": "query_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "answer",
+          "RecursiveTomAnswer",
+          {
+            "query_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "query_id"
+              }
+            },
+            "holder_path_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "holder_path_key"
+              }
+            },
+            "referent": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "referent"
+              }
+            },
+            "content_ref": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "content_ref"
+              }
+            },
+            "actual_world_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "actual_world_version"
+              }
+            },
+            "status": "false",
+            "evidence_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "belief"
+                },
+                "key": "access_event_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_recursive_tom_answer",
+          "answer",
+          {}
+        ],
+        [
+          "add_edge",
+          "answer",
+          "answers_recursive_tom_query",
+          "q",
+          {}
+        ]
+      ]
+    }
+  ]
+}

@@ -7015,6 +7015,139 @@ class WorldAdapter:
         except Exception:  # noqa: BLE001 -- state observation cannot break a turn
             return None, None
 
+    def ingest_temporal_frame_event(self, source_observation, *, window_id,
+                                    event_id, sequence_index, timestamp,
+                                    frame, dim_types, source_epoch,
+                                    close_window=False,
+                                    expected_frame_count=None):
+        """Record one externally measured temporal frame and optional seal.
+
+        This is an explicit I/O boundary for D1. It copies caller-supplied
+        values into the temporal graph and never fills gaps, derives cadence,
+        or closes a window unless the caller supplies the close signal and
+        expected count. The temporal rules remain inert unless their policy and
+        shared budget are independently enabled.
+        """
+        from substrate.seed_loader import manifest_for
+
+        if not self.s.has_node(source_observation):
+            raise ValueError("source_observation is not present in this graph")
+        source = self.s.node(source_observation)
+        if source.get("type") != "Observation":
+            raise TypeError("source_observation must be an Observation node")
+        if not isinstance(window_id, str) or not window_id:
+            raise ValueError("window_id must be a non-empty string")
+        if not isinstance(event_id, str) or not event_id:
+            raise ValueError("event_id must be a non-empty string")
+        if isinstance(sequence_index, bool) or not isinstance(sequence_index, int) or sequence_index < 0:
+            raise ValueError("sequence_index must be a non-negative integer")
+        if (isinstance(timestamp, bool) or not isinstance(timestamp, (int, float))
+                or not _math.isfinite(float(timestamp))):
+            raise ValueError("timestamp must be a finite measured number")
+        if not isinstance(frame, list) or not frame:
+            raise ValueError("frame must be a non-empty measured list")
+        if not isinstance(dim_types, list) or not dim_types or any(
+                not isinstance(dim, str) or not dim for dim in dim_types):
+            raise ValueError("dim_types must be a non-empty list of dimension ids")
+        if isinstance(source_epoch, bool) or not isinstance(source_epoch, (int, float)):
+            raise ValueError("source_epoch must be numeric")
+        observed_epoch = source["attrs"].get(
+            "source_epoch", source["attrs"].get("decoded_epoch"))
+        if observed_epoch is None or float(observed_epoch) != float(source_epoch):
+            raise ValueError("source_epoch must match the source Observation")
+        if close_window and (isinstance(expected_frame_count, bool)
+                or not isinstance(expected_frame_count, int)
+                or expected_frame_count < 1):
+            raise ValueError("closing a window requires an explicit positive expected_frame_count")
+        if not close_window and expected_frame_count is not None:
+            raise ValueError("expected_frame_count is only valid when close_window is true")
+
+        # Explicit invocation installs the disabled-by-default producer rules;
+        # it does not enable their policy or the budget.
+        installed = {self.s.node(node)["attrs"].get("id")
+                     for node in self.s.nodes("Seed")}
+        installed.update(self.s.node(node)["attrs"].get("seed_id")
+                         for node in self.s.nodes("SeedSummary"))
+        installed_rule_names = {rule.get("name", "")
+                                for rule in self.inner.export_rules()}
+        evidence = {
+            "default_mode_core": bool(self.s.nodes("NetworkModeState")),
+            "thinking_budget": bool(self.s.nodes("ThinkingBudget"))
+                or any(name.startswith("tb_") for name in installed_rule_names),
+            "time_axis": any(name.startswith("time_infer_")
+                             for name in installed_rule_names),
+            "shape_decode_loop": any(name.startswith("sd_")
+                                      for name in installed_rule_names),
+            "temporal_escalation": any(name.startswith("te_")
+                                       for name in installed_rule_names),
+        }
+        visiting = set()
+
+        def ensure_seed(seed_id):
+            if (seed_id == "core" or seed_id in installed
+                    or evidence.get(seed_id, False) or seed_id in visiting):
+                return
+            visiting.add(seed_id)
+            manifest = manifest_for(seed_id)
+            for dependency in manifest.get("depends_on", ()):
+                ensure_seed(str(dependency))
+            loaded = self.inner.load_seed_manifest(manifest, self.agent)
+            if loaded.get("rules_skipped"):
+                raise RuntimeError(
+                    f"temporal ingestion seed {seed_id} skipped rules: "
+                    f"{loaded['rules_skipped']}")
+            self.s.add_node("Seed", {"id": seed_id,
+                                      "version": manifest.get("version", "1")})
+            installed.add(seed_id)
+            visiting.remove(seed_id)
+
+        ensure_seed("temporal_escalation")
+        root_attrs = self.s.node(self.agent)["attrs"]
+        owner_id = str(root_attrs.get("agent_id", "agent-root"))
+        event_attrs = {
+            "owner_id": owner_id, "window_id": window_id,
+            "source_epoch": float(source_epoch), "event_id": event_id,
+            "sequence_index": sequence_index, "timestamp": float(timestamp),
+            "frame": frame, "dim_types": dim_types, "status": "observed",
+        }
+        event_node = None
+        for candidate in self.inner.neighbours(self.agent, "has_temporal_frame_event"):
+            attrs = self.s.node(candidate)["attrs"]
+            if attrs.get("owner_id") == owner_id and attrs.get("event_id") == event_id:
+                if attrs != event_attrs:
+                    raise ValueError("event_id already exists with conflicting measured data")
+                event_node = candidate
+                break
+        if event_node is None:
+            event_node = self.s.add_node("TemporalFrameEvent", event_attrs)
+            self.inner.add_edge_unchecked(self.agent, "has_temporal_frame_event", event_node)
+
+        seal_node = None
+        if close_window:
+            seal_attrs = {
+                "owner_id": owner_id, "window_id": window_id,
+                "source_epoch": float(source_epoch),
+                "expected_frame_count": expected_frame_count,
+                "dim_types": dim_types, "status": "closed",
+            }
+            seal_id = f"{owner_id}:{window_id}:{source_epoch}:seal"
+            for candidate in self.inner.neighbours(self.agent, "has_temporal_frame_window_seal"):
+                attrs = self.s.node(candidate)["attrs"]
+                if attrs.get("seal_id") == seal_id:
+                    expected = dict(seal_attrs, seal_id=seal_id)
+                    if attrs != expected:
+                        raise ValueError("window seal already exists with conflicting identity")
+                    seal_node = candidate
+                    break
+            if seal_node is None:
+                seal_node = self.s.add_node("TemporalFrameWindowSeal",
+                                            dict(seal_attrs, seal_id=seal_id))
+                self.inner.add_edge_unchecked(
+                    self.agent, "has_temporal_frame_window_seal", seal_node)
+                self.inner.add_edge_unchecked(
+                    seal_node, "seals_temporal_observation", source_observation)
+        return {"event": event_node, "seal": seal_node}
+
     def ingest_semantic_event(self, frame, *, provider, interaction_mode="event",
                               speaker=None, addressee=None,
                               conversation_id="default",
@@ -8685,6 +8818,8 @@ class WorldAdapter:
                 self.inner.add_edge_unchecked(assertion, "asserted_in", mid)
                 if party is not None:
                     self.inner.add_edge_unchecked(party, "asserted", assertion)
+                    from domains.tom_meta_shape import project_interlocutor_assertion
+                    project_interlocutor_assertion(self, party, assertion)
                     prior_n = int(self.s.node(party)["attrs"].get("self_report_count", 0) or 0)
                     self.inner.set_attr(party, "self_report_count", prior_n + 1)
 
@@ -15898,7 +16033,11 @@ class WorldAdapter:
                 action = actions[0]      # observe-and-grow; not playing to win
                 for t in world["interpret_acts_on"](sub, ctx, action):
                     self.register_relation(t, "acts_on")
-                sub, ctx = world["apply_action"](sub, ctx, action)
+                applied = self._apply_world_action_at_sink(
+                    world, sub, ctx, action, sink_route="live_gamma.apply_action")
+                if applied is None:
+                    break
+                sub, ctx = applied
                 self.observe_gamma(sub)
                 if narrate:
                     narrate(self, sub)
@@ -16576,6 +16715,26 @@ class WorldAdapter:
         asym_count the seeded action_score_term weights by meta_curiosity_weight."""
         return len(set(touched_types) & self.boundary_asymmetry())
 
+    def _apply_world_action_at_sink(self, world, substrate, ctx, action, *, sink_route="world.apply_action"):
+        """Cross the native request/stop gate immediately before an action sink."""
+        gate = getattr(self.inner, "authorize_action_emission", None)
+        complete = getattr(self.inner, "complete_action_emission", None)
+        if gate is None or complete is None:
+            return world["apply_action"](substrate, ctx, action)
+        agent_id = self.agent.value if hasattr(self.agent, "value") else int(str(self.agent).lstrip("#"))
+        enabled, request_id = gate(agent_id, str(action), sink_route)
+        if not enabled:
+            return world["apply_action"](substrate, ctx, action)
+        if request_id is None:
+            return None
+        try:
+            result = world["apply_action"](substrate, ctx, action)
+        except BaseException:
+            complete(agent_id, request_id, False)
+            raise
+        complete(agent_id, request_id, True)
+        return result
+
     def _authorize_world_action(self, world, substrate, ctx, action) -> dict:
         """Mechanical enactment boundary for the graph's commitment verdict."""
         from domains.information_commitment import assess
@@ -16869,7 +17028,11 @@ class WorldAdapter:
                 if gate["decision"] != "commit" or not gate["authorized"]:
                     self.cognitive_tick()
                     continue
-                substrate, ctx = world["apply_action"](substrate, ctx, action)
+                applied = self._apply_world_action_at_sink(world, substrate, ctx, action)
+                if applied is None:
+                    self.cognitive_tick()
+                    continue
+                substrate, ctx = applied
                 self.observe(substrate)
                 self.register_senses(self.senses())
             games += 1
@@ -17471,7 +17634,16 @@ class WorldAdapter:
             excluded.append(int(nid_value))
             fn = self._master["reflex_responses"].get(response)
             if fn is not None:
-                fn(self)
+                reflex_id = int(nid_value)
+                if not self.inner.authorize_reflex_emission(agent_id, reflex_id):
+                    continue
+                try:
+                    fn(self)
+                except BaseException:
+                    self.inner.complete_reflex_emission(agent_id, reflex_id, False)
+                    raise
+                else:
+                    self.inner.complete_reflex_emission(agent_id, reflex_id, True)
             fired.append(name)
         return fired
 
@@ -18189,7 +18361,10 @@ class WorldAdapter:
                 if gate["decision"] != "commit" or not gate["authorized"]:
                     self.cognitive_tick()
                     continue
-                substrate, ctx = world["apply_action"](substrate, ctx, action)
+                applied = self._apply_world_action_at_sink(world, substrate, ctx, action)
+                if applied is None:
+                    continue
+                substrate, ctx = applied
                 self.observe(substrate)
         self.discover_relations()
 

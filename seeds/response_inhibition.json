@@ -1,0 +1,457 @@
+{
+  "id": "response_inhibition",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [],
+  "description": "P5.G3.2 opt-in graph stop lifecycle; sink enforcement is G3.3.",
+  "microtheory": {
+    "name": "response_inhibition",
+    "description": "request-scoped stop/withhold lifecycle"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ResponseInhibitionPolicy",
+      "attrs": {
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_response_inhibition_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "response_inhibition:agent_request",
+      "src": {
+        "type": "Agent",
+        "var": "ag"
+      },
+      "edge_type": "has_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "req"
+      }
+    },
+    {
+      "provenance": "response_inhibition:request_stop",
+      "src": {
+        "type": "ActionRequest",
+        "var": "req"
+      },
+      "edge_type": "has_action_stop",
+      "tgt": {
+        "type": "ActionStopEvent",
+        "var": "stop"
+      }
+    },
+    {
+      "provenance": "response_inhibition:request_auth",
+      "src": {
+        "type": "ActionRequest",
+        "var": "req"
+      },
+      "edge_type": "has_action_authorization",
+      "tgt": {
+        "type": "ActionAuthorization",
+        "var": "auth"
+      }
+    },
+    {
+      "provenance": "response_inhibition:agent_policy",
+      "src": {
+        "type": "Agent",
+        "var": "ag"
+      },
+      "edge_type": "has_response_inhibition_policy",
+      "tgt": {
+        "type": "ResponseInhibitionPolicy",
+        "var": "policy"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ri_withhold_same_epoch_precommit_stop",
+      "area": "response_inhibition",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_response_inhibition_policy",
+          "policy"
+        ],
+        [
+          "ag",
+          "has_action_request",
+          "req"
+        ],
+        [
+          "req",
+          "has_action_stop",
+          "stop"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stop"
+                  },
+                  "key": "request_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "request_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stop"
+                  },
+                  "key": "source_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "source_epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposed"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "selected"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "authorized"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "withheld"
+        ],
+        [
+          "set_attr",
+          "req",
+          "terminal_reason",
+          "stop_before_commit"
+        ],
+        [
+          "set_attr",
+          "stop",
+          "status",
+          "withheld"
+        ]
+      ]
+    },
+    {
+      "name": "ri_revoke_authorization_for_withheld_request",
+      "area": "response_inhibition",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_response_inhibition_policy",
+          "policy"
+        ],
+        [
+          "ag",
+          "has_action_request",
+          "req"
+        ],
+        [
+          "req",
+          "has_action_authorization",
+          "auth"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "withheld"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "auth"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "auth",
+          "status",
+          "revoked"
+        ]
+      ]
+    },
+    {
+      "name": "ri_record_stop_after_emission_without_undo",
+      "area": "response_inhibition",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_response_inhibition_policy",
+          "policy"
+        ],
+        [
+          "ag",
+          "has_action_request",
+          "req"
+        ],
+        [
+          "req",
+          "has_action_stop",
+          "stop"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stop"
+                  },
+                  "key": "request_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "request_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "stop"
+                  },
+                  "key": "source_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "source_epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "emitted"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "stop"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "already_emitted"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "stop",
+          "status",
+          "already_emitted"
+        ],
+        [
+          "set_attr",
+          "stop",
+          "terminal_reason",
+          "effect_already_committed"
+        ]
+      ]
+    }
+  ]
+}

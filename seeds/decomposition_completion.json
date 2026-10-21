@@ -1,0 +1,1402 @@
+{
+  "id": "decomposition_completion",
+  "version": "1.0.0",
+  "depends_on": [],
+  "description": "Opt-in verified, epoch-scoped completion witnesses for decomposed parent capability axes.",
+  "microtheory": {
+    "name": "decomposition_completion",
+    "description": "Settle decomposition parents only on verified current-epoch coverage."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "DecompositionCompletionPolicy",
+      "attrs": {
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_decomposition_completion_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:decomposition_completion:has_decomposition_completion_policy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_decomposition_completion_policy",
+      "tgt": {
+        "type": "DecompositionCompletionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:decomposition_completion:needs_decomposition",
+      "src": {
+        "type": "Impasse",
+        "var": "src"
+      },
+      "edge_type": "needs_decomposition",
+      "tgt": {
+        "type": "CapabilityAxis",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:decomposition_completion:requires_key",
+      "src": {
+        "type": "CapabilityAxis",
+        "var": "src"
+      },
+      "edge_type": "requires_key",
+      "tgt": {
+        "type": "CapKey",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:decomposition_completion:decomposes_into",
+      "src": {
+        "type": "CapabilityAxis",
+        "var": "src"
+      },
+      "edge_type": "decomposes_into",
+      "tgt": {
+        "type": "CapabilityAxis",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "dc_completion_witness_invalidate_stale_epoch",
+      "batch": false,
+      "comment": "Invalidate a persisted witness and reopen its impasse when either parent epoch changes.",
+      "match": [
+        [
+          "agent",
+          "has_decomposition_completion_policy",
+          "pol"
+        ],
+        [
+          "mi",
+          "needs_decomposition",
+          "ax"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mi"
+                  },
+                  "key": "completion_witness"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mi"
+                    },
+                    "key": "completion_model_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ax"
+                    },
+                    "key": "model_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "mi",
+          "completion_witness",
+          0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "completion_witness",
+          0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "saturation",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ax"
+              },
+              "key": "pre_completion_saturation"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "mi",
+          "resolved",
+          false
+        ],
+        [
+          "set_attr",
+          "mi",
+          "outcome",
+          "decomposition_reopened"
+        ]
+      ]
+    },
+    {
+      "name": "dc_completion_witness_invalidate_stale_decomposition_epoch",
+      "batch": false,
+      "comment": "Invalidate a persisted witness and reopen its impasse when either parent epoch changes.",
+      "match": [
+        [
+          "agent",
+          "has_decomposition_completion_policy",
+          "pol"
+        ],
+        [
+          "mi",
+          "needs_decomposition",
+          "ax"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mi"
+                  },
+                  "key": "completion_witness"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mi"
+                    },
+                    "key": "completion_decomposition_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ax"
+                    },
+                    "key": "decomposition_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "mi",
+          "completion_witness",
+          0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "completion_witness",
+          0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "saturation",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ax"
+              },
+              "key": "pre_completion_saturation"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "mi",
+          "resolved",
+          false
+        ],
+        [
+          "set_attr",
+          "mi",
+          "outcome",
+          "decomposition_reopened"
+        ]
+      ]
+    },
+    {
+      "name": "dc_completion_witness_invalidate_changed_coverage",
+      "batch": false,
+      "comment": "Reopen and restore pre-completion saturation if current required-key coverage is lost or a required child becomes outstanding.",
+      "match": [
+        [
+          "agent",
+          "has_decomposition_completion_policy",
+          "pol"
+        ],
+        [
+          "mi",
+          "needs_decomposition",
+          "ax"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mi"
+                  },
+                  "key": "completion_witness"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "ax"
+                  },
+                  "edge_type": "requires_key",
+                  "any_type": false
+                },
+                "var_name": "k",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "ax"
+                      },
+                      "edge_type": "decomposes_into",
+                      "any_type": false
+                    },
+                    "var_name": "c",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "completion_status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "completed"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "c"
+                                    },
+                                    "key": "completion_verified"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                ]
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": 1
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "c"
+                                    },
+                                    "key": "model_epoch"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                ]
+                              },
+                              "b": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "ax"
+                                    },
+                                    "key": "model_epoch"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "c"
+                                    },
+                                    "key": "decomposition_epoch"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                ]
+                              },
+                              "b": {
+                                "type": "Plus",
+                                "items": [
+                                  {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "ax"
+                                    },
+                                    "key": "decomposition_epoch"
+                                  },
+                                  {
+                                    "type": "Lit",
+                                    "value": 0
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "type": "Exists",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "c"
+                            },
+                            "edge_type": "requires_key",
+                            "any_type": false
+                          },
+                          "var_name": "ck",
+                          "predicate": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "ck"
+                              },
+                              "key": "name"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "k"
+                              },
+                              "key": "name"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "ax"
+                  },
+                  "edge_type": "decomposes_into",
+                  "any_type": false
+                },
+                "var_name": "c",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "c"
+                        },
+                        "edge_type": "requires_key",
+                        "any_type": false
+                      },
+                      "var_name": "ck",
+                      "predicate": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "ax"
+                          },
+                          "edge_type": "requires_key",
+                          "any_type": false
+                        },
+                        "var_name": "rk",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ck"
+                            },
+                            "key": "name"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "rk"
+                            },
+                            "key": "name"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "completion_status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "completed"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "completion_verified"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "model_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "ax"
+                                  },
+                                  "key": "model_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "decomposition_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "ax"
+                                  },
+                                  "key": "decomposition_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "mi",
+          "completion_witness",
+          0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "completion_witness",
+          0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "saturation",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ax"
+              },
+              "key": "pre_completion_saturation"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "mi",
+          "resolved",
+          false
+        ],
+        [
+          "set_attr",
+          "mi",
+          "outcome",
+          "decomposition_reopened"
+        ]
+      ]
+    },
+    {
+      "name": "dc_completion_witness_settle_parent",
+      "batch": false,
+      "comment": "Settle parent saturation and decomposition impasse only with current verified child coverage and no outstanding required child.",
+      "match": [
+        [
+          "agent",
+          "has_decomposition_completion_policy",
+          "pol"
+        ],
+        [
+          "mi",
+          "needs_decomposition",
+          "ax"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ax"
+                },
+                "edge_type": "requires_key",
+                "any_type": false
+              },
+              "var_name": "k",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "ax"
+                    },
+                    "edge_type": "decomposes_into",
+                    "any_type": false
+                  },
+                  "var_name": "c",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "c"
+                              },
+                              "key": "completion_status"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "completed"
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "completion_verified"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": 1
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "model_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "ax"
+                                  },
+                                  "key": "model_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "c"
+                                  },
+                                  "key": "decomposition_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            },
+                            "b": {
+                              "type": "Plus",
+                              "items": [
+                                {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "ax"
+                                  },
+                                  "key": "decomposition_epoch"
+                                },
+                                {
+                                  "type": "Lit",
+                                  "value": 0
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "edge_type": "requires_key",
+                          "any_type": false
+                        },
+                        "var_name": "ck",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ck"
+                            },
+                            "key": "name"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "k"
+                            },
+                            "key": "name"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ax"
+                },
+                "edge_type": "decomposes_into",
+                "any_type": false
+              },
+              "var_name": "c",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "edge_type": "requires_key",
+                      "any_type": false
+                    },
+                    "var_name": "ck",
+                    "predicate": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "ax"
+                        },
+                        "edge_type": "requires_key",
+                        "any_type": false
+                      },
+                      "var_name": "rk",
+                      "predicate": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "ck"
+                          },
+                          "key": "name"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "rk"
+                          },
+                          "key": "name"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "c"
+                            },
+                            "key": "completion_status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "completed"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "completion_verified"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "model_epoch"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "ax"
+                                },
+                                "key": "model_epoch"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "c"
+                                },
+                                "key": "decomposition_epoch"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            ]
+                          },
+                          "b": {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "ax"
+                                },
+                                "key": "decomposition_epoch"
+                              },
+                              {
+                                "type": "Lit",
+                                "value": 0
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mi"
+                },
+                "key": "completion_witness"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "ax",
+          "pre_completion_saturation",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ax"
+              },
+              "key": "saturation"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "ax",
+          "saturation",
+          1.0
+        ],
+        [
+          "set_attr",
+          "ax",
+          "completion_witness",
+          1
+        ],
+        [
+          "set_attr",
+          "mi",
+          "completion_witness",
+          1
+        ],
+        [
+          "set_attr",
+          "mi",
+          "completion_model_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ax"
+                  },
+                  "key": "model_epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "mi",
+          "completion_decomposition_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ax"
+                  },
+                  "key": "decomposition_epoch"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "mi",
+          "resolved",
+          true
+        ],
+        [
+          "set_attr",
+          "mi",
+          "outcome",
+          "decomposition_completed"
+        ]
+      ]
+    }
+  ]
+}

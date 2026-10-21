@@ -40,13 +40,19 @@ from __future__ import annotations
 from domains.shared_arousal import mint_target_concept
 
 
-def mint_resident_tom_belief(inner, mt, aspect: str, target: str):
+def mint_resident_tom_belief(inner, mt, aspect: str, target: str, *,
+                             projection_agent=None, resident: str = "resident"):
     """The resident's ToM belief about `target`'s `aspect` (e.g.
     `aspect='controllability'` mints/returns `controllability_for:
     <target>`). Idempotent -- delegates entirely to `mint_target_concept`'s
     own idempotent lookup; this is a NAME for the pattern, not a new
     mechanism."""
-    return mint_target_concept(inner, mt, "%s_for" % aspect, target)
+    concept = mint_target_concept(inner, mt, "%s_for" % aspect, target)
+    if projection_agent is not None:
+        from domains.tom_meta_shape import project_resident_agency_belief
+        project_resident_agency_belief(
+            projection_agent, concept, resident=resident, target=target)
+    return concept
 
 
 __all__ = ["mint_resident_tom_belief"]

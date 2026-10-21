@@ -145,6 +145,34 @@
         "step_cost": 1.0,
         "lease_epochs": 4.0
       }
+    },
+    {
+      "local_id": 12,
+      "type": "CognitionPlannerPolicy",
+      "attrs": {"enabled": 1.0, "maximum_depth": 8.0,
+        "maximum_expansions": 256.0, "maximum_path_arrivals": 4096.0,
+        "expansion_cost": 1.0, "maximum_branching": 8.0,
+        "current_model_epoch": -1.0, "current_goal_epoch": -1.0,
+        "current_manifold_epoch": -1.0, "current_model_id": "",
+        "current_goal_id": "", "current_manifold_id": ""}
+    },
+    {
+      "local_id": 13,
+      "type": "ImaginedArbitrationPolicy",
+      "attrs": {"enabled": 1.0, "current_source_epoch": -1.0,
+        "current_model_id": "", "current_model_epoch": -1.0,
+        "current_goal_id": "", "current_goal_epoch": -1.0,
+        "current_manifold_id": "", "current_manifold_epoch": -1.0}
+    },
+    {
+      "local_id": 14,
+      "type": "DecompositionCompletionPolicy",
+      "attrs": {"enabled": 1.0}
+    },
+    {
+      "local_id": 15,
+      "type": "AnalogImageryPolicy",
+      "attrs": {"enabled": 1.0, "max_steps": 3.0, "max_buffer_size": 4.0}
     }
   ],
   "edges": [
@@ -207,6 +235,26 @@
       "src": { "role": "agent_root" },
       "type": "has_extended_thinking_policy",
       "tgt": { "local": 11 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_cognition_planner_policy",
+      "tgt": { "local": 12 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_imagined_arbitration_policy",
+      "tgt": { "local": 13 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_decomposition_completion_policy",
+      "tgt": { "local": 14 }
+    },
+    {
+      "src": { "role": "agent_root" },
+      "type": "has_analog_imagery_policy",
+      "tgt": { "local": 15 }
     }
   ],
   "productions": [

@@ -289,3 +289,60 @@ def test_reading_collapse_definitional_construction_unaffected():
     a = _fresh()
     rec = rc.read_clause(a, "A dog is an animal.", write=False)
     assert rec["construction"] in ("definitional", "definitional_bare")
+
+
+def test_adapter_has_no_belief_update_decisions():
+    import ast
+    import inspect
+    source = inspect.getsource(ctom.submit_recursive_tom_event)
+    tree = ast.parse(source)
+    assert not any(isinstance(node, (ast.If, ast.For, ast.While, ast.IfExp))
+                   for node in ast.walk(tree))
+    assert "RecursiveTomBelief" not in source
+
+
+def test_character_tom_adapter_submits_and_reads_native_recursive_state():
+    from substrate.boot_core import CORE_SEEDS
+    from substrate.world_adapter import WorldAdapter
+    a = WorldAdapter(seeds=CORE_SEEDS + ("recursive_tom",))
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+    ctom.submit_recursive_tom_event(
+        a, event_id="adapter-event", holder_path=["sally", "anne"],
+        referent="key", content_ref="key=drawer", value="drawer",
+        actual_world_version=1, accessible=True,
+    )
+    result = ctom.query_recursive_tom(
+        a, query_id="adapter-query", holder_path=["sally", "anne"],
+        referent="key", content_ref="key=drawer", expected_value="drawer",
+        actual_world_version=1,
+    )
+    assert result == {"query_id": "adapter-query", "status": "true",
+                      "evidence_event_id": "adapter-event"}
+    unknown = ctom.query_recursive_tom(
+        a, query_id="adapter-unknown", holder_path=["anne", "sally"],
+        referent="key", content_ref="key=drawer", expected_value="drawer",
+        actual_world_version=1,
+    )
+    assert unknown["status"] == "unknown"
+
+
+def test_recursive_sentence_adapter_uses_native_readback(monkeypatch):
+    from substrate.boot_core import CORE_SEEDS
+    from substrate.world_adapter import WorldAdapter
+    a = WorldAdapter(seeds=CORE_SEEDS + ("recursive_tom",))
+    policy = a.inner.nodes("RecursiveTomPolicy")[0]
+    a.inner.set_attr(policy, "enabled", 1.0)
+
+    def legacy_path(*args, **kwargs):
+        raise AssertionError("recursive route must use native event/readback")
+
+    monkeypatch.setattr(ctom, "_ground_attitude_complement", legacy_path)
+    rec = ctom.ingest_attitude_sentence(
+        a, "Anne thinks the ball is in the basket.", t=1,
+        recursive_holder_path=["sally", "anne"], actual_world_version=7,
+        recursive_event_id="sally-anne-ball-location-v7",
+    )
+    assert rec["kind"] == "attitude"
+    assert rec["recursive_answer"]["status"] == "true"
+    assert rec["recursive_answer"]["evidence_event_id"] == "sally-anne-ball-location-v7"

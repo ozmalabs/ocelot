@@ -1212,6 +1212,11 @@ impl WfLocality<'_> {
                     self.walk(arena, c);
                 }
             }
+            T::ShapeRankSignature { .. } | T::RecallNearest { .. } => {
+                for c in crate::term::children(arena.get(idx)) {
+                    self.walk(arena, c);
+                }
+            }
             T::Lit { .. } | T::Var { .. } => {}
             T::TypeOf { .. }
             | T::In { .. }
@@ -1339,6 +1344,11 @@ fn collect_term_reads(
         // key. No finite static resource set can describe its footprint.
         T::ScalarAttrTriples { .. } => {
             *reads_any = true;
+        }
+        T::ShapeRankSignature { .. } | T::RecallNearest { .. } | T::SCMIntervene { .. } => {
+            for child in crate::term::children(arena.get(idx)) {
+                collect_term_reads(arena, child, reads, reads_any);
+            }
         }
         T::HuffmanDecodeStream { .. } | T::HuffmanEncodeStream { .. } | T::Render { .. } => {
             // These terms resolve graph-resident table/render structures at

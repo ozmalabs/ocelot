@@ -1,0 +1,3129 @@
+{
+  "id": "cognition_manifold",
+  "version": "1.1.0",
+  "self_load_only": true,
+  "depends_on": [
+    "generative_world_model",
+    "thinking_budget"
+  ],
+  "area": "cognition_manifold",
+  "description": "Projects only model-owned numeric GWM paths through FutureManifoldProjection; absent supported transitions remain unresolved.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CognitionManifoldPolicy",
+      "attrs": {
+        "name": "cognition_manifold_policy",
+        "enabled": 0.0,
+        "future_manifold_projection_budget": 0.0,
+        "future_manifold_physical_horizon": 0.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "CognitionManifoldEpisode",
+      "attrs": {
+        "status": "ready",
+        "owner_id": "agent-root",
+        "frame_id": "default",
+        "future_manifold_target": [],
+        "future_manifold_bounds": []
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_cognition_manifold_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {},
+      "provenance": "cognition_manifold:policy"
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_cognition_manifold_episode",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {},
+      "provenance": "cognition_manifold:episode"
+    }
+  ],
+  "productions": [
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_manifold_policy",
+      "tgt": {
+        "type": "CognitionManifoldPolicy",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_cognition_manifold_policy:Agent:CognitionManifoldPolicy"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_manifold_episode",
+      "tgt": {
+        "type": "CognitionManifoldEpisode",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_cognition_manifold_episode:Agent:CognitionManifoldEpisode"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_simulation_request",
+      "tgt": {
+        "type": "SimulationRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_simulation_request:Agent:SimulationRequest"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_gwm_request",
+      "tgt": {
+        "type": "SimulationRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_gwm_request:CognitionManifoldEpisode:SimulationRequest"
+    },
+    {
+      "src": {
+        "type": "SimulationRequest",
+        "var": "src"
+      },
+      "edge_type": "has_prediction_trajectory",
+      "tgt": {
+        "type": "PredictionTrajectory",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_prediction_trajectory:SimulationRequest:PredictionTrajectory"
+    },
+    {
+      "src": {
+        "type": "PredictionTrajectory",
+        "var": "src"
+      },
+      "edge_type": "has_predicted_belief_state",
+      "tgt": {
+        "type": "PredictedBeliefState",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_predicted_belief_state:PredictionTrajectory:PredictedBeliefState"
+    },
+    {
+      "src": {
+        "type": "PredictedBeliefState",
+        "var": "src"
+      },
+      "edge_type": "generated_by_transition",
+      "tgt": {
+        "type": "TransitionHypothesis",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:generated_by_transition:PredictedBeliefState:TransitionHypothesis"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_manifold_candidate",
+      "tgt": {
+        "type": "CognitionManifoldCandidate",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_cognition_manifold_candidate:CognitionManifoldEpisode:CognitionManifoldCandidate"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_refinement_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_refinement_request:CognitionManifoldCandidate:ThinkingBudgetRequest"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_refinement_transition",
+      "tgt": {
+        "type": "TransitionHypothesis",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_refinement_transition:CognitionManifoldCandidate:TransitionHypothesis"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "refined_from_candidate",
+      "tgt": {
+        "type": "CognitionManifoldCandidate",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:refined_from_candidate:CognitionManifoldCandidate:CognitionManifoldCandidate"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "funded_by_refinement_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:funded_by_refinement_request:CognitionManifoldCandidate:ThinkingBudgetRequest"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_thinking_budget_request:Agent:ThinkingBudgetRequest"
+    },
+    {
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "projects_transition",
+      "tgt": {
+        "type": "TransitionHypothesis",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:projects_transition:CognitionManifoldCandidate:TransitionHypothesis"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "projects_predicted_state",
+      "tgt": {
+        "type": "PredictedBeliefState",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:projects_predicted_state:CognitionManifoldCandidate:PredictedBeliefState"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_feasibility_receipt",
+      "tgt": {
+        "type": "CognitionManifoldFeasibilityReceipt",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_feasibility_receipt:CognitionManifoldCandidate:CognitionManifoldFeasibilityReceipt"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldFeasibilityReceipt",
+        "var": "src"
+      },
+      "edge_type": "verifies_candidate",
+      "tgt": {
+        "type": "CognitionManifoldCandidate",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:verifies_candidate:CognitionManifoldFeasibilityReceipt:CognitionManifoldCandidate"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_feasibility_receipt",
+      "tgt": {
+        "type": "CognitionManifoldFeasibilityReceipt",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:has_feasibility_receipt:CognitionManifoldEpisode:CognitionManifoldFeasibilityReceipt"
+    },
+    {
+      "src": {
+        "type": "CognitionManifoldFeasibilityReceipt",
+        "var": "src"
+      },
+      "edge_type": "verifies_transition",
+      "tgt": {
+        "type": "TransitionHypothesis",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_manifold:verifies_transition:CognitionManifoldFeasibilityReceipt:TransitionHypothesis"
+    }
+  ],
+  "rules": [
+    {
+      "name": "cm_bind_completed_gwm_simulation",
+      "area": "cognition_manifold",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ag",
+          "has_simulation_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "edge_type": "has_gwm_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "ep",
+          "has_gwm_request",
+          "req",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cm_open_one_funded_refinement_request",
+      "area": "cognition_manifold",
+      "order": 8,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "audited"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "refinement_requested"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "edge_type": "has_refinement_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "cognition_manifold_refinement",
+            "request_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "cognition-manifold:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "model_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "model_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "transition_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "projection_version"
+                  }
+                ]
+              }
+            },
+            "status": "pending",
+            "cost": 1.0,
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "candidate_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_version"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "has_refinement_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_thinking_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "refinement_pending"
+        ]
+      ]
+    },
+    {
+      "name": "cm_mark_funded_refinement_waiting_for_model",
+      "area": "cognition_manifold",
+      "order": 13,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_refinement_request",
+          "req"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_manifold_refinement"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requested_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "candidate_version"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "projection_version"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "refinement_pending"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "awaiting_model_refinement"
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "funded_refinement_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "cm_terminate_denied_refinement_without_retry",
+      "area": "cognition_manifold",
+      "order": 14,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_refinement_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_manifold_refinement"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "denied"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "refinement_pending"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "refinement_denied"
+        ]
+      ]
+    },
+    {
+      "name": "cm_expire_refinement_after_epoch_change",
+      "area": "cognition_manifold",
+      "order": 15,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_refinement_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_manifold_refinement"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "refinement_pending"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "awaiting_model_refinement"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "expired"
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "refinement_expired"
+        ]
+      ]
+    },
+    {
+      "name": "cm_create_new_projection_version_from_funded_model_response",
+      "area": "cognition_manifold",
+      "order": 16,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_refinement_request",
+          "req"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ],
+        [
+          "candidate",
+          "has_refinement_transition",
+          "refined_transition"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_model_refinement"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "funded_refinement_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "refined_transition"
+              },
+              "key": "model_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "refined_transition"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "refined_transition"
+              },
+              "key": "future_manifold_supported"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "edge_type": "has_cognition_manifold_candidate",
+                "any_type": false
+              },
+              "var_name": "existing",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "existing"
+                      },
+                      "key": "transition_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "refined_transition"
+                      },
+                      "key": "transition_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "existing"
+                      },
+                      "key": "projection_version"
+                    },
+                    "b": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "candidate"
+                          },
+                          "key": "projection_version"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "refined",
+          "CognitionManifoldCandidate",
+          {
+            "status": "unprojected",
+            "candidate_kind": "gwm_refinement",
+            "transition_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "transition_id"
+              }
+            },
+            "model_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "model_id"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "frame_id"
+              }
+            },
+            "horizon": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "horizon"
+              }
+            },
+            "uncertainty": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "uncertainty"
+              }
+            },
+            "future_manifold_values": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "future_manifold_values"
+              }
+            },
+            "future_manifold_times": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "future_manifold_times"
+              }
+            },
+            "future_manifold_widths": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "future_manifold_widths"
+              }
+            },
+            "future_manifold_effort": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "refined_transition"
+                },
+                "key": "future_manifold_effort"
+              }
+            },
+            "projection_version": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "projection_version"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "parent_projection_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_version"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ep",
+          "has_cognition_manifold_candidate",
+          "refined",
+          {}
+        ],
+        [
+          "add_edge",
+          "refined",
+          "projects_transition",
+          "refined_transition",
+          {}
+        ],
+        [
+          "add_edge",
+          "refined",
+          "refined_from_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "refined",
+          "funded_by_refinement_request",
+          "req",
+          {}
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "refined"
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          "consumed"
+        ]
+      ]
+    },
+    {
+      "name": "cm_unresolved_without_request",
+      "area": "cognition_manifold",
+      "order": 9,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "edge_type": "has_gwm_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_simulation_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "ep",
+          "unresolved_reason",
+          "missing_model_or_request"
+        ]
+      ]
+    },
+    {
+      "name": "cm_capture_gwm_transition",
+      "area": "cognition_manifold",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_gwm_request",
+          "req"
+        ],
+        [
+          "req",
+          "has_prediction_trajectory",
+          "traj"
+        ],
+        [
+          "traj",
+          "has_predicted_belief_state",
+          "state"
+        ],
+        [
+          "state",
+          "generated_by_transition",
+          "transition"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "future_manifold_supported"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "edge_type": "has_cognition_manifold_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "transition_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "key": "transition_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "key": "model_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "CognitionManifoldCandidate",
+          {
+            "status": "unprojected",
+            "candidate_kind": "gwm_transition",
+            "transition_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "transition_id"
+              }
+            },
+            "model_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "model_id"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "frame_id"
+              }
+            },
+            "horizon": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "horizon"
+              }
+            },
+            "uncertainty": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "uncertainty"
+              }
+            },
+            "future_manifold_values": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "future_manifold_values"
+              }
+            },
+            "future_manifold_times": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "future_manifold_times"
+              }
+            },
+            "future_manifold_widths": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "future_manifold_widths"
+              }
+            },
+            "future_manifold_effort": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "future_manifold_effort"
+              }
+            },
+            "refinement_requested": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "refinement_requested"
+              }
+            },
+            "projection_version": 1
+          }
+        ],
+        [
+          "add_edge",
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "projects_transition",
+          "transition",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "projects_predicted_state",
+          "state",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cm_record_symbolic_transition_as_unresolved_candidate",
+      "area": "cognition_manifold",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_gwm_request",
+          "req"
+        ],
+        [
+          "req",
+          "has_prediction_trajectory",
+          "traj"
+        ],
+        [
+          "traj",
+          "has_predicted_belief_state",
+          "state"
+        ],
+        [
+          "state",
+          "generated_by_transition",
+          "transition"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "future_manifold_supported"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "edge_type": "has_cognition_manifold_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "transition_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "key": "transition_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "state_depth"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "state"
+                      },
+                      "key": "depth"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "action_kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "key": "action_kind"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "CognitionManifoldCandidate",
+          {
+            "status": "unresolved_numeric_path",
+            "candidate_kind": "gwm_transition",
+            "transition_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "transition_id"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "action_kind"
+              }
+            },
+            "state_depth": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "depth"
+              }
+            },
+            "state_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "state_kind"
+              }
+            },
+            "model_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "model_id"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "frame_id"
+              }
+            },
+            "horizon": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "horizon"
+              }
+            },
+            "uncertainty": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "state"
+                },
+                "key": "uncertainty"
+              }
+            },
+            "unresolved_reason": "gwm_transition_has_no_numeric_manifold_path"
+          }
+        ],
+        [
+          "add_edge",
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "projects_transition",
+          "transition",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "projects_predicted_state",
+          "state",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cm_project_candidate_with_native_term",
+      "area": "cognition_manifold",
+      "order": 11,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unprojected"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "projection_shape",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "shape_snapshot"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "projection_resolved",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "resolved"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "projection_support",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "support"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "projection_loss",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "loss"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "projection_information_loss",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "information_loss"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "projection_horizon",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "horizon"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "projection_retained_width",
+          {
+            "__term__": {
+              "type": "FutureManifoldProjection",
+              "episode": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "policy": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "source": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "field": "retained_width"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "audited"
+        ]
+      ]
+    },
+    {
+      "name": "cm_unresolved_completed_without_numeric_candidate",
+      "area": "cognition_manifold",
+      "order": 12,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_gwm_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "ep"
+                  },
+                  "edge_type": "has_cognition_manifold_candidate",
+                  "any_type": false
+                },
+                "var_name": "supported",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "supported"
+                    },
+                    "key": "projection_resolved"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "edge_type": "has_cognition_manifold_candidate",
+                "any_type": false
+              },
+              "var_name": "pending",
+              "predicate": {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pending"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "refinement_pending"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pending"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "awaiting_model_refinement"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "ep",
+          "unresolved_reason",
+          "no_resolved_numeric_gwm_candidate"
+        ]
+      ]
+    },
+    {
+      "name": "cm_mint_exact_feasibility_receipt",
+      "area": "cognition_manifold",
+      "order": 18,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "projects_transition",
+          "transition"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "audited"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "future_manifold_supported"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "model_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "projection_support"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "projection_resolved"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "projection_loss"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "projection_information_loss"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "projection_horizon"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "horizon"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "edge_type": "has_feasibility_receipt",
+                "any_type": false
+              },
+              "var_name": "prior",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior"
+                  },
+                  "key": "projection_version"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "key": "projection_version"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "CognitionManifoldFeasibilityReceipt",
+          {
+            "status": "verified",
+            "verifier_kind": "native_future_manifold_projection",
+            "model_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_id"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "transition_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "transition_id"
+              }
+            },
+            "candidate_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_version"
+              }
+            },
+            "projection_version": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_version"
+              }
+            },
+            "horizon": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_horizon"
+              }
+            },
+            "projection_shape": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_shape"
+              }
+            },
+            "projection_loss": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_loss"
+              }
+            },
+            "projection_information_loss": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "projection_information_loss"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "has_feasibility_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "verifies_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "ep",
+          "has_feasibility_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "verifies_transition",
+          "transition",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cm_invalidate_changed_model_projection",
+      "area": "cognition_manifold",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_manifold_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_cognition_manifold_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "projects_transition",
+          "transition"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "audited"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "model_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "stale"
+        ],
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "unresolved"
+        ],
+        [
+          "set_attr",
+          "ep",
+          "unresolved_reason",
+          "model_epoch_changed"
+        ]
+      ]
+    }
+  ]
+}

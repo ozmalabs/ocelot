@@ -1,0 +1,394 @@
+{
+  "id": "scm_reasoning",
+  "version": "1.0.0",
+  "depends_on": [],
+  "area": "cognition",
+  "self_load_only": true,
+  "description": "Default-off funded caller for detached native SCM queries; results remain query records and never become observations.",
+  "microtheory": {
+    "name": "scm_reasoning",
+    "description": "Evaluate explicitly supplied finite models without treating associations as mechanisms."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ScmReasoningPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "remaining": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_scm_reasoning_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:scm_reasoning:has_scm_reasoning_policy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_scm_reasoning_policy",
+      "tgt": {
+        "type": "ScmReasoningPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:scm_reasoning:uses_scm_model",
+      "src": {
+        "type": "ScmQuery",
+        "var": "src"
+      },
+      "edge_type": "uses_scm_model",
+      "tgt": {
+        "type": "ScmModel",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "scm_evaluate_detached_query",
+      "batch": false,
+      "comment": "Evaluate one current, funded, detached SCM request; write only to its query record and retain model identity.",
+      "match": [
+        [
+          "ag",
+          "has_scm_reasoning_policy",
+          "pol"
+        ],
+        [
+          "q",
+          "uses_scm_model",
+          "m"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "scm_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "funding_approved"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "m"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "q",
+          "scm_result",
+          {
+            "__term__": {
+              "type": "SCMIntervene",
+              "model": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "m"
+                },
+                "key": "snapshot"
+              },
+              "query": {
+                "type": "MkDict",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": "kind"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "kind"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "outcome"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "outcome"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "adjustment"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q"
+                    },
+                    "key": "adjustment"
+                  }
+                ]
+              },
+              "intervention": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "intervention"
+              },
+              "exogenous_assignments": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "exogenous_assignments"
+              },
+              "assignment_cap": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "assignment_cap"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "q",
+          "scm_status",
+          "evaluated"
+        ],
+        [
+          "set_attr",
+          "q",
+          "model_hash_used",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "m"
+              },
+              "key": "model_hash"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "q",
+          "evaluated_source_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "m"
+              },
+              "key": "source_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pol",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "remaining"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "scm_refuse_stale_query",
+      "batch": false,
+      "comment": "Close a pending request as stale without evaluating or spending budget when its model epoch changed.",
+      "match": [
+        [
+          "ag",
+          "has_scm_reasoning_policy",
+          "pol"
+        ],
+        [
+          "q",
+          "uses_scm_model",
+          "m"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q"
+              },
+              "key": "scm_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q"
+                },
+                "key": "source_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "m"
+                },
+                "key": "source_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "q",
+          "scm_status",
+          "unknown"
+        ],
+        [
+          "set_attr",
+          "q",
+          "scm_reason",
+          "source_model_epoch_mismatch"
+        ]
+      ]
+    }
+  ]
+}

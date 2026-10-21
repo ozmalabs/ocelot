@@ -55,6 +55,8 @@ from __future__ import annotations
 import gzip
 import json
 import os
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
@@ -63,6 +65,22 @@ from . import reference_slab as slab
 # Cache the downloaded kaikki extracts under the gitignored data/ dir.
 _ROOT = Path(__file__).resolve().parent.parent
 _CACHE_DIR = _ROOT / "data" / "wiktionary"
+_ENGLISH_POS_FALLBACK_ACTIVE = ContextVar("english_pos_fallback_active", default=False)
+
+
+@contextmanager
+def english_pos_fallback_scope():
+    """Temporarily enable the installed WordNet fallback for English POS misses.
+
+    Some readers need a local lexical fallback when the optional shared
+    Wiktionary POS slab is absent. The default remains a strict slab miss so
+    unrelated parsing paths retain their established behavior.
+    """
+    token = _ENGLISH_POS_FALLBACK_ACTIVE.set(True)
+    try:
+        yield
+    finally:
+        _ENGLISH_POS_FALLBACK_ACTIVE.reset(token)
 
 _KAIKKI_URL = "https://kaikki.org/dictionary/downloads/{lang}/{lang}-extract.jsonl.gz"
 # English is published under its own path (the by-code /downloads/en/ slot 404s);
@@ -474,9 +492,28 @@ def wiktionary_pos(word: str, language: str) -> list[str]:
         return list(_POS_OVERRIDE_EN[word])
     name = "wikt_pos_en" if language == "en" else f"wikt_pos_{language}"
     sl = slab.open_slab(name)
-    if sl is None:
+    found = [p for p in (sl.lookup_list(word) if sl is not None else []) if p]
+    if found or language != "en":
+        return found
+
+    # English is documented as WordNet-backed, but the shared English POS slab
+    # is an incidental by-product of the es/ja extracts and may not exist in a
+    # clean/offline checkout. Fall back to the already-supported lazy WordNet
+    # reference rather than making every English token OOV in that case.
+    if not _ENGLISH_POS_FALLBACK_ACTIVE.get():
         return []
-    return [p for p in sl.lookup_list(word) if p]
+    from domains.dict_teacher import _wordnet
+    wn = _wordnet()
+    if wn is None:
+        return []
+    tags = ((wn.NOUN, "noun"), (wn.VERB, "verb"), (wn.ADJ, "adj"),
+            (wn.ADV, "adv"))
+    result = []
+    for wn_pos, tag in tags:
+        lemma = wn.morphy(word, wn_pos) or word
+        if wn.synsets(lemma, pos=wn_pos):
+            result.append(tag)
+    return result
 
 
 # ---------------------------------------------------------------------------

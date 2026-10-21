@@ -294,6 +294,37 @@ def test_an_honest_CHOSEN_frame_with_no_hidden_residual_is_kept_after_questionin
     assert _concerns(s) == []
 
 
+def test_opt_in_funding_guard_blocks_probe_until_authorized():
+    s = _boot()
+    o = _observer(s, "guarded")
+    s.set_attr(o, "ap_question_funding_required", True)
+    ap = s.add_node("Aperture", {"name": "narrow", "resolves": ["pred", "val"]})
+    s.add_edge(o, "chose_aperture", ap)
+    s.add_edge(o, "holds_part", _part(s, "barometer"))
+    s.add_edge(o, "perceives", _part(s, "tea_leaves"))
+    for _ in range(3):
+        s.tick(500_000)
+    assert s.neighbours(o, "probe_projected") == []
+    assert s.neighbours(o, "probe_projected_part") == []
+    assert s.neighbours(o, "chose_aperture")
+
+    s.set_attr(o, "ap_question_funded", True)
+    for _ in range(2):
+        s.tick(500_000)
+    assert s.neighbours(o, "probe_projected") == []
+    mode = s.add_node("NetworkModeState", {"epoch": 2.0})
+    s.add_edge(o, "has_cognition_aperture_mode", mode)
+    s.set_attr(o, "ap_question_funded_epoch", 1.0)
+    for _ in range(2):
+        s.tick(500_000)
+    assert s.neighbours(o, "probe_projected") == []
+    s.set_attr(o, "ap_question_funded_epoch", 2.0)
+    for _ in range(3):
+        s.tick(500_000)
+    assert len(s.neighbours(o, "probe_projected")) == 1
+    assert set(_resolves(s, o)) == set(FULL)
+
+
 def test_graded_relax_tolerance_2_keeps_frame_on_1_cell_residual_and_drops_on_2_cell_residual():
     """P2.C4.3: with `ap_relax_tolerance = 2`, a 1-cell residual (`narrow_to=('pred','val')`
     collapsing only `obj` to `'·'` on `omen` vs `barometer`) keeps the chosen frame,

@@ -35,6 +35,10 @@ AREA = "thinking_budget"
 OUT = ROOT / "seeds" / "thinking_budget.json"
 
 
+def Or(*items):
+    return {"type": "Or", "items": list(items)}
+
+
 def Lt(a, b):
     return {"type": "Lt", "a": a, "b": b}
 
@@ -157,11 +161,13 @@ def pass_when_disabled_rule():
         "comment": "When ThinkingBudget is disabled, approve pending requests without debiting.",
         "match": [
             ["agent", "has_thinking_budget", "budget"],
+            ["agent", "has_network_mode_state", "mode"],
             ["req", "draws_on_thinking_budget", "budget"],
         ],
         "where": And(
             Not(budget_enabled()),
             Eq(A("req", "status"), L("pending")),
+            Or(Eq(A("req", "deadline_epoch"), L(None)), Gte(A("req", "deadline_epoch"), A("mode", "epoch"))),
         ),
         "effects": [
             ["set_attr", "req", "status", "approved"],
@@ -189,6 +195,7 @@ def debit_request_rule():
             budget_enabled(),
             Eq(A("req", "status"), L("pending")),
             Gte(A("budget", "remaining"), A("req", "cost")),
+            Or(Eq(A("req", "deadline_epoch"), L(None)), Gte(A("req", "deadline_epoch"), A("mode", "epoch"))),
         ),
         "effects": [
             ["set_attr", "req", "status", "approved"],
@@ -224,6 +231,7 @@ def record_exhaustion_rule():
             budget_enabled(),
             Eq(A("req", "status"), L("pending")),
             Lt(A("budget", "remaining"), A("req", "cost")),
+            Or(Eq(A("req", "deadline_epoch"), L(None)), Gte(A("req", "deadline_epoch"), A("mode", "epoch"))),
             Not(denial_exists_for(A("req", "requester_kind"))),
         ),
         "effects": [
@@ -263,11 +271,36 @@ def deny_exhausted_request_after_denial_rule():
             budget_enabled(),
             Eq(A("req", "status"), L("pending")),
             Lt(A("budget", "remaining"), A("req", "cost")),
+            Or(Eq(A("req", "deadline_epoch"), L(None)), Gte(A("req", "deadline_epoch"), A("mode", "epoch"))),
             denial_exists_for(A("req", "requester_kind")),
         ),
         "effects": [
             ["set_attr", "req", "status", "denied"],
             ["set_attr", "req", "terminal_reason", "budget_exhausted"],
+        ],
+    }
+
+
+def cancel_expired_request_rule():
+    return {
+        "name": "tb_cancel_expired_request",
+        "area": AREA,
+        "order": 9,
+        "latency_class": "hard_realtime",
+        "batch": False,
+        "match": [
+            ["agent", "has_thinking_budget", "budget"],
+            ["agent", "has_network_mode_state", "mode"],
+            ["req", "draws_on_thinking_budget", "budget"],
+        ],
+        "where": And(
+            Eq(A("req", "status"), L("pending")),
+            Not(Eq(A("req", "deadline_epoch"), L(None))),
+            Gt(A("mode", "epoch"), A("req", "deadline_epoch")),
+        ),
+        "effects": [
+            ["set_attr", "req", "status", "canceled"],
+            ["set_attr", "req", "terminal_reason", "deadline_exceeded"],
         ],
     }
 
@@ -336,6 +369,7 @@ def build():
         ],
         "productions": productions(),
         "rules": [
+            cancel_expired_request_rule(),
             fund_from_horizon_rule(),
             refill_once_per_epoch_rule(),
             pass_when_disabled_rule(),

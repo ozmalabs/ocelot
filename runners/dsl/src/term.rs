@@ -1994,6 +1994,17 @@ pub enum TermNode {
         robust: bool,
     },
 
+    /// Pure bounded evaluation of a detached finite structural causal model.
+    /// All five inputs are values supplied by child terms; no graph handle is
+    /// available to the evaluator.
+    SCMIntervene {
+        model: TermIdx,
+        query: TermIdx,
+        intervention: TermIdx,
+        exogenous_assignments: TermIdx,
+        assignment_cap: TermIdx,
+    },
+
     /// `DepthInfer` — MONOCULAR STRUCTURE-FROM-MOTION, the DEPTH sibling of
     /// `TimeInfer`. It reads the RESIDUAL of `TimeInfer`'s question: a scene with
     /// real (discrete) depth translated past a moving eye produces a 2D
@@ -3328,26 +3339,35 @@ pub enum TermNode {
         default: Option<TermIdx>,
     },
 
+    /// Fixed-width ordinal signature of the `order`-th forward difference
+    /// of an ordered numeric sample sequence. `width` bounds the returned
+    /// signature length (0..=64); malformed/non-finite samples and invalid
+    /// bounds return None. The operation is pure and reuses the memory
+    /// subsystem's strict ordinal-rank convention.
+    ShapeRankSignature {
+        samples: TermIdx,
+        order: TermIdx,
+        width: TermIdx,
+    },
+
+    /// Bounded pure record-level signature recall. `records` is a sequence
+    /// of graph-projected descriptor dictionaries; `query` is one descriptor.
+    /// Returns `(candidate-tuples, checked, complete)` and never mutates graph
+    /// or persistence state. Candidate tuple: `(record_key, distance, epoch)`.
+    RecallNearest {
+        records: TermIdx,
+        query: TermIdx,
+        k: TermIdx,
+        candidate_cap: TermIdx,
+    },
+
     // --- Track I process algebra (I1.2; `process_algebra.rs`) ---
-    /// `ProcessCompose{a, b}` — the process "a then b". Permutations and
-    /// square integer matrices compose in closed form; mismatched or
-    /// generator-step processes compose into a `["seq", ...]` value.
     ProcessCompose { a: TermIdx, b: TermIdx },
-    /// `ProcessInverse{a}` — exact inverse, `None` if the process has none
-    /// (non-unimodular matrix, `scale2`, unknown kinds).
     ProcessInverse { a: TermIdx },
-    /// `ProcessApply{p, state}` — run process `p` on `state`.
     ProcessApply { p: TermIdx, state: TermIdx },
-    /// `EffectSupport{p}` — how much of the world `p` touches (moved points
-    /// for a permutation); `None` where support is only probe-relative.
     EffectSupport { p: TermIdx },
-    /// `EffectFingerprint{p, probes}` — `p`'s outputs on a probe battery,
-    /// the identity of a process by its effect.
     EffectFingerprint { p: TermIdx, probes: TermIdx },
-    /// `PermParity{p}` — parity of the permutation sorting a sequence of
-    /// distinct values (0 even, 1 odd).
     PermParity { p: TermIdx },
-    /// `MatDet{m}` — exact integer determinant.
     MatDet { m: TermIdx },
 }
 
@@ -4021,6 +4041,13 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             tool,
             args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
         },
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => TermNode::SCMIntervene {
+            model: copy_subtree(src, dst, model),
+            query: copy_subtree(src, dst, query),
+            intervention: copy_subtree(src, dst, intervention),
+            exogenous_assignments: copy_subtree(src, dst, exogenous_assignments),
+            assignment_cap: copy_subtree(src, dst, assignment_cap),
+        },
         TermNode::ReachableFrom {
             node,
             edge_type,
@@ -4286,6 +4313,15 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             codebook_type,
             resolution,
             field,
+        },
+        TermNode::ShapeRankSignature { samples, order, width } => TermNode::ShapeRankSignature {
+            samples: copy_subtree(src, dst, samples),
+            order: copy_subtree(src, dst, order),
+            width: copy_subtree(src, dst, width),
+        },
+        TermNode::RecallNearest { records, query, k, candidate_cap } => TermNode::RecallNearest {
+            records: copy_subtree(src, dst, records), query: copy_subtree(src, dst, query),
+            k: copy_subtree(src, dst, k), candidate_cap: copy_subtree(src, dst, candidate_cap),
         },
         TermNode::DepthInfer {
             sequence,
@@ -5107,29 +5143,18 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
             default: default.map(|d| copy_subtree(src, dst, d)),
         },
         TermNode::ProcessCompose { a, b } => TermNode::ProcessCompose {
-            a: copy_subtree(src, dst, a),
-            b: copy_subtree(src, dst, b),
+            a: copy_subtree(src, dst, a), b: copy_subtree(src, dst, b),
         },
-        TermNode::ProcessInverse { a } => TermNode::ProcessInverse {
-            a: copy_subtree(src, dst, a),
-        },
+        TermNode::ProcessInverse { a } => TermNode::ProcessInverse { a: copy_subtree(src, dst, a) },
         TermNode::ProcessApply { p, state } => TermNode::ProcessApply {
-            p: copy_subtree(src, dst, p),
-            state: copy_subtree(src, dst, state),
+            p: copy_subtree(src, dst, p), state: copy_subtree(src, dst, state),
         },
-        TermNode::EffectSupport { p } => TermNode::EffectSupport {
-            p: copy_subtree(src, dst, p),
-        },
+        TermNode::EffectSupport { p } => TermNode::EffectSupport { p: copy_subtree(src, dst, p) },
         TermNode::EffectFingerprint { p, probes } => TermNode::EffectFingerprint {
-            p: copy_subtree(src, dst, p),
-            probes: copy_subtree(src, dst, probes),
+            p: copy_subtree(src, dst, p), probes: copy_subtree(src, dst, probes),
         },
-        TermNode::PermParity { p } => TermNode::PermParity {
-            p: copy_subtree(src, dst, p),
-        },
-        TermNode::MatDet { m } => TermNode::MatDet {
-            m: copy_subtree(src, dst, m),
-        },
+        TermNode::PermParity { p } => TermNode::PermParity { p: copy_subtree(src, dst, p) },
+        TermNode::MatDet { m } => TermNode::MatDet { m: copy_subtree(src, dst, m) },
         // --- Program IR (P1) ---
         TermNode::ProgSeq { stmts } => TermNode::ProgSeq {
             stmts: stmts.iter().map(|s| copy_subtree(src, dst, *s)).collect(),
@@ -7323,6 +7348,15 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
     match node {
         TermNode::Var { name } => env_get(env, *name).cloned().unwrap_or(Value::None),
 
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => {
+            let model = evaluate(arena, *model, env, ctx);
+            let query = evaluate(arena, *query, env, ctx);
+            let intervention = evaluate(arena, *intervention, env, ctx);
+            let assignments = evaluate(arena, *exogenous_assignments, env, ctx);
+            let cap = evaluate(arena, *assignment_cap, env, ctx);
+            crate::can_ops::scm_intervene(&model, &query, &intervention, &assignments, &cap, ctx.interner)
+        }
+
         TermNode::Lit { value } => value.clone(),
 
         TermNode::TypeOf { node } => {
@@ -9137,7 +9171,6 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             ctx,
         ),
 
-        // --- Track I process algebra (I1.2) ---
         TermNode::ProcessCompose { a, b } => {
             let av = evaluate(arena, *a, env, ctx);
             let bv = evaluate(arena, *b, env, ctx);
@@ -10782,6 +10815,123 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             env,
             ctx,
         ),
+        TermNode::ShapeRankSignature { samples, order, width } => {
+            let samples_v = evaluate(arena, *samples, env, ctx);
+            let order_v = evaluate(arena, *order, env, ctx);
+            let width_v = evaluate(arena, *width, env, ctx);
+            let (Value::Tuple(items) | Value::List(items)) = samples_v else {
+                return Value::None;
+            };
+            let Some(order) = (match order_v {
+                Value::Int(i) => usize::try_from(i).ok(),
+                _ => None,
+            }) else { return Value::None; };
+            let Some(width) = (match width_v {
+                Value::Int(i) => usize::try_from(i).ok(),
+                _ => None,
+            }) else { return Value::None; };
+            if items.len() > 64 || width > 64 || order > items.len() {
+                return Value::None;
+            }
+            let mut differences = Vec::with_capacity(items.len());
+            for item in items.iter() {
+                let value = match item {
+                    Value::Int(i) => *i as f64,
+                    Value::Float(f) if f.is_finite() => *f,
+                    _ => return Value::None,
+                };
+                differences.push(value);
+            }
+            for _ in 0..order {
+                differences = differences.windows(2).map(|pair| pair[1] - pair[0]).collect();
+            }
+            if differences.iter().any(|x| !x.is_finite()) {
+                return Value::None;
+            }
+            let mut ranks = crate::memory::shape_signature(&differences);
+            ranks.resize(width, 0);
+            ranks.truncate(width);
+            Value::Tuple(Arc::new(ranks.into_iter().map(Value::Int).collect()))
+        }
+        TermNode::RecallNearest { records, query, k, candidate_cap } => {
+            use crate::memory::{RecallCoordinate, RecallRecord};
+            // These arguments can contain binders such as MapList. Evaluate
+            // each against the same incoming lexical environment so a child
+            // binder cannot leak bindings into sibling arguments.
+            let mut records_env = env.clone();
+            let records_v = evaluate(arena, *records, &mut records_env, ctx);
+            let mut query_env = env.clone();
+            let query_v = evaluate(arena, *query, &mut query_env, ctx);
+            let mut k_env = env.clone();
+            let k_v = evaluate(arena, *k, &mut k_env, ctx);
+            let mut cap_env = env.clone();
+            let cap_v = evaluate(arena, *candidate_cap, &mut cap_env, ctx);
+            let (Value::Tuple(records_v) | Value::List(records_v)) = records_v else { return Value::None; };
+            let exact_int = |v: Value| -> Option<i64> { match v {
+                Value::Int(n) => Some(n),
+                Value::Float(x) if x.is_finite() && x.fract() == 0.0 && x >= i64::MIN as f64 && x <= i64::MAX as f64 => Some(x as i64),
+                _ => None,
+            }};
+            let (Some(k), Some(cap)) = (exact_int(k_v), exact_int(cap_v)) else { return Value::None; };
+            if k < 0 || cap < 0 || k > 4096 || cap > 65536 { return Value::None; }
+            fn field<'a>(v: &'a Value, name: &str, interner: &crate::sym::Interner) -> Option<&'a Value> {
+                let Value::Dict(items) = v else { return None; };
+                items.iter().find(|(key, _)| matches!(key, Value::Str(sym) if interner.resolve(*sym) == name)).map(|(_, value)| value)
+            }
+            fn as_string(v: &Value, interner: &crate::sym::Interner) -> Option<String> {
+                match v {
+                    Value::Str(s) => Some(interner.resolve(*s).to_owned()),
+                    Value::Surface(SurfaceKind::Text, bytes) => {
+                        std::str::from_utf8(bytes).ok().map(str::to_owned)
+                    }
+                    _ => None,
+                }
+            }
+            fn parse_record(v: &Value, interner: &crate::sym::Interner) -> Option<RecallRecord> {
+                let text = |name| field(v, name, interner).and_then(|x| as_string(x, interner));
+                let int = |name| match field(v, name, interner) {
+                    Some(Value::Int(x)) => Some(*x),
+                    Some(Value::Float(x)) if x.is_finite() && x.fract() == 0.0 && *x >= i64::MIN as f64 && *x <= i64::MAX as f64 => Some(*x as i64),
+                    _ => None,
+                };
+                let frame = match field(v, "frame_id", interner)? {
+                    Value::None => None,
+                    x => Some(as_string(x, interner)?),
+                };
+                let live = match field(v, "live", interner)? { Value::Bool(b) => *b, _ => return None };
+                let coords_value = field(v, "coordinates", interner)?;
+                let (Value::Tuple(coords) | Value::List(coords)) = coords_value else { return None; };
+                let mut coordinates = Vec::with_capacity(coords.len());
+                for coord in coords.iter() {
+                    let (Value::Tuple(parts) | Value::List(parts)) = coord else { return None; };
+                    if parts.len() != 5 { return None; }
+                    let dimension = as_string(&parts[0], interner)?;
+                    let value_kind = as_string(&parts[1], interner)?;
+                    let missing = match parts[3] { Value::Bool(b) => b, _ => return None };
+                    let tolerance = match parts[4] { Value::Int(n) => n as f64, Value::Float(x) => x, _ => return None };
+                    let value = match (&value_kind[..], &parts[2]) {
+                        ("integer" | "ordinal_rank", Value::Float(x)) if x.is_finite() && x.fract() == 0.0 && *x >= i64::MIN as f64 && *x <= i64::MAX as f64 => Value::Int(*x as i64),
+                        _ => parts[2].clone(),
+                    };
+                    coordinates.push(RecallCoordinate { dimension, value_kind, value, missing, tolerance });
+                }
+                Some(RecallRecord {
+                    record_key: text("record_key")?, owner_id: text("owner_id")?, source_id: text("source_id")?, frame_id: frame,
+                    schema_version: text("schema_version")?, source_epoch: int("source_epoch")?, live, coordinates,
+                })
+            }
+            let Some(query) = parse_record(&query_v, ctx.interner) else { return Value::None; };
+            let parsed: Option<Vec<_>> = records_v.iter().map(|v| parse_record(v, ctx.interner)).collect();
+            let Some(parsed) = parsed else { return Value::None; };
+            let (candidates, checked, complete) = crate::memory::recall_nearest_records(&parsed, &query, k as usize, cap as usize);
+            let result = candidates.into_iter().map(|c| Value::Tuple(Arc::new(vec![
+                Value::Surface(SurfaceKind::Text, Arc::from(c.record_key.as_bytes())),
+                Value::Int(c.distance), Value::Int(c.source_epoch),
+            ].into()))).collect::<Vec<_>>();
+            Value::Tuple(Arc::new(vec![
+                Value::Tuple(Arc::new(result.into())), Value::Int(checked as i64), Value::Bool(complete),
+            ].into()))
+        }
         TermNode::DepthInfer {
             sequence,
             codebook_type,
@@ -14493,6 +14643,9 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         | TermNode::Surface { .. }
         | TermNode::NodesOfType { .. }
         | TermNode::ScalarAttrTriples { .. } => {}
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => {
+            out.extend([*model, *query, *intervention, *exogenous_assignments, *assignment_cap]);
+        }
         TermNode::TypeOf { node } | TermNode::Attr { node, .. } => out.push(*node),
         TermNode::SetT { items }
         | TermNode::And { items }
@@ -14750,21 +14903,6 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
                 out.push(*d);
             }
         }
-        TermNode::ProcessCompose { a, b } => {
-            out.push(*a);
-            out.push(*b);
-        }
-        TermNode::ProcessInverse { a } => out.push(*a),
-        TermNode::ProcessApply { p, state } => {
-            out.push(*p);
-            out.push(*state);
-        }
-        TermNode::EffectSupport { p } | TermNode::PermParity { p } => out.push(*p),
-        TermNode::EffectFingerprint { p, probes } => {
-            out.push(*p);
-            out.push(*probes);
-        }
-        TermNode::MatDet { m } => out.push(*m),
         TermNode::Fold {
             source, init, body, ..
         } => {
@@ -15011,6 +15149,17 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::RatioInduce { population, .. } => {
             out.push(*population);
         }
+        TermNode::ShapeRankSignature { samples, order, width } => {
+            out.extend([*samples, *order, *width]);
+        }
+        TermNode::RecallNearest { records, query, k, candidate_cap } => {
+            out.extend([*records, *query, *k, *candidate_cap]);
+        }
+        TermNode::ProcessCompose { a, b } => out.extend([*a, *b]),
+        TermNode::ProcessInverse { a } | TermNode::EffectSupport { p: a }
+        | TermNode::PermParity { p: a } | TermNode::MatDet { m: a } => out.push(*a),
+        TermNode::ProcessApply { p, state } => out.extend([*p, *state]),
+        TermNode::EffectFingerprint { p, probes } => out.extend([*p, *probes]),
         TermNode::LogQuantum { population, .. } => {
             out.push(*population);
         }
@@ -18200,6 +18349,58 @@ mod tests {
         let win_b = evaluate(&arena, elem_slot, &mut env, &mut eval);
         assert_eq!(win_b, Value::Node(b_high));
         assert_eq!(eval.cache.as_ref().unwrap().argmax.len(), 2);
+    }
+
+    #[test]
+    fn shape_rank_signature_matches_legacy_finite_difference_contract() {
+        let mut arena = TermArena::new();
+        let interner = Interner::new();
+        let graph = TypedGraph::new();
+        let samples = arena.add(TermNode::Lit {
+            value: Value::Tuple(Arc::new(vec![Value::Int(0), Value::Int(1), Value::Int(5), Value::Int(14)].into())),
+        });
+        let order = arena.add(TermNode::Lit { value: Value::Int(2) });
+        let width = arena.add(TermNode::Lit { value: Value::Int(8) });
+        let term = arena.add(TermNode::ShapeRankSignature { samples, order, width });
+        let before = graph.node_count();
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&graph, &interner);
+        let result = evaluate(&arena, term, &mut env, &mut ctx);
+        assert_eq!(
+            result,
+            Value::Tuple(Arc::new(vec![
+                Value::Int(0), Value::Int(1), Value::Int(0), Value::Int(0),
+                Value::Int(0), Value::Int(0), Value::Int(0), Value::Int(0),
+            ].into()))
+        );
+        assert_eq!(graph.node_count(), before, "signature evaluation must be pure");
+    }
+
+    #[test]
+    fn shape_rank_signature_rejects_invalid_and_nonfinite_inputs() {
+        let mut arena = TermArena::new();
+        let interner = Interner::new();
+        let graph = TypedGraph::new();
+        let samples = arena.add(TermNode::Lit {
+            value: Value::Tuple(Arc::new(vec![Value::Float(0.0), Value::Float(f64::NAN)].into())),
+        });
+        let order = arena.add(TermNode::Lit { value: Value::Int(0) });
+        let width = arena.add(TermNode::Lit { value: Value::Int(8) });
+        let term = arena.add(TermNode::ShapeRankSignature { samples, order, width });
+        let mut env: Env = SmallVec::new();
+        let mut ctx = EvalCtx::new(&graph, &interner);
+        assert_eq!(evaluate(&arena, term, &mut env, &mut ctx), Value::None);
+
+        let samples = arena.add(TermNode::Lit {
+            value: Value::Tuple(Arc::new(vec![Value::Float(0.0)].into())),
+        });
+        let invalid_order = arena.add(TermNode::Lit { value: Value::Int(2) });
+        let invalid = arena.add(TermNode::ShapeRankSignature {
+            samples,
+            order: invalid_order,
+            width,
+        });
+        assert_eq!(evaluate(&arena, invalid, &mut env, &mut ctx), Value::None);
     }
 }
 
