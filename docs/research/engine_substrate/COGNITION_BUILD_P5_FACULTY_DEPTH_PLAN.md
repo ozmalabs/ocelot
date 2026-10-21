@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1–E4.3, A2.1–A2.2, D6.1–D6.2 and H3 profile closure are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out mechanism adapters and evaluation, H1 freeze, H2 report and H4 closeout remain open.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1–E4.3, A2.1–A2.2, D6.1–D6.2 and H3 profile closure are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). H1/H2 harness reporting is complete with every item NOT_ESTABLISHED because all arm adapters are null; Bigville owner-context hookup, mechanism adapters, evidence-bearing evaluation and H4 closeout remain open.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -557,6 +557,8 @@ The runner writes `evaluation/reports/cognition_p5_heldout_v1_<hash8>_d0-200.jso
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** retuning on holdout; declaring recursive ToM or SCM general beyond the tested class.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+  **Complete with no established item:** frozen run `0826089af64c38da3c34d3be2c96ca490364ffa3`, indices 0–199 and 100 control inputs/family, produced 200 primary rows for each of eight families. Arm adapters were missing, leaving all 3,200 primary results null; the controls were generated but not executed. The analysis returns NOT_ESTABLISHED for every item. The report and analysis JSON remain uncommitted; the outcome and limitations are recorded in `COGNITION_BUILD_P5_RESULTS.md`.
 
 ### P5.H3 — Integrate the Phase 5 cognition profile
 
