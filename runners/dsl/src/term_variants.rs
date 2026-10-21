@@ -510,6 +510,7 @@ impl TermNode {
             TermNode::SoftWeights { .. } => 240,
             TermNode::ShapeRankSignature { .. } => 241,
             TermNode::RecallNearest { .. } => 242,
+            TermNode::SCMIntervene { .. } => 243,
         }
     }
 }

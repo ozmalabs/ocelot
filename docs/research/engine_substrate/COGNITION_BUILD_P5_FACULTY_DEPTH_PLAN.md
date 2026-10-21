@@ -248,7 +248,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Tier:** T2
 - **Goal:** Wire SCMIntervene JSON and graph reflection.
 - **Read first:** `runners/dsl/src/jsonio.rs`; `runners/dsl/src/reflect.rs`; `COGNITION_SCM_CONTRACT.md`.
-- **Touch:** `runners/dsl/src/jsonio.rs`; `runners/dsl/src/reflect.rs`.
+- **Touch:** `runners/dsl/src/term.rs`; `runners/dsl/src/jsonio.rs`; `runners/dsl/src/reflect.rs`; `runners/dsl/src/term_variants.rs` (the frozen variant must be declared and assigned metadata in the same compileable schema-wiring step).
 - **Pattern to copy:** existing `TimeInfer` arms in both modules.
 - **Steps:** 1. Add parse and serialize arms. 2. Add reflection and reconstruction. 3. Test JSON and graph round trips without losing optional fields.
 - **Guard:** new variant only.

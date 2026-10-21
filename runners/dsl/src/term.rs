@@ -1994,6 +1994,17 @@ pub enum TermNode {
         robust: bool,
     },
 
+    /// Pure bounded evaluation of a detached finite structural causal model.
+    /// All five inputs are values supplied by child terms; no graph handle is
+    /// available to the evaluator.
+    SCMIntervene {
+        model: TermIdx,
+        query: TermIdx,
+        intervention: TermIdx,
+        exogenous_assignments: TermIdx,
+        assignment_cap: TermIdx,
+    },
+
     /// `DepthInfer` — MONOCULAR STRUCTURE-FROM-MOTION, the DEPTH sibling of
     /// `TimeInfer`. It reads the RESIDUAL of `TimeInfer`'s question: a scene with
     /// real (discrete) depth translated past a moving eye produces a 2D
@@ -4020,6 +4031,13 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::UseTool { tool, args } => TermNode::UseTool {
             tool,
             args: args.iter().map(|a| copy_subtree(src, dst, *a)).collect(),
+        },
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => TermNode::SCMIntervene {
+            model: copy_subtree(src, dst, model),
+            query: copy_subtree(src, dst, query),
+            intervention: copy_subtree(src, dst, intervention),
+            exogenous_assignments: copy_subtree(src, dst, exogenous_assignments),
+            assignment_cap: copy_subtree(src, dst, assignment_cap),
         },
         TermNode::ReachableFrom {
             node,
@@ -7307,6 +7325,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
 
     match node {
         TermNode::Var { name } => env_get(env, *name).cloned().unwrap_or(Value::None),
+
+        // Activated with the finite SCM evaluator in P5.R4. Keeping this
+        // inert during schema wiring prevents partial native exposure.
+        TermNode::SCMIntervene { .. } => Value::None,
 
         TermNode::Lit { value } => value.clone(),
 
@@ -14562,6 +14584,9 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         | TermNode::Surface { .. }
         | TermNode::NodesOfType { .. }
         | TermNode::ScalarAttrTriples { .. } => {}
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => {
+            out.extend([*model, *query, *intervention, *exogenous_assignments, *assignment_cap]);
+        }
         TermNode::TypeOf { node } | TermNode::Attr { node, .. } => out.push(*node),
         TermNode::SetT { items }
         | TermNode::And { items }

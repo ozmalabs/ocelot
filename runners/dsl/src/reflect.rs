@@ -3087,6 +3087,16 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
                 },
             ],
         ),
+        TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap } => (
+            "SCMIntervene",
+            vec![
+                Child { name: "model", child: *model },
+                Child { name: "query", child: *query },
+                Child { name: "intervention", child: *intervention },
+                Child { name: "exogenous_assignments", child: *exogenous_assignments },
+                Child { name: "assignment_cap", child: *assignment_cap },
+            ],
+        ),
         TermNode::ShapeRankSignature { samples, order, width } => (
             "ShapeRankSignature",
             vec![
@@ -5060,6 +5070,13 @@ fn reconstruct(
             max_steps: get_int("max_steps")?,
             robust: get_bool("robust"),
         },
+        "SCMIntervene" => TermNode::SCMIntervene {
+            model: take_child!("model"),
+            query: take_child!("query"),
+            intervention: take_child!("intervention"),
+            exogenous_assignments: take_child!("exogenous_assignments"),
+            assignment_cap: take_child!("assignment_cap"),
+        },
         "ShapeRankSignature" => TermNode::ShapeRankSignature {
             samples: take_child!("samples"),
             order: take_child!("order"),
@@ -5580,6 +5597,24 @@ mod tests {
         let idx = term_from_subgraph(&graph, &interner, node, &mut rebuilt).unwrap();
         assert!(matches!(rebuilt.get(idx), TermNode::RecallNearest { .. }));
         assert_eq!(crate::term::free_vars(&rebuilt, idx, None).len(), 4);
+    }
+
+    #[test]
+    fn scm_intervene_reflection_round_trip_preserves_children() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let model = arena.add(TermNode::Var { name: interner.intern("model") });
+        let query = arena.add(TermNode::Var { name: interner.intern("query") });
+        let intervention = arena.add(TermNode::Var { name: interner.intern("intervention") });
+        let exogenous_assignments = arena.add(TermNode::Var { name: interner.intern("assignments") });
+        let assignment_cap = arena.add(TermNode::Var { name: interner.intern("cap") });
+        let term = arena.add(TermNode::SCMIntervene { model, query, intervention, exogenous_assignments, assignment_cap });
+        let mut graph = TypedGraph::new();
+        let node = term_to_subgraph(&arena, term, &mut graph, &mut interner);
+        let mut rebuilt = TermArena::new();
+        let idx = term_from_subgraph(&graph, &interner, node, &mut rebuilt).unwrap();
+        assert!(matches!(rebuilt.get(idx), TermNode::SCMIntervene { .. }));
+        assert_eq!(crate::term::free_vars(&rebuilt, idx, None).len(), 5);
     }
 
     #[test]
