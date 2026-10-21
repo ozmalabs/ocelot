@@ -104,7 +104,8 @@ def test_same_state_model_epoch_dedup():
 
 
 def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0,
-                   expansion_limit=256.0):
+                   expansion_limit=256.0, maximum_path_arrivals=4096.0,
+                   required_horizon=1.0):
     from substrate.world_adapter import WorldAdapter
     from scripts.gen_cognition_planner_seed import build_seed
     from scripts.gen_thinking_budget_seed import build as build_budget_seed
@@ -119,12 +120,23 @@ def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0
     adapter.inner.set_attr(policy, "enabled", 1.0 if enabled else 0.0)
     adapter.inner.set_attr(policy, "maximum_depth", 8.0)
     adapter.inner.set_attr(policy, "maximum_expansions", 256.0)
+    adapter.inner.set_attr(policy, "maximum_path_arrivals", maximum_path_arrivals)
     adapter.inner.set_attr(policy, "current_model_epoch", 2.0)
     adapter.inner.set_attr(policy, "current_goal_epoch", 3.0)
     adapter.inner.set_attr(policy, "current_manifold_epoch", 5.0)
     adapter.inner.set_attr(policy, "current_model_id", "model-1")
     adapter.inner.set_attr(policy, "current_goal_id", "goal-1")
     adapter.inner.set_attr(policy, "current_manifold_id", "manifold-1")
+    manifold_policy = adapter.s.add_node("CognitionManifoldPolicy", {
+        "enabled": 1.0, "future_manifold_projection_budget": 16.0,
+        "future_manifold_physical_horizon": required_horizon,
+    })
+    episode = adapter.s.add_node("CognitionManifoldEpisode", {
+        "future_manifold_target": [[0.0] for _ in range(int(required_horizon))],
+        "future_manifold_bounds": [[1.0] for _ in range(int(required_horizon))],
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_manifold_policy", manifold_policy)
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_manifold_episode", episode)
     adapter.inner.set_attr(budget, "enabled", 1.0)
     adapter.inner.set_attr(budget, "remaining", remaining)
     adapter.inner.set_attr(budget, "capacity", remaining)
@@ -143,7 +155,8 @@ def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0
         "request_id": "plan-1", "status": "pending", "source_epoch": 4.0,
         "owner_id": "owner-1", "start_state_id": "s0", "model_id": "model-1", "model_epoch": 2.0, "goal_id": "goal-1",
         "goal_epoch": 3.0, "manifold_id": "manifold-1", "manifold_epoch": 5.0,
-        "required_horizon": 2.0, "deadline_epoch": 10.0,
+        "required_horizon": required_horizon, "deadline_epoch": 10.0,
+        "intervention_unit": "joule",
         "depth_limit": depth_limit, "expansion_limit": expansion_limit,
     })
     adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)
@@ -158,6 +171,12 @@ def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0
         transition = adapter.s.add_node("CognitionPlanTransition", {
             "transition_id": f"t{index}", "source_state_key": source,
             "action_key": action, "model_id": "model-1", "model_epoch": float(epoch),
+            "future_manifold_duration": 1.0,
+            "future_manifold_times": [1.0],
+            "future_manifold_values": [[0.0]],
+            "future_manifold_widths": [[0.0]],
+            "future_manifold_effort": [1.0],
+            "intervention_unit": "joule",
         })
         receipt = adapter.s.add_node("CognitionManifoldFeasibilityReceipt", {
             "status": "verified", "verifier_kind": "native_future_manifold_projection",
@@ -196,7 +215,7 @@ def test_graph_planner_materializes_and_funds_two_step_plan():
     adapter, request, budget = _graph_planner([
         ("s0", "prepare", "middle", 2),
         ("middle", "finish", "goal", 2),
-    ])
+    ], required_horizon=2.0)
     _run_to_fixpoint(adapter)
     assert adapter.s.node(request)["attrs"]["status"] == "solved"
     assert adapter.s.node(request)["attrs"]["expanded_count"] == 2.0
@@ -262,7 +281,7 @@ def test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions():
         ("s0", "right", "right", 2),
         ("left", "finish_left", "goal", 2),
         ("right", "finish_right", "goal", 2),
-    ])
+    ], required_horizon=2.0)
     _run_to_fixpoint(adapter)
     assert adapter.s.node(request)["attrs"]["status"] == "solved"
     assert adapter.s.node(request)["attrs"]["expanded_count"] == 3.0
@@ -280,11 +299,25 @@ def test_graph_planner_preserves_alternate_paths_through_shared_intermediate():
         ("left", "merge_left", "shared", 2),
         ("right", "merge_right", "shared", 2),
         ("shared", "finish", "goal", 2),
-    ])
+    ], required_horizon=3.0)
     _run_to_fixpoint(adapter)
     assert adapter.s.node(request)["attrs"]["status"] == "solved"
     assert adapter.s.node(request)["attrs"]["expanded_count"] == 4.0
-    assert len(adapter.inner.neighbours(request, "has_imagined_plan_candidate")) == 1
+    candidates = adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+    assert len(candidates) == 2
+
+    def candidate_actions(candidate):
+        arrival = adapter.inner.neighbours(candidate, "has_terminal_path_arrival")[0]
+        actions = []
+        while adapter.s.node(arrival)["attrs"].get("path_kind") != "origin":
+            actions.append(adapter.s.node(arrival)["attrs"]["action_key"])
+            arrival = adapter.inner.neighbours(arrival, "parent_path_arrival")[0]
+        return tuple(reversed(actions))
+
+    assert {candidate_actions(candidate) for candidate in candidates} == {
+        ("left", "merge_left", "finish"),
+        ("right", "merge_right", "finish"),
+    }
 
     frontiers = adapter.inner.neighbours(request, "has_frontier")
     shared = [node for node in frontiers if adapter.s.node(node)["attrs"].get("state_key") == "shared"]
@@ -306,6 +339,8 @@ def test_graph_planner_preserves_alternate_paths_through_shared_intermediate():
         ("left", "merge_left", "shared"),
         ("right", "merge_right", "shared"),
     }
+    assert {adapter.s.node(adapter.inner.neighbours(arrival, "parent_path_arrival")[0])["attrs"]["action_key"]
+            for arrival in arrivals} == {"left", "right"}
     for parent in parents:
         earlier = adapter.inner.neighbours(parent, "has_parent_frontier")
         assert len(earlier) == 1
@@ -317,6 +352,19 @@ def test_graph_planner_preserves_alternate_paths_through_shared_intermediate():
     assert [adapter.s.node(node)["attrs"]["action_key"] for node in adapter.inner.neighbours(
         goal_frontier[0], "uses_transition")] == ["finish"]
     assert adapter.s.node(budget)["attrs"]["remaining"] == 12.0
+
+
+def test_graph_planner_path_arrival_limit_closes_without_partial_candidates():
+    adapter, request, budget = _graph_planner(
+        [("s0", "finish", "goal", 2)], maximum_path_arrivals=1.0,
+    )
+    _run_to_fixpoint(adapter)
+    attrs = adapter.s.node(request)["attrs"]
+    assert attrs["status"] == "exhausted"
+    assert attrs["terminal_reason"] == "path_arrival_limit"
+    assert attrs["expanded_count"] == 0.0
+    assert adapter.inner.neighbours(request, "has_imagined_plan_candidate") == []
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 16.0
 
 
 def test_graph_planner_expansion_limit_is_terminal():
@@ -486,6 +534,7 @@ def test_graph_planner_accepts_native_p4_projection_receipt():
         "future_manifold_times": [1, 2],
         "future_manifold_widths": [[0.0], [0.0]],
         "future_manifold_effort": [0.0, 0.0],
+        "future_manifold_duration": 2.0, "intervention_unit": "joule",
     }.items():
         adapter.inner.set_attr(model_transition, key, value)
 
@@ -524,6 +573,7 @@ def test_graph_planner_accepts_native_p4_projection_receipt():
         "goal_id": "goal-1", "goal_epoch": 3.0,
         "manifold_id": "manifold-1", "manifold_epoch": 5.0,
         "required_horizon": 2.0, "deadline_epoch": 5.0,
+        "intervention_unit": "joule",
         "depth_limit": 8.0, "expansion_limit": 256.0,
     })
     adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)

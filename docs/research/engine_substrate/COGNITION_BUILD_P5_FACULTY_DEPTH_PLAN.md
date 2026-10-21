@@ -377,7 +377,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Non-goals:** assuming stochastic GWM predictions are certainties; silently disabling frozen dual-process guards.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
 
-### P5.E4.2 — Implement graph-resident bounded multi-step search
+### P5.E4.2 — Implement graph-resident bounded multi-step search (complete)
 
 - **ID:** P5.E4.2
 - **Tier:** T2
@@ -387,7 +387,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Pattern to copy:** GWM rollout expansion and P3 one-request-per-funded-step.
 - **Steps:** 1. Materialize frontier and parent/path state as graph data. 2. Expand only grammar-admissible model actions under depth, node and budget bounds; keep uncertainty branches. 3. Verify terminal goals and emit a candidate plan or explicit impasse/needs_tool request.
 - **Guard:** `CognitionPlannerPolicy.enabled`, default 0.
-- **Acceptance:** E4.1 contract fixtures plus graph-backed tests: `test_graph_planner_materializes_and_funds_two_step_plan`, `test_graph_planner_deduplicates_cycles_and_stale_transitions`, `test_graph_planner_missing_transition_is_unknown`, `test_graph_planner_depth_bound_is_terminal`, `test_graph_planner_expansion_limit_is_terminal`, `test_graph_planner_hard_depth_cap_is_eight`, `test_graph_planner_rejects_stale_model_snapshot`, `test_graph_planner_cancels_stale_snapshot_before_state_adaptation`, `test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions`, `test_graph_planner_does_not_solve_without_projection_feasibility`, `test_graph_planner_rejects_invalid_native_feasibility_receipt`, `test_graph_planner_cancels_expired_request`, `test_graph_planner_propagates_deadline_and_blocks_late_budget_debit`, `test_graph_planner_rejects_mismatched_owner_or_start_identity`, `test_graph_planner_preserves_alternate_paths_through_shared_intermediate` (including paired path-arrival records), and `test_graph_planner_accepts_native_p4_projection_receipt`.
+- **Acceptance:** E4.1 contract fixtures plus graph-backed tests: `test_graph_planner_materializes_and_funds_two_step_plan`, `test_graph_planner_deduplicates_cycles_and_stale_transitions`, `test_graph_planner_missing_transition_is_unknown`, `test_graph_planner_depth_bound_is_terminal`, `test_graph_planner_expansion_limit_is_terminal`, `test_graph_planner_hard_depth_cap_is_eight`, `test_graph_planner_rejects_stale_model_snapshot`, `test_graph_planner_cancels_stale_snapshot_before_state_adaptation`, `test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions`, `test_graph_planner_does_not_solve_without_projection_feasibility`, `test_graph_planner_rejects_invalid_native_feasibility_receipt`, `test_graph_planner_cancels_expired_request`, `test_graph_planner_propagates_deadline_and_blocks_late_budget_debit`, `test_graph_planner_rejects_mismatched_owner_or_start_identity`, `test_graph_planner_preserves_alternate_paths_through_shared_intermediate` (including distinct full path-arrival chains), `test_graph_planner_path_arrival_limit_closes_without_partial_candidates`, and `test_graph_planner_accepts_native_p4_projection_receipt`.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_goal_derivation_migrated.py tests/test_compositional_plan_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** Python beam search; duplicating Track I goal-directed invention.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
@@ -406,7 +406,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Non-goals:** Planner-owned budget accounting or changing non-expired requester behavior.
 - **Done when:** named acceptance passes, seed generator reproduces the manifest, and boot/test regressions stay green.
 
-### P5.E4.2b — Compose complete planner paths through the native manifold projector
+### P5.E4.2b — Compose complete planner paths through the native manifold projector (complete)
 
 - **ID:** P5.E4.2b
 - **Tier:** T2
@@ -418,7 +418,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Acceptance:** `test_path_projection_composes_contiguous_segments_and_uses_native_shape_audit`, `test_path_projection_rejects_missing_or_gapped_segment`, `test_path_projection_ranks_by_measured_effort_and_keeps_ties`, `test_path_arrival_lineage_keeps_distinct_shared_prefix_paths`, `test_path_arrival_limit_closes_without_partial_candidates`, and `test_single_candidate_projection_compatibility_unchanged`, plus the complete E4.2 acceptance list.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_cognition_manifold_migrated.py tests/test_future_manifold_projection_native.py tests/test_goal_derivation_migrated.py tests/test_compositional_plan_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** Python path construction or scoring; a new TermNode variant; approximate time alignment; goal rank overriding intervention; policy/default activation.
-- **Done when:** named native and graph acceptance passes; same-source P4 projection regressions pass; generator/serialization and boot checks pass; path and projection gaps are either closed or explicitly returned as unknown.
+- **Done when:** named native and graph acceptance passes; same-source P4 projection regressions pass; generator/serialization and boot checks pass; path and projection gaps are either closed or explicitly returned as unknown. Verified: 76 combined Python acceptance tests and 24 focused Rust future-manifold tests pass; seed load tests report no skipped planner rules.
 
 ### P5.E4.3 — Consume imagined candidates through System-2 arbitration
 
