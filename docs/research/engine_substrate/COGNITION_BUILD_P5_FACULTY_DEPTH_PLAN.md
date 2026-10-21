@@ -435,7 +435,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Non-goals:** editing frozen dual_process_core to weaken its confidence thresholds; treating a rollout as action success.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. The 53-test E4.3 planner/G3 command and the 85-test E4.2b combined command pass. The opt-in seed selects a concrete first path action but does not mint G3 authorization; only the native G3 dispatch boundary may consume that token. Grounding requires the sink receipt plus the expected first-step state observation. Held-out evidence is produced at the phase evaluation task.
 
-### P5.A2.1 — Specify parent completion after capability decomposition
+### P5.A2.1 — Specify parent completion after capability decomposition (complete)
 
 - **ID:** P5.A2.1
 - **Tier:** T1
@@ -445,10 +445,10 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Pattern to copy:** dc_parent_progress_from_children diagnostic rollup.
 - **Steps:** 1. Require every required CapKey to be covered by verified completed child work in the same decomposition/model epoch. 2. Define empty-child, overlapping-child, partial and stale cases. 3. Separate parent saturation update from impasse resolution; require both completion evidence and no outstanding required child.
 - **Guard:** planned `DecompositionCompletionPolicy.enabled=0`.
-- **Acceptance:** planned `test_partial_children_do_not_complete`, `test_all_required_keys_complete_parent`, `test_stale_child_reopens`, `test_empty_children_never_complete`.
+- **Acceptance:** `test_partial_children_do_not_complete`, `test_all_required_keys_complete_parent`, `test_stale_child_reopens`, `test_empty_children_never_complete`, plus overlap, stale-epoch, verification, pending-child and diagnostic-only saturation controls.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_decomposition_completion_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** using child_mean_saturation alone as completion evidence.
-- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task. Verified: 9 executable contract tests pass; runtime implementation is P5.A2.2.
 
 ### P5.A2.2 — Resolve completed parent axes without premature de-escalation
 
