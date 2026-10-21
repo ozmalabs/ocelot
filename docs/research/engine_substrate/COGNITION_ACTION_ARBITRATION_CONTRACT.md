@@ -1,6 +1,6 @@
 # P5.G3 — Action inhibition before external emission
 
-**Status:** G3.1 contract and development fixtures; no runtime stop enforcement is claimed. The policy is `ResponseInhibitionPolicy.enabled=0` by default. G3.2 owns graph stop/withhold records; G3.3 owns the native sink gate and must pass an instrumented sink test before any emission-safety claim.
+**Status:** G3.1 contract and G3.2 graph lifecycle implemented; no sink-level stop enforcement is claimed. The policy is `ResponseInhibitionPolicy.enabled=0` by default. G3.3 owns the native sink gate and must pass an instrumented sink test before any emission-safety claim.
 
 ## State and identity
 
