@@ -1,0 +1,3267 @@
+{
+  "id": "cognition_aperture",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [
+    "cognition_signature",
+    "thinking_budget",
+    "aperture_frame"
+  ],
+  "area": "cognition_aperture",
+  "description": "Six explicit typed Observer aperture adapters plus a shared-budget authorization gate for chosen-frame residual probes.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CognitionAperturePolicy",
+      "attrs": {
+        "name": "cognition_aperture_policy",
+        "enabled": 0.0,
+        "probe_cost": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_cognition_aperture_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {},
+      "provenance": "cognition_aperture:policy"
+    }
+  ],
+  "productions": [
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_policy",
+      "tgt": {
+        "type": "CognitionAperturePolicy",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_policy:Agent:CognitionAperturePolicy"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_source",
+      "tgt": {
+        "type": "CognitionApertureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_source:Agent:CognitionApertureSource"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_dimension",
+      "tgt": {
+        "type": "CognitionApertureDimension",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_dimension:Agent:CognitionApertureDimension"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_thinking_budget:Agent:ThinkingBudget"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_network_mode_state",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_network_mode_state:Agent:NetworkModeState"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_thinking_budget_request:Agent:ThinkingBudgetRequest"
+    },
+    {
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_source",
+      "tgt": {
+        "type": "CognitionApertureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_source:Agent:CognitionApertureSource"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_dimension",
+      "tgt": {
+        "type": "CognitionApertureDimension",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_dimension:Agent:CognitionApertureDimension"
+    },
+    {
+      "src": {
+        "type": "CognitionApertureDimension",
+        "var": "src"
+      },
+      "edge_type": "projects_aperture_source",
+      "tgt": {
+        "type": "CognitionApertureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:projects_aperture_source:CognitionApertureDimension:CognitionApertureSource"
+    },
+    {
+      "src": {
+        "type": "CognitionApertureSource",
+        "var": "src"
+      },
+      "edge_type": "applies_to_observer",
+      "tgt": {
+        "type": "Observer",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:applies_to_observer:CognitionApertureSource:Observer"
+    },
+    {
+      "src": {
+        "type": "Observer",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_mode",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_mode:Observer:NetworkModeState"
+    },
+    {
+      "src": {
+        "type": "Observer",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_aperture_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:has_cognition_aperture_request:Observer:ThinkingBudgetRequest"
+    },
+    {
+      "src": {
+        "type": "Observer",
+        "var": "src"
+      },
+      "edge_type": "chose_aperture",
+      "tgt": {
+        "type": "Aperture",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:chose_aperture:Observer:Aperture"
+    },
+    {
+      "src": {
+        "type": "Observer",
+        "var": "src"
+      },
+      "edge_type": "probe_projected",
+      "tgt": {
+        "type": "ObservedShape",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_aperture:probe_projected:Observer:ObservedShape"
+    }
+  ],
+  "rules": [
+    {
+      "name": "ca_guard_chosen_observer_questioning",
+      "area": "cognition_aperture",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ],
+        [
+          "src",
+          "applies_to_observer",
+          "obs"
+        ],
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "authority"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "chosen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_question_funding_required"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "p4_aperture_guard_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "src"
+                    },
+                    "key": "source_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "p4_aperture_guard_source"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "src"
+                    },
+                    "key": "source_key"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_question_funding_required",
+          true
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_question_funded",
+          false
+        ],
+        [
+          "set_attr",
+          "obs",
+          "p4_aperture_guard_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "obs",
+          "p4_aperture_guard_source",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_key"
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_cognition_aperture_mode",
+          "mode",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_request_funded_chosen_frame_question",
+      "area": "cognition_aperture",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ],
+        [
+          "src",
+          "applies_to_observer",
+          "obs"
+        ],
+        [
+          "obs",
+          "chose_aperture",
+          "ap"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "authority"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "chosen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "voi_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "positive"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "voi_evidence_id"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_question_funding_required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "p4_aperture_guard_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_chosen_dwell"
+            },
+            "b": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_question_after"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_question_after"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "edge_type": "has_cognition_aperture_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "observer_generation"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_thinking_budget_request",
+                "any_type": false
+              },
+              "var_name": "active",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "active"
+                      },
+                      "key": "requester_kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "cognition_aperture_probe"
+                    }
+                  },
+                  {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "active"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "pending"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "active"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "approved"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "active"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "authorized"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_thinking_budget_request",
+                "any_type": false
+              },
+              "var_name": "epoch_question",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "epoch_question"
+                      },
+                      "key": "requester_kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "cognition_aperture_probe"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "epoch_question"
+                      },
+                      "key": "requested_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "mode"
+                      },
+                      "key": "epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "cognition_aperture_probe",
+            "requester_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "c5-question:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_gen"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "src"
+                    },
+                    "key": "source_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "observer_generation": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "ap_gen"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "probe_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_thinking_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_cognition_aperture_request",
+          "req",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_serialize_same_epoch_aperture_requests",
+      "area": "cognition_aperture",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_thinking_budget_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_aperture_probe"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "req"
+              },
+              "b": {
+                "type": "IndexAt",
+                "seq": {
+                  "type": "SortBy",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "ag"
+                      },
+                      "edge_type": "has_thinking_budget_request",
+                      "any_type": false
+                    },
+                    "var_name": "candidate",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "requester_kind"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "cognition_aperture_probe"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "pending"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "var_name": "candidate",
+                  "key": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "requester_key"
+                  }
+                },
+                "index": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "denied"
+        ],
+        [
+          "set_attr",
+          "req",
+          "terminal_reason",
+          "serialized_same_epoch"
+        ]
+      ]
+    },
+    {
+      "name": "ca_authorize_same_epoch_debited_question",
+      "area": "cognition_aperture",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ],
+        [
+          "src",
+          "applies_to_observer",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_cognition_aperture_request",
+          "req"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_aperture_probe"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requested_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "observer_generation"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_question_funding_required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "p4_aperture_guard_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_question_funded"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_question_funded",
+          true
+        ],
+        [
+          "set_attr",
+          "obs",
+          "ap_question_funded_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          "authorized"
+        ]
+      ]
+    },
+    {
+      "name": "ca_close_denied_or_stale_question",
+      "area": "cognition_aperture",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ],
+        [
+          "src",
+          "applies_to_observer",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_cognition_aperture_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_aperture_probe"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "denied"
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "req"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "approved"
+                    }
+                  },
+                  {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "req"
+                            },
+                            "key": "debited_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "mode"
+                            },
+                            "key": "epoch"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "req"
+                            },
+                            "key": "source_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "src"
+                            },
+                            "key": "source_epoch"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Not",
+                        "arg": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "req"
+                            },
+                            "key": "observer_generation"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "key": "ap_gen"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_question_funded",
+          false
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "denied"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "denied"
+              },
+              "other": {
+                "type": "Lit",
+                "value": "expired"
+              }
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ca_restore_question_after_terminal_probe",
+      "area": "cognition_aperture",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ],
+        [
+          "src",
+          "applies_to_observer",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_cognition_aperture_request",
+          "req"
+        ],
+        [
+          "obs",
+          "probe_projected",
+          "probe"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_aperture_probe"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "authorized"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "probe"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "probe_percept"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "probe"
+              },
+              "key": "ap_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_questioned_gen"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "ap_gen"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "obs",
+          "ap_question_funded",
+          false
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          "consumed"
+        ],
+        [
+          "set_attr",
+          "req",
+          "outcome",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "probe"
+              },
+              "key": "ap_residual"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "ca_project_reading",
+      "area": "cognition_aperture",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "adapter_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "reading"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_aperture_dimension",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "dim",
+          "CognitionApertureDimension",
+          {
+            "adapter_id": "reading",
+            "dimension_id": "observer:reading",
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "value_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value_kind"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value"
+              }
+            },
+            "missing": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "missing"
+              }
+            },
+            "tolerance": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "tolerance"
+              }
+            },
+            "authority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "authority"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "dim",
+          "projects_aperture_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_project_dwell",
+      "area": "cognition_aperture",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "adapter_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "dwell"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_aperture_dimension",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "dim",
+          "CognitionApertureDimension",
+          {
+            "adapter_id": "dwell",
+            "dimension_id": "observer:dwell",
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "value_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value_kind"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value"
+              }
+            },
+            "missing": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "missing"
+              }
+            },
+            "tolerance": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "tolerance"
+              }
+            },
+            "authority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "authority"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "dim",
+          "projects_aperture_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_project_finite_difference_k",
+      "area": "cognition_aperture",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "adapter_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "finite_difference_k"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_aperture_dimension",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "dim",
+          "CognitionApertureDimension",
+          {
+            "adapter_id": "finite_difference_k",
+            "dimension_id": "observer:difference_order",
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "value_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value_kind"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value"
+              }
+            },
+            "missing": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "missing"
+              }
+            },
+            "tolerance": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "tolerance"
+              }
+            },
+            "authority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "authority"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "dim",
+          "projects_aperture_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_project_qualia_aperture",
+      "area": "cognition_aperture",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "adapter_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "qualia_aperture"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_aperture_dimension",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "dim",
+          "CognitionApertureDimension",
+          {
+            "adapter_id": "qualia_aperture",
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "value_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value_kind"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value"
+              }
+            },
+            "missing": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "missing"
+              }
+            },
+            "tolerance": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "tolerance"
+              }
+            },
+            "authority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "authority"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "dim",
+          "projects_aperture_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_project_shape_decode_scope",
+      "area": "cognition_aperture",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "adapter_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "shape_decode_scope"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_aperture_dimension",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "dim",
+          "CognitionApertureDimension",
+          {
+            "adapter_id": "shape_decode_scope",
+            "dimension_id": "observer:decode_scope",
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "value_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value_kind"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value"
+              }
+            },
+            "missing": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "missing"
+              }
+            },
+            "tolerance": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "tolerance"
+              }
+            },
+            "authority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "authority"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "dim",
+          "projects_aperture_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_project_manifold_mask",
+      "area": "cognition_aperture",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "adapter_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "manifold_mask"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_aperture_dimension",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "dim",
+          "CognitionApertureDimension",
+          {
+            "adapter_id": "manifold_mask",
+            "dimension_id": "observer:manifold_mask",
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_key"
+              }
+            },
+            "value_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value_kind"
+              }
+            },
+            "value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "value"
+              }
+            },
+            "missing": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "missing"
+              }
+            },
+            "tolerance": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "tolerance"
+              }
+            },
+            "authority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "authority"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "dim",
+          "projects_aperture_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ca_retire_stale_aperture_dimensions",
+      "area": "cognition_aperture",
+      "order": 21,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_aperture_dimension",
+          "dim"
+        ],
+        [
+          "ag",
+          "has_cognition_aperture_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_key"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "dim"
+                },
+                "key": "source_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "dim",
+          "status",
+          "stale"
+        ]
+      ]
+    }
+  ]
+}

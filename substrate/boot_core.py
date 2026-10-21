@@ -60,6 +60,10 @@ def boot_core(seeds=CORE_SEEDS):
     resolving = set()
 
     def resolve(seed_id):
+        # `core` is the built-in substrate root, not a manifest under seeds/.
+        # Several opt-in seeds declare it as their dependency boundary.
+        if seed_id == "core":
+            return
         if seed_id in installed:
             return
         if seed_id in resolving:

@@ -1,6 +1,6 @@
 # Cognition build plan (2026-10-10)
 
-Source audit: `COGNITION_CAPABILITY_ASSESSMENT_20261010.md` (rev 2). This is the overarching plan: phases, sections and work items. In the next step a frontier model breaks each work item into tasks using the contract in §3. A lower-tier or local model then executes each task. Ordering puts wiring and quick wins first: seed-only changes that connect machinery which already exists. New Rust primitives come later, and new faculties last.
+Source audit: `COGNITION_CAPABILITY_ASSESSMENT_20261010.md` (rev 2), with the Phase 4 evidence addendum in that assessment and [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md). This is the overarching plan: phases, sections and work items. Phases 0–4 are executed; Phase 4 includes a completed preregistered synthetic evaluation and H4 documentation, with its C5 failure and input-scope limits retained. Phases 5–6 are detailed using the contract in §3 (2026-10-21); reconcile their interfaces and acceptance criteria against preceding results before starting them. Ordering puts wiring and quick wins first: seed-only changes that connect machinery which already exists. New Rust primitives come later, and new faculties last.
 
 ## Detailed phase plans
 
@@ -12,7 +12,9 @@ Each detailed plan breaks its phase into tasks using the §3 template, records t
 | 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Executed (`5b52a38b`). Results in `COGNITION_BUILD_P1_RESULTS.md`; these are mechanism tests on fixtures, not capability evidence |
 | 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`); results recorded during P3 in [`COGNITION_BUILD_P2_RESULTS.md`](COGNITION_BUILD_P2_RESULTS.md) |
 | 3 — Extended-thinking executor | [`COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md`](COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md) | Executed (`32143620`; pre-registration `eb34efb3`); H1/H2/H3/H5 pass, H4 partial (Family-A cache threshold fails); TimeInfer deferred to Track I or P4 |
-| 4–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
+| 4 — Representation and manifold integration | [`COGNITION_BUILD_P4_REPRESENTATION_PLAN.md`](COGNITION_BUILD_P4_REPRESENTATION_PLAN.md) | Executed (`199583ca` preregistration freeze); D2/D3, D1, E1/E2 and D5 pass their registered synthetic criteria; C5 fails its gain criterion. Evidence and limits in [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md) |
+| 5 — Depth in existing faculties | [`COGNITION_BUILD_P5_FACULTY_DEPTH_PLAN.md`](COGNITION_BUILD_P5_FACULTY_DEPTH_PLAN.md) | Detailed; reconcile against P4 results before implementation |
+| 6 — Numerosity, imitation and staged sleep | [`COGNITION_BUILD_P6_NEW_FACULTIES_PLAN.md`](COGNITION_BUILD_P6_NEW_FACULTIES_PLAN.md) | Detailed; reconcile against P5 results before implementation |
 | **Track I — Process understanding and invention** | [`COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md`](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) | Runs in parallel with P3–P6. Its levels L1–L7 run from understanding and invention up to measurable beyond-human criteria. I0 (the evaluation battery and a `ProcessSchema` decision shared with P3) comes first |
 
 ### Amendments from detailing (2026-10-10)
@@ -63,6 +65,20 @@ These override the §4 Phase 3 table. Details and evidence are in the P3 plan.
 - **No Rust in P3.**
 - **The P2 results doc was missing from the committed history.** P3.0.1 records the gate evidence in `COGNITION_BUILD_P2_RESULTS.md`.
 - **Time inference remains deferred to Track I / P4.** P3.D1.4 records that the current Observation schema has a single signature and cannot carry the `motion_seq` frames required by TimeInfer.
+
+### Amendments from detailing Phases 4–6 (2026-10-21)
+
+The new detailed plans supersede the original §4 sketches below on these points:
+
+- **Preserve P3's negative evidence.** H4 failed overall: Family-A cache repeats still take one funded step. P4 measures candidate and verification work in its own preregistered families; it does not change the P3 criterion. The inherited gate also retains one NOT_ESTABLISHED test file and the recorded baseline failures.
+- **P4.D2/D3 connect existing representations.** Numeric `Shape` minting needs a finite-difference signature contract; `MetaShapeMint` is a relation anti-unifier, not that numeric primitive. Qualia already has dimension-tagged coordinates; keep that schema and bridge the other representations to it.
+- **P4.D4 needs record-level recall.** `ShapeIndex.descent()` retrieves a cluster using its most-recent leaf key. It is not already a deterministic top-k record index. Specify ownership, dimensions, stale records and ties before exposing `RecallNearest`; reverify every recalled candidate.
+- **P4.E1/E2 integrate existing native projection.** The current projector already has extensive native residual/refinement tests. Add GWM trajectory production and funded refinement, then migrate remaining thought decisions from Python while preserving time-indexed retained/lost/escape shapes and the engine-wide manifold commit boundary.
+- **P4.D1 owns the deferred temporal bridge.** `time_axis` already consumes `motion_seq` observations with real frames. Assemble supported regular frame windows, fund their inference and preserve provenance. I4.2 owns later use of temporal latents to explain model prediction errors; irregular-time inference stays explicitly unsupported pending its own contract.
+- **P5.F1 integrates a working shared ToM meta-shape.** Preserve distinct domain belief stores and existing psychology retirement; add native source views instead of repeating the earlier unification work.
+- **P5.G3 precedes action arbitration.** Inhibition must reach the native emission boundary. P5.E4 owns bounded planning, the P1 advisory `ImaginedCandidate` consumer and P3's deferred candidate re-open contract. New P5.A2 owns evidence-backed parent completion; average child saturation alone is insufficient.
+- **P6 measures perceptual and observed outcomes.** Numerosity cannot receive a hidden exact count, imitation must verify an own-body rollout and real trial, and sleep retention is delayed task performance rather than replay/support counts. Register optional Track I offline stages without making ordinary sleep depend on them.
+- **Integration precedes evaluation freeze.** Each phase first completes its guarded profile and mechanism gate, then commits its preregistration alone and runs held-out evaluation. Negative capability results are reported without blocking unrelated mechanism work; dependent claims need their own supported fallback. No new phase is marked executed by this planning update.
 
 ## 1. Ground rules (apply to every task)
 
@@ -176,6 +192,8 @@ The extended-thinking executor needs something graded to relax. Rust tasks follo
 
 ### Phase 4 — Representation: qualia cache, unified aperture, generative manifold
 
+Execution tasks, corrected scope, temporal carryover and evaluation criteria: [Phase 4 detailed plan](COGNITION_BUILD_P4_REPRESENTATION_PLAN.md). The table below preserves the original work-item IDs.
+
 | ID | Sec | Work item | Touch points | Tier mix | Done when |
 |---|---|---|---|---|---|
 | P4.D2 | D | **Graph-native Shape minting.** Move `mint_shape` / `aperture_signature` (`tests/capability/number_qualia/runners/number_runner.py`) into seed rules using `MetaShapeMint` / `msg_mint_shape`. Python keeps only ingest | `meta_shape_growth` or a new `seeds/qualia_shape_mint.json`; tests | T1 spec, T3 | Shapes are minted with no Python decision; existing number_qualia tracks reproduce |
@@ -188,7 +206,7 @@ The extended-thinking executor needs something graded to relax. Rust tasks follo
 
 ### Phase 5 — Depth inside existing faculties
 
-Each item is independent. Start one with a T1 spec and a pre-registered test.
+Execution tasks and evaluation criteria: [Phase 5 detailed plan](COGNITION_BUILD_P5_FACULTY_DEPTH_PLAN.md). F2 follows F1, and planner action arbitration follows response inhibition at the native boundary. Start each item with its T1 specification and acceptance definitions. P5.A2 in the detailed plan additionally closes the deferred parent-completion work.
 
 | ID | Sec | Work item | Starting point |
 |---|---|---|---|
@@ -201,6 +219,8 @@ Each item is independent. Start one with a T1 spec and a pre-registered test.
 | P5.D6 | D | Analog rotation and imagery buffer: angle-parameterised generator with cost proportional to angle (Shepard linear-time signature), held in a detached buffer | `shape_decode_loop` generators, `imagination.py` |
 
 ### Phase 6 — Absent faculties
+
+Execution tasks and evaluation criteria: [Phase 6 detailed plan](COGNITION_BUILD_P6_NEW_FACULTIES_PLAN.md). These are planned faculties; existing symbolic cardinality and replay mechanisms remain their baselines.
 
 | ID | Sec | Work item | Notes |
 |---|---|---|---|
@@ -217,7 +237,7 @@ Each item is independent. Start one with a T1 spec and a pre-registered test.
 | End of P1 | All P1 tests; `pytest -k migrated` no new failures vs baseline; frozen-core no new failures; default boot byte-identical except through the cognition-on profile; P1 pre-reg results doc |
 | End of P2 | Above, plus `scripts/engine_cargo_test.sh` green, `tests/test_engine_provenance_migrated.py` green after `engine_build.sh`; tolerance migration behaviour-identical |
 | End of P3 | Above, plus the P3.H9 results doc |
-| End of P4–P6 | Above, plus each item's pre-registered result; the assessment doc updated to the new maturity labels |
+| End of P4–P6 | Focused mechanism/invariant tests and regression comparison with no new failures; current engine provenance and Cargo baseline comparison after Rust changes; guarded profile isolation; each item's frozen preregistration and result, including nulls; assessment updated to evidence-scoped maturity labels. Known failures/skips/timeouts remain explicit. A failed capability hypothesis is not a passing claim; its downstream dependencies must be re-scoped or blocked |
 
 ## 6. Dependencies and parallelism
 
@@ -225,9 +245,14 @@ Each item is independent. Start one with a T1 spec and a pre-registered test.
 P0 ──► P1 (A1,A2,A3,A4,B1,C1,H7 in parallel) ──► P1.H8 ──► gate
         └─ P2 spec tasks (C1,C2,A5) may start here ─┐
 P2 (C1,C2 Rust; C3,C4,A5 seed) ─────────────────────┴──► P3 (A6 ► A7; D1 needs A6) ──► P3.H9
-P4: D2 ► D3 ► D4 ► D5 ;  C5 needs P2.C4 ;  E1 needs P1.A4 + P3.A6 ; E2 needs E1
-P5 items independent (E4 benefits from E1; F2 after F1)
-P6: D7 independent ; F3 needs P5.F1 ; B2 needs P1.B1
+P4: D2/D3 contracts ► native mint + signature adapters ► D4 ► D5
+    C5 needs P2.C4 ; E1 needs C5 + D3 + P1.A4/P3 budget ; E2 needs E1
+    D1 temporal bridge needs D3 temporal envelope + P3 budget
+P5: F1 ► F2 ; G3 native dispatch gate ► E4 candidate arbitration
+    E4 uses P4 manifold contract ; E3 causal model optional ; G2/D6/A2 have separate gates
+P6: D7 independent ; F3 needs P5 ToM + rollout + action authorization
+    B2 needs P1.B1 + P4 recall ; Track I offline stages optional
+Each phase: mechanism/profile integration ► prereg freeze ► held-out run ► documentation closeout
 Track I: I0 ─► I1 ─► I2 ─► I3 ; I1 ─► I4 ; I3+I4 ─► I5 ─► I6 ─► I7
   coupling: I0.4 ProcessSchema decision shared with P3 (P3 as built uses its own RelaxLadder data, which I0.4 may later map onto ProcessSchema) ;
             P3.A6 consumes I5.2 targeted invention (as a later ladder, not in P3 scope) ; P3's deferred time rung moves to I4.2 or P4 ;

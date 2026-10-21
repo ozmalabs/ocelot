@@ -158,6 +158,31 @@ def _question_after(obs_var: str = "obs") -> dict:
     }
 
 
+def _question_authorized(obs_var: str = "obs") -> dict:
+    """Preserve legacy behavior unless an opt-in funded policy guards this Observer."""
+    required = A(obs_var, "ap_question_funding_required")
+    funded = A(obs_var, "ap_question_funded")
+    funded_epoch_matches = {
+        "type": "Exists",
+        "source": {"type": "Neighbours", "node": V(obs_var),
+                   "edge_type": "has_cognition_aperture_mode"},
+        "var_name": "question_mode",
+        "predicate": {"type": "Eq", "a": A(obs_var, "ap_question_funded_epoch"),
+                      "b": A("question_mode", "epoch")},
+    }
+    return {
+        "type": "Or",
+        "items": [
+            {"type": "Eq", "a": required, "b": L(None)},
+            {"type": "Not", "arg": {"type": "Eq", "a": required, "b": L(True)}},
+            {"type": "And", "items": [
+                {"type": "Eq", "a": funded, "b": L(True)},
+                funded_epoch_matches,
+            ]},
+        ],
+    }
+
+
 def _chosen_dwell(obs_var: str = "obs") -> dict:
     return {
         "type": "IfThenElse",
@@ -293,6 +318,12 @@ def build_seed(*, graded_relax: bool = True, questioning_trigger: bool = True) -
                     "src": {"type": "Observer", "var": "obs"},
                     "edge_type": "probe_projected",
                     "tgt": {"type": "ObservedShape", "var": "qv"},
+                },
+                {
+                    "provenance": "seed:aperture_frame:question-mode",
+                    "src": {"type": "Observer", "var": "obs"},
+                    "edge_type": "has_cognition_aperture_mode",
+                    "tgt": {"type": "NetworkModeState", "var": "mode"},
                 },
             ]
         )
@@ -543,6 +574,7 @@ def build_seed(*, graded_relax: bool = True, questioning_trigger: bool = True) -
         dwell_ready_cond = {
             "type": "And",
             "items": [
+                _question_authorized("obs"),
                 {"type": "Gte", "a": _chosen_dwell("obs"), "b": _question_after("obs")},
                 {
                     "type": "Not",
@@ -749,6 +781,7 @@ def build_seed(*, graded_relax: bool = True, questioning_trigger: bool = True) -
                     "where": {
                         "type": "And",
                         "items": [
+                            _question_authorized("obs"),
                             {"type": "Eq", "a": A("pv", "ap_gen"), "b": A("obs", "ap_gen")},
                             {"type": "Eq", "a": A("qv", "ap_gen"), "b": A("obs", "ap_gen")},
                             {"type": "Eq", "a": A("pv", "of_name"), "b": A("qv", "of_name")},
@@ -781,6 +814,7 @@ def build_seed(*, graded_relax: bool = True, questioning_trigger: bool = True) -
                     "where": {
                         "type": "And",
                         "items": [
+                            _question_authorized("obs"),
                             {"type": "Eq", "a": A("pv", "ap_gen"), "b": A("obs", "ap_gen")},
                             {"type": "Eq", "a": A("qv", "ap_gen"), "b": A("obs", "ap_gen")},
                             {"type": "Eq", "a": A("pv", "of_name"), "b": A("qv", "of_name")},

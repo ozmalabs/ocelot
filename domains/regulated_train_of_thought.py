@@ -116,38 +116,76 @@ def _admitted_signature(wa, setpoint_topic: str, observer) -> frozenset:
     return asr.concept_signature(sub, node, observer=observer)
 
 
-def _aperture_deviation(wa, reached: Iterable[str], admitted: frozenset,
-                        observer) -> int:
-    """The trajectory's DEVIATION from the APERTURE-GRAIN tube = the INTEGER
-    COUNT (a discrete quantum — one tuple is one quantum, grain being the
-    quantum) of the trajectory's aperture-projected signature tuples that fall
-    OUTSIDE the set-point's admitted set: `len(traj - admitted)`, a frozenset
-    difference. The trajectory's projected signature is the UNION of each
-    reached concept's signature read through the SAME observer aperture, so the
-    same grain quantises both sides. A COARSE grain collapses trajectory tuples
-    into (or drops to dark) the same buckets the set-point admits -> small
-    difference -> low deviation -> wide/roaming tube; a FINE grain splits them
-    into distinct buckets the set-point never admitted -> large difference ->
-    high deviation -> narrow/focused tube. This is the ThoughtManifold sibling
-    of _trajectory_deviation's escape count, measured over aperture-projected
-    signature quanta instead of whole concepts, reusing the SAME _round_to_vocab
-    lattice under concept_signature. No floats: every quantity is an integer
-    count of discrete signature tuples."""
+def _signature_projection_inputs(wa, topic: str) -> tuple[list, list]:
+    """Return static coordinates and raw codebook fields for graph projection."""
     sub = sd._sub(wa)
-    traj: set = set()
-    for c in reached:
-        if not c:
+    node = sd._find_concept(sub, topic)
+    if node is None:
+        return [], []
+    static = [coordinate for coordinate in asr.concept_signature(
+        sub, node, observer=None) if not str(coordinate[0]).startswith("dynamical:")]
+    attrs = sub.node(node).get("attrs", {})
+    raw = []
+    for dimension, attr, quantum, half_width, overlay in asr._qualia_schema(sub)["field_axes"]:
+        if overlay or attrs.get(attr) is None:
             continue
-        node = sd._find_concept(sub, c)
-        if node is None:
-            continue
-        traj |= set(asr.concept_signature(sub, node, observer=observer))
-    return len(frozenset(traj) - admitted)
+        raw.append({"dimension": dimension, "predicate": "field",
+                    "raw_value": attrs[attr], "global_quantum": quantum,
+                    "half_width": half_width, "projection_status": "pending"})
+    return static, raw
+
+
+def _add_signature_input(sub, manifold, segment, topic, observer, setpoint_topic,
+                         *, setpoint=False):
+    static, raw_values = _signature_projection_inputs(sub, topic)
+    signature = sub.add_node("ThoughtTopicSignature", {
+        "topic": topic, "coordinates": sorted(static, key=repr),
+        "observer_id": str(observer), "setpoint_topic": setpoint_topic,
+        "provenance_kind": "measured_signature_input"})
+    if setpoint:
+        sub.add_edge(manifold, "has_setpoint_signature", signature)
+    else:
+        sub.add_edge(segment, "has_topic_signature", signature)
+    for raw_value in raw_values:
+        raw = sub.add_node("ThoughtRawSignatureCoordinate", raw_value)
+        sub.add_edge(signature, "has_raw_coordinate", raw)
+        sub.add_edge(manifold, "has_raw_signature_coordinate", raw)
+    return signature
 
 
 # --------------------------------------------------------------------------- #
 #  THE CONTROLLER — trajectory control: deviation steers the width.
 # --------------------------------------------------------------------------- #
+def _native_controller_graph(wa):
+    """Resolve graph and agent root, installing the opt-in controller on demand."""
+    sub = sd._sub(wa)
+    native = getattr(sub, "_inner", sub)
+    agents = sub.nodes("Agent")
+    if not agents:
+        raise TypeError("regulated thought requires an Agent graph root")
+    agent = agents[0]
+    policies = sub.nodes("ThoughtManifoldPolicy")
+    if not policies:
+        from substrate.seed_loader import manifest_for
+        installed = {sub.node(seed)["attrs"].get("id") for seed in sub.nodes("Seed")}
+        resolving = set()
+        def install(seed_id):
+            if seed_id == "core" or seed_id in installed:
+                return
+            if seed_id in resolving:
+                raise ValueError(f"cyclic seed dependency involving {seed_id!r}")
+            resolving.add(seed_id)
+            manifest = manifest_for(seed_id)
+            for dependency in manifest.get("depends_on", ()):
+                install(str(dependency))
+            native.load_seed_manifest(manifest, agent)
+            resolving.remove(seed_id)
+            installed.add(seed_id)
+        install("thought_manifold")
+        policies = sub.nodes("ThoughtManifoldPolicy")
+    return sub, native, agent, policies[0]
+
+
 def run_regulated_train_of_thought(
         wa, *, topic: Optional[str] = None,
         tube_region: Optional[set] = None,
@@ -159,149 +197,135 @@ def run_regulated_train_of_thought(
         turns_per_segment: int = 3, max_segments: int = 6,
         on_unknown: str = "return",
         ask_fn: Optional[Callable[[str], Any]] = None) -> dict[str, Any]:
-    """Steer a train of thought as a TRAJECTORY held within a TUBE — everything in
-    DISCRETE QUANTA (the substrate's premise: no floats, no continuum).
+    """Run the public thought trajectory through the graph controller.
 
-    The trajectory is generated segment-by-segment by
-    train_of_thought.run_inner_conversation at the current attention_width — an
-    INTEGER number of breadth QUANTA (shells k, the block-347 quantized axis; the
-    trajectory's tangent breadth). After each segment the trajectory's DEVIATION
-    from the tube — the INTEGER COUNT of the segment's reached concepts outside the
-    admissible region (where the trajectory IS now) — is measured and STEERS the
-    width for the next segment, compared in QUANTA (not float thresholds):
-      · deviation >= deviation_wide_quanta  -> the trajectory is leaving the tube /
-        not converging: WIDEN by +1 quantum (explore more of the manifold to find
-        the region);
-      · deviation <= deviation_converge_quanta -> it is inside/converging: NARROW by
-        -1 quantum (tighten toward the geodesic — focus);
-      · in between: hold width.
-    So a NARROW tube (small region) pulls the width DOWN toward focus; a WIDE tube
-    (large region) lets it ROAM. The width is the quantized tangent breadth (347);
-    the tube is the required region; the integer deviation is the steering residual.
-
-    All quantities are quanta: width0 / widen_step / narrow_step are integer quanta
-    of breadth (clamped to [0, tot.WIDTH_MAX_SHELL]); deviation is a count of
-    concepts; the thresholds are counts (quanta) too. widen/narrow = +/-1 quantum.
-
-    Termination (the manifold BOUNDARY): a segment's own novelty_stalled /
-    converged propagates up; or max_segments. Teacher-free on the held path
-    (on_unknown='return'); the external ASK floor stays a choosable option.
-
-    Returns {segments:[{topic,width,deviation,reached,stop_reason}...],
-    width_trace, deviation_trace, recovered_total, stop_reason, tube_region} — the
-    width_trace and deviation_trace are INTEGER quanta traces."""
+    Python supplies the initial topic, measured signature inputs and each generated
+    candidate segment. The graph computes either concept-region or aperture-grain
+    deviation, steers width, selects the next frontier and terminates the run.
+    Returned topics remain candidate imagery; this adapter emits no grounding.
+    """
     start = topic or sd.select_curiosity_topic(wa)
     if not start:
         return {"segments": [], "width_trace": [], "deviation_trace": [],
                 "recovered_total": [], "stop_reason": "no_topic",
                 "tube_region": sorted(tube_region or [])}
-    if tube_region is None and setpoint_observer is None:
-        tube_region = _region_from_topic(wa, start)
-
-    # PATH SELECTION (additive): when `setpoint_observer` is passed, the tube is
-    # the APERTURE-GRAIN tube (block 349) — the observer's grain sets the width.
-    # Otherwise the concept-region tube (block 348) is used, byte-identical to
-    # before. `use_aperture` picks which deviation measure steers the width.
     use_aperture = setpoint_observer is not None
-    admitted: frozenset = frozenset()
     sp_topic = setpoint_topic or start
+    admitted = frozenset()
+    sub, native, agent, policy = _native_controller_graph(wa)
+    anchor_node = sd._find_concept(sub, start)
+    old_enabled = sub.node(policy)["attrs"].get("enabled", 0.0)
+    sub.set_attr(policy, "enabled", 1.0)
+    manifold = sub.add_node("ThoughtManifold", {
+        "status": "running" if use_aperture else "pending",
+        "topic": start if use_aperture else None, "candidate_topics": [start],
+        "anchor_topic": start, "anchor_node": anchor_node,
+        "controller_mode": "aperture_grain" if use_aperture else "concept_region",
+        "admitted_signature": [], "admitted_signature_ready": not use_aperture,
+        "setpoint_topic": sp_topic if use_aperture else None,
+        "region_explicit": tube_region is not None,
+        "tube_region": sorted(tube_region) if tube_region is not None else [],
+        "width": tot.snap_width_to_quanta(width0),
+        "widen_step": max(1, int(widen_step)),
+        "narrow_step": max(1, int(narrow_step)),
+        "deviation_wide_quanta": int(deviation_wide_quanta),
+        "deviation_converge_quanta": int(deviation_converge_quanta),
+        "segment_index": 0, "max_segments": max(0, int(max_segments)),
+        "seen_topics": [], "detached_buffer": [],
+        "detached_buffer_capacity": 64,
+        "funding_required": True, "segment_cost": 1.0,
+        "provenance_kind": "candidate_imagery",
+    })
+    sub.set_attr(manifold, "run_key", str(manifold))
+    sub.add_edge(agent, "has_thought_manifold", manifold)
     if use_aperture:
-        admitted = _admitted_signature(wa, sp_topic, setpoint_observer)
-
-    # width is an INTEGER number of breadth quanta (shells), snapped/clamped the
-    # substrate's native way — never a float.
-    max_shell = tot.WIDTH_MAX_SHELL
-    width = tot.snap_width_to_quanta(width0)
-    widen_step = max(1, int(widen_step))
-    narrow_step = max(1, int(narrow_step))
-    cur_topic = start
-    seen_total: set = set()
-    recovered_total: set = set()
-    segments: list[dict] = []
-    width_trace: list[int] = []
-    deviation_trace: list[int] = []
-    stop_reason = "max_segments"
-
-    for _ in range(int(max_segments)):
-        seg = tot.run_inner_conversation(
-            wa, topic=cur_topic, max_turns=turns_per_segment, width=width,
-            novelty_window=turns_per_segment, on_unknown=on_unknown, ask_fn=ask_fn)
-        reached = list(seg.get("topics_thought") or [])
-        seen_total |= set(reached)
-        recovered_total |= set(seg.get("recovered_total") or [])
-
-        # DEVIATION of the trajectory's CURRENT position from the tube (steering
-        # residual). Measured on the current reach (where the trajectory IS now),
-        # not the cumulative history, so the control law can observe the deviation
-        # FALL as widening steers the trajectory into the tube. An INTEGER either
-        # way (discrete quanta): concept-region = count of reached concepts outside
-        # the region; aperture-grain = count of aperture-projected signature tuples
-        # outside the observer's admitted set (the grain being the quantum). The
-        # control law below consumes this integer unchanged for both paths.
-        if use_aperture:
-            dev = _aperture_deviation(wa, reached, admitted, setpoint_observer)
-        else:
-            dev = _trajectory_deviation(reached, tube_region)
-        deviation_trace.append(dev)
-        width_trace.append(width)
-        segments.append({"topic": cur_topic, "width": width,
-                         "deviation": dev, "reached": reached,
-                         "seg_stop": seg.get("stop_reason")})
-
-        # BOUNDARY: the segment ran out of reachable manifold -> the train ends.
-        if seg.get("stop_reason") in ("novelty_stalled", "no_topic") \
-                or not reached:
-            stop_reason = seg.get("stop_reason") or "converged"
-            break
-
-        # STEER the width by the deviation (the feedback law), in QUANTA: compare
-        # the integer deviation count against the quantum thresholds and step the
-        # width by +/-1 quantum, clamped to [0, max_shell].
-        if dev >= deviation_wide_quanta:
-            width = min(max_shell, width + widen_step)     # leaving tube -> explore
-        elif dev <= deviation_converge_quanta:
-            width = max(0, width - narrow_step)            # inside -> focus
-        # else: hold.
-
-        # next segment starts from a not-yet-thought frontier topic. On the
-        # concept-region path, pursue the admissible region first (residual of the
-        # tube), else any fresh reached. On the aperture-grain path, STEER INTO the
-        # tube the same way: prefer a fresh reached concept whose aperture-projected
-        # signature SHARES tuples with the set-point's admitted set (it is inside /
-        # near the tube), so the trajectory converges onto the set-point's
-        # neighbourhood and the deviation can FALL — a sharp (narrow) tube pulls the
-        # trajectory tight (focus), a coarse (wide) tube admits everything so any
-        # fresh concept qualifies (roam). Reuses the SAME observer aperture.
-        if use_aperture:
-            fresh = [c for c in reached if c and c not in {cur_topic}]
-            in_tube = []
-            off_tube = []
-            for c in fresh:
-                sig = _admitted_signature(wa, c, setpoint_observer)
-                (in_tube if (sig & admitted) else off_tube).append(c)
-            # prefer not-yet-seen in-tube, then any in-tube, then fresh off-tube
-            frontier = ([c for c in in_tube if c not in seen_total] or in_tube
-                        or off_tube)
-        else:
-            frontier = [c for c in tube_region if c not in seen_total] or \
-                       [c for c in reached if c not in {cur_topic}]
-        nxt = None
-        for c in frontier:
+        sub.add_edge(manifold, "uses_aperture_observer", setpoint_observer)
+        _add_signature_input(sub, manifold, None, sp_topic, setpoint_observer,
+                             sp_topic, setpoint=True)
+    try:
+        native.run_rules(1000)
+        segments, width_trace, deviation_trace = [], [], []
+        recovered_total = set()
+        stop_reason = "max_segments"
+        while sub.node(manifold)["attrs"].get("status") == "running":
+            state = sub.node(manifold)["attrs"]
+            request = next((request for request in sub.neighbours(
+                manifold, "has_segment_request")
+                if sub.node(request)["attrs"].get("segment_index") ==
+                state.get("segment_index")), None)
+            if request is None:
+                native.run_rules(1000)
+                state = sub.node(manifold)["attrs"]
+                request = next((request for request in sub.neighbours(
+                    manifold, "has_segment_request")
+                    if sub.node(request)["attrs"].get("segment_index") ==
+                    state.get("segment_index")), None)
+            if request is None or sub.node(request)["attrs"].get("status") != "approved":
+                stop_reason = str(sub.node(manifold)["attrs"].get(
+                    "stop_reason", "funding_unavailable"))
+                break
+            mode = next(iter(sub.neighbours(agent, "has_network_mode_state")), None)
+            if mode is None or sub.node(request)["attrs"].get("debited_epoch") != \
+                    sub.node(mode)["attrs"].get("epoch"):
+                stop_reason = "stale_funding"
+                break
+            cur_topic = state.get("topic")
+            width = int(state.get("width", 0))
+            seg = tot.run_inner_conversation(
+                wa, topic=cur_topic, max_turns=turns_per_segment, width=width,
+                novelty_window=turns_per_segment, on_unknown=on_unknown, ask_fn=ask_fn)
+            reached = list(seg.get("topics_thought") or [])
+            recovered_total.update(seg.get("recovered_total") or [])
+            segment_node = sub.add_node("ThoughtSegmentInput", {
+                "status": "ready", "topics_thought": reached,
+                "stop_reason": seg.get("stop_reason", "continue"),
+                "recovered_total": list(seg.get("recovered_total") or []),
+                "provenance_kind": "candidate_imagery",
+            })
+            sub.add_edge(manifold, "has_pending_thought_segment", segment_node)
+            sub.add_edge(segment_node, "has_segment_generation_funding", request)
             if use_aperture:
-                nxt = c
+                for reached_topic in dict.fromkeys(topic for topic in reached if topic):
+                    _add_signature_input(sub, manifold, segment_node, reached_topic,
+                                         setpoint_observer, sp_topic)
+            native.run_rules(1000)
+            steps = [step for step in sub.neighbours(
+                manifold, "has_thought_manifold_step")
+                     if sub.node(step)["attrs"].get("index") == state.get("segment_index")]
+            if not steps:
+                terminal_reason = sub.node(manifold)["attrs"].get("stop_reason")
+                if terminal_reason in {"budget_disabled", "budget_denied", "stale_funding"}:
+                    stop_reason = str(terminal_reason)
+                    break
+                raise RuntimeError("ThoughtManifold failed to account for an ingested segment")
+            trace = sub.node(steps[-1])["attrs"]
+            if segment_node not in sub.neighbours(steps[-1], "ingests_thought_segment"):
+                raise RuntimeError("ThoughtManifold trace lost its source segment link")
+            segments.append({"topic": cur_topic, "width": int(trace["width"]),
+                             "deviation": int(trace["deviation"]),
+                             "reached": reached, "seg_stop": trace["segment_stop"]})
+            width_trace.append(int(trace["width"]))
+            deviation_trace.append(int(trace["deviation"]))
+            stop_reason = str(trace["segment_stop"])
+            if sub.node(manifold)["attrs"].get("status") == "complete":
+                if stop_reason not in ("novelty_stalled", "no_topic"):
+                    completed = sub.node(manifold)["attrs"]
+                    if int(completed.get("segment_index", 0)) >= int(
+                            completed.get("max_segments", 0)):
+                        stop_reason = "max_segments"
+                    else:
+                        stop_reason = "converged"
                 break
-            elif c not in seen_total or c in tube_region:
-                nxt = c
-                break
-        if nxt is None:
-            stop_reason = "converged"
-            break
-        cur_topic = nxt
-
-    return {"segments": segments, "width_trace": width_trace,
-            "deviation_trace": deviation_trace,
-            "recovered_total": sorted(recovered_total),
-            "stop_reason": stop_reason,
-            "tube_region": sorted(tube_region or []),
-            "setpoint_topic": sp_topic if use_aperture else None,
-            "admitted_size": len(admitted) if use_aperture else None}
+        if not segments:
+            stop_reason = str(sub.node(manifold)["attrs"].get(
+                "stop_reason", stop_reason))
+        return {"segments": segments, "width_trace": width_trace,
+                "deviation_trace": deviation_trace,
+                "recovered_total": sorted(recovered_total),
+                "stop_reason": stop_reason,
+                "tube_region": sorted(sub.node(manifold)["attrs"].get("tube_region") or []),
+                "setpoint_topic": sp_topic if use_aperture else None,
+                "admitted_size": len(sub.node(manifold)["attrs"].get(
+                    "admitted_signature", [])) if use_aperture else None}
+    finally:
+        sub.set_attr(policy, "enabled", old_enabled)

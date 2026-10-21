@@ -783,6 +783,8 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
         Fold {
             source, init, body, ..
         } => vec![*source, *init, *body],
+        ShapeRankSignature { samples, order, width } => vec![*samples, *order, *width],
+        RecallNearest { records, query, k, candidate_cap } => vec![*records, *query, *k, *candidate_cap],
         // --- arithmetic / Holds / boolean variants ---
         // jabberwock change 2: recurse into the grounded-equation Term
         // structure (Plus/Times/Minus/Div/Pow/Holds + And/Or/Not for
