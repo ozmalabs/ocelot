@@ -1,0 +1,1445 @@
+{
+  "id": "reappraisal",
+  "version": "1.0.0",
+  "self_load_only": true,
+  "depends_on": [
+    "core_emotions",
+    "cognition_aperture"
+  ],
+  "description": "P5.G2.2 opt-in evidence-checked appraisal views. Requires an already consumed, same-epoch P4 chosen-aperture probe; preserves source event and forced constraints and feeds a separate Appraisal into core_emotions.",
+  "microtheory": {
+    "name": "reappraisal",
+    "description": "evidence-preserving alternate appraisal views"
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ReappraisalPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "maximum_candidates": 2
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_reappraisal_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "reappraisal:agent_event",
+      "src": {
+        "type": "Agent",
+        "var": "ag"
+      },
+      "edge_type": "has_reappraisal_event",
+      "tgt": {
+        "type": "ReappraisalEvent",
+        "var": "event"
+      }
+    },
+    {
+      "provenance": "reappraisal:event_frame",
+      "src": {
+        "type": "ReappraisalEvent",
+        "var": "event"
+      },
+      "edge_type": "has_candidate_reappraisal_frame",
+      "tgt": {
+        "type": "ReappraisalFrame",
+        "var": "frame"
+      }
+    },
+    {
+      "provenance": "reappraisal:event_hub",
+      "src": {
+        "type": "ReappraisalEvent",
+        "var": "event"
+      },
+      "edge_type": "has_reappraisal_appraisal_hub",
+      "tgt": {
+        "type": "EmotionHub",
+        "var": "hub"
+      }
+    },
+    {
+      "provenance": "reappraisal:frame_probe",
+      "src": {
+        "type": "ReappraisalFrame",
+        "var": "frame"
+      },
+      "edge_type": "has_funded_probe",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "request"
+      }
+    },
+    {
+      "provenance": "reappraisal:frame_claim",
+      "src": {
+        "type": "ReappraisalFrame",
+        "var": "frame"
+      },
+      "edge_type": "has_interpretation_claim",
+      "tgt": {
+        "type": "InterpretationClaim",
+        "var": "claim"
+      }
+    },
+    {
+      "provenance": "reappraisal:claim_evidence",
+      "src": {
+        "type": "InterpretationClaim",
+        "var": "claim"
+      },
+      "edge_type": "supported_by",
+      "tgt": {
+        "type": "ReappraisalEvidence",
+        "var": "evidence"
+      }
+    },
+    {
+      "provenance": "reappraisal:claim_counter_evidence",
+      "src": {
+        "type": "InterpretationClaim",
+        "var": "claim"
+      },
+      "edge_type": "contradicted_by",
+      "tgt": {
+        "type": "ReappraisalEvidence",
+        "var": "evidence"
+      }
+    },
+    {
+      "provenance": "reappraisal:event_evidence",
+      "src": {
+        "type": "ReappraisalEvent",
+        "var": "event"
+      },
+      "edge_type": "has_reappraisal_evidence",
+      "tgt": {
+        "type": "ReappraisalEvidence",
+        "var": "evidence"
+      }
+    },
+    {
+      "provenance": "reappraisal:view_event",
+      "src": {
+        "type": "ReappraisalView",
+        "var": "view"
+      },
+      "edge_type": "based_on_reappraisal_event",
+      "tgt": {
+        "type": "ReappraisalEvent",
+        "var": "event"
+      }
+    },
+    {
+      "provenance": "reappraisal:view_frame",
+      "src": {
+        "type": "ReappraisalView",
+        "var": "view"
+      },
+      "edge_type": "selected_interpretation_frame",
+      "tgt": {
+        "type": "ReappraisalFrame",
+        "var": "frame"
+      }
+    },
+    {
+      "provenance": "reappraisal:view_appraisal",
+      "src": {
+        "type": "ReappraisalView",
+        "var": "view"
+      },
+      "edge_type": "derived_appraisal",
+      "tgt": {
+        "type": "Appraisal",
+        "var": "appraisal"
+      }
+    },
+    {
+      "provenance": "reappraisal:view_probe",
+      "src": {
+        "type": "ReappraisalView",
+        "var": "view"
+      },
+      "edge_type": "funded_by_probe",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "request"
+      }
+    },
+    {
+      "provenance": "reappraisal:frame_view",
+      "src": {
+        "type": "ReappraisalFrame",
+        "var": "frame"
+      },
+      "edge_type": "produced_reappraisal_view",
+      "tgt": {
+        "type": "ReappraisalView",
+        "var": "view"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ra_materialize_funded_supported_appraisal_view",
+      "area": "reappraisal",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_reappraisal_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_reappraisal_event",
+          "event"
+        ],
+        [
+          "event",
+          "has_candidate_reappraisal_frame",
+          "frame"
+        ],
+        [
+          "event",
+          "has_reappraisal_appraisal_hub",
+          "hub"
+        ],
+        [
+          "frame",
+          "has_funded_probe",
+          "request"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cognition_aperture_probe"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consumed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "event"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frame"
+              },
+              "key": "aperture_source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "source_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frame"
+              },
+              "key": "aperture_authority"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "chosen"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frame"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "event"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frame"
+              },
+              "key": "forced_constraints"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "event"
+              },
+              "key": "forced_constraints"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frame"
+              },
+              "key": "candidate_index"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frame"
+              },
+              "key": "candidate_index"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "frame"
+                    },
+                    "edge_type": "has_interpretation_claim",
+                    "any_type": false
+                  },
+                  "var_name": "claim",
+                  "predicate": {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "claim"
+                        },
+                        "edge_type": "supported_by",
+                        "any_type": false
+                      },
+                      "var_name": "support",
+                      "predicate": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Exists",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "event"
+                              },
+                              "edge_type": "has_reappraisal_evidence",
+                              "any_type": false
+                            },
+                            "var_name": "event_evidence",
+                            "predicate": {
+                              "type": "And",
+                              "items": [
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Var",
+                                    "name": "event_evidence"
+                                  },
+                                  "b": {
+                                    "type": "Var",
+                                    "name": "support"
+                                  }
+                                },
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "event_evidence"
+                                    },
+                                    "key": "status"
+                                  },
+                                  "b": {
+                                    "type": "Lit",
+                                    "value": "current"
+                                  }
+                                },
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "event_evidence"
+                                    },
+                                    "key": "source_epoch"
+                                  },
+                                  "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "event"
+                                    },
+                                    "key": "source_epoch"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "support"
+                              },
+                              "key": "source_epoch"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "event"
+                              },
+                              "key": "source_epoch"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "frame"
+                    },
+                    "edge_type": "has_interpretation_claim",
+                    "any_type": false
+                  },
+                  "var_name": "claim",
+                  "predicate": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "claim"
+                      },
+                      "edge_type": "contradicted_by",
+                      "any_type": false
+                    },
+                    "var_name": "counter_evidence",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Exists",
+                          "source": {
+                            "type": "Neighbours",
+                            "node": {
+                              "type": "Var",
+                              "name": "event"
+                            },
+                            "edge_type": "has_reappraisal_evidence",
+                            "any_type": false
+                          },
+                          "var_name": "event_counter",
+                          "predicate": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Var",
+                              "name": "event_counter"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "counter_evidence"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "counter_evidence"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "current"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "counter_evidence"
+                            },
+                            "key": "source_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "event"
+                            },
+                            "key": "source_epoch"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_reappraisal_view",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "frame"
+                      },
+                      "edge_type": "produced_reappraisal_view",
+                      "any_type": false
+                    },
+                    "var_name": "produced",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Var",
+                        "name": "produced"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "old"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "edge_type": "based_on_reappraisal_event",
+                      "any_type": false
+                    },
+                    "var_name": "old_event",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Var",
+                        "name": "old_event"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "event"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_event_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "event"
+                      },
+                      "key": "event_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "event"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "appraisal",
+          "Appraisal",
+          {
+            "appraised": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "appraised"
+              }
+            },
+            "residual": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "residual"
+              }
+            },
+            "residual_prev": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "residual_prev"
+              }
+            },
+            "learning_progress": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "learning_progress"
+              }
+            },
+            "threat": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat"
+              }
+            },
+            "threat_c0": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat_c0"
+              }
+            },
+            "threat_half_life": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat_half_life"
+              }
+            },
+            "threat_last_refresh": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat_last_refresh"
+              }
+            },
+            "threat_now_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat_now_epoch"
+              }
+            },
+            "t_present": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "t_present"
+              }
+            },
+            "threat_precision": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat_precision"
+              }
+            },
+            "threat_persists": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "threat_persists"
+              }
+            },
+            "valued_goal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "valued_goal"
+              }
+            },
+            "goal_blocked": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "goal_blocked"
+              }
+            },
+            "blocker_present": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "blocker_present"
+              }
+            },
+            "contamination": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "contamination"
+              }
+            },
+            "attachment": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "attachment"
+              }
+            },
+            "regroundable": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "regroundable"
+              }
+            },
+            "was_engaged": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "was_engaged"
+              }
+            },
+            "v_max": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "v_max"
+              }
+            },
+            "step": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "step"
+              }
+            },
+            "step_prev": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "step_prev"
+              }
+            },
+            "attach_v0": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "attach_v0"
+              }
+            },
+            "attach_k_now": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "attach_k_now"
+              }
+            },
+            "attach_k_prev": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "attach_k_prev"
+              }
+            },
+            "value_progress": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "value_progress"
+              }
+            },
+            "individual_benefit": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "individual_benefit"
+              }
+            },
+            "individual_cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "individual_cost"
+              }
+            },
+            "supergraph_contribution": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "supergraph_contribution"
+              }
+            },
+            "collective_success": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "collective_success"
+              }
+            },
+            "collective_success_prev": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "collective_success_prev"
+              }
+            },
+            "contribution_by_self": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "contribution_by_self"
+              }
+            },
+            "observed_by_other": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "observed_by_other"
+              }
+            },
+            "happiness": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "happiness"
+              }
+            },
+            "fulfilment_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "fulfilment_value"
+              }
+            },
+            "total_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "total_value"
+              }
+            },
+            "act_endorsed": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "act_endorsed"
+              }
+            },
+            "n_fired": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "n_fired"
+              }
+            },
+            "action_tendency": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "action_tendency"
+              }
+            },
+            "emotion": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "emotion"
+              }
+            },
+            "valence": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "valence"
+              }
+            },
+            "arousal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "arousal"
+              }
+            },
+            "hit_surprise": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_surprise"
+              }
+            },
+            "hit_fear": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_fear"
+              }
+            },
+            "hit_anxiety": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_anxiety"
+              }
+            },
+            "hit_anger": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_anger"
+              }
+            },
+            "hit_frustration": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_frustration"
+              }
+            },
+            "hit_disgust": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_disgust"
+              }
+            },
+            "hit_joy": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_joy"
+              }
+            },
+            "hit_sadness": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_sadness"
+              }
+            },
+            "hit_curiosity": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_curiosity"
+              }
+            },
+            "hit_boredom": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_boredom"
+              }
+            },
+            "hit_fulfilment": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_fulfilment"
+              }
+            },
+            "hit_pride": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "hit_pride"
+              }
+            },
+            "source_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "event"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "event"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "frame_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "view",
+          "ReappraisalView",
+          {
+            "source_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "event"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "event"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "frame_id"
+              }
+            },
+            "candidate_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "candidate_index"
+              }
+            },
+            "status": "adopted",
+            "evidence_preserved": true,
+            "forced_constraints_preserved": true,
+            "probe_requester_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "requester_key"
+              }
+            },
+            "appraisal_result": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frame"
+                },
+                "key": "appraisal_result"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "hub",
+          "has_appraisal",
+          "appraisal",
+          {}
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_reappraisal_view",
+          "view",
+          {}
+        ],
+        [
+          "add_edge",
+          "view",
+          "based_on_reappraisal_event",
+          "event",
+          {}
+        ],
+        [
+          "add_edge",
+          "view",
+          "selected_interpretation_frame",
+          "frame",
+          {}
+        ],
+        [
+          "add_edge",
+          "view",
+          "derived_appraisal",
+          "appraisal",
+          {}
+        ],
+        [
+          "add_edge",
+          "view",
+          "funded_by_probe",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "frame",
+          "produced_reappraisal_view",
+          "view",
+          {}
+        ]
+      ]
+    }
+  ]
+}

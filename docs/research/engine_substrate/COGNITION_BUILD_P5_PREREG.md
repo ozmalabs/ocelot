@@ -1,7 +1,7 @@
 # Cognition build Phase 5 — Faculty depth preregistration
 
 **Protocol:** `cognition_p5_heldout_v1`
-**Status:** H0, F1.1/F1.2 projections and agent-owned source hooks, and F2.1–F2.3 implementation gates recorded; automatic Bigville source discovery, held-out evaluation and later item work, runner freeze and draw remain pending.
+**Status:** H0, F1.1/F1.2 projections and agent-owned source hooks, F2.1–F2.3, and G2.1/G2.2 implementation gates recorded; automatic Bigville source discovery, held-out evaluation and later item work, runner freeze and draw remain pending.
 **Entry merge:** `9def1187f42f74489e4c2833c0bbae34e63df584` (P4 merged onto the committed `main` base in the isolated continuation branch).
 **P4 freeze:** `199583ca6c4fe861dae90dd5814d3f0ad3b9f5ed`.
 **P4 result/H4 record:** [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md).
@@ -77,6 +77,10 @@ F2.2's generated `recursive_tom` seed adds a disabled-by-default, dependency-fre
 An observed event is immutable input. Reappraisal may create a separate interpretation view, but it never edits the event, its source, or its forced constraints. A candidate interpretation is admissible only when every factual claim has at least one current evidence reference and no known evidence contradicts it. Mere absence of adverse evidence does not support an optimistic claim. The view records the source event ID, chosen frame ID, evidence IDs, and appraisal result so relief or a frame label cannot masquerade as verified world truth. Arousal changes remain an input to appraisal and do not qualify as evidence for an interpretation. At most two candidate alternatives are considered per probe; no supplied alternative or no evidence yields no reappraisal. The policy remains disabled by default.
 
 The G2.1 development fixtures freeze four discriminators: a supported alternative is represented as a separate reappraisal view; the source event stays byte-for-byte unchanged; optimism unsupported by evidence is refused; and an absent alternative produces no view. The fixtures also carry forced constraints to ensure a later implementation cannot relax them. These tests are specification fixtures, not evidence of runtime behavior; G2.2 owns the native rule implementation and G2 evaluation remains held out.
+
+## P5.G2.2 — Native funded reappraisal implementation
+
+The generated `reappraisal` seed depends on `core_emotions` and the merged P4 `cognition_aperture` seed. Its default-off rule accepts at most two indexed candidate frames only when each claim has current same-source-epoch evidence, no linked current evidence contradicts a claim, forced constraints exactly match the immutable event, and the frame points to a consumed chosen-aperture request debited in the current network epoch. It materializes a separate `Appraisal` under the event's `EmotionHub` and a `ReappraisalView` retaining event, frame, request, source epoch and result provenance; it does not mutate the source event or source appraisal. No frame, unsupported claim, contradiction, changed constraint, disabled policy or denied probe produces a view. Native acceptance tests exercise an actually consumed and budget-debited P4 request. The focused reappraisal and core-emotion suites pass 25 tests. This is mechanism evidence only; the registered G2 held-out evaluation remains pending.
 
 ## Held-out decision criteria (inherited from the detailed plan)
 
