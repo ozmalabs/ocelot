@@ -2409,6 +2409,528 @@
       ]
     },
     {
+      "name": "cp_preserve_duplicate_state_path",
+      "area": "cognition_planner",
+      "order": 22,
+      "latency_class": "soft_realtime",
+      "batch": true,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "existing"
+        ],
+        [
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req"
+        ],
+        [
+          "frontier",
+          "expands_from_state",
+          "source"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_transition",
+          "transition"
+        ],
+        [
+          "transition",
+          "has_feasibility_receipt",
+          "receipt"
+        ],
+        [
+          "transition",
+          "has_successor_state",
+          "successor"
+        ],
+        [
+          "successor",
+          "has_feasibility_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "source_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "verified"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "verifier_kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "native_future_manifold_projection"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "model_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "model_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "model_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "model_epoch"
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "horizon"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "required_horizon"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "projection_loss"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "projection_information_loss"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "transition_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "transition"
+                  },
+                  "key": "transition_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "transition"
+                  },
+                  "key": "model_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "model_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "receipt"
+                  },
+                  "key": "projection_version"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "successor"
+                  },
+                  "key": "projection_version"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "successor"
+                  },
+                  "key": "model_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "model_id"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "existing"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "existing"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "existing"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "existing"
+              },
+              "b": {
+                "type": "Var",
+                "name": "frontier"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "existing"
+                },
+                "edge_type": "has_parent_frontier",
+                "any_type": false
+              },
+              "var_name": "known_parent",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "known_parent"
+                    },
+                    "b": {
+                      "type": "Var",
+                      "name": "frontier"
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "existing"
+                      },
+                      "edge_type": "uses_transition",
+                      "any_type": false
+                    },
+                    "var_name": "known_transition",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Var",
+                        "name": "known_transition"
+                      },
+                      "b": {
+                        "type": "Var",
+                        "name": "transition"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "existing",
+          "has_parent_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "add_edge",
+          "existing",
+          "uses_transition",
+          "transition",
+          {}
+        ]
+      ]
+    },
+    {
       "name": "cp_count_unique_expansion",
       "area": "cognition_planner",
       "order": 23,

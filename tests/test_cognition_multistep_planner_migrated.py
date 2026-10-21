@@ -273,6 +273,41 @@ def test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions():
     assert adapter.s.node(budget)["attrs"]["remaining"] == 13.0
 
 
+def test_graph_planner_preserves_alternate_paths_through_shared_intermediate():
+    adapter, request, budget = _graph_planner([
+        ("s0", "left", "left", 2),
+        ("s0", "right", "right", 2),
+        ("left", "merge_left", "shared", 2),
+        ("right", "merge_right", "shared", 2),
+        ("shared", "finish", "goal", 2),
+    ])
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "solved"
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 4.0
+    assert len(adapter.inner.neighbours(request, "has_imagined_plan_candidate")) == 1
+
+    frontiers = adapter.inner.neighbours(request, "has_frontier")
+    shared = [node for node in frontiers if adapter.s.node(node)["attrs"].get("state_key") == "shared"]
+    assert len(shared) == 1
+    parents = adapter.inner.neighbours(shared[0], "has_parent_frontier")
+    assert {adapter.s.node(parent)["attrs"]["state_key"] for parent in parents} == {"left", "right"}
+    incoming = adapter.inner.neighbours(shared[0], "uses_transition")
+    assert {adapter.s.node(transition)["attrs"]["action_key"] for transition in incoming} == {
+        "merge_left", "merge_right"
+    }
+    for parent in parents:
+        earlier = adapter.inner.neighbours(parent, "has_parent_frontier")
+        assert len(earlier) == 1
+        assert adapter.s.node(earlier[0])["attrs"]["state_key"] == "s0"
+    goal_frontier = [node for node in frontiers if adapter.s.node(node)["attrs"].get("state_key") == "goal"]
+    assert len(goal_frontier) == 1
+    assert [adapter.s.node(node)["attrs"]["state_key"] for node in adapter.inner.neighbours(
+        goal_frontier[0], "has_parent_frontier")] == ["shared"]
+    assert [adapter.s.node(node)["attrs"]["action_key"] for node in adapter.inner.neighbours(
+        goal_frontier[0], "uses_transition")] == ["finish"]
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 12.0
+
+
 def test_graph_planner_expansion_limit_is_terminal():
     transitions = [(f"s{i}", f"a{i}", f"s{i+1}", 2) for i in range(6)]
     adapter, request, _budget = _graph_planner(transitions, expansion_limit=2.0)

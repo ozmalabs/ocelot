@@ -293,6 +293,46 @@ def expand_rule():
     }
 
 
+def preserve_duplicate_state_path_rule():
+    known_arrival = Exists(
+        N("existing", "has_parent_frontier"), "known_parent",
+        And(Eq(V("known_parent"), V("frontier")),
+            Exists(N("existing", "uses_transition"), "known_transition",
+                   Eq(V("known_transition"), V("transition")))),
+    )
+    return {
+        "name": "cp_preserve_duplicate_state_path", "area": AREA, "order": 22,
+        "latency_class": "soft_realtime", "batch": True,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["request", "has_frontier", "frontier"],
+                  ["request", "has_frontier", "existing"],
+                  ["frontier", "has_expansion_budget_request", "budget_req"],
+                  ["frontier", "expands_from_state", "source"],
+                  ["agent", "has_cognition_plan_transition", "transition"],
+                  ["transition", "has_feasibility_receipt", "receipt"],
+                  ["transition", "has_successor_state", "successor"],
+                  ["successor", "has_feasibility_receipt", "receipt"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("searching")),
+                      Eq(A("frontier", "status"), L("ready")),
+                      Eq(A("budget_req", "status"), L("approved")),
+                      Eq(A("source", "state_key"), A("transition", "source_state_key")),
+                      Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
+                      verified_receipt("receipt", "request", "transition", "successor"),
+                      Eq(A("successor", "model_epoch"), A("request", "model_epoch")),
+                      Eq(A("existing", "state_key"), A("successor", "state_key")),
+                      Eq(A("existing", "model_epoch"), A("request", "model_epoch")),
+                      Eq(A("existing", "goal_epoch"), A("request", "goal_epoch")),
+                      Not(Eq(V("existing"), V("frontier"))),
+                      Not(known_arrival)),
+        "effects": [
+            ["add_edge", "existing", "has_parent_frontier", "frontier", {}],
+            ["add_edge", "existing", "uses_transition", "transition", {}],
+        ],
+    }
+
+
 def count_expansion_rule():
     return {
         "name": "cp_count_unique_expansion", "area": AREA, "order": 23,
@@ -580,7 +620,7 @@ def build_seed():
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_cognition_planner_policy", "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(),
-        "rules": [terminalize_deadline_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), expand_rule(), count_expansion_rule(), solve_rule(),
+        "rules": [terminalize_deadline_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), expand_rule(), preserve_duplicate_state_path_rule(), count_expansion_rule(), solve_rule(),
                   emit_duplicate_goal_path_rule(), close_solved_request_rule(),
                   terminalize_depth_rule(), terminalize_expansion_bound_rule(), terminalize_unfunded_rule(),
                   terminalize_missing_transition_rule(), terminalize_model_dead_end_rule(),
