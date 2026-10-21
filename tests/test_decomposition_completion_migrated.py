@@ -1,7 +1,21 @@
-"""Executable A2.1 contract for parent completion; runtime rules land in A2.2."""
+"""A2.1 completion contract and A2.2 graph-rule execution gates."""
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
+import subprocess
+import sys
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+SEED = ROOT / "seeds" / "decomposition_completion.json"
+GENERATOR = ROOT / "scripts" / "gen_decomposition_completion_seed.py"
+for path in (ROOT, ROOT / "runners" / "dsl" / "python"):
+    if str(path) not in sys.path:
+        sys.path.insert(0, str(path))
+pytest.importorskip("substrate_rs")
+from substrate.world_adapter import WorldAdapter
 
 
 @dataclass(frozen=True)
@@ -176,4 +190,114 @@ def test_child_mean_saturation_is_not_completion_evidence():
     ))
     assert result.witness is False
     assert result.parent_saturation == 0.9
+
+
+def _edge(agent, source, edge_type, target):
+    try:
+        agent.inner.add_edge_unchecked(source, edge_type, target, {})
+    except TypeError:
+        agent.inner.add_edge_unchecked(source, edge_type, target)
+
+
+def _runtime(*, model_epoch=4, decomposition_epoch=7, enabled=True):
+    agent = WorldAdapter(seeds=["decomposition_completion"])
+    policies = agent.s.nodes("DecompositionCompletionPolicy")
+    assert len(policies) == 1
+    if enabled:
+        agent.s.set_attr(policies[0], "enabled", 1.0)
+    axis = agent.s.add_node("CapabilityAxis", {
+        "saturation": 0.35, "model_epoch": model_epoch,
+        "decomposition_epoch": decomposition_epoch,
+    })
+    impasse = agent.s.add_node("Impasse", {
+        "kind": "escalation", "resolved": False,
+    })
+    _edge(agent, impasse, "needs_decomposition", axis)
+    _edge(agent, impasse, "about_axis", axis)
+    keys = {}
+    for name in ("alpha", "beta"):
+        key = agent.s.add_node("CapKey", {"name": name})
+        _edge(agent, axis, "requires_key", key)
+        keys[name] = key
+    return agent, impasse, axis, keys
+
+
+def _runtime_child(agent, axis, key, name, **attrs):
+    child = agent.s.add_node("CapabilityAxis", {
+        "completion_status": "completed", "completion_verified": 1,
+        "model_epoch": 4, "decomposition_epoch": 7, **attrs,
+    })
+    _edge(agent, axis, "decomposes_into", child)
+    _edge(agent, child, "requires_key", key)
+    return child
+
+
+def test_generator_reproduces_committed_seed_exactly():
+    before = SEED.read_bytes()
+    subprocess.run([sys.executable, str(GENERATOR)], cwd=ROOT, check=True,
+                   capture_output=True, text=True)
+    assert SEED.read_bytes() == before
+
+
+def test_parent_impasse_settles_only_with_witness():
+    agent, impasse, axis, keys = _runtime()
+    _runtime_child(agent, axis, keys["alpha"], "alpha")
+    agent.tick()
+    assert agent.s.node(impasse)["attrs"].get("resolved") is False
+    assert agent.s.node(axis)["attrs"]["saturation"] == pytest.approx(0.35)
+    _runtime_child(agent, axis, keys["beta"], "beta")
+    agent.tick()
+    assert agent.s.node(impasse)["attrs"]["resolved"] is True
+    assert agent.s.node(impasse)["attrs"]["completion_witness"] == 1
+    assert agent.s.node(axis)["attrs"]["saturation"] == pytest.approx(1.0)
+
+
+def test_completion_idempotent():
+    agent, impasse, axis, keys = _runtime()
+    _runtime_child(agent, axis, keys["alpha"], "alpha")
+    _runtime_child(agent, axis, keys["beta"], "beta")
+    assert agent.tick() > 0
+    attrs = dict(agent.s.node(impasse)["attrs"])
+    assert agent.tick() == 0
+    assert agent.s.node(impasse)["attrs"] == attrs
+
+
+@pytest.mark.parametrize("changed_epoch", ["model_epoch", "decomposition_epoch"])
+def test_stale_epoch_invalidates_witness_and_reopens_parent(changed_epoch):
+    agent, impasse, axis, keys = _runtime()
+    _runtime_child(agent, axis, keys["alpha"], "alpha")
+    _runtime_child(agent, axis, keys["beta"], "beta")
+    agent.tick()
+    agent.s.set_attr(axis, changed_epoch, 8)
+    agent.tick()
+    attrs = agent.s.node(impasse)["attrs"]
+    assert attrs["completion_witness"] == 0
+    assert attrs["resolved"] is False
+    assert agent.s.node(axis)["attrs"]["saturation"] == pytest.approx(0.35)
+
+
+def test_changed_required_coverage_invalidates_witness():
+    agent, impasse, axis, keys = _runtime()
+    alpha = _runtime_child(agent, axis, keys["alpha"], "alpha")
+    _runtime_child(agent, axis, keys["beta"], "beta")
+    agent.tick()
+    agent.s.set_attr(alpha, "completion_verified", 0)
+    agent.tick()
+    assert agent.s.node(impasse)["attrs"]["completion_witness"] == 0
+    assert agent.s.node(impasse)["attrs"]["resolved"] is False
+    assert agent.s.node(axis)["attrs"]["saturation"] == pytest.approx(0.35)
+
+
+def test_pending_overlapping_child_blocks_impasse_resolution():
+    agent, impasse, axis, keys = _runtime()
+    _runtime_child(agent, axis, keys["alpha"], "alpha")
+    _runtime_child(agent, axis, keys["beta"], "beta")
+    pending = agent.s.add_node("CapabilityAxis", {
+        "completion_status": "pending", "completion_verified": 0,
+        "model_epoch": 4, "decomposition_epoch": 7,
+    })
+    _edge(agent, axis, "decomposes_into", pending)
+    _edge(agent, pending, "requires_key", keys["alpha"])
+    agent.tick()
+    assert agent.s.node(impasse)["attrs"].get("resolved") is False
 

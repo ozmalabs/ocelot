@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1, E4.2a, and the partial E4.2 graph-search pilot are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out evaluations, E4.2–E4.3, A2, D6, H1–H4 remain open.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1–E4.3 and A2.1–A2.2 are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out evaluations, D6 and H1–H4 remain open.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -56,7 +56,7 @@ A phase can finish implementation with a negative capability result, provided ev
 - **Acceptance:** no dependent task assumes failed P4 evidence; all seven P5 work items and both carryovers are scheduled.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
 - **Non-goals:** inferring readiness from untracked Track I files.
-- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task. Verified: 9 executable contract tests pass; runtime implementation is P5.A2.2.
 
 ### P5.F1.1 — Specify a shared attributed-state view across ToM systems
 
@@ -463,7 +463,7 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Acceptance:** A2.1 tests plus `test_completion_idempotent`, `test_parent_impasse_settles_only_with_witness`.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_decomposition_completion_migrated.py tests/test_decomposition_consumer_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** rewriting escalation order or declaring a parent solved from average progress.
-- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+- **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. **Complete:** runtime acceptance and legacy-consumer command pass 22 tests. The default-off seed requires parent model/decomposition epochs and child `completion_status="completed"`, `completion_verified=1`, and matching epochs; missing evidence keeps the impasse open. Coverage loss or epoch changes invalidate the witness, restore pre-completion saturation and reopen the impasse. Parent `child_mean_saturation` remains diagnostic only.
 
 ### P5.D6.1 — Specify analog rotation and detached imagery work
 
