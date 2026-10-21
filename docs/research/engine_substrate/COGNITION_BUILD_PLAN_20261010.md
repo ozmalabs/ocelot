@@ -10,7 +10,7 @@ Each detailed plan breaks its phase into tasks using the §3 template, records t
 |---|---|---|
 | 0 — Baseline and guardrails | [`COGNITION_BUILD_P0_BASELINE_PLAN.md`](COGNITION_BUILD_P0_BASELINE_PLAN.md) | Executed (`d83fa140`); baseline in `COGNITION_BUILD_BASELINE.md` |
 | 1 — Wiring and quick wins | [`COGNITION_BUILD_P1_WIRING_PLAN.md`](COGNITION_BUILD_P1_WIRING_PLAN.md) | Executed (`5b52a38b`). Results in `COGNITION_BUILD_P1_RESULTS.md`; these are mechanism tests on fixtures, not capability evidence |
-| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`). **No results doc was committed**; P3.0.1 writes `COGNITION_BUILD_P2_RESULTS.md` |
+| 2 — Graded primitives | [`COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md`](COGNITION_BUILD_P2_GRADED_PRIMITIVES_PLAN.md) | Executed (`1d5e63f9`); results recorded during P3 in [`COGNITION_BUILD_P2_RESULTS.md`](COGNITION_BUILD_P2_RESULTS.md) |
 | 3 — Extended-thinking executor | [`COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md`](COGNITION_BUILD_P3_EXTENDED_THINKING_PLAN.md) | Executed (`32143620`; pre-registration `eb34efb3`); H1/H2/H3/H5 pass, H4 partial (Family-A cache threshold fails); TimeInfer deferred to Track I or P4 |
 | 4–6 | Not yet detailed; see §4 below | Detail each phase after the previous phase's results doc is written |
 | **Track I — Process understanding and invention** | [`COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md`](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) | Runs in parallel with P3–P6. Its levels L1–L7 run from understanding and invention up to measurable beyond-human criteria. I0 (the evaluation battery and a `ProcessSchema` decision shared with P3) comes first |
@@ -61,7 +61,7 @@ These override the §4 Phase 3 table. Details and evidence are in the P3 plan.
 - **P3.A7 cache:** an `ExtendedThinkingCacheEntry` for the grain ladder. For the GenInfer rung, the minted `genlin_*` generator is itself the cache.
 - **P3.D1 is re-scoped** to a readout seed, `inference_ladder_record`. The quadratic rung is an optional decision task. The TimeInfer/order-N rung is **deferred to Track I or P4**, because Observations carry no frames.
 - **No Rust in P3.**
-- **The P2 results doc is missing.** It is added as P3.0.1 before any P3 work.
+- **The P2 results doc was missing from the committed history.** P3.0.1 records the gate evidence in `COGNITION_BUILD_P2_RESULTS.md`.
 - **Time inference remains deferred to Track I / P4.** P3.D1.4 records that the current Observation schema has a single signature and cannot carry the `motion_seq` frames required by TimeInfer.
 
 ## 1. Ground rules (apply to every task)
