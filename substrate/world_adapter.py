@@ -16033,7 +16033,11 @@ class WorldAdapter:
                 action = actions[0]      # observe-and-grow; not playing to win
                 for t in world["interpret_acts_on"](sub, ctx, action):
                     self.register_relation(t, "acts_on")
-                sub, ctx = world["apply_action"](sub, ctx, action)
+                applied = self._apply_world_action_at_sink(
+                    world, sub, ctx, action, sink_route="live_gamma.apply_action")
+                if applied is None:
+                    break
+                sub, ctx = applied
                 self.observe_gamma(sub)
                 if narrate:
                     narrate(self, sub)
@@ -16711,6 +16715,26 @@ class WorldAdapter:
         asym_count the seeded action_score_term weights by meta_curiosity_weight."""
         return len(set(touched_types) & self.boundary_asymmetry())
 
+    def _apply_world_action_at_sink(self, world, substrate, ctx, action, *, sink_route="world.apply_action"):
+        """Cross the native request/stop gate immediately before an action sink."""
+        gate = getattr(self.inner, "authorize_action_emission", None)
+        complete = getattr(self.inner, "complete_action_emission", None)
+        if gate is None or complete is None:
+            return world["apply_action"](substrate, ctx, action)
+        agent_id = self.agent.value if hasattr(self.agent, "value") else int(str(self.agent).lstrip("#"))
+        enabled, request_id = gate(agent_id, str(action), sink_route)
+        if not enabled:
+            return world["apply_action"](substrate, ctx, action)
+        if request_id is None:
+            return None
+        try:
+            result = world["apply_action"](substrate, ctx, action)
+        except BaseException:
+            complete(agent_id, request_id, False)
+            raise
+        complete(agent_id, request_id, True)
+        return result
+
     def _authorize_world_action(self, world, substrate, ctx, action) -> dict:
         """Mechanical enactment boundary for the graph's commitment verdict."""
         from domains.information_commitment import assess
@@ -17004,7 +17028,11 @@ class WorldAdapter:
                 if gate["decision"] != "commit" or not gate["authorized"]:
                     self.cognitive_tick()
                     continue
-                substrate, ctx = world["apply_action"](substrate, ctx, action)
+                applied = self._apply_world_action_at_sink(world, substrate, ctx, action)
+                if applied is None:
+                    self.cognitive_tick()
+                    continue
+                substrate, ctx = applied
                 self.observe(substrate)
                 self.register_senses(self.senses())
             games += 1
@@ -18333,7 +18361,10 @@ class WorldAdapter:
                 if gate["decision"] != "commit" or not gate["authorized"]:
                     self.cognitive_tick()
                     continue
-                substrate, ctx = world["apply_action"](substrate, ctx, action)
+                applied = self._apply_world_action_at_sink(world, substrate, ctx, action)
+                if applied is None:
+                    continue
+                substrate, ctx = applied
                 self.observe(substrate)
         self.discover_relations()
 

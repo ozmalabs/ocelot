@@ -6851,6 +6851,182 @@ impl PySubstrate {
         true
     }
 
+
+    /// Native authorization for non-reflex action sinks. Returns (policy_enabled, request_id).
+    fn authorize_action_emission(&mut self, agent: u32, action_key: &str, sink_route: &str) -> (bool, Option<String>) {
+        use crate::value::Value;
+
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let agent = NodeID(agent);
+        if !guard.graph.has_node(agent) {
+            return (true, None);
+        }
+        let enabled = guard.interner.intern("enabled");
+        let policy_edge = guard.interner.intern("has_response_inhibition_policy");
+        let policies = guard.graph.neighbours(agent, Some(policy_edge));
+        if policies.is_empty() || !policies.iter().any(|policy| {
+            matches!(guard.graph.node(*policy).attrs.get(&enabled),
+                Some(Value::Float(v)) if *v >= 0.5)
+                || matches!(guard.graph.node(*policy).attrs.get(&enabled),
+                    Some(Value::Int(v)) if *v > 0)
+                || matches!(guard.graph.node(*policy).attrs.get(&enabled),
+                    Some(Value::Bool(v)) if *v)
+        }) {
+            return (false, None);
+        }
+
+        fn text_attr(
+            guard: &crate::substrate::Substrate,
+            node: NodeID,
+            key: &str,
+        ) -> Option<String> {
+            let key = guard.interner.lookup(key)?;
+            match guard.graph.node(node).attrs.get(&key)? {
+                Value::Str(value) => Some(guard.interner.resolve(*value).to_owned()),
+                _ => None,
+            }
+        }
+        fn number_attr(
+            guard: &crate::substrate::Substrate,
+            node: NodeID,
+            key: &str,
+        ) -> Option<f64> {
+            let key = guard.interner.lookup(key)?;
+            match guard.graph.node(node).attrs.get(&key)? {
+                Value::Float(value) => Some(*value),
+                Value::Int(value) => Some(*value as f64),
+                _ => None,
+            }
+        }
+        fn write_text(
+            guard: &mut crate::substrate::Substrate,
+            node: NodeID,
+            key: &str,
+            value: &str,
+        ) {
+            let key = guard.interner.intern(key);
+            let value = guard.interner.intern(value);
+            guard.set_attr(node, key, Value::Str(value));
+        }
+
+        let action_key = action_key.to_owned();
+        let sink_route = sink_route.to_owned();
+        let Some(mode_edge) = guard.interner.lookup("has_network_mode_state") else {
+            return (true, None);
+        };
+        let Some(current_epoch) = guard.graph.neighbours(agent, Some(mode_edge)).into_iter()
+            .find_map(|mode| number_attr(&guard, mode, "epoch")) else {
+            return (true, None);
+        };
+        let Some(request_edge) = guard.interner.lookup("has_action_request") else {
+            return (true, None);
+        };
+        let requests: Vec<NodeID> = guard.graph.neighbours(agent, Some(request_edge)).into_iter()
+            .filter(|request| text_attr(&guard, *request, "action_key").as_deref() == Some(action_key.as_str()))
+            .collect();
+        if requests.len() != 1 {
+            return (true, None);
+        }
+        let request = requests[0];
+        let request_id = text_attr(&guard, request, "request_id");
+        let Some(request_id) = request_id else { return (true, None); };
+        let Some(source_epoch) = number_attr(&guard, request, "source_epoch") else { return (true, None); };
+        let request_status = text_attr(&guard, request, "status").unwrap_or_default();
+        if (source_epoch - current_epoch).abs() > f64::EPSILON
+            || !matches!(request_status.as_str(), "selected" | "authorized")
+        {
+            return (true, None);
+        }
+
+        let Some(auth_edge) = guard.interner.lookup("has_action_authorization") else {
+            write_text(&mut guard, request, "status", "withheld");
+            write_text(&mut guard, request, "terminal_reason", "missing_authorization");
+            return (true, None);
+        };
+        let authorizations: Vec<NodeID> = guard.graph.neighbours(request, Some(auth_edge)).into_iter()
+            .filter(|auth| text_attr(&guard, *auth, "status").as_deref() == Some("pending"))
+            .filter(|auth| text_attr(&guard, *auth, "request_id").as_deref() == Some(&request_id))
+            .filter(|auth| text_attr(&guard, *auth, "action_key").as_deref() == Some(action_key.as_str()))
+            .filter(|auth| text_attr(&guard, *auth, "sink_route").as_deref() == Some(sink_route.as_str()))
+            .filter(|auth| number_attr(&guard, *auth, "source_epoch")
+                .is_some_and(|epoch| (epoch - source_epoch).abs() <= f64::EPSILON))
+            .collect();
+        if authorizations.len() != 1 {
+            if let Some(edge) = guard.interner.lookup("has_action_authorization") {
+                let auths = guard.graph.neighbours(request, Some(edge));
+                for auth in auths {
+                    if text_attr(&guard, auth, "status").as_deref() == Some("pending") {
+                        write_text(&mut guard, auth, "status", "revoked");
+                    }
+                }
+            }
+            write_text(&mut guard, request, "status", "withheld");
+            write_text(&mut guard, request, "terminal_reason", "invalid_authorization");
+            return (true, None);
+        }
+        let authorization = authorizations[0];
+
+        let stop_edge = guard.interner.lookup("has_action_stop");
+        let stops: Vec<NodeID> = stop_edge.into_iter().flat_map(|edge|
+            guard.graph.neighbours(request, Some(edge))).filter(|stop| {
+                text_attr(&guard, *stop, "request_id").as_deref() == Some(&request_id)
+                    && number_attr(&guard, *stop, "source_epoch")
+                        .is_some_and(|epoch| (epoch - source_epoch).abs() <= f64::EPSILON)
+            }).collect();
+        if !stops.is_empty() {
+            write_text(&mut guard, request, "status", "withheld");
+            write_text(&mut guard, request, "terminal_reason", "stop_before_commit");
+            write_text(&mut guard, authorization, "status", "revoked");
+            for stop in stops {
+                write_text(&mut guard, stop, "status", "withheld");
+            }
+            return (true, None);
+        }
+
+        write_text(&mut guard, authorization, "status", "consumed");
+        write_text(&mut guard, request, "status", "dispatching");
+        write_text(&mut guard, request, "commit_action", &action_key);
+        (true, Some(request_id))
+    }
+
+
+    /// Record completion of a native-gated world action. A failed sink is terminal.
+    fn complete_action_emission(&mut self, agent: u32, request_id: &str, succeeded: bool) {
+        use crate::value::Value;
+        let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+        let agent = NodeID(agent);
+        let Some(edge) = guard.interner.lookup("has_action_request") else { return; };
+        let Some(request_id_key) = guard.interner.lookup("request_id") else { return; };
+        let Some(status_key) = guard.interner.lookup("status") else { return; };
+        let requests = guard.graph.neighbours(agent, Some(edge));
+        for request in requests {
+            let matches_id = matches!(guard.graph.node(request).attrs.get(&request_id_key),
+                Some(Value::Str(value)) if guard.interner.resolve(*value) == request_id);
+            let dispatching = matches!(guard.graph.node(request).attrs.get(&status_key),
+                Some(Value::Str(value)) if guard.interner.resolve(*value) == "dispatching");
+            if !matches_id || !dispatching { continue; }
+            let status = guard.interner.intern(if succeeded { "emitted" } else { "emission_failed" });
+            guard.set_attr(request, status_key, Value::Str(status));
+            let reason_key = guard.interner.intern("terminal_reason");
+            let reason = guard.interner.intern(if succeeded { "sink_action_returned" } else { "sink_action_failed" });
+            guard.set_attr(request, reason_key, Value::Str(reason));
+            if succeeded {
+                let action = guard.interner.lookup("action_key").and_then(|key|
+                    guard.graph.node(request).attrs.get(&key)).and_then(|value| match value {
+                        Value::Str(value) => Some(guard.interner.resolve(*value).to_owned()), _ => None,
+                    }).unwrap_or_default();
+                let epoch = guard.interner.lookup("source_epoch").and_then(|key|
+                    guard.graph.node(request).attrs.get(&key)).and_then(|value| match value {
+                        Value::Float(value) => Some(*value), Value::Int(value) => Some(*value as f64), _ => None,
+                    }).unwrap_or_default();
+                let receipt = guard.interner.intern(&format!("world-sink:{action}:{request_id}:{epoch}"));
+                let receipt_key = guard.interner.intern("sink_receipt_id");
+                guard.set_attr(request, receipt_key, Value::Str(receipt));
+            }
+            return;
+        }
+    }
+
     /// Complete the sink callback after the native gate consumed its token.
     /// Failure is terminal: authorization is never restored for a retry.
     fn complete_reflex_emission(&mut self, agent: u32, reflex: u32, succeeded: bool) {

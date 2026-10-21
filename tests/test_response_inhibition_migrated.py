@@ -99,16 +99,16 @@ def _tick(substrate):
     raise AssertionError("response inhibition did not reach a fixpoint")
 
 
-def _request(substrate, agent, *, status="selected", epoch=4):
+def _request(substrate, agent, *, status="selected", epoch=4, action_key="advance", sink_route="count"):
     request = substrate.add_node("ActionRequest", {
         "request_id": "move-native", "source_epoch": float(epoch),
-        "action_key": "advance", "status": status,
+        "action_key": action_key, "status": status,
     })
     substrate.add_edge(agent, "has_action_request", request)
     authorization = substrate.add_node("ActionAuthorization", {
         "authorization_id": "auth-native", "status": "pending",
         "request_id": "move-native", "source_epoch": float(epoch),
-        "action_key": "advance", "sink_route": "count",
+        "action_key": action_key, "sink_route": sink_route,
     })
     substrate.add_edge(request, "has_action_authorization", authorization)
     stop = substrate.add_node("ActionStopEvent", {
@@ -230,5 +230,57 @@ def test_sink_failure_consumes_authorization_without_retry():
         pass
     else:
         raise AssertionError("sink exception must propagate")
+    assert adapter.s.node(request)["attrs"]["status"] == "emission_failed"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "consumed"
+
+
+def _world_action_case(*, stopped=False):
+    adapter = WorldAdapter(seeds=())
+    adapter.inner.load_seed_manifest(build_seed(), adapter.agent)
+    policy = adapter.s.nodes("ResponseInhibitionPolicy")[0]
+    adapter.inner.set_attr(policy, "enabled", 1.0)
+    mode = adapter.s.add_node("NetworkModeState", {"epoch": 4.0, "mode": "awake"})
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_network_mode_state", mode)
+    request, authorization, stop = _request(
+        adapter.s._inner, adapter.agent, status="authorized", epoch=4,
+        action_key="move", sink_route="world.apply_action")
+    if not stopped:
+        adapter.inner.remove_edge(request, "has_action_stop", stop)
+    calls = []
+    world = {"apply_action": lambda sub, ctx, action: (calls.append(action) or sub, ctx)}
+    return adapter, request, authorization, world, calls
+
+
+def test_world_action_sink_never_receives_stopped_action():
+    adapter, request, authorization, world, calls = _world_action_case(stopped=True)
+    assert adapter._apply_world_action_at_sink(world, object(), {}, "move") is None
+    assert calls == []
+    assert adapter.s.node(request)["attrs"]["status"] == "withheld"
+    assert adapter.s.node(authorization)["attrs"]["status"] == "revoked"
+
+
+def test_world_action_sink_consumes_once_and_records_receipt():
+    adapter, request, authorization, world, calls = _world_action_case()
+    adapter._apply_world_action_at_sink(world, object(), {}, "move")
+    assert calls == ["move"]
+    attrs = adapter.s.node(request)["attrs"]
+    assert attrs["status"] == "emitted"
+    assert attrs["sink_receipt_id"].startswith("world-sink:move:")
+    assert adapter.s.node(authorization)["attrs"]["status"] == "consumed"
+    adapter._apply_world_action_at_sink(world, object(), {}, "move")
+    assert calls == ["move"]
+
+
+def test_world_action_sink_failure_is_terminal():
+    adapter, request, authorization, world, _calls = _world_action_case()
+    def fail(_sub, _ctx, _action):
+        raise RuntimeError("world sink failure")
+    world["apply_action"] = fail
+    try:
+        adapter._apply_world_action_at_sink(world, object(), {}, "move")
+    except RuntimeError as exc:
+        assert str(exc) == "world sink failure"
+    else:
+        raise AssertionError("world sink failure must propagate")
     assert adapter.s.node(request)["attrs"]["status"] == "emission_failed"
     assert adapter.s.node(authorization)["attrs"]["status"] == "consumed"
