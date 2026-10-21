@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1, and the E4.2 graph-search pilot are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out evaluations, E4.2–E4.3, A2, D6, H1–H4 remain open.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1/F2 implementation, G2, G3.1–G3.3, E3.1–E3.2a, E4.1, E4.2a, and the partial E4.2 graph-search pilot are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, held-out evaluations, E4.2–E4.3, A2, D6, H1–H4 remain open.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
@@ -387,10 +387,24 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Pattern to copy:** GWM rollout expansion and P3 one-request-per-funded-step.
 - **Steps:** 1. Materialize frontier and parent/path state as graph data. 2. Expand only grammar-admissible model actions under depth, node and budget bounds; keep uncertainty branches. 3. Verify terminal goals and emit a candidate plan or explicit impasse/needs_tool request.
 - **Guard:** `CognitionPlannerPolicy.enabled`, default 0.
-- **Acceptance:** E4.1 contract fixtures plus graph-backed `test_graph_planner_materializes_and_funds_two_step_plan`, `test_graph_planner_deduplicates_cycles_and_stale_transitions`, `test_graph_planner_missing_transition_is_unknown`, `test_graph_planner_depth_bound_is_terminal`, `test_graph_planner_expansion_limit_is_terminal`, `test_graph_planner_hard_depth_cap_is_eight`, `test_graph_planner_rejects_stale_model_snapshot`, `test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions`, and `test_graph_planner_does_not_solve_without_projection_feasibility`.
+- **Acceptance:** E4.1 contract fixtures plus graph-backed `test_graph_planner_materializes_and_funds_two_step_plan`, `test_graph_planner_deduplicates_cycles_and_stale_transitions`, `test_graph_planner_missing_transition_is_unknown`, `test_graph_planner_depth_bound_is_terminal`, `test_graph_planner_expansion_limit_is_terminal`, `test_graph_planner_hard_depth_cap_is_eight`, `test_graph_planner_rejects_stale_model_snapshot`, `test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions`, and `test_graph_planner_does_not_solve_without_projection_feasibility`, `test_graph_planner_rejects_invalid_native_feasibility_receipt`, `test_graph_planner_cancels_expired_request`, and `test_graph_planner_propagates_deadline_and_blocks_late_budget_debit`.
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_goal_derivation_migrated.py tests/test_compositional_plan_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** Python beam search; duplicating Track I goal-directed invention.
 - **Done when:** named acceptance passes; phase gate has no new failures; changes stay within Touch. Spec tasks finish when their decisions and executable acceptance definitions are recorded; held-out evidence is produced at the phase evaluation task.
+
+### P5.E4.2a — Make shared budget requests deadline-aware (complete)
+
+- **ID:** P5.E4.2a
+- **Tier:** T2
+- **Goal:** Ensure a stale planning request cannot consume ThinkingBudget after its deadline.
+- **Read first:** `scripts/gen_thinking_budget_seed.py`; `tests/test_thinking_budget_migrated.py`; `COGNITION_PLANNER_CONTRACT.md`.
+- **Touch:** `scripts/gen_thinking_budget_seed.py`; `seeds/thinking_budget.json`; `tests/test_thinking_budget_migrated.py`. Planner request propagation of `deadline_epoch` is completed separately within E4.2's three-file touch set.
+- **Steps:** 1. Cancel pending requests whose optional deadline is behind the current `NetworkModeState.epoch`. 2. Guard enabled and disabled approval paths so expired requests cannot be approved or debited in the same rules pass. 3. Preserve legacy requests with no deadline.
+- **Guard:** Existing ThinkingBudget behavior for requests without `deadline_epoch` remains unchanged.
+- **Acceptance:** New enabled-budget and disabled-budget expiration tests assert terminal cancellation and zero debit; existing ThinkingBudget acceptance remains green.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 python3 -m pytest tests/test_thinking_budget_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** Planner-owned budget accounting or changing non-expired requester behavior.
+- **Done when:** named acceptance passes, seed generator reproduces the manifest, and boot/test regressions stay green.
 
 ### P5.E4.3 — Consume imagined candidates through System-2 arbitration
 

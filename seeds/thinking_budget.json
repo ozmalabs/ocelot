@@ -102,6 +102,101 @@
   ],
   "rules": [
     {
+      "name": "tb_cancel_expired_request",
+      "area": "thinking_budget",
+      "order": 9,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "deadline_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "deadline_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "canceled"
+        ],
+        [
+          "set_attr",
+          "req",
+          "terminal_reason",
+          "deadline_exceeded"
+        ]
+      ]
+    },
+    {
       "name": "tb_fund_from_horizon",
       "area": "thinking_budget",
       "order": 8,
@@ -429,6 +524,11 @@
           "budget"
         ],
         [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
           "req",
           "draws_on_thinking_budget",
           "budget"
@@ -469,6 +569,45 @@
               "type": "Lit",
               "value": "pending"
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
           }
         ]
       },
@@ -556,6 +695,45 @@
               },
               "key": "cost"
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
           }
         ]
       },
@@ -693,6 +871,45 @@
               },
               "key": "cost"
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -879,6 +1096,45 @@
               },
               "key": "cost"
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "deadline_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
           },
           {
             "type": "Exists",

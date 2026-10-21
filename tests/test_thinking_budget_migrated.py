@@ -268,3 +268,29 @@ def test_thinking_budget_generator_matches_committed_seed():
 
     expected = json.dumps(build(), indent=2) + "\n"
     assert OUT.read_text(encoding="utf-8") == expected
+
+
+@pytest.mark.parametrize("enabled", [0.0, 1.0])
+def test_expired_request_is_canceled_without_approval_or_debit(enabled):
+    agent = _fresh()
+    budget = _nodes(agent, "ThinkingBudget")[0]
+    mode = _nodes(agent, "NetworkModeState")[0]
+    agent.s.set_attr(mode, "epoch", 11.0)
+    agent.s.set_attr(budget, "enabled", enabled)
+    agent.s.set_attr(budget, "capacity", 8.0)
+    agent.s.set_attr(budget, "remaining", 6.0)
+    agent.s.set_attr(budget, "last_refill_epoch", 11.0)
+    request = agent.s.add_node("ThinkingBudgetRequest", {
+        "status": "pending", "cost": 2.0, "requester_kind": "cognition_planner",
+        "deadline_epoch": 10.0, "source_epoch": 4.0,
+    })
+    _edge(agent, request, "draws_on_thinking_budget", budget)
+
+    for _ in range(20):
+        if not agent.inner.run_rules(1000):
+            break
+
+    attrs = agent.s.node(request)["attrs"]
+    assert attrs["status"] == "canceled"
+    assert attrs["terminal_reason"] == "deadline_exceeded"
+    assert agent.s.node(budget)["attrs"]["remaining"] == pytest.approx(6.0)

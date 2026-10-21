@@ -54,6 +54,8 @@ def production_specs():
         ("Agent", "has_network_mode_state", "NetworkModeState"),
         ("CognitionPlanRequest", "has_start_state", "CognitionPlanState"),
         ("CognitionPlanRequest", "has_goal_state", "CognitionPlanState"),
+        ("CognitionPlanState", "has_feasibility_receipt", "CognitionManifoldFeasibilityReceipt"),
+        ("CognitionPlanTransition", "has_feasibility_receipt", "CognitionManifoldFeasibilityReceipt"),
         ("CognitionPlanRequest", "has_frontier", "CognitionPlanFrontier"),
         ("CognitionPlanFrontier", "has_parent_frontier", "CognitionPlanFrontier"),
         ("CognitionPlanFrontier", "uses_transition", "CognitionPlanTransition"),
@@ -74,6 +76,34 @@ def productions():
             for src, edge, tgt in production_specs()]
 
 
+def verified_receipt(receipt, request, transition=None, state=None):
+    checks = [
+        Eq(A(receipt, "status"), L("verified")),
+        Eq(A(receipt, "verifier_kind"), L("native_future_manifold_projection")),
+        Eq(A(receipt, "model_id"), A(request, "model_id")),
+        Eq(A(receipt, "model_epoch"), A(request, "model_epoch")),
+        Gte(A(receipt, "horizon"), A(request, "required_horizon")),
+        Eq(A(receipt, "projection_loss"), ZERO),
+        Eq(A(receipt, "projection_information_loss"), ZERO),
+    ]
+    if transition:
+        checks.extend([
+            Eq(A(receipt, "transition_id"), A(transition, "transition_id")),
+            Eq(A(transition, "model_id"), A(request, "model_id")),
+        ])
+    if state:
+        checks.extend([
+            Eq(A(receipt, "projection_version"), A(state, "projection_version")),
+            Eq(A(state, "model_id"), A(request, "model_id")),
+        ])
+    return And(*checks)
+
+
+def state_has_verified_projection(state, request):
+    return Exists(N(state, "has_feasibility_receipt"), "projection_receipt",
+                  verified_receipt("projection_receipt", request, state=state))
+
+
 def terminalize_stale_request_rule():
     stale = Or(Eq(A("request", "source_epoch"), L(None)),
                Not(Eq(A("request", "source_epoch"), A("mode", "epoch"))),
@@ -81,7 +111,10 @@ def terminalize_stale_request_rule():
                Not(Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch"))),
                Not(Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch"))),
                Not(Eq(A("request", "model_epoch"), A("start", "model_epoch"))),
-               Not(Eq(A("request", "goal_epoch"), A("goal", "goal_epoch"))))
+               Not(Eq(A("request", "goal_epoch"), A("goal", "goal_epoch"))),
+               Not(Eq(A("request", "model_id"), A("policy", "current_model_id"))),
+               Not(Eq(A("request", "goal_id"), A("policy", "current_goal_id"))),
+               Not(Eq(A("request", "manifold_id"), A("policy", "current_manifold_id"))))
     return {
         "name": "cp_cancel_stale_request", "area": AREA, "order": 19,
         "latency_class": "hard_realtime", "batch": False,
@@ -93,10 +126,28 @@ def terminalize_stale_request_rule():
         "where": And(Eq(A("policy", "enabled"), L(1.0)),
                       Or(Eq(A("request", "status"), L("pending")),
                          Eq(A("request", "status"), L("searching"))),
+                      Not(Gt(A("mode", "epoch"), A("request", "deadline_epoch"))),
                       stale),
         "effects": [["set_attr", "request", "status", "model_stale"],
                     ["set_attr", "request", "terminal_reason", "planning_epoch_changed"]],
     }
+
+
+def terminalize_deadline_rule():
+    return {
+        "name": "cp_cancel_expired_request", "area": AREA, "order": 9,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["agent", "has_network_mode_state", "mode"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Or(Eq(A("request", "status"), L("pending")),
+                         Eq(A("request", "status"), L("searching"))),
+                      Gt(A("mode", "epoch"), A("request", "deadline_epoch"))),
+        "effects": [["set_attr", "request", "status", "exhausted"],
+                    ["set_attr", "request", "terminal_reason", "deadline_exceeded"]],
+    }
+
 
 
 def root_rule():
@@ -116,6 +167,10 @@ def root_rule():
                       Eq(A("request", "model_epoch"), A("policy", "current_model_epoch")),
                       Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch")),
                       Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch")),
+                      Eq(A("request", "model_id"), A("policy", "current_model_id")),
+                      Eq(A("request", "goal_id"), A("policy", "current_goal_id")),
+                      Eq(A("request", "manifold_id"), A("policy", "current_manifold_id")),
+                      Eq(A("request", "goal_id"), A("goal", "goal_id")),
                       Eq({"type": "Count", "source": N("request", "has_frontier")}, ZERO)),
         "effects": [
             ["add_node", "frontier", "CognitionPlanFrontier", {
@@ -161,6 +216,7 @@ def budget_request_rule():
                 "status": "pending", "requester_kind": "cognition_planner",
                 "cost": T(A("policy", "expansion_cost")),
                 "source_epoch": T(A("mode", "epoch")),
+                "deadline_epoch": T(A("request", "deadline_epoch")),
                 "request_id": T(A("frontier", "state_key")),
             }],
             ["add_edge", "frontier", "has_expansion_budget_request", "budget_req", {}],
@@ -184,7 +240,9 @@ def expand_rule():
                   ["request", "has_frontier", "frontier"],
                   ["frontier", "has_expansion_budget_request", "budget_req"],
                   ["agent", "has_cognition_plan_transition", "transition"],
+                  ["transition", "has_feasibility_receipt", "receipt"],
                   ["transition", "has_successor_state", "successor"],
+                  ["successor", "has_feasibility_receipt", "receipt"],
                   ["frontier", "expands_from_state", "source"]],
         "where": And(Eq(A("policy", "enabled"), L(1.0)),
                       Eq(A("request", "status"), L("searching")),
@@ -194,10 +252,14 @@ def expand_rule():
                                                 A("ranked_frontier", "rank"), default=L(None))),
                       Eq(A("source", "state_key"), A("transition", "source_state_key")),
                       Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
+                      verified_receipt("receipt", "request", "transition", "successor"),
                       Eq(A("successor", "model_epoch"), A("request", "model_epoch")),
                       Eq(A("request", "model_epoch"), A("policy", "current_model_epoch")),
                       Eq(A("request", "goal_epoch"), A("policy", "current_goal_epoch")),
                       Eq(A("request", "manifold_epoch"), A("policy", "current_manifold_epoch")),
+                      Eq(A("request", "model_id"), A("policy", "current_model_id")),
+                      Eq(A("request", "goal_id"), A("policy", "current_goal_id")),
+                      Eq(A("request", "manifold_id"), A("policy", "current_manifold_id")),
                       Lt(A("frontier", "depth"), Min(A("request", "depth_limit"), A("policy", "maximum_depth"))),
                       Lt(A("request", "expanded_count"), Min(A("request", "expansion_limit"), A("policy", "maximum_expansions"))),
                       Not(duplicate_state)),
@@ -255,13 +317,13 @@ def solve_rule():
                       Eq(A("frontier", "state_key"), A("frontier", "goal_state_key")),
                       Eq(A("frontier", "status"), L("ready")),
                       Eq(A("frontier", "candidate_emitted"), ZERO),
-                      Eq(A("state", "projection_status"), L("feasible")),
                       Eq(A("state", "model_epoch"), A("request", "model_epoch")),
                       Eq(A("state", "goal_epoch"), A("request", "goal_epoch")),
+                      state_has_verified_projection("state", "request"),
                       Eq(A("goal_state", "state_key"), A("request", "goal_state_key")),
-                      Eq(A("goal_state", "projection_status"), L("feasible")),
                       Eq(A("goal_state", "model_epoch"), A("request", "model_epoch")),
-                      Eq(A("goal_state", "goal_epoch"), A("request", "goal_epoch"))),
+                      Eq(A("goal_state", "goal_epoch"), A("request", "goal_epoch")),
+                      state_has_verified_projection("goal_state", "request")),
         "effects": [
             ["add_node", "candidate", "ImaginedPlanCandidate", {
                 "status": "proposal", "provenance_kind": "imagined",
@@ -292,9 +354,11 @@ def emit_duplicate_goal_path_rule():
                   ["request", "has_frontier", "frontier"],
                   ["request", "has_goal_state", "goal_state"],
                   ["frontier", "has_expansion_budget_request", "budget_req"],
+                  ["transition", "has_feasibility_receipt", "receipt"],
                   ["frontier", "expands_from_state", "source"],
                   ["agent", "has_cognition_plan_transition", "transition"],
-                  ["transition", "has_successor_state", "successor"]],
+                  ["transition", "has_successor_state", "successor"],
+                  ["successor", "has_feasibility_receipt", "receipt"]],
         "where": And(Eq(A("policy", "enabled"), L(1.0)),
                       Eq(A("request", "status"), L("searching")),
                       Eq(A("frontier", "status"), L("ready")),
@@ -302,13 +366,13 @@ def emit_duplicate_goal_path_rule():
                       Eq(A("source", "state_key"), A("transition", "source_state_key")),
                       Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
                       Eq(A("successor", "state_key"), A("frontier", "goal_state_key")),
-                      Eq(A("successor", "projection_status"), L("feasible")),
+                      verified_receipt("receipt", "request", "transition", "successor"),
                       Eq(A("successor", "model_epoch"), A("request", "model_epoch")),
                       Eq(A("successor", "goal_epoch"), A("request", "goal_epoch")),
-                      Eq(A("goal_state", "projection_status"), L("feasible")),
                       Eq(A("goal_state", "model_epoch"), A("request", "model_epoch")),
                       Eq(A("goal_state", "goal_epoch"), A("request", "goal_epoch")),
                       Eq(A("goal_state", "state_key"), A("request", "goal_state_key")),
+                      state_has_verified_projection("goal_state", "request"),
                       Not(Eq(A("transition", "goal_candidate_emitted"), L(1.0))),
                       seen_goal),
         "effects": [
@@ -405,10 +469,13 @@ def _unseen_successor_exists():
     successor_matches = And(
         Eq(A("successor", "model_epoch"), A("request", "model_epoch")),
         unseen_key,
+        state_has_verified_projection("successor", "request"),
     )
     transition_matches = And(
         Eq(A("transition", "source_state_key"), A("frontier", "state_key")),
         Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
+        Exists(N("transition", "has_feasibility_receipt"), "receipt",
+               verified_receipt("receipt", "request", "transition")),
         Exists(N("transition", "has_successor_state"), "successor", successor_matches),
     )
     return Exists(N("agent", "has_cognition_plan_transition"), "transition", transition_matches)
@@ -422,13 +489,17 @@ def terminalize_model_dead_end_rule():
                   ["agent", "has_cognition_plan_request", "request"],
                   ["request", "has_frontier", "frontier"],
                   ["frontier", "has_expansion_budget_request", "budget_req"],
-                  ["agent", "has_cognition_plan_transition", "transition"]],
+                  ["agent", "has_cognition_plan_transition", "transition"],
+                  ["transition", "has_feasibility_receipt", "receipt"]],
         "where": And(Eq(A("policy", "enabled"), L(1.0)),
                       Eq(A("request", "status"), L("searching")),
                       Eq(A("frontier", "status"), L("ready")),
                       Eq(A("budget_req", "status"), L("approved")),
                       Eq(A("transition", "source_state_key"), A("frontier", "state_key")),
                       Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
+                      verified_receipt("receipt", "request", "transition"),
+                      Exists(N("transition", "has_successor_state"), "successor",
+                             state_has_verified_projection("successor", "request")),
                       Not(_unseen_successor_exists())),
         "effects": [["set_attr", "frontier", "status", "terminal"],
                     ["set_attr", "frontier", "terminal_reason", "duplicate_or_cycle"],
@@ -474,7 +545,9 @@ def terminalize_missing_transition_rule():
                       Eq({"type": "Count", "source": Filter(
                           N("agent", "has_cognition_plan_transition"), "transition",
                           And(Eq(A("transition", "source_state_key"), A("frontier", "state_key")),
-                              Eq(A("transition", "model_epoch"), A("request", "model_epoch"))))}, ZERO)),
+                              Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
+                              Exists(N("transition", "has_feasibility_receipt"), "receipt",
+                                     verified_receipt("receipt", "request", "transition"))))}, ZERO)),
         "effects": [["set_attr", "frontier", "status", "terminal"],
                     ["set_attr", "frontier", "terminal_reason", "missing_transition"],
                     ["set_attr", "frontier", "expanded_epoch", T(A("budget_req", "debited_epoch"))],
@@ -496,10 +569,12 @@ def build_seed():
             "expansion_cost": 1.0, "maximum_branching": 8.0,
             "current_model_epoch": -1.0, "current_goal_epoch": -1.0,
             "current_manifold_epoch": -1.0,
+            "current_model_id": "", "current_goal_id": "",
+            "current_manifold_id": "",
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_cognition_planner_policy", "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(),
-        "rules": [terminalize_stale_request_rule(), root_rule(), budget_request_rule(), expand_rule(), count_expansion_rule(), solve_rule(),
+        "rules": [terminalize_deadline_rule(), terminalize_stale_request_rule(), root_rule(), budget_request_rule(), expand_rule(), count_expansion_rule(), solve_rule(),
                   emit_duplicate_goal_path_rule(), close_solved_request_rule(),
                   terminalize_depth_rule(), terminalize_expansion_bound_rule(), terminalize_unfunded_rule(),
                   terminalize_missing_transition_rule(), terminalize_model_dead_end_rule(),

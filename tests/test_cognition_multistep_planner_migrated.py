@@ -122,22 +122,28 @@ def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0
     adapter.inner.set_attr(policy, "current_model_epoch", 2.0)
     adapter.inner.set_attr(policy, "current_goal_epoch", 3.0)
     adapter.inner.set_attr(policy, "current_manifold_epoch", 5.0)
+    adapter.inner.set_attr(policy, "current_model_id", "model-1")
+    adapter.inner.set_attr(policy, "current_goal_id", "goal-1")
+    adapter.inner.set_attr(policy, "current_manifold_id", "manifold-1")
     adapter.inner.set_attr(budget, "enabled", 1.0)
     adapter.inner.set_attr(budget, "remaining", remaining)
     adapter.inner.set_attr(budget, "capacity", remaining)
     mode = adapter.s.add_node("NetworkModeState", {"epoch": 4.0, "mode": "awake"})
     adapter.inner.add_edge_unchecked(adapter.agent, "has_network_mode_state", mode)
     start = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "s0", "model_epoch": 2.0, "goal_epoch": 3.0,
-        "uncertainty": 0.0, "projection_status": "feasible",
+        "state_key": "s0", "model_id": "model-1", "model_epoch": 2.0,
+        "goal_epoch": 3.0, "projection_version": 1.0, "uncertainty": 0.0,
     })
     goal = adapter.s.add_node("CognitionPlanState", {
-        "state_key": "goal", "model_epoch": 2.0, "goal_epoch": 3.0,
-        "goal_epoch": 3.0, "uncertainty": 0.0, "projection_status": "feasible",
+        "state_key": "goal", "model_id": "model-1", "model_epoch": 2.0,
+        "goal_id": "goal-1", "goal_epoch": 3.0,
+        "projection_version": 1.0, "uncertainty": 0.0,
     })
     request = adapter.s.add_node("CognitionPlanRequest", {
         "request_id": "plan-1", "status": "pending", "source_epoch": 4.0,
-        "model_epoch": 2.0, "goal_epoch": 3.0, "manifold_epoch": 5.0,
+        "model_id": "model-1", "model_epoch": 2.0, "goal_id": "goal-1",
+        "goal_epoch": 3.0, "manifold_id": "manifold-1", "manifold_epoch": 5.0,
+        "required_horizon": 2.0, "deadline_epoch": 10.0,
         "depth_limit": depth_limit, "expansion_limit": expansion_limit,
     })
     adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)
@@ -146,15 +152,26 @@ def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0
     for index, item in enumerate(transitions):
         source, action, target, epoch = item
         state = adapter.s.add_node("CognitionPlanState", {
-            "state_key": target, "model_epoch": float(epoch), "goal_epoch": 3.0,
-            "uncertainty": 0.1, "projection_status": "feasible",
+            "state_key": target, "model_id": "model-1", "model_epoch": float(epoch),
+            "goal_epoch": 3.0, "projection_version": 1.0, "uncertainty": 0.1,
         })
         transition = adapter.s.add_node("CognitionPlanTransition", {
             "transition_id": f"t{index}", "source_state_key": source,
-            "action_key": action, "model_epoch": float(epoch),
+            "action_key": action, "model_id": "model-1", "model_epoch": float(epoch),
+        })
+        receipt = adapter.s.add_node("CognitionManifoldFeasibilityReceipt", {
+            "status": "verified", "verifier_kind": "native_future_manifold_projection",
+            "model_id": "model-1", "model_epoch": float(epoch),
+            "transition_id": f"t{index}", "projection_version": 1.0,
+            "horizon": 2.0, "projection_loss": 0.0,
+            "projection_information_loss": 0.0,
         })
         adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_transition", transition)
         adapter.inner.add_edge_unchecked(transition, "has_successor_state", state)
+        adapter.inner.add_edge_unchecked(transition, "has_feasibility_receipt", receipt)
+        adapter.inner.add_edge_unchecked(state, "has_feasibility_receipt", receipt)
+        if target == "goal":
+            adapter.inner.add_edge_unchecked(goal, "has_feasibility_receipt", receipt)
     return adapter, request, budget
 
 
@@ -288,7 +305,53 @@ def test_graph_planner_rejects_stale_model_snapshot():
 def test_graph_planner_does_not_solve_without_projection_feasibility():
     adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
     goal = adapter.inner.neighbours(request, "has_goal_state")[0]
-    adapter.inner.set_attr(goal, "projection_status", "unresolved")
+    receipt = adapter.inner.neighbours(goal, "has_feasibility_receipt")[0]
+    adapter.inner.set_attr(receipt, "status", "unresolved")
     _run_to_fixpoint(adapter)
     assert adapter.s.node(request)["attrs"]["status"] == "unknown"
     assert not adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+
+
+def test_graph_planner_rejects_invalid_native_feasibility_receipt():
+    adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
+    transition = adapter.inner.neighbours(adapter.agent, "has_cognition_plan_transition")[0]
+    receipt = adapter.inner.neighbours(transition, "has_feasibility_receipt")[0]
+    adapter.inner.set_attr(receipt, "projection_information_loss", 0.25)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "unknown"
+    assert not adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+
+
+def test_graph_planner_cancels_expired_request():
+    adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
+    mode = adapter.inner.neighbours(adapter.agent, "has_network_mode_state")[0]
+    adapter.inner.set_attr(mode, "epoch", 11.0)
+    _run_to_fixpoint(adapter)
+    attrs = adapter.s.node(request)["attrs"]
+    assert attrs["status"] == "exhausted"
+    assert attrs["terminal_reason"] == "deadline_exceeded"
+    assert not adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+
+
+
+
+def test_graph_planner_propagates_deadline_and_blocks_late_budget_debit():
+    adapter, request, budget = _graph_planner([], remaining=4.0)
+    frontier = adapter.s.add_node("CognitionPlanFrontier", {
+        "status": "ready", "state_key": "s0", "source_epoch": 4.0,
+        "model_epoch": 2.0, "goal_epoch": 3.0, "manifold_epoch": 5.0,
+        "depth": 0.0, "rank": 0.0,
+    })
+    adapter.inner.add_edge_unchecked(request, "has_frontier", frontier)
+    budget_request = adapter.s.add_node("ThinkingBudgetRequest", {
+        "status": "pending", "requester_kind": "cognition_planner",
+        "request_id": "plan-1:s0", "cost": 1.0, "source_epoch": 4.0,
+        "deadline_epoch": 10.0,
+    })
+    adapter.inner.add_edge_unchecked(frontier, "has_expansion_budget_request", budget_request)
+    adapter.inner.add_edge_unchecked(budget_request, "draws_on_thinking_budget", budget)
+    mode = adapter.inner.neighbours(adapter.agent, "has_network_mode_state")[0]
+    adapter.inner.set_attr(mode, "epoch", 11.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(budget_request)["attrs"]["status"] == "canceled"
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 4.0
