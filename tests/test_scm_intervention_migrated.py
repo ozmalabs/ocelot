@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from copy import deepcopy
+import json
+from pathlib import Path
 
 from domains.engine_provenance import engine_preamble
 
@@ -34,6 +36,35 @@ def _common_cause_model():
         "source_ids": ["mechanism-1"],
         "source_epoch": 7,
     }
+
+
+def _run_seeded_request(*, enabled=1.0, remaining=1.0, model_epoch=7, query_epoch=7, approved=True):
+    root = Path(__file__).resolve().parents[1]
+    seed = json.loads((root / "seeds/scm_reasoning.json").read_text())
+    substrate = Substrate()
+    agent = substrate.add_node("Agent", {})
+    substrate.load_seed_manifest(seed, agent)
+    policy = substrate.nodes("ScmReasoningPolicy")[0]
+    substrate.set_attr(policy, "enabled", enabled)
+    substrate.set_attr(policy, "remaining", remaining)
+    model = substrate.add_node("ScmModel", {
+        "snapshot": _common_cause_model() | {"source_epoch": model_epoch},
+        "source_epoch": model_epoch,
+        "model_hash": "sha256:fixture-model",
+    })
+    query = substrate.add_node("ScmQuery", {
+        "kind": "effect",
+        "outcome": "Y",
+        "intervention": {"X": 1},
+        "exogenous_assignments": [{"U": 0}, {"U": 1}],
+        "assignment_cap": 16,
+        "scm_status": "pending",
+        "funding_approved": approved,
+        "source_epoch": query_epoch,
+    })
+    substrate.add_edge(query, "uses_scm_model", model)
+    substrate._inner.run_rules()
+    return substrate, policy, model, query
 
 
 def _do_y_for_common_cause(x_value, u_values=(0, 1)):
@@ -221,3 +252,45 @@ def test_native_scm_abstains_on_cycles_empty_assignments_and_bounds():
     assert _native(_common_cause_model(), query, {"X": 1}, []).get("status") == "unknown"
     assert _native(_common_cause_model(), query, {"X": 1}, [{"U": 0}, {"U": 1}], 1).get("status") == "unknown"
     assert _native(None, query, {"X": 1}, [{"U": 0}]).get("status") == "invalid"
+
+
+def test_source_model_epoch_invalidates():
+    substrate, policy, model, query = _run_seeded_request(model_epoch=8, query_epoch=7)
+    assert substrate.node(query)["attrs"]["scm_status"] == "unknown"
+    assert substrate.node(query)["attrs"]["scm_reason"] == "source_model_epoch_mismatch"
+    assert "scm_result" not in substrate.node(query)["attrs"]
+    assert substrate.node(policy)["attrs"]["remaining"] == 1.0
+
+
+def test_query_budget_bound():
+    substrate, policy, _model, query = _run_seeded_request(remaining=0.0)
+    attrs = substrate.node(query)["attrs"]
+    assert attrs["scm_status"] == "pending"
+    assert "scm_result" not in attrs
+    assert substrate.node(policy)["attrs"]["remaining"] == 0.0
+
+
+def test_scm_seed_is_default_off():
+    substrate, policy, _model, query = _run_seeded_request(enabled=0.0)
+    assert substrate.node(query)["attrs"]["scm_status"] == "pending"
+    assert "scm_result" not in substrate.node(query)["attrs"]
+    assert substrate.node(policy)["attrs"]["remaining"] == 1.0
+
+
+def test_scm_query_requires_one_explicit_funding_approval():
+    substrate, policy, _model, query = _run_seeded_request(approved=False)
+    assert substrate.node(query)["attrs"]["scm_status"] == "pending"
+    assert "scm_result" not in substrate.node(query)["attrs"]
+    assert substrate.node(policy)["attrs"]["remaining"] == 1.0
+
+
+def test_detached_result_not_observed():
+    substrate, policy, _model, query = _run_seeded_request()
+    attrs = substrate.node(query)["attrs"]
+    assert attrs["scm_status"] == "evaluated"
+    assert attrs["model_hash_used"] == "sha256:fixture-model"
+    assert attrs["evaluated_source_epoch"] == 7
+    assert attrs["scm_result"]["status"] == "identified"
+    assert substrate.node(policy)["attrs"]["remaining"] == 0.0
+    assert substrate.nodes("Observation") == []
+    assert "observed" not in attrs
