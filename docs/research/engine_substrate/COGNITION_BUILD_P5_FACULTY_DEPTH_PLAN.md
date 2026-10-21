@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection and agent-owned source hooks, F2.1/F2.2, and F2.3's mechanical recursive adapter route are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup and F1/F2 held-out evaluations remain open; G2, G3, E3, E4, A2, and D6 have not started.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection and agent-owned source hooks, F2.1–F2.3, and G2.1's evidence contract are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). Bigville owner-context hookup, G2.2, F1/F2 held-out evaluations, and G3/E3/E4/A2/D6 remain open.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
