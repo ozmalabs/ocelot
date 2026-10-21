@@ -427,6 +427,88 @@ fn scm_eval_one(
     Some(values)
 }
 
+fn scm_valid_backdoor_adjustment(
+    treatment: &str,
+    outcome: &str,
+    adjustment: &[String],
+    equations: &[ScmEquation],
+) -> bool {
+    if adjustment.iter().any(|id| id == treatment || id == outcome)
+        || adjustment.iter().collect::<rustc_hash::FxHashSet<_>>().len() != adjustment.len()
+    {
+        return false;
+    }
+    let mut edges = Vec::new();
+    for equation in equations {
+        edges.extend(equation.parents.iter().map(|parent| (parent.clone(), equation.target.clone())));
+        edges.extend(equation.exogenous.iter().map(|parent| (parent.clone(), equation.target.clone())));
+    }
+    let known: rustc_hash::FxHashSet<&str> = edges.iter()
+        .flat_map(|(a, b)| [a.as_str(), b.as_str()])
+        .chain([treatment, outcome])
+        .collect();
+    if adjustment.iter().any(|id| !known.contains(id.as_str())) { return false; }
+
+    // The backdoor graph removes all outgoing treatment edges. A treatment
+    // descendant is forbidden independently of its numeric effect.
+    let mut descendants = rustc_hash::FxHashSet::default();
+    let mut frontier = vec![treatment.to_owned()];
+    while let Some(parent) = frontier.pop() {
+        for (from, to) in &edges {
+            if from == &parent && descendants.insert(to.clone()) { frontier.push(to.clone()); }
+        }
+    }
+    if adjustment.iter().any(|id| descendants.contains(id)) { return false; }
+    let backdoor: Vec<_> = edges.into_iter().filter(|(from, _)| from != treatment).collect();
+    let mut parents: FxHashMap<&str, Vec<&str>> = FxHashMap::default();
+    for (from, to) in &backdoor { parents.entry(to).or_default().push(from); }
+
+    let mut ancestral = rustc_hash::FxHashSet::default();
+    let mut todo = vec![treatment.to_owned(), outcome.to_owned()];
+    todo.extend(adjustment.iter().cloned());
+    while let Some(node) = todo.pop() {
+        if !ancestral.insert(node.clone()) { continue; }
+        if let Some(node_parents) = parents.get(node.as_str()) {
+            todo.extend(node_parents.iter().map(|parent| (*parent).to_owned()));
+        }
+    }
+
+    // Moralize the ancestral graph, remove conditioned vertices, then search
+    // for a treatment-outcome path. This is exact d-separation for a finite DAG.
+    let mut undirected: FxHashMap<String, rustc_hash::FxHashSet<String>> = FxHashMap::default();
+    for (from, to) in &backdoor {
+        if ancestral.contains(from) && ancestral.contains(to) {
+            undirected.entry(from.clone()).or_default().insert(to.clone());
+            undirected.entry(to.clone()).or_default().insert(from.clone());
+        }
+    }
+    for child in &ancestral {
+        if let Some(node_parents) = parents.get(child.as_str()) {
+            for (i, a) in node_parents.iter().enumerate() {
+                if !ancestral.contains(*a) { continue; }
+                for b in node_parents.iter().skip(i + 1) {
+                    if !ancestral.contains(*b) { continue; }
+                    undirected.entry((*a).to_owned()).or_default().insert((*b).to_owned());
+                    undirected.entry((*b).to_owned()).or_default().insert((*a).to_owned());
+                }
+            }
+        }
+    }
+    let blocked: rustc_hash::FxHashSet<&str> = adjustment.iter().map(String::as_str).collect();
+    let mut seen = rustc_hash::FxHashSet::default();
+    let mut todo = vec![treatment.to_owned()];
+    while let Some(node) = todo.pop() {
+        if node == outcome { return false; }
+        if !seen.insert(node.clone()) { continue; }
+        if let Some(neighbors) = undirected.get(&node) {
+            todo.extend(neighbors.iter().filter(|neighbor| {
+                !blocked.contains(neighbor.as_str()) && !seen.contains(*neighbor)
+            }).cloned());
+        }
+    }
+    true
+}
+
 /// Evaluate a finite SCM over detached Value records. There is deliberately
 /// no graph argument here: intervention is equation replacement, not mutation.
 pub fn scm_intervene(
@@ -446,7 +528,7 @@ pub fn scm_intervene(
     let Some(kind) = scm_get(query, "kind", interner).and_then(|v| scm_string(v, interner)) else {
         return scm_invalid(interner, "query_kind_missing_or_invalid", model);
     };
-    if !matches!(kind.as_str(), "effect" | "condition" | "unit_counterfactual") {
+    if !matches!(kind.as_str(), "effect" | "condition" | "unit_counterfactual" | "adjustment") {
         return scm_invalid(interner, "unsupported_query_kind", model);
     }
     let Some(outcome) = scm_get(query, "outcome", interner).and_then(|v| scm_string(v, interner)) else {
@@ -580,7 +662,59 @@ pub fn scm_intervene(
     }
 
     let mut output_values = Vec::new();
-    for exogenous in &parsed_assignments {
+    if kind == "adjustment" {
+        if intervention.len() != 1 {
+            return scm_invalid(interner, "adjustment_requires_one_treatment", model);
+        }
+        let treatment = &intervention[0].0;
+        let treatment_value = &intervention[0].1;
+        let adjustment = scm_get(query, "adjustment", interner)
+            .and_then(|value| scm_strings(value, interner)).unwrap_or_default();
+        if !scm_valid_backdoor_adjustment(treatment, &outcome, &adjustment, &equations) {
+            return scm_unknown(interner, "invalid_backdoor_adjustment", model);
+        }
+        let mut strata: Vec<(Vec<Value>, usize, usize, Vec<Value>)> = Vec::new();
+        for exogenous in &parsed_assignments {
+            let Some(result) = scm_eval_one(&order, &equations, exogenous, &[]) else {
+                return scm_unknown(interner, "equation_evaluation_failed", model);
+            };
+            let Some(observed_treatment) = result.iter().find(|(id, _)| id == treatment).map(|(_, v)| v) else {
+                return scm_unknown(interner, "outcome_unavailable", model);
+            };
+            let Some(observed_outcome) = result.iter().find(|(id, _)| id == &outcome).map(|(_, v)| v.clone()) else {
+                return scm_unknown(interner, "outcome_unavailable", model);
+            };
+            let mut stratum = Vec::new();
+            for id in &adjustment {
+                let value = exogenous.iter().find(|(name, _)| name == id)
+                    .or_else(|| result.iter().find(|(name, _)| name == id)).map(|(_, v)| v.clone());
+                let Some(value) = value else { return scm_invalid(interner, "adjustment_value_missing", model); };
+                stratum.push(value);
+            }
+            let row = strata.iter_mut().find(|(known, _, _, _)| known == &stratum);
+            let row = if let Some(row) = row { row } else {
+                strata.push((stratum, 0, 0, Vec::new()));
+                strata.last_mut().expect("just pushed stratum")
+            };
+            row.1 += 1;
+            if observed_treatment == treatment_value {
+                row.2 += 1;
+                row.3.push(observed_outcome);
+            }
+        }
+        for (stratum, population_count, selected_count, outcomes) in strata {
+            if selected_count == 0 { return scm_unknown(interner, "positivity_violation", model); }
+            let weight = population_count as f64 / parsed_assignments.len() as f64;
+            let per_sample_weight = weight / selected_count as f64;
+            let stratum = Value::Tuple(Arc::new(stratum.into()));
+            for outcome_value in outcomes {
+                output_values.push(Value::Tuple(Arc::new(smallvec::smallvec![
+                    stratum.clone(), Value::Float(per_sample_weight), outcome_value,
+                ])));
+            }
+        }
+    } else {
+      for exogenous in &parsed_assignments {
         match kind.as_str() {
             "effect" => {
                 let Some(result) = scm_eval_one(&order, &equations, exogenous, &intervention) else {
@@ -615,10 +749,15 @@ pub fn scm_intervene(
             }
             _ => unreachable!(),
         }
+      }
     }
     let source_ids = scm_get(model, "source_ids", interner).cloned().unwrap_or(Value::None);
     let source_epoch = scm_get(model, "source_epoch", interner).cloned().unwrap_or(Value::None);
-    let assumption = if kind == "effect" { "uniform_exogenous_assignments" } else { "shared_supplied_exogenous_assignments" };
+    let assumption = match kind.as_str() {
+        "effect" => "uniform_exogenous_assignments",
+        "adjustment" => "valid_backdoor_adjustment",
+        _ => "shared_supplied_exogenous_assignments",
+    };
     let status = Value::Str(crate::sym::Sym::reserved("identified").expect("reserved SCM status"));
     let assumption = Value::Str(crate::sym::Sym::reserved(assumption).expect("reserved SCM assumption"));
     scm_record(vec![
@@ -735,5 +874,34 @@ mod scm_intervene_tests {
         let result = crate::term::evaluate(&arena, term, &mut Default::default(), &mut ctx);
         assert_eq!(status(&result, &interner), "identified");
         assert_eq!(interner.resolve(crate::sym::Sym::reserved("status").unwrap()), "status");
+    }
+
+    #[test]
+    fn scm_backdoor_adjustment_checks_finite_confounder_population() {
+        let mut interner = Interner::new();
+        let model = value(serde_json::json!({
+            "variables":[{"id":"X","domain":[0,1]},{"id":"Y","domain":[0,1]}],
+            "exogenous":[{"id":"U","domain":[0,1]},{"id":"V","domain":[0,1]}],
+            "equations":[
+                {"target":"X","parents":[],"exogenous":["U","V"],"rows":[
+                    {"inputs":{"U":0,"V":0},"value":0},{"inputs":{"U":0,"V":1},"value":1},
+                    {"inputs":{"U":1,"V":0},"value":1},{"inputs":{"U":1,"V":1},"value":0}]},
+                {"target":"Y","parents":[],"exogenous":["U"],"rows":[
+                    {"inputs":{"U":0},"value":0},{"inputs":{"U":1},"value":1}]}
+            ], "source_ids":["m-confounded"],"source_epoch":3
+        }), &mut interner);
+        let query = value(serde_json::json!({"kind":"adjustment","outcome":"Y","adjustment":["U"]}), &mut interner);
+        let intervention = value(serde_json::json!({"X":1}), &mut interner);
+        let assignments = value(serde_json::json!([{"U":0,"V":0},{"U":0,"V":1},{"U":1,"V":0},{"U":1,"V":1}]), &mut interner);
+        let result = scm_intervene(&model, &query, &intervention, &assignments, &Value::Int(16), &interner);
+        assert_eq!(status(&result, &interner), "identified");
+        let values = scm_get(&result, "values", &interner).and_then(scm_seq).unwrap();
+        assert_eq!(values.len(), 2);
+        let first = match &values[0] { Value::Tuple(items) => items, _ => panic!("weighted adjustment row expected") };
+        assert_eq!(first[1], Value::Float(0.5));
+        assert_eq!(first[2], Value::Int(0));
+        let second = match &values[1] { Value::Tuple(items) => items, _ => panic!("weighted adjustment row expected") };
+        assert_eq!(second[1], Value::Float(0.5));
+        assert_eq!(second[2], Value::Int(1));
     }
 }
