@@ -101,3 +101,194 @@ def test_same_state_model_epoch_dedup():
     current = _reference_search("a", "goal", transitions, model_epoch=2)
     assert old["status"] != "solved"
     assert current["status"] == "solved"
+
+
+def _graph_planner(transitions, *, enabled=True, remaining=16.0, depth_limit=8.0,
+                   expansion_limit=256.0):
+    from substrate.world_adapter import WorldAdapter
+    from scripts.gen_cognition_planner_seed import build_seed
+    from scripts.gen_thinking_budget_seed import build as build_budget_seed
+
+    adapter = WorldAdapter(seeds=())
+    budget_summary = adapter.inner.load_seed_manifest(build_budget_seed(), adapter.agent)
+    planner_summary = adapter.inner.load_seed_manifest(build_seed(), adapter.agent)
+    assert budget_summary["rules_skipped"] == [], budget_summary
+    assert planner_summary["rules_skipped"] == [], planner_summary
+    policy = adapter.s.nodes("CognitionPlannerPolicy")[0]
+    budget = adapter.s.nodes("ThinkingBudget")[0]
+    adapter.inner.set_attr(policy, "enabled", 1.0 if enabled else 0.0)
+    adapter.inner.set_attr(policy, "maximum_depth", 8.0)
+    adapter.inner.set_attr(policy, "maximum_expansions", 256.0)
+    adapter.inner.set_attr(policy, "current_model_epoch", 2.0)
+    adapter.inner.set_attr(policy, "current_goal_epoch", 3.0)
+    adapter.inner.set_attr(policy, "current_manifold_epoch", 5.0)
+    adapter.inner.set_attr(budget, "enabled", 1.0)
+    adapter.inner.set_attr(budget, "remaining", remaining)
+    adapter.inner.set_attr(budget, "capacity", remaining)
+    mode = adapter.s.add_node("NetworkModeState", {"epoch": 4.0, "mode": "awake"})
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_network_mode_state", mode)
+    start = adapter.s.add_node("CognitionPlanState", {
+        "state_key": "s0", "model_epoch": 2.0, "goal_epoch": 3.0,
+        "uncertainty": 0.0, "projection_status": "feasible",
+    })
+    goal = adapter.s.add_node("CognitionPlanState", {
+        "state_key": "goal", "model_epoch": 2.0, "goal_epoch": 3.0,
+        "goal_epoch": 3.0, "uncertainty": 0.0, "projection_status": "feasible",
+    })
+    request = adapter.s.add_node("CognitionPlanRequest", {
+        "request_id": "plan-1", "status": "pending", "source_epoch": 4.0,
+        "model_epoch": 2.0, "goal_epoch": 3.0, "manifold_epoch": 5.0,
+        "depth_limit": depth_limit, "expansion_limit": expansion_limit,
+    })
+    adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_request", request)
+    adapter.inner.add_edge_unchecked(request, "has_start_state", start)
+    adapter.inner.add_edge_unchecked(request, "has_goal_state", goal)
+    for index, item in enumerate(transitions):
+        source, action, target, epoch = item
+        state = adapter.s.add_node("CognitionPlanState", {
+            "state_key": target, "model_epoch": float(epoch), "goal_epoch": 3.0,
+            "uncertainty": 0.1, "projection_status": "feasible",
+        })
+        transition = adapter.s.add_node("CognitionPlanTransition", {
+            "transition_id": f"t{index}", "source_state_key": source,
+            "action_key": action, "model_epoch": float(epoch),
+        })
+        adapter.inner.add_edge_unchecked(adapter.agent, "has_cognition_plan_transition", transition)
+        adapter.inner.add_edge_unchecked(transition, "has_successor_state", state)
+    return adapter, request, budget
+
+
+def _run_to_fixpoint(adapter):
+    for _ in range(30):
+        if not adapter.inner.run_rules(1000):
+            return
+    raise AssertionError("planner seed did not reach a fixpoint")
+
+
+def test_planner_seed_reproduces_and_is_disabled_by_default():
+    import json
+    from scripts.gen_cognition_planner_seed import OUT, build_seed
+
+    assert json.loads(OUT.read_text()) == build_seed()
+    adapter, request, _budget = _graph_planner([], enabled=False)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "pending"
+
+
+def test_graph_planner_materializes_and_funds_two_step_plan():
+    adapter, request, budget = _graph_planner([
+        ("s0", "prepare", "middle", 2),
+        ("middle", "finish", "goal", 2),
+    ])
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "solved"
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 2.0
+    candidate = adapter.inner.neighbours(request, "has_imagined_plan_candidate")[0]
+    attrs = adapter.s.node(candidate)["attrs"]
+    assert attrs["provenance_kind"] == "imagined"
+    assert attrs["observation_status"] == "not_observed"
+    assert attrs["grounding_status"] == "ungrounded"
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 14.0
+    frontiers = adapter.inner.neighbours(request, "has_frontier")
+    expanded = [node for node in frontiers if adapter.s.node(node)["attrs"].get("status") == "expanded"]
+    assert len(expanded) == 2
+    for node in expanded:
+        budget_requests = adapter.inner.neighbours(node, "has_expansion_budget_request")
+        assert len(budget_requests) == 1
+        budget_attrs = adapter.s.node(budget_requests[0])["attrs"]
+        assert budget_attrs["status"] == "approved"
+        assert budget_attrs["debited_epoch"] == 4.0
+        assert adapter.s.node(node)["attrs"]["expanded_epoch"] == 4.0
+
+
+def test_graph_planner_deduplicates_cycles_and_stale_transitions():
+    adapter, request, _budget = _graph_planner([
+        ("s0", "loop", "s0", 2),
+        ("s0", "stale", "goal", 1),
+    ])
+    _run_to_fixpoint(adapter)
+    frontiers = adapter.inner.neighbours(request, "has_frontier")
+    assert len(frontiers) == 1
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 1.0
+    assert adapter.s.node(request)["attrs"]["status"] == "exhausted"
+
+
+def test_graph_planner_does_not_expand_without_budget():
+    adapter, request, budget = _graph_planner([("s0", "go", "goal", 2)], remaining=0.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 0.0
+    assert adapter.s.node(request)["attrs"]["status"] != "solved"
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 0.0
+
+
+def test_graph_planner_missing_transition_is_unknown():
+    adapter, request, _budget = _graph_planner([])
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "unknown"
+    assert adapter.s.node(request)["attrs"]["terminal_reason"] == "missing_transition"
+
+
+def test_graph_planner_depth_bound_is_terminal():
+    adapter, request, _budget = _graph_planner([
+        ("s0", "one", "middle", 2),
+        ("middle", "two", "goal", 2),
+    ], depth_limit=1.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "exhausted"
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 1.0
+    assert not adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+
+
+def test_graph_planner_preserves_two_goal_paths_but_counts_unique_expansions():
+    adapter, request, budget = _graph_planner([
+        ("s0", "left", "left", 2),
+        ("s0", "right", "right", 2),
+        ("left", "finish_left", "goal", 2),
+        ("right", "finish_right", "goal", 2),
+    ])
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "solved"
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 3.0
+    candidates = adapter.inner.neighbours(request, "has_imagined_plan_candidate")
+    assert len(candidates) == 2
+    assert all(adapter.s.node(candidate)["attrs"]["provenance_kind"] == "imagined"
+               for candidate in candidates)
+    assert adapter.s.node(budget)["attrs"]["remaining"] == 13.0
+
+
+def test_graph_planner_expansion_limit_is_terminal():
+    transitions = [(f"s{i}", f"a{i}", f"s{i+1}", 2) for i in range(6)]
+    adapter, request, _budget = _graph_planner(transitions, expansion_limit=2.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "exhausted"
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 2.0
+    assert adapter.s.node(request)["attrs"]["terminal_reason"] == "frontier_closed"
+
+
+def test_graph_planner_hard_depth_cap_is_eight():
+    transitions = [(f"s{i}", f"a{i}", f"s{i+1}", 2) for i in range(12)]
+    adapter, request, _budget = _graph_planner(
+        transitions, depth_limit=50.0, expansion_limit=999.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["expanded_count"] == 8.0
+    frontiers = adapter.inner.neighbours(request, "has_frontier")
+    assert max(adapter.s.node(node)["attrs"]["depth"] for node in frontiers) == 8.0
+    assert adapter.s.node(request)["attrs"]["status"] == "exhausted"
+
+
+def test_graph_planner_rejects_stale_model_snapshot():
+    adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
+    policy = adapter.s.nodes("CognitionPlannerPolicy")[0]
+    adapter.inner.set_attr(policy, "current_model_epoch", 3.0)
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "model_stale"
+    assert not adapter.inner.neighbours(request, "has_frontier")
+
+
+def test_graph_planner_does_not_solve_without_projection_feasibility():
+    adapter, request, _budget = _graph_planner([("s0", "go", "goal", 2)])
+    goal = adapter.inner.neighbours(request, "has_goal_state")[0]
+    adapter.inner.set_attr(goal, "projection_status", "unresolved")
+    _run_to_fixpoint(adapter)
+    assert adapter.s.node(request)["attrs"]["status"] == "unknown"
+    assert not adapter.inner.neighbours(request, "has_imagined_plan_candidate")

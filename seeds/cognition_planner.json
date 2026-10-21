@@ -1,0 +1,4001 @@
+{
+  "id": "cognition_planner",
+  "version": "1.0.0",
+  "depends_on": [
+    "thinking_budget",
+    "generative_world_model",
+    "default_mode_core"
+  ],
+  "self_load_only": true,
+  "area": "cognition_planner",
+  "description": "Opt-in graph-resident bounded planning over explicit versioned model transitions; emits advisory imagined candidates only.",
+  "microtheory": {
+    "name": "cognition_planner",
+    "description": "Bounded, funded frontier search with graph-resident path provenance."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CognitionPlannerPolicy",
+      "attrs": {
+        "enabled": 0.0,
+        "maximum_depth": 8.0,
+        "maximum_expansions": 256.0,
+        "expansion_cost": 1.0,
+        "maximum_branching": 8.0,
+        "current_model_epoch": -1.0,
+        "current_goal_epoch": -1.0,
+        "current_manifold_epoch": -1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_cognition_planner_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:cognition_planner:has_cognition_planner_policy:Agent:CognitionPlannerPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_planner_policy",
+      "tgt": {
+        "type": "CognitionPlannerPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_cognition_plan_request:Agent:CognitionPlanRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_plan_request",
+      "tgt": {
+        "type": "CognitionPlanRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_cognition_plan_transition:Agent:CognitionPlanTransition",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_plan_transition",
+      "tgt": {
+        "type": "CognitionPlanTransition",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_network_mode_state:Agent:NetworkModeState",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_network_mode_state",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_start_state:CognitionPlanRequest:CognitionPlanState",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_start_state",
+      "tgt": {
+        "type": "CognitionPlanState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_goal_state:CognitionPlanRequest:CognitionPlanState",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_goal_state",
+      "tgt": {
+        "type": "CognitionPlanState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_frontier:CognitionPlanRequest:CognitionPlanFrontier",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_frontier",
+      "tgt": {
+        "type": "CognitionPlanFrontier",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_parent_frontier:CognitionPlanFrontier:CognitionPlanFrontier",
+      "src": {
+        "type": "CognitionPlanFrontier",
+        "var": "src"
+      },
+      "edge_type": "has_parent_frontier",
+      "tgt": {
+        "type": "CognitionPlanFrontier",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:uses_transition:CognitionPlanFrontier:CognitionPlanTransition",
+      "src": {
+        "type": "CognitionPlanFrontier",
+        "var": "src"
+      },
+      "edge_type": "uses_transition",
+      "tgt": {
+        "type": "CognitionPlanTransition",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_expansion_budget_request:CognitionPlanFrontier:ThinkingBudgetRequest",
+      "src": {
+        "type": "CognitionPlanFrontier",
+        "var": "src"
+      },
+      "edge_type": "has_expansion_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:expands_from_state:CognitionPlanFrontier:CognitionPlanState",
+      "src": {
+        "type": "CognitionPlanFrontier",
+        "var": "src"
+      },
+      "edge_type": "expands_from_state",
+      "tgt": {
+        "type": "CognitionPlanState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:reaches_state:CognitionPlanFrontier:CognitionPlanState",
+      "src": {
+        "type": "CognitionPlanFrontier",
+        "var": "src"
+      },
+      "edge_type": "reaches_state",
+      "tgt": {
+        "type": "CognitionPlanState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:has_imagined_plan_candidate:CognitionPlanRequest:ImaginedPlanCandidate",
+      "src": {
+        "type": "CognitionPlanRequest",
+        "var": "src"
+      },
+      "edge_type": "has_imagined_plan_candidate",
+      "tgt": {
+        "type": "ImaginedPlanCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:derived_from_frontier:ImaginedPlanCandidate:CognitionPlanFrontier",
+      "src": {
+        "type": "ImaginedPlanCandidate",
+        "var": "src"
+      },
+      "edge_type": "derived_from_frontier",
+      "tgt": {
+        "type": "CognitionPlanFrontier",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:cognition_planner:via_transition:ImaginedPlanCandidate:CognitionPlanTransition",
+      "src": {
+        "type": "ImaginedPlanCandidate",
+        "var": "src"
+      },
+      "edge_type": "via_transition",
+      "tgt": {
+        "type": "CognitionPlanTransition",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "cp_cancel_stale_request",
+      "area": "cognition_planner",
+      "order": 19,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_start_state",
+          "start"
+        ],
+        [
+          "request",
+          "has_goal_state",
+          "goal"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "pending"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "searching"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "source_epoch"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "goal_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_goal_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "manifold_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "current_manifold_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "start"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "goal_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "goal"
+                    },
+                    "key": "goal_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "model_stale"
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_reason",
+          "planning_epoch_changed"
+        ]
+      ]
+    },
+    {
+      "name": "cp_materialize_root_frontier",
+      "area": "cognition_planner",
+      "order": 20,
+      "latency_class": "soft_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_start_state",
+          "start"
+        ],
+        [
+          "request",
+          "has_goal_state",
+          "goal"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "start"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "manifold_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_manifold_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_frontier",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "frontier",
+          "CognitionPlanFrontier",
+          {
+            "status": "ready",
+            "expanded_counted": 0.0,
+            "candidate_emitted": 0.0,
+            "depth": 0.0,
+            "rank": 0.0,
+            "state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "start"
+                },
+                "key": "state_key"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "goal_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "goal_epoch"
+              }
+            },
+            "manifold_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "manifold_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "goal_state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "goal"
+                },
+                "key": "state_key"
+              }
+            },
+            "uncertainty": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "start"
+                },
+                "key": "uncertainty"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "add_edge",
+          "frontier",
+          "expands_from_state",
+          "start",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "searching"
+        ],
+        [
+          "set_attr",
+          "request",
+          "goal_state_key",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal"
+              },
+              "key": "state_key"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "request",
+          "expanded_count",
+          0.0
+        ]
+      ]
+    },
+    {
+      "name": "cp_request_expansion_budget",
+      "area": "cognition_planner",
+      "order": 21,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "depth"
+            },
+            "b": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "depth_limit"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "maximum_depth"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "expanded_count"
+            },
+            "b": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "expansion_limit"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "maximum_expansions"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "frontier"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_frontier",
+                  "any_type": false
+                },
+                "var_name": "ready_frontier",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ready_frontier"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "ready"
+                  }
+                }
+              },
+              "var_name": "ranked_frontier",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ranked_frontier"
+                },
+                "key": "rank"
+              },
+              "default": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "frontier"
+                },
+                "edge_type": "has_expansion_budget_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "budget_req",
+          "ThinkingBudgetRequest",
+          {
+            "status": "pending",
+            "requester_kind": "cognition_planner",
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "policy"
+                },
+                "key": "expansion_cost"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "request_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frontier"
+                },
+                "key": "state_key"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req",
+          {}
+        ],
+        [
+          "add_edge",
+          "budget_req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cp_expand_funded_frontier",
+      "area": "cognition_planner",
+      "order": 22,
+      "latency_class": "soft_realtime",
+      "batch": true,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_transition",
+          "transition"
+        ],
+        [
+          "transition",
+          "has_successor_state",
+          "successor"
+        ],
+        [
+          "frontier",
+          "expands_from_state",
+          "source"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "frontier"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_frontier",
+                  "any_type": false
+                },
+                "var_name": "ready_frontier",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ready_frontier"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "ready"
+                  }
+                }
+              },
+              "var_name": "ranked_frontier",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ranked_frontier"
+                },
+                "key": "rank"
+              },
+              "default": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "source_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "manifold_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "current_manifold_epoch"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "depth"
+            },
+            "b": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "depth_limit"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "maximum_depth"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "expanded_count"
+            },
+            "b": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "expansion_limit"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "maximum_expansions"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_frontier",
+                "any_type": false
+              },
+              "var_name": "seen",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "seen"
+                      },
+                      "key": "state_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "successor"
+                      },
+                      "key": "state_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "seen"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "seen"
+                      },
+                      "key": "goal_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "goal_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "child",
+          "CognitionPlanFrontier",
+          {
+            "status": "ready",
+            "expanded_counted": 0.0,
+            "candidate_emitted": 0.0,
+            "depth": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "frontier"
+                    },
+                    "key": "depth"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "rank": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "expanded_count"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "successor"
+                },
+                "key": "state_key"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "goal_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "goal_epoch"
+              }
+            },
+            "manifold_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "manifold_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "goal_state_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frontier"
+                },
+                "key": "goal_state_key"
+              }
+            },
+            "uncertainty": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "successor"
+                },
+                "key": "uncertainty"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_frontier",
+          "child",
+          {}
+        ],
+        [
+          "add_edge",
+          "child",
+          "has_parent_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "add_edge",
+          "child",
+          "uses_transition",
+          "transition",
+          {}
+        ],
+        [
+          "add_edge",
+          "child",
+          "expands_from_state",
+          "successor",
+          {}
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "expanded"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "expanded_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "debited_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "cp_count_unique_expansion",
+      "area": "cognition_planner",
+      "order": 23,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "expanded"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "expanded_counted"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "frontier",
+          "expanded_counted",
+          1.0
+        ],
+        [
+          "set_attr",
+          "request",
+          "expanded_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "expanded_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "cp_emit_imagined_plan_candidate",
+      "area": "cognition_planner",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_goal_state",
+          "goal_state"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "frontier",
+          "expands_from_state",
+          "state"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "goal_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "candidate_emitted"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "key": "projection_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "feasible"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "state"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "projection_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "feasible"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "ImaginedPlanCandidate",
+          {
+            "status": "proposal",
+            "provenance_kind": "imagined",
+            "observation_status": "not_observed",
+            "grounding_status": "ungrounded",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "goal_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "goal_epoch"
+              }
+            },
+            "manifold_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "manifold_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_imagined_plan_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "derived_from_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "candidate_emitted",
+          1.0
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "candidate"
+        ]
+      ]
+    },
+    {
+      "name": "cp_emit_duplicate_goal_path",
+      "area": "cognition_planner",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "request",
+          "has_goal_state",
+          "goal_state"
+        ],
+        [
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req"
+        ],
+        [
+          "frontier",
+          "expands_from_state",
+          "source"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_transition",
+          "transition"
+        ],
+        [
+          "transition",
+          "has_successor_state",
+          "successor"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "source_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "goal_state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "projection_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "feasible"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "successor"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "projection_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "feasible"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "goal_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "goal_state"
+              },
+              "key": "state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "goal_state_key"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "transition"
+                },
+                "key": "goal_candidate_emitted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "edge_type": "has_frontier",
+              "any_type": false
+            },
+            "var_name": "seen",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "seen"
+                    },
+                    "key": "state_key"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "successor"
+                    },
+                    "key": "state_key"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "seen"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "model_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "seen"
+                    },
+                    "key": "goal_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "goal_epoch"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "ImaginedPlanCandidate",
+          {
+            "status": "proposal",
+            "provenance_kind": "imagined",
+            "observation_status": "not_observed",
+            "grounding_status": "ungrounded",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "goal_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "goal_epoch"
+              }
+            },
+            "manifold_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "manifold_epoch"
+              }
+            },
+            "path_kind": "alternate_goal_arrival"
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_imagined_plan_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "derived_from_frontier",
+          "frontier",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "via_transition",
+          "transition",
+          {}
+        ],
+        [
+          "set_attr",
+          "transition",
+          "goal_candidate_emitted",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "cp_close_solved_request",
+      "area": "cognition_planner",
+      "order": 26,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_frontier",
+                "any_type": false
+              },
+              "var_name": "frontier",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "frontier"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "ready"
+                }
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "edge_type": "has_imagined_plan_candidate",
+              "any_type": false
+            },
+            "var_name": "candidate",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "proposal"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "solved"
+        ]
+      ]
+    },
+    {
+      "name": "cp_terminalize_depth_bound",
+      "area": "cognition_planner",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "depth"
+            },
+            "b": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "depth_limit"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "maximum_depth"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "terminal"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "terminal_reason",
+          "depth_limit"
+        ]
+      ]
+    },
+    {
+      "name": "cp_terminalize_expansion_bound",
+      "area": "cognition_planner",
+      "order": 25,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "expanded_count"
+            },
+            "b": {
+              "type": "Min",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "expansion_limit"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "maximum_expansions"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "terminal"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "terminal_reason",
+          "expansion_limit"
+        ]
+      ]
+    },
+    {
+      "name": "cp_terminalize_unfunded_frontier",
+      "area": "cognition_planner",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "denied"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "terminal"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "terminal_reason",
+          "budget_denied"
+        ]
+      ]
+    },
+    {
+      "name": "cp_terminalize_missing_transition",
+      "area": "cognition_planner",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_cognition_plan_transition",
+                  "any_type": false
+                },
+                "var_name": "transition",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "transition"
+                        },
+                        "key": "source_state_key"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "frontier"
+                        },
+                        "key": "state_key"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "transition"
+                        },
+                        "key": "model_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "model_epoch"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "terminal"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "terminal_reason",
+          "missing_transition"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "expanded_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "debited_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "expanded_counted",
+          1.0
+        ],
+        [
+          "set_attr",
+          "request",
+          "expanded_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "expanded_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "cp_terminalize_model_dead_end",
+      "area": "cognition_planner",
+      "order": 24,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_frontier",
+          "frontier"
+        ],
+        [
+          "frontier",
+          "has_expansion_budget_request",
+          "budget_req"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_transition",
+          "transition"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "source_state_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "frontier"
+              },
+              "key": "state_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "transition"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_cognition_plan_transition",
+                "any_type": false
+              },
+              "var_name": "transition",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "key": "source_state_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "frontier"
+                      },
+                      "key": "state_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "transition"
+                      },
+                      "edge_type": "has_successor_state",
+                      "any_type": false
+                    },
+                    "var_name": "successor",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "successor"
+                            },
+                            "key": "model_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "request"
+                            },
+                            "key": "model_epoch"
+                          }
+                        },
+                        {
+                          "type": "Not",
+                          "arg": {
+                            "type": "Exists",
+                            "source": {
+                              "type": "Neighbours",
+                              "node": {
+                                "type": "Var",
+                                "name": "request"
+                              },
+                              "edge_type": "has_frontier",
+                              "any_type": false
+                            },
+                            "var_name": "seen",
+                            "predicate": {
+                              "type": "And",
+                              "items": [
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "seen"
+                                    },
+                                    "key": "state_key"
+                                  },
+                                  "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "successor"
+                                    },
+                                    "key": "state_key"
+                                  }
+                                },
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "seen"
+                                    },
+                                    "key": "model_epoch"
+                                  },
+                                  "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "request"
+                                    },
+                                    "key": "model_epoch"
+                                  }
+                                },
+                                {
+                                  "type": "Eq",
+                                  "a": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "seen"
+                                    },
+                                    "key": "goal_epoch"
+                                  },
+                                  "b": {
+                                    "type": "Attr",
+                                    "node": {
+                                      "type": "Var",
+                                      "name": "request"
+                                    },
+                                    "key": "goal_epoch"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "frontier",
+          "status",
+          "terminal"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "terminal_reason",
+          "duplicate_or_cycle"
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "expanded_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_req"
+              },
+              "key": "debited_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "frontier",
+          "expanded_counted",
+          1.0
+        ],
+        [
+          "set_attr",
+          "request",
+          "expanded_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "expanded_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "cp_close_request_missing_transition",
+      "area": "cognition_planner",
+      "order": 27,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_frontier",
+                "any_type": false
+              },
+              "var_name": "frontier",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "frontier"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "ready"
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_imagined_plan_candidate",
+                "any_type": false
+              },
+              "var_name": "candidate",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposal"
+                }
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "edge_type": "has_frontier",
+              "any_type": false
+            },
+            "var_name": "frontier",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "frontier"
+                },
+                "key": "terminal_reason"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "missing_transition"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "unknown"
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_reason",
+          "missing_transition"
+        ]
+      ]
+    },
+    {
+      "name": "cp_close_request_frontier_closed",
+      "area": "cognition_planner",
+      "order": 28,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_cognition_planner_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognition_plan_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "searching"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_frontier",
+                "any_type": false
+              },
+              "var_name": "frontier",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "frontier"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "ready"
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_imagined_plan_candidate",
+                "any_type": false
+              },
+              "var_name": "candidate",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposal"
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_frontier",
+                "any_type": false
+              },
+              "var_name": "frontier",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "frontier"
+                  },
+                  "key": "terminal_reason"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "missing_transition"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "exhausted"
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_reason",
+          "frontier_closed"
+        ]
+      ]
+    }
+  ]
+}
