@@ -406,6 +406,20 @@ These tasks run only if the corresponding spec establishes that existing Terms c
 - **Non-goals:** Planner-owned budget accounting or changing non-expired requester behavior.
 - **Done when:** named acceptance passes, seed generator reproduces the manifest, and boot/test regressions stay green.
 
+### P5.E4.2b — Compose complete planner paths through the native manifold projector
+
+- **ID:** P5.E4.2b
+- **Tier:** T2
+- **Goal:** Ensure a multi-step imagined plan is feasible only when its complete ordered path has a native P4 manifold projection and measured intervention comparison.
+- **Read first:** `COGNITION_PLANNER_CONTRACT.md` § Complete-path projection profile; `COGNITION_MANIFOLD_INTEGRATION_CONTRACT.md`; `runners/dsl/src/future_manifold.rs::projection_field`; `scripts/gen_cognition_manifold_seed.py`.
+- **Touch:** `scripts/gen_cognition_planner_seed.py`; `seeds/cognition_planner.json`; `tests/test_cognition_multistep_planner_migrated.py`; `runners/dsl/src/future_manifold.rs`; `tests/test_future_manifold_projection_native.py`; `tests/test_cognition_manifold_migrated.py`.
+- **Steps:** 1. Give every path arrival one predecessor path arrival, transition and destination; cap arrivals per request and close explicitly at the cap. 2. Extend the existing `FutureManifoldProjection` source handling for one terminal path candidate: compose only contiguous, explicitly timed transition matrices, preserving every shape row through the required horizon. 3. Carry the shared-unit sum of model-represented non-negative effort into the existing P4 minimum-intervention selector; retain all exact minima and never assign zero to missing effort. 4. Return unresolved/`unknown` on missing, malformed, gapped, stale or incomplete path evidence.
+- **Guard:** Existing `CognitionPlannerPolicy.enabled=0`; do not add a term variant or default profile activation.
+- **Acceptance:** `test_path_projection_composes_contiguous_segments_and_uses_native_shape_audit`, `test_path_projection_rejects_missing_or_gapped_segment`, `test_path_projection_ranks_by_measured_effort_and_keeps_ties`, `test_path_arrival_lineage_keeps_distinct_shared_prefix_paths`, `test_path_arrival_limit_closes_without_partial_candidates`, and `test_single_candidate_projection_compatibility_unchanged`, plus the complete E4.2 acceptance list.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_multistep_planner_migrated.py tests/test_cognition_manifold_migrated.py tests/test_future_manifold_projection_native.py tests/test_goal_derivation_migrated.py tests/test_compositional_plan_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** Python path construction or scoring; a new TermNode variant; approximate time alignment; goal rank overriding intervention; policy/default activation.
+- **Done when:** named native and graph acceptance passes; same-source P4 projection regressions pass; generator/serialization and boot checks pass; path and projection gaps are either closed or explicitly returned as unknown.
+
 ### P5.E4.3 — Consume imagined candidates through System-2 arbitration
 
 - **ID:** P5.E4.3

@@ -1,4 +1,4 @@
-# Cognition planner contract v1
+# Cognition planner contract v1.1
 
 ## Purpose and authority
 
@@ -25,6 +25,16 @@ Goal satisfaction is read from explicit goal predicates against the candidate st
 The existing native manifold projector is the sole feasibility authority. For every complete candidate path, compare `retained`, `lost`, and `escape` residual shapes against the same target manifold. Discard paths that violate hard constraints. Among feasible paths, minimize the projector's intervention measure; preserve all distinct paths tied at the minimum. Goal priority may break only an exact equal-intervention tie. Do not add arbitrary reward, probability, or cost terms into an uncalibrated scalar sum. When no path is yet projected, leave it `unresolved` and request the contractually permitted refinement through the funded manifold path; do not rank it as feasible.
 
 An uncertain transition remains a separate branch with its envelope and evidence. A model confidence value is not a probability of goal success unless separately calibrated and registered. If feasible and unresolved alternatives coexist, keep both in the result; System 2 may only reopen a verified feasible candidate, and must retain the unresolved alternatives as uncertainty.
+
+### Complete-path projection profile
+
+E4.2 composes the path DAG before it may mark a multi-step candidate feasible. Each `CognitionPlanPathArrival` is one path step and links to exactly one predecessor arrival (the root links to a request-owned `CognitionPlanPathOrigin`), one current `CognitionPlanTransition`, and one destination frontier. A goal candidate names one terminal arrival; its ancestry is therefore one ordered path, even when state frontiers are shared. The planner keeps at most `maximum_path_arrivals` (default 4096) per request. Reaching that cap closes the request as `exhausted/path_arrival_limit`; it never drops unrecorded routes and continues as if the candidate set were complete.
+
+The existing `FutureManifoldProjection` term is extended to accept an imagined candidate linked to one terminal path arrival. In action order, it reads each transition's `future_manifold_times`, `future_manifold_values`, `future_manifold_widths`, and `future_manifold_effort`. Each transition must provide a positive integer `future_manifold_duration`; its time coordinates must be exactly `1..duration`, its matrices must have equal row/column shapes, and all transitions in the path must use the request's `intervention_unit` and the same manifold dimensions. The term shifts each segment by the cumulative preceding duration and concatenates every row. It may truncate only after the request's `required_horizon`; it may not fill gaps, infer durations, carry values forward, or substitute a transition's terminal row for its missing trajectory. Missing, malformed, overlapping, or short paths return unresolved projection evidence, which the planner closes as `unknown/incomplete_path_projection`.
+
+The path's intervention measure is the sum of all non-negative finite `future_manifold_effort` entries over the complete composed path, in the shared declared unit. This is the model's represented physical effort, not a confidence, reward, or planner-created weight. The native P4 feasible-set selector receives this value as the path candidate's `intervention`; only feasible complete paths with the minimum value are retained, and exact ties remain set-valued. An absent unit, mixed units, or missing effort makes the path unresolved rather than assigning zero effort. The native projection continues to own the full retained/lost/escape residual assessment against one target manifold.
+
+`FutureManifoldProjection` retains its current `(episode, policy, source, field)` argument schema and field meanings. Its path-source extension adds `path_intervention` as a field result and reads path links only when `source` is an `ImaginedPlanCandidate` with exactly one `has_terminal_path_arrival` edge. Existing non-path source behavior remains byte-for-byte compatible. Work is bounded by the 8-step search cap and the 4096-arrival request cap; path matrix composition is linear in rows through the required horizon. Serialization uses ordinary graph nodes/edges and requires no new term variant.
 
 ## Terminal states
 
