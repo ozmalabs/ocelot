@@ -1,7 +1,7 @@
 # Cognition build Phase 5 — Faculty depth preregistration
 
 **Protocol:** `cognition_p5_heldout_v1`
-**Status:** H0, F1.1/F1.2 projections and agent-owned source hooks, F2.1–F2.3, G2.1/G2.2, G3.1/G3.2, and the reflex portion of G3.3 recorded; world-action sink coverage, automatic Bigville source discovery, held-out evaluation and later item work, runner freeze and draw remain pending.
+**Status:** H0, F1.1/F1.2 projections and agent-owned source hooks, F2.1–F2.3, G2.1/G2.2, G3.1/G3.2, the reflex portion of G3.3, and E3.1 SCM contract recorded; world-action sink coverage, automatic Bigville source discovery, held-out evaluation and later item work, runner freeze and draw remain pending.
 **Entry merge:** `9def1187f42f74489e4c2833c0bbae34e63df584` (P4 merged onto the committed `main` base in the isolated continuation branch).
 **P4 freeze:** `199583ca6c4fe861dae90dd5814d3f0ad3b9f5ed`.
 **P4 result/H4 record:** [`COGNITION_BUILD_P4_RESULTS.md`](COGNITION_BUILD_P4_RESULTS.md).
@@ -93,6 +93,10 @@ The generated self-load-only `response_inhibition` seed keeps `ResponseInhibitio
 ### G3.3 reflex callback gate (partial)
 
 Rust `PySubstrate::authorize_reflex_emission` now checks the policy, selected action identity, sink route, current epoch, one pending matching authorization, and same-epoch stop state under the graph mutex. It consumes the authorization before callback invocation; `complete_reflex_emission` records `emitted` plus a sink receipt ID on callback return, or terminal `emission_failed` without restoring authorization. `WorldAdapter.fire_reflexes` is the only caller of `next_ready_reflex` and now routes every registered response callback through this gate. Focused native sink and reflex tests pass 23 cases. A route audit found `live`/`live_examined` world `apply_action` commits and a direct `live_gamma` `apply_action` path that do not use this token gate. G3.3 remains incomplete until these action sinks are covered; no general emission-safety claim is made.
+
+## P5.E3.1 — Finite SCM specification
+
+The new [`COGNITION_SCM_CONTRACT.md`](COGNITION_SCM_CONTRACT.md) freezes a bounded finite acyclic SCM: complete in-domain equations, 16 endogenous variables, domain size 8, and at most 4096 exogenous assignments; over-bound, cyclic, incomplete or unsupported models return unknown. `do(X=x)` replaces X's equation on a detached model; conditioning filters observations; unit counterfactuals preserve the same exogenous assignment. Observational effects require a valid backdoor set, no treatment descendants, d-separation in the treatment-mutilated graph, and positivity in every included stratum. CAN edges and associative CausalFacts are not equations absent explicit mechanism mappings. Five development fixtures pass for do-versus-condition, confounder adjustment, collider rejection, non-identification and live-input immutability. Generic Terms lack the single bounded topology/equation validation and interventional evaluator required by the architecture, so the contract freezes a pure `SCMIntervene` Term and R1–R4 are required before any seed caller; no runtime term is claimed yet.
 
 ## Held-out decision criteria (inherited from the detailed plan)
 
