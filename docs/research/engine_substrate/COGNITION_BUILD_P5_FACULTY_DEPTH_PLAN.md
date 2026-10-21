@@ -1,6 +1,6 @@
 # Cognition build Phase 5 — Depth in existing faculties
 
-**Detailed on:** 2026-10-21. **Status:** execution started; P5.H0 reconciliation is recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). F1/F2 and the remaining P5 items are not yet implemented or evaluated.
+**Detailed on:** 2026-10-21. **Status:** execution in progress; P5.H0, F1 contract/native projection, F2.1/F2.2, and the recursive adapter API are recorded in [the preregistration](COGNITION_BUILD_P5_PREREG.md). F2.3 first-order integration and F1/F2 held-out evaluations remain open; G2, G3, E3, E4, A2, and D6 have not started.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P4 implementation/invariant gate and item results; [P3 results](COGNITION_BUILD_P3_RESULTS.md) remain the latest completed phase.
 
 ## Scope and sequencing
