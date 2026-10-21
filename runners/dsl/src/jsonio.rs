@@ -347,6 +347,8 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::RatioInduce { .. } => "RatioInduce",
         TermNode::LogQuantum { .. } => "LogQuantum",
         TermNode::TimeInfer { .. } => "TimeInfer",
+        TermNode::ShapeRankSignature { .. } => "ShapeRankSignature",
+        TermNode::RecallNearest { .. } => "RecallNearest",
         TermNode::DepthInfer { .. } => "DepthInfer",
         TermNode::BlinkBridge { .. } => "BlinkBridge",
         TermNode::GapAbduce { .. } => "GapAbduce",
@@ -1315,6 +1317,17 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
             if *robust {
                 m.insert("robust".into(), J::Bool(true));
             }
+        }
+        TermNode::ShapeRankSignature { samples, order, width } => {
+            m.insert("samples".into(), child(*samples, arena, interner));
+            m.insert("order".into(), child(*order, arena, interner));
+            m.insert("width".into(), child(*width, arena, interner));
+        }
+        TermNode::RecallNearest { records, query, k, candidate_cap } => {
+            m.insert("records".into(), child(*records, arena, interner));
+            m.insert("query".into(), child(*query, arena, interner));
+            m.insert("k".into(), child(*k, arena, interner));
+            m.insert("candidate_cap".into(), child(*candidate_cap, arena, interner));
         }
         TermNode::DepthInfer {
             sequence,
@@ -2767,6 +2780,17 @@ fn read_term(
                 .unwrap_or(DEFAULT_TIME_INFER_MAX_STEPS),
             robust: obj.get("robust").and_then(|v| v.as_bool()).unwrap_or(false),
         },
+        "ShapeRankSignature" => TermNode::ShapeRankSignature {
+            samples: child_of("samples", obj, arena, interner, variant)?,
+            order: child_of("order", obj, arena, interner, variant)?,
+            width: child_of("width", obj, arena, interner, variant)?,
+        },
+        "RecallNearest" => TermNode::RecallNearest {
+            records: child_of("records", obj, arena, interner, variant)?,
+            query: child_of("query", obj, arena, interner, variant)?,
+            k: child_of("k", obj, arena, interner, variant)?,
+            candidate_cap: child_of("candidate_cap", obj, arena, interner, variant)?,
+        },
         "DepthInfer" => TermNode::DepthInfer {
             sequence: child_of("sequence", obj, arena, interner, variant)?,
             codebook_type: interner.intern(
@@ -3582,5 +3606,37 @@ mod tests {
             term_from_json(&empty, &mut arena, &mut interner).is_ok(),
             "an explicit empty list must remain legal"
         );
+    }
+
+    #[test]
+    fn shape_rank_signature_json_round_trip_preserves_all_children() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let samples = arena.add(TermNode::Var { name: interner.intern("samples") });
+        let order = arena.add(TermNode::Var { name: interner.intern("order") });
+        let width = arena.add(TermNode::Lit { value: Value::Int(8) });
+        let term = arena.add(TermNode::ShapeRankSignature { samples, order, width });
+        let json = term_to_json(&arena, term, &interner);
+        assert_eq!(json["type"], "ShapeRankSignature");
+        let mut rebuilt = TermArena::new();
+        let idx = term_from_json(&json, &mut rebuilt, &mut interner).unwrap();
+        assert!(matches!(rebuilt.get(idx), TermNode::ShapeRankSignature { .. }));
+        assert_eq!(json, term_to_json(&rebuilt, idx, &interner));
+    }
+
+    #[test]
+    fn recall_nearest_json_round_trip_preserves_all_children() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let records = arena.add(TermNode::Var { name: interner.intern("records") });
+        let query = arena.add(TermNode::Var { name: interner.intern("query") });
+        let k = arena.add(TermNode::Lit { value: Value::Int(4) });
+        let cap = arena.add(TermNode::Lit { value: Value::Int(128) });
+        let term = arena.add(TermNode::RecallNearest { records, query, k, candidate_cap: cap });
+        let json = term_to_json(&arena, term, &interner);
+        let mut rebuilt = TermArena::new();
+        let idx = term_from_json(&json, &mut rebuilt, &mut interner).unwrap();
+        assert!(matches!(rebuilt.get(idx), TermNode::RecallNearest { .. }));
+        assert_eq!(json, term_to_json(&rebuilt, idx, &interner));
     }
 }

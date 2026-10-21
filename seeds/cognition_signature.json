@@ -1,0 +1,2281 @@
+{
+  "id": "cognition_signature",
+  "version": "1.1.0",
+  "self_load_only": true,
+  "depends_on": [
+    "qualia_shape_mint"
+  ],
+  "area": "cognition_signature",
+  "description": "Versioned, owner/source/frame-scoped projection of already-typed signature sources. Missing and zero remain distinct; standing and live overlays are retained in separate fields.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CognitionSignaturePolicy",
+      "attrs": {
+        "name": "cognition_signature_policy",
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_cognition_signature_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {},
+      "provenance": "cognition_signature:policy"
+    }
+  ],
+  "productions": [
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_signature_policy",
+      "tgt": {
+        "type": "CognitionSignaturePolicy",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_cognition_signature_policy:Agent:CognitionSignaturePolicy"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_signature_source:Agent:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_shape",
+      "tgt": {
+        "type": "QualiaShape",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_qualia_shape:Agent:QualiaShape"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognition_signature",
+      "tgt": {
+        "type": "CognitionSignatureDescriptor",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_cognition_signature:Agent:CognitionSignatureDescriptor"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "observed",
+      "tgt": {
+        "type": "Observation",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:observed:Agent:Observation"
+    },
+    {
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "observed",
+      "tgt": {
+        "type": "ShapeObservation",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:observed:Agent:ShapeObservation"
+    },
+    {
+      "src": {
+        "type": "Observation",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_signature_source:Observation:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "ShapeObservation",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_signature_source:ShapeObservation:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "QualiaShape",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:has_signature_source:QualiaShape:CognitionSignatureSource"
+    },
+    {
+      "src": {
+        "type": "CognitionSignatureDescriptor",
+        "var": "src"
+      },
+      "edge_type": "projects_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      },
+      "where": null,
+      "weight": {
+        "type": "Lit",
+        "value": 1.0
+      },
+      "provenance": "cognition_signature:projects_signature_source:CognitionSignatureDescriptor:CognitionSignatureSource"
+    }
+  ],
+  "rules": [
+    {
+      "name": "cs_adapt_measured_observation_signature",
+      "area": "cognition_signature",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "observed",
+          "obs"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "signature"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "decoded_epoch"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_signature_source",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_id"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "observation.signature"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "signature_key"
+                    },
+                    "b": {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "key"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "decoded_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "src",
+          "CognitionSignatureSource",
+          {
+            "schema_version": 1,
+            "signature_key": {
+              "__term__": {
+                "type": "ToJsonString",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "key"
+                }
+              }
+            },
+            "source_id": "observation.signature",
+            "source_kind": "observation_signature",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "decoded_epoch"
+              }
+            },
+            "owner_id": "agent-root",
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "frame_id"
+              }
+            },
+            "evidence_status": "observed",
+            "dimension_ids": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "signature"
+                },
+                "var_name": "coordinate",
+                "value": {
+                  "type": "IndexAt",
+                  "seq": {
+                    "type": "Var",
+                    "name": "coordinate"
+                  },
+                  "index": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "coordinates": {
+              "__term__": {
+                "type": "MapList",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "signature"
+                },
+                "var_name": "coordinate",
+                "value": {
+                  "type": "Append",
+                  "seq": {
+                    "type": "Append",
+                    "seq": {
+                      "type": "Append",
+                      "seq": {
+                        "type": "Append",
+                        "seq": {
+                          "type": "Append",
+                          "seq": {
+                            "type": "Lit",
+                            "value": []
+                          },
+                          "item": {
+                            "type": "IndexAt",
+                            "seq": {
+                              "type": "Var",
+                              "name": "coordinate"
+                            },
+                            "index": {
+                              "type": "Lit",
+                              "value": 0
+                            }
+                          }
+                        },
+                        "item": {
+                          "type": "IndexAt",
+                          "seq": {
+                            "type": "Var",
+                            "name": "coordinate"
+                          },
+                          "index": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      "item": {
+                        "type": "IndexAt",
+                        "seq": {
+                          "type": "Var",
+                          "name": "coordinate"
+                        },
+                        "index": {
+                          "type": "Lit",
+                          "value": 2
+                        }
+                      }
+                    },
+                    "item": {
+                      "type": "Lit",
+                      "value": false
+                    }
+                  },
+                  "item": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "standing_coordinates": [],
+            "live_overlay": []
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_signature_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_signature_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cs_adapt_verified_shape_observation",
+      "area": "cognition_signature",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "observed",
+          "obs"
+        ],
+        [
+          "ag",
+          "has_qualia_shape",
+          "shape"
+        ],
+        [
+          "shape",
+          "has_shape_evidence",
+          "evidence"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "outcome_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "evidence"
+              },
+              "key": "outcome_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "outcome_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "frame_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "frame_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "key": "signature"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_signature_source",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_id"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "qualia_shape"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "signature_key"
+                    },
+                    "b": {
+                      "type": "StringConcat",
+                      "parts": [
+                        {
+                          "type": "Lit",
+                          "value": "shape-observation:"
+                        },
+                        {
+                          "type": "ToJsonString",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "key": "key"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "src",
+          "CognitionSignatureSource",
+          {
+            "schema_version": 1,
+            "signature_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "shape-observation:"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "key"
+                    }
+                  }
+                ]
+              }
+            },
+            "source_id": "qualia_shape",
+            "source_kind": "numeric_shape",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "frame_id"
+              }
+            },
+            "evidence_status": "observed",
+            "dimension_ids": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "numeric:shape_rank:"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "shape"
+                        },
+                        "key": "order"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "coordinates": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "Append",
+                  "seq": {
+                    "type": "Append",
+                    "seq": {
+                      "type": "Append",
+                      "seq": {
+                        "type": "Append",
+                        "seq": {
+                          "type": "Append",
+                          "seq": {
+                            "type": "Lit",
+                            "value": []
+                          },
+                          "item": {
+                            "type": "StringConcat",
+                            "parts": [
+                              {
+                                "type": "Lit",
+                                "value": "numeric:shape_rank:"
+                              },
+                              {
+                                "type": "ToJsonString",
+                                "value": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "shape"
+                                  },
+                                  "key": "order"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "item": {
+                          "type": "Lit",
+                          "value": "sequence_ref"
+                        }
+                      },
+                      "item": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "shape"
+                        },
+                        "key": "signature"
+                      }
+                    },
+                    "item": {
+                      "type": "Lit",
+                      "value": false
+                    }
+                  },
+                  "item": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "standing_coordinates": [],
+            "live_overlay": []
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_signature_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_signature_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cs_adapt_verified_numeric_shape",
+      "area": "cognition_signature",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_shape",
+          "shape"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_signature_source",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_id"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "qualia_shape"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "signature_key"
+                    },
+                    "b": {
+                      "type": "StringConcat",
+                      "parts": [
+                        {
+                          "type": "Lit",
+                          "value": "qualia-shape:"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "shape"
+                          },
+                          "key": "owner_id"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "shape"
+                          },
+                          "key": "frame_id"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "ToJsonString",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "shape"
+                            },
+                            "key": "order"
+                          }
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "ToJsonString",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "shape"
+                            },
+                            "key": "source_epoch"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "src",
+          "CognitionSignatureSource",
+          {
+            "schema_version": 1,
+            "signature_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "qualia-shape:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "frame_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "key": "order"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            },
+            "source_id": "qualia_shape",
+            "source_kind": "numeric_shape",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "key": "frame_id"
+              }
+            },
+            "evidence_status": "verified",
+            "dimension_ids": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "numeric:shape_rank:"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "shape"
+                        },
+                        "key": "order"
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            "coordinates": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "Append",
+                  "seq": {
+                    "type": "Append",
+                    "seq": {
+                      "type": "Append",
+                      "seq": {
+                        "type": "Append",
+                        "seq": {
+                          "type": "Append",
+                          "seq": {
+                            "type": "Lit",
+                            "value": []
+                          },
+                          "item": {
+                            "type": "StringConcat",
+                            "parts": [
+                              {
+                                "type": "Lit",
+                                "value": "numeric:shape_rank:"
+                              },
+                              {
+                                "type": "ToJsonString",
+                                "value": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "shape"
+                                  },
+                                  "key": "order"
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        "item": {
+                          "type": "Lit",
+                          "value": "sequence_ref"
+                        }
+                      },
+                      "item": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "shape"
+                        },
+                        "key": "signature"
+                      }
+                    },
+                    "item": {
+                      "type": "Lit",
+                      "value": false
+                    }
+                  },
+                  "item": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "standing_coordinates": [],
+            "live_overlay": []
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_signature_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "shape",
+          "has_signature_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cs_adapt_verified_shape_valence",
+      "area": "cognition_signature",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_shape",
+          "shape"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "edge_type": "has_shape_evidence",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_signature_source",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_id"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "qualia_shape.valence"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "signature_key"
+                    },
+                    "b": {
+                      "type": "StringConcat",
+                      "parts": [
+                        {
+                          "type": "Lit",
+                          "value": "qualia-shape-valence:"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "shape"
+                          },
+                          "key": "owner_id"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "shape"
+                          },
+                          "key": "frame_id"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "src",
+          "CognitionSignatureSource",
+          {
+            "schema_version": 1,
+            "signature_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "qualia-shape-valence:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "frame_id"
+                  }
+                ]
+              }
+            },
+            "source_id": "qualia_shape.valence",
+            "source_kind": "valence",
+            "source_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "source_epoch"
+                  },
+                  {
+                    "type": "Count",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "edge_type": "has_shape_evidence",
+                      "any_type": false
+                    }
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "key": "owner_id"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "shape"
+                },
+                "key": "frame_id"
+              }
+            },
+            "evidence_status": "verified",
+            "dimension_ids": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "Lit",
+                  "value": "qualia:valence"
+                }
+              }
+            },
+            "coordinates": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "Append",
+                  "seq": {
+                    "type": "Append",
+                    "seq": {
+                      "type": "Append",
+                      "seq": {
+                        "type": "Append",
+                        "seq": {
+                          "type": "Append",
+                          "seq": {
+                            "type": "Lit",
+                            "value": []
+                          },
+                          "item": {
+                            "type": "Lit",
+                            "value": "qualia:valence"
+                          }
+                        },
+                        "item": {
+                          "type": "Lit",
+                          "value": "finite_number"
+                        }
+                      },
+                      "item": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "shape"
+                        },
+                        "key": "valence"
+                      }
+                    },
+                    "item": {
+                      "type": "Lit",
+                      "value": false
+                    }
+                  },
+                  "item": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "standing_coordinates": [],
+            "live_overlay": []
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_signature_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "shape",
+          "has_signature_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cs_refresh_verified_shape_valence_source",
+      "area": "cognition_signature",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_shape",
+          "shape"
+        ],
+        [
+          "shape",
+          "has_signature_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_id"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "qualia_shape.valence"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "signature_key"
+            },
+            "b": {
+              "type": "StringConcat",
+              "parts": [
+                {
+                  "type": "Lit",
+                  "value": "qualia-shape-valence:"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "shape"
+                  },
+                  "key": "owner_id"
+                },
+                {
+                  "type": "Lit",
+                  "value": ":"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "shape"
+                  },
+                  "key": "frame_id"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "key": "source_epoch"
+                  },
+                  {
+                    "type": "Count",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "edge_type": "has_shape_evidence",
+                      "any_type": false
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "shape"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "src",
+          "source_epoch",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "shape"
+                  },
+                  "key": "source_epoch"
+                },
+                {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "shape"
+                    },
+                    "edge_type": "has_shape_evidence",
+                    "any_type": false
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "src",
+          "coordinates",
+          {
+            "__term__": {
+              "type": "Append",
+              "seq": {
+                "type": "Lit",
+                "value": []
+              },
+              "item": {
+                "type": "Append",
+                "seq": {
+                  "type": "Append",
+                  "seq": {
+                    "type": "Append",
+                    "seq": {
+                      "type": "Append",
+                      "seq": {
+                        "type": "Append",
+                        "seq": {
+                          "type": "Lit",
+                          "value": []
+                        },
+                        "item": {
+                          "type": "Lit",
+                          "value": "qualia:valence"
+                        }
+                      },
+                      "item": {
+                        "type": "Lit",
+                        "value": "finite_number"
+                      }
+                    },
+                    "item": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "shape"
+                      },
+                      "key": "valence"
+                    }
+                  },
+                  "item": {
+                    "type": "Lit",
+                    "value": false
+                  }
+                },
+                "item": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "src",
+          "evidence_status",
+          "verified"
+        ]
+      ]
+    },
+    {
+      "name": "cs_project_versioned_signature",
+      "area": "cognition_signature",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_signature_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "schema_version"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_cognition_signature",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "signature_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "signature_key"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "src"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sig",
+          "CognitionSignatureDescriptor",
+          {
+            "schema_version": "1",
+            "record_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "signature_key"
+              }
+            },
+            "signature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "signature_key"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_id"
+              }
+            },
+            "source_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_kind"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "frame_id"
+              }
+            },
+            "evidence_status": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "evidence_status"
+              }
+            },
+            "dimension_ids": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "dimension_ids"
+              }
+            },
+            "coordinates": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "coordinates"
+              }
+            },
+            "standing_coordinates": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "standing_coordinates"
+              }
+            },
+            "live_overlay": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "live_overlay"
+              }
+            },
+            "status": "current",
+            "live": true
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_cognition_signature",
+          "sig",
+          {}
+        ],
+        [
+          "add_edge",
+          "sig",
+          "projects_signature_source",
+          "src",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cs_retire_stale_signature_epoch",
+      "area": "cognition_signature",
+      "order": 11,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_cognition_signature",
+          "sig"
+        ],
+        [
+          "ag",
+          "has_signature_source",
+          "src"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "current"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "signature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "signature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "source_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "src"
+              },
+              "key": "source_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sig"
+                },
+                "key": "source_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "src"
+                },
+                "key": "source_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "sig",
+          "status",
+          "stale"
+        ]
+      ]
+    }
+  ]
+}

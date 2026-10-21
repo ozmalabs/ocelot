@@ -161,6 +161,18 @@
         "type": "ObservedShape",
         "var": "qv"
       }
+    },
+    {
+      "provenance": "seed:aperture_frame:question-mode",
+      "src": {
+        "type": "Observer",
+        "var": "obs"
+      },
+      "edge_type": "has_cognition_aperture_mode",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "mode"
+      }
     }
   ],
   "rules": [
@@ -1005,6 +1017,95 @@
             "type": "And",
             "items": [
               {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_question_funding_required"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "ap_question_funding_required"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "obs"
+                          },
+                          "key": "ap_question_funded"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": true
+                        }
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "obs"
+                          },
+                          "edge_type": "has_cognition_aperture_mode"
+                        },
+                        "var_name": "question_mode",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "key": "ap_question_funded_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "question_mode"
+                            },
+                            "key": "epoch"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
                 "type": "Gte",
                 "a": {
                   "type": "IfThenElse",
@@ -1357,6 +1458,95 @@
           {
             "type": "And",
             "items": [
+              {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_question_funding_required"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "ap_question_funding_required"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "obs"
+                          },
+                          "key": "ap_question_funded"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": true
+                        }
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "obs"
+                          },
+                          "edge_type": "has_cognition_aperture_mode"
+                        },
+                        "var_name": "question_mode",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "obs"
+                            },
+                            "key": "ap_question_funded_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "question_mode"
+                            },
+                            "key": "epoch"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
               {
                 "type": "Gte",
                 "a": {
@@ -1864,6 +2054,95 @@
         "type": "And",
         "items": [
           {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_question_funding_required"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_question_funding_required"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_question_funded"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": true
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "edge_type": "has_cognition_aperture_mode"
+                    },
+                    "var_name": "question_mode",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "ap_question_funded_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "question_mode"
+                        },
+                        "key": "epoch"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "type": "Eq",
             "a": {
               "type": "Attr",
@@ -2024,6 +2303,95 @@
       "where": {
         "type": "And",
         "items": [
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "obs"
+                  },
+                  "key": "ap_question_funding_required"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "obs"
+                    },
+                    "key": "ap_question_funding_required"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": true
+                  }
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "key": "ap_question_funded"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": true
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "obs"
+                      },
+                      "edge_type": "has_cognition_aperture_mode"
+                    },
+                    "var_name": "question_mode",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "obs"
+                        },
+                        "key": "ap_question_funded_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "question_mode"
+                        },
+                        "key": "epoch"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           {
             "type": "Eq",
             "a": {
