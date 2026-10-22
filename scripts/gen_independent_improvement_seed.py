@@ -31,6 +31,9 @@ def build():
         ("Agent", "has_independent_improvement_policy", "IndependentImprovementPolicy"),
         ("Agent", "has_independent_improvement_proposal", "IndependentImprovementProposal"),
         ("Agent", "has_independent_improvement_qualification", "IndependentImprovementQualification"),
+        ("Agent", "has_open_process_search_request", "OpenProcessSearchRequest"),
+        ("OpenProcessSearchRequest", "has_search_attempt", "OpenProcessSearchAttempt"),
+        ("OpenProcessSearchRequest", "searches_task", "SolveTask"),
         ("IndependentImprovementProposal", "proposes_native_candidate", "OpenProcessCandidate"),
         ("IndependentImprovementProposal", "derived_from_trial", "OpenProcessSearchAttempt"),
         ("IndependentImprovementProposal", "has_native_qualification", "IndependentImprovementQualification"),
@@ -48,6 +51,8 @@ def build():
         "comment": "Track a generic native-search expression only when its source task is explicitly training data.",
         "match": [policy, ["agent", "has_open_process_candidate", "candidate"],
                   ["candidate", "derived_from_attempt", "attempt"],
+                  ["agent", "has_open_process_search_request", "source_request"],
+                  ["source_request", "has_search_attempt", "attempt"],
                   ["attempt", "about_task", "task"]],
         "where": And(policy_on("policy"),
             {"type": "Lt", "a": Count(N("agent", "has_independent_improvement_proposal")),
@@ -70,7 +75,8 @@ def build():
             "qualified_trial_count": 0.0}],
             ["add_edge", "agent", "has_independent_improvement_proposal", "proposal", {}],
             ["add_edge", "proposal", "proposes_native_candidate", "candidate", {}],
-            ["add_edge", "proposal", "derived_from_trial", "attempt", {}]]})
+            ["add_edge", "proposal", "derived_from_trial", "attempt", {}],
+            ["set_attr", "source_request", "status", "proposal_recorded"]]})
     base["rules"].append({"name": "iip_qualify_after_independent_native_trials",
         "area": "memory_consolidation", "order": 14,
         "latency_class": "background", "batch": False,
@@ -79,6 +85,10 @@ def build():
             ["agent", "has_independent_improvement_proposal", "proposal"],
             ["proposal", "derived_from_trial", "source"],
             ["source", "about_task", "source_task"],
+            ["agent", "has_open_process_search_request", "source_request"],
+            ["source_request", "has_search_attempt", "source"],
+            ["agent", "has_open_process_search_request", "trial_request"],
+            ["trial_request", "has_search_attempt", "trial"],
             ["agent", "has_open_process_search_attempt", "trial"],
             ["trial", "about_task", "task"]],
         "where": And(policy_on("policy"),
@@ -99,6 +109,8 @@ def build():
             ["add_edge", "qualification", "qualifies_proposal", "proposal", {}],
             ["add_edge", "qualification", "counts_native_trial", "source", {}],
             ["add_edge", "qualification", "counts_native_trial", "trial", {}],
+            ["set_attr", "source_request", "status", "qualified_terminal"],
+            ["set_attr", "trial_request", "status", "qualified_terminal"],
             ["set_attr", "proposal", "qualified_trial_count", 2.0],
             ["set_attr", "proposal", "status", "qualified_for_candidate_specific_approval"]]})
     return base

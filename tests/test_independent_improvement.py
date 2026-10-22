@@ -73,6 +73,18 @@ def test_qualification_from_native_trials():
     assert len(qualification) == 1
     assert agent.attrs(qualification[0])["trial_count"] == 2.0
     assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
+    supporting_attempts = agent.native.neighbours(qualification[0], "counts_native_trial")
+    assert len(supporting_attempts) == 2
+    supporting_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
+        if any(attempt in agent.native.neighbours(request, "has_search_attempt")
+               for attempt in supporting_attempts)]
+    assert len(supporting_requests) == 2
+    assert all(agent.attrs(request)["status"] == "qualified_terminal"
+               for request in supporting_requests)
+    attempt_count = len(agent.nodes("OpenProcessSearchAttempt"))
+    for _ in range(4):
+        agent.s.tick(4000)
+    assert len(agent.nodes("OpenProcessSearchAttempt")) == attempt_count
 
 
 def test_no_holdout_in_proposal():

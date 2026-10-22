@@ -63,6 +63,42 @@
       }
     },
     {
+      "provenance": "seed:p22:has_open_process_search_request:Agent:OpenProcessSearchRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_open_process_search_request",
+      "tgt": {
+        "type": "OpenProcessSearchRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_search_attempt:OpenProcessSearchRequest:OpenProcessSearchAttempt",
+      "src": {
+        "type": "OpenProcessSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "has_search_attempt",
+      "tgt": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:searches_task:OpenProcessSearchRequest:SolveTask",
+      "src": {
+        "type": "OpenProcessSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "searches_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:p22:proposes_native_candidate:IndependentImprovementProposal:OpenProcessCandidate",
       "src": {
         "type": "IndependentImprovementProposal",
@@ -145,6 +181,16 @@
         [
           "candidate",
           "derived_from_attempt",
+          "attempt"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "source_request"
+        ],
+        [
+          "source_request",
+          "has_search_attempt",
           "attempt"
         ],
         [
@@ -394,6 +440,12 @@
           "derived_from_trial",
           "attempt",
           {}
+        ],
+        [
+          "set_attr",
+          "source_request",
+          "status",
+          "proposal_recorded"
         ]
       ]
     },
@@ -424,6 +476,26 @@
           "source",
           "about_task",
           "source_task"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "source_request"
+        ],
+        [
+          "source_request",
+          "has_search_attempt",
+          "source"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "trial_request"
+        ],
+        [
+          "trial_request",
+          "has_search_attempt",
+          "trial"
         ],
         [
           "agent",
@@ -639,6 +711,18 @@
           "counts_native_trial",
           "trial",
           {}
+        ],
+        [
+          "set_attr",
+          "source_request",
+          "status",
+          "qualified_terminal"
+        ],
+        [
+          "set_attr",
+          "trial_request",
+          "status",
+          "qualified_terminal"
         ],
         [
           "set_attr",
