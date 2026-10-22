@@ -306,6 +306,43 @@ def test_p7_shared_budget():
     assert agent.s.node(_nodes(agent, "NumerosityPolicy")[0])["attrs"]["enabled"] == 0.0
     agent.close()
 
+
+def test_p8_profile_chain():
+    p8 = {"process_induction", "latent_process", "experiment_design"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p8:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    for node_type in ("ModelLearningPolicy", "LatentProcessPolicy", "ExperimentDesignPolicy"):
+        policies = _nodes(agent, node_type)
+        assert policies
+        assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0 for n in policies)
+    agent.close()
+
+
+def test_p8_default_isolation():
+    p8 = {"process_induction", "latent_process", "experiment_design"}
+    names = {r["name"] for sid in p8 for r in manifest_for(sid).get("rules", ())
+             if isinstance(r, dict) and r.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert names.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert names.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p8_shared_budget():
+    agent = boot_cognition_on()
+    enabled = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(enabled) == 1
+    assert enabled[0] in list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    agent.close()
+
 def test_p5_stop_at_native_sink():
     from tests.test_response_inhibition_migrated import _native_graph, _request, _tick
     substrate, agent = _native_graph(enabled=True)

@@ -790,6 +790,10 @@ COGNITION_ON_SEEDS = (
     "experience_signature",
     "qualia_acquisition",
     "numerosity",
+    # P8 learned episode models and funded experiment design remain disabled.
+    "process_induction",
+    "latent_process",
+    "experiment_design",
     "similarity_recall",
     "cognition_aperture",
     "temporal_escalation",
