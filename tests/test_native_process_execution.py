@@ -133,6 +133,16 @@ def test_revocation_blocks_execution():
     assert result["status"] == "ABSTAIN"
 
 
+def test_unauthorized_proposal_never_reaches_world():
+    agent, _, _, request = _setup()
+    transitions = []
+    result = execute_selected(agent, request, state=_permutation(197),
+        authorize=lambda proposal: False,
+        world_transition=lambda action: transitions.append(action) or {"observed_state": action})
+    assert result["status"] == "DENIED"
+    assert transitions == []
+
+
 def test_meter_includes_composition():
     agent, _, _, request = _setup()
     result = execute_selected(agent, request, state=_permutation(191),
