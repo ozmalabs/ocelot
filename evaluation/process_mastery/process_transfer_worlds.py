@@ -47,8 +47,12 @@ def _permutation_world(seed: int):
     inverse = inverse_permutation(forward)
     source = [1, 0, 2, 3]
     target = compose_permutations(compose_permutations(inverse, source), forward)
+    if target == source:
+        forward = [1, 2, 3, 0]
+        inverse = inverse_permutation(forward)
+        target = compose_permutations(compose_permutations(inverse, source), forward)
     states = []
-    for _ in range(4):
+    for _ in range(24):
         s = list(range(n))
         rng.shuffle(s)
         states.append(s)
@@ -56,7 +60,7 @@ def _permutation_world(seed: int):
     return {"pairing": "permutation_relabel_4", "kind": "permutation",
             "source_program": source, "target_program": target,
             "forward_map": forward, "inverse_map": inverse,
-            "training_states": states[:2], "heldout_states": states[2:],
+            "training_states": states[:8], "heldout_states": states[8:],
             "separating_probes": probes,
             "source_epoch": 1, "model_epoch": 1, "source_frame_epoch": 1,
             "target_frame_epoch": 2, "target_probe_epoch": 3,
@@ -69,24 +73,38 @@ def _matrix_world(seed: int):
     inverse = [[0, 1], [-1, 0]]
     source = [[1, 1], [0, 1]]
     target = matrix_multiply(matrix_multiply(forward, source), inverse)
-    states = [[rng.randint(-5, 5), rng.randint(-5, 5)] for _ in range(4)]
+    states = [[rng.randint(-5, 5), rng.randint(-5, 5)] for _ in range(24)]
     probes = [[1, 0], [0, 1]]
     return {"pairing": "integer_matrix_basis_2", "kind": "integer_matrix",
             "source_program": source, "target_program": target,
             "forward_map": forward, "inverse_map": inverse,
-            "training_states": states[:2], "heldout_states": states[2:],
+            "training_states": states[:8], "heldout_states": states[8:],
             "separating_probes": probes,
             "source_epoch": 1, "model_epoch": 1, "source_frame_epoch": 1,
             "target_frame_epoch": 2, "target_probe_epoch": 3,
             "seed": seed}
 
 
-def transfer_world(pairing: str, seed: int):
+def transfer_world(pairing: str, seed: int, direction: str = "forward"):
     if pairing == "permutation_relabel_4":
-        return _permutation_world(seed)
-    if pairing == "integer_matrix_basis_2":
-        return _matrix_world(seed)
-    raise ValueError(f"unsupported process-transfer pairing: {pairing}")
+        world = _permutation_world(seed)
+    elif pairing == "integer_matrix_basis_2":
+        world = _matrix_world(seed)
+    else:
+        raise ValueError(f"unsupported process-transfer pairing: {pairing}")
+    if direction == "forward":
+        world["direction"] = direction
+        return world
+    if direction != "reverse":
+        raise ValueError(f"unsupported process-transfer direction: {direction}")
+    world["source_program"], world["target_program"] = (
+        world["target_program"], world["source_program"])
+    world["forward_map"], world["inverse_map"] = (
+        world["inverse_map"], world["forward_map"])
+    world["source_frame_epoch"], world["target_frame_epoch"] = (
+        world["target_frame_epoch"], world["source_frame_epoch"])
+    world["direction"] = direction
+    return world
 
 
 def apply_program(kind: str, state, program):

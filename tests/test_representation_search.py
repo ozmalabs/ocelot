@@ -359,7 +359,8 @@ def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
     evidence = s.add_node("RepresentationTransformEvidence", {
         "candidate_id": "candidate-c", "status": "acquired_transform",
         "owner_id": "owner-c", "source_epoch": 7, "model_epoch": 2,
-        "frame_epoch": 5, "training_split_id": "dev-c",
+        "frame_epoch": 5, "target_frame_epoch": 5, "source_frame_id": "sf-5",
+        "target_frame_id": "tf-5", "training_split_id": "dev-c",
         "canonical_package": {"model": "m", "map": [1, 0], "decoder": "d"},
         "package_bits": 320, "training_residual_bits": 16,
         "training_total_bits": 336, "package_cost_complete": True,

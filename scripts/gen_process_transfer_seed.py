@@ -62,7 +62,6 @@ def build_seed():
                       Eq(A("request", "requester_kind"), L("process_transfer")),
                       Eq(A("request", "status"), L("approved")),
                       Eq(A("request", "debited_epoch"), A("candidate", "search_epoch")),
-                      Eq(A("request", "terminal_status"), L("completed")),
                       Eq(A("candidate", "map_direction"), L("source_to_target")),
                       Eq(A("map", "is_bijection"), L(True)),
                       Eq(A("map", "inverse_verified"), L(True)),
@@ -97,7 +96,8 @@ def build_seed():
             "params": T(A("candidate", "composed_target_program")),
             "verification_receipt": T(A("verification", "receipt_id"))}],
                     ["add_edge", "ag", "has_process_schema", "transferred", {}],
-                    ["set_attr", "candidate", "status", "adopted"]]
+                    ["set_attr", "candidate", "status", "adopted"],
+                    ["set_attr", "request", "terminal_status", "completed"]]
     }
     candidate_rule = {
         "name": "pt_compose_candidate_with_native_process_algebra",
@@ -119,13 +119,12 @@ def build_seed():
                       Eq({"type": "ProcessInverse", "a": A("map", "inverse_map")},
                          A("map", "forward_map")),
                       Eq(A("map", "source_epoch"), A("proposal", "source_epoch")),
-                      Eq(A("map", "target_frame_epoch"), A("proposal", "frame_epoch")),
+                      Eq(A("map", "target_frame_epoch"), A("proposal", "target_frame_epoch")),
                       Eq(A("source", "source_epoch"), A("proposal", "source_epoch")),
                       Eq(A("source", "model_epoch"), A("proposal", "model_epoch")),
                       Eq(A("source", "frame_epoch"), A("proposal", "frame_epoch")),
                       Eq(A("request", "requester_kind"), L("process_transfer")),
                       Eq(A("request", "status"), L("approved")),
-                      Eq(A("request", "debited_epoch"), A("target", "probe_epoch")),
                       Not(Exists(N("ag", "has_process_transfer_candidate"), "old",
                                  Eq(A("old", "candidate_id"),
                                     Concat(A("proposal", "candidate_id"), L("->"), A("target", "name")))))),
@@ -134,7 +133,7 @@ def build_seed():
             "status": "candidate", "map_direction": "source_to_target",
             "source_epoch": T(A("proposal", "source_epoch")),
             "model_epoch": T(A("proposal", "model_epoch")),
-            "target_frame_epoch": T(A("proposal", "frame_epoch")),
+            "target_frame_epoch": T(A("proposal", "target_frame_epoch")),
             "target_probe_epoch": T(A("target", "probe_epoch")),
             "search_epoch": T(A("request", "debited_epoch")),
             "nonconjugate": False, "wrong_frame": False,

@@ -165,7 +165,8 @@ def test_graph_rule_composes_transfer_candidate_natively():
                                              "source_epoch": 2, "target_frame_epoch": 3})
     proposal = s.add_node("RepresentationProposal", {
         "candidate_id": "repr-1", "status": "adopted", "package_cost_complete": True,
-        "source_epoch": 2, "model_epoch": 1, "frame_epoch": 3})
+        "source_epoch": 2, "model_epoch": 1, "frame_epoch": 3,
+        "target_frame_epoch": 3})
     request = s.add_node("ThinkingBudgetRequest", {"requester_kind": "process_transfer",
                                                     "status": "approved", "debited_epoch": 4})
     for node, edge in ((source, "transfers_source_schema"),
@@ -189,13 +190,14 @@ def test_graph_rule_composes_transfer_candidate_natively():
 
 def test_registered_transfer_world_pairings_have_separating_effects():
     for pairing in ("permutation_relabel_4", "integer_matrix_basis_2"):
-        world = transfer_world(pairing, 19)
-        assert verify_world_conjugacy(world)
-        for state in world["training_states"] + world["heldout_states"]:
-            source_view = apply_world_program(world["kind"], state, world["forward_map"])
-            target_effect = apply_world_program(world["kind"], source_view,
-                                                world["target_program"])
-            source_effect = apply_world_program(world["kind"], state, world["source_program"])
-            mapped_source_effect = apply_world_program(world["kind"], source_effect,
-                                                       world["forward_map"])
-            assert target_effect == mapped_source_effect
+        for direction in ("forward", "reverse"):
+            world = transfer_world(pairing, 19, direction)
+            assert verify_world_conjugacy(world)
+            for state in world["training_states"] + world["heldout_states"]:
+                source_view = apply_world_program(world["kind"], state, world["forward_map"])
+                target_effect = apply_world_program(world["kind"], source_view,
+                                                    world["target_program"])
+                source_effect = apply_world_program(world["kind"], state, world["source_program"])
+                mapped_source_effect = apply_world_program(world["kind"], source_effect,
+                                                           world["forward_map"])
+                assert target_effect == mapped_source_effect

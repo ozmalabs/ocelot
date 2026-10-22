@@ -372,7 +372,7 @@
                 "type": "Var",
                 "name": "proposal"
               },
-              "key": "frame_epoch"
+              "key": "target_frame_epoch"
             }
           },
           {
@@ -460,25 +460,6 @@
             "b": {
               "type": "Lit",
               "value": "approved"
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
-              },
-              "key": "debited_epoch"
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "target"
-              },
-              "key": "probe_epoch"
             }
           },
           {
@@ -597,7 +578,7 @@
                   "type": "Var",
                   "name": "proposal"
                 },
-                "key": "frame_epoch"
+                "key": "target_frame_epoch"
               }
             },
             "target_probe_epoch": {
@@ -850,21 +831,6 @@
                 "name": "candidate"
               },
               "key": "search_epoch"
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
-              },
-              "key": "terminal_status"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "completed"
             }
           },
           {
@@ -1314,6 +1280,12 @@
           "candidate",
           "status",
           "adopted"
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_status",
+          "completed"
         ]
       ]
     }

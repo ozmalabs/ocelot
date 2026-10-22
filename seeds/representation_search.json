@@ -65,6 +65,18 @@
       }
     },
     {
+      "provenance": "seed:representation_search:has_transfer_training_observation:Agent:TransferTrainingObservation",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_transfer_training_observation",
+      "tgt": {
+        "type": "TransferTrainingObservation",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:representation_search:funded_by_request:RepresentationSearchRequest:ThinkingBudgetRequest",
       "src": {
         "type": "RepresentationSearchRequest",
@@ -895,6 +907,16 @@
                 "key": "frame_epoch"
               }
             },
+            "target_frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "target_frame_epoch"
+              }
+            },
             "training_split_id": {
               "__term__": {
                 "type": "Attr",
@@ -954,6 +976,36 @@
                   "name": "evidence"
                 },
                 "key": "training_total_bits"
+              }
+            },
+            "next_frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "target_frame_epoch"
+              }
+            },
+            "source_frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "source_frame_id"
+              }
+            },
+            "target_frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "target_frame_id"
               }
             },
             "package_cost_complete": true,
