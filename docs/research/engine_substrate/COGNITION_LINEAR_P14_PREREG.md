@@ -1,25 +1,28 @@
 # P14 frozen evaluation preregistration
 
 **Protocol:** `linear-p14-v1`  
-**Frozen:** 2026-10-22, after development validation and before the held-out draw.  
+**Frozen, corrected revision 1:** 2026-10-22, after development validation and before the held-out draw.
+
 **Purpose:** Evaluate the bounded P14 commutator-parity proof rule, proof-carrying adoption gate, and graph-authored one-step operator macro on synthetic native permutation tasks. This is not a human comparison or a capability-level evaluation.
+
+**Freeze correction:** Revision 1 supersedes preregistration commit `21d9ecda` before any held-out run. Review found that the first analyzer did not enforce the recorded artifact fingerprints and exact seed ranges, and the runner did not audit every proof-reference binding in its scorecard. This revision adds those checks; the allocation and decision criteria are unchanged. No held-out records were run or inspected under the superseded freeze.
 
 ## Frozen artifacts
 
-The implementation and profile are frozen at implementation commit `eb77d9c0e75ee6533aa0c2c1f3583ba7fa7f4dca`. At freeze, the runner reports these component fingerprints:
+The implementation and profile are frozen at implementation commit `10a320a086cf61e726d7166055c84155748334b0`. At freeze, the runner reports these component fingerprints:
 
 | Component | SHA-256 |
 |---|---|
-| Source bundle | `ea1ac5ded69e5bd608c43055ffe2c570f1f39e8ee647919acccf1bb84aaaeb69` |
-| P14 runner | `8e9b7f48c8e00aaed021faf34346994c5e80384dfe909849d985c165d321c862` |
-| Analyzer | `b1f5a4a2f4a1c79c56c2a48c5ae430dc40aae3534b776a3d91633ee57651c408` |
+| Source bundle | `f5e9d0bb159dd94f939eeb9c884e89eaad894d4c2fd1a7f21bf7a3c721ccaed8` |
+| P14 runner | `2afa5db61b1c41f24a20f14db43b62176d1bdb2a923ec1a2d4dd6444f524bc85` |
+| Analyzer | `c9bfbbc7afd6e2fddc88388377caf6c7a1d34826af2d0d8b6f611e1236146027` |
 | Cognition-on profile | `022a07d8e7748e19144a0c1bef1e09a6394c209def933173fcf08f430f7d759e` |
 | World adapter | `3eabdfd1f28edca08f64800eab0a37b8d2911ece810160b9d4d62c05f5557985` |
 | Engine source | `e0b2298a4495d16eb2661dd14ecfdc70ed3960d85646481f85c53fe4ea8cca6d` |
 | Native engine binary | `b149923864fd6e5c786906b57929b73d42aa42284cceff200383fd8c1d60e9e5` |
-| P14 protocol bundle | `d8d0b5f6a95494b615db68f4713bfb97340c4af08f74d07c8d9a4ec505cf84ee` |
+| P14 protocol bundle | `6ba31746b644bc2898699372bc2307bbfb54f74dc590ecfac1e061207f8c832c` |
 
-The source bundle includes the implementation commit's runner, analyzer, profile, adapter, P14 law/adoption/operator seeds and engine sources. The held-out runner must report these same component hashes. `git_commit` may name this preregistration commit or a later documentation-only result closeout; it does not authorize code changes. Any component hash mismatch invalidates the draw. Python version at freeze: 3.13.5.
+The source bundle includes the implementation commit's runner, analyzer, profile, adapter, P14 law/adoption/operator seeds and engine sources. The analyzer reads these expected fingerprints from this frozen table and rejects any mismatch. `git_commit` may name this corrected preregistration commit or a later documentation-only result closeout; it does not authorize code changes. Any component hash mismatch invalidates the draw. Python version at freeze: 3.13.5.
 
 ## Allocation and fixed inputs
 
