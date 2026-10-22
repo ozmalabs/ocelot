@@ -178,6 +178,10 @@ def _verify_preregistration(path):
     if changed != [relative]:
         raise RuntimeError("the immediately preceding commit must contain only the P20 preregistration")
     frozen = _frozen_record(path)
+    parent = subprocess.check_output(["git", "rev-parse", "HEAD^"], cwd=ROOT,
+                                      text=True).strip()
+    if frozen.get("freeze_parent_commit") != parent:
+        raise RuntimeError("P20 preregistration parent commit mismatch")
     current = _provenance()
     for key in ("runner_sha256", "analyzer_sha256", "source_bundle_sha256",
                 "wrapper_sha256", "loaded_extension_sha256", "build_receipt_sha256",
