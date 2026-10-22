@@ -108,16 +108,45 @@ def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
 class CheckpointWorldAdapter:
     """Evaluate explicit finite-process expressions without arm-name dispatch."""
 
-    def __init__(self, native, *, primitive_work_ceiling: int):
+    def __init__(self, native, *, primitive_work_ceiling: int,
+                 allow_unattested_fixtures: bool = False):
         if primitive_work_ceiling <= 0:
             raise ValueError("primitive work ceiling must be positive")
         self.native = native
         self.primitive_work_ceiling = int(primitive_work_ceiling)
+        self.allow_unattested_fixtures = bool(allow_unattested_fixtures)
+
+    @staticmethod
+    def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
+        if checkpoint.generation == 0:
+            payload = {"schema": "p22_native_checkpoint_v1",
+                "checkpoint_id": checkpoint.checkpoint_id, "generation": 0,
+                "source_digest": checkpoint.expression_digest,
+                "params": list(checkpoint.params),
+                "primitive_work": checkpoint.declared_primitive_work}
+        elif checkpoint.generation > 0 and checkpoint.approval_id and checkpoint.receipt_id:
+            payload = {"schema": "p22_native_checkpoint_v1",
+                "checkpoint_id": checkpoint.checkpoint_id,
+                "parent_digest": checkpoint.parent_digest,
+                "generation": checkpoint.generation,
+                "expression_digest": checkpoint.expression_digest,
+                "params": list(checkpoint.params),
+                "primitive_work": checkpoint.declared_primitive_work,
+                "approval_id": checkpoint.approval_id,
+                "receipt_id": checkpoint.receipt_id}
+        else:
+            return False
+        expected = hashlib.sha256(json.dumps(payload, sort_keys=True,
+            separators=(",", ":")).encode()).hexdigest()
+        return checkpoint.checkpoint_digest == expected
 
     def score(self, checkpoint: CheckpointExpression, *, world_id: str,
               initial_state: list[int], goal_state: list[int]) -> dict:
         if not world_id:
             raise ValueError("world identity is required")
+        if (not self._checkpoint_digest_valid(checkpoint)
+                and not self.allow_unattested_fixtures):
+            raise ValueError("checkpoint is not an intact attested native snapshot")
         if checkpoint.declared_primitive_work > self.primitive_work_ceiling:
             return {"world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                     "status": "work_denied", "score": None,

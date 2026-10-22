@@ -15,7 +15,8 @@ from tests.test_open_process_adoption import _agent as _adoption_agent, _approve
 
 def _adapter():
     agent = Agent(track_i=False)
-    return agent, CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8)
+    return agent, CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8,
+                                        allow_unattested_fixtures=True)
 
 
 def _checkpoints(agent, *, full_work=2, ancestor_work=2):
@@ -159,6 +160,19 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     agent.s.set_attr(candidate, "params", changed)
     assert checkpoint.params == original_params
     assert checkpoint.checkpoint_digest == before
+    strict_adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8)
+    world = {"world_id": "frozen", "initial_state": state, "goal_state": predicted}
+    assert strict_adapter.score(checkpoint, **world)["status"] == "scored"
+    tampered = CheckpointExpression(checkpoint.checkpoint_id, checkpoint.parent_digest,
+        checkpoint.expression_digest, tuple(changed), checkpoint.declared_primitive_work,
+        checkpoint.generation, checkpoint.checkpoint_digest, checkpoint.approval_id,
+        checkpoint.receipt_id)
+    try:
+        strict_adapter.score(tampered, **world)
+    except ValueError as exc:
+        assert "attested" in str(exc)
+    else:
+        raise AssertionError("tampered checkpoint passed strict scoring")
     try:
         capture_adopted_checkpoint(agent, candidate, checkpoint_id="generation-1b",
             parent=checkpoint, generation=2,

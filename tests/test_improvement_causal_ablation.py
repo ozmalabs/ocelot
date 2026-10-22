@@ -7,7 +7,8 @@ from tests.test_open_process_search import _compose
 
 def test_component_ablation_changes_claimed_path():
     agent = Agent(track_i=False)
-    adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8)
+    adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8,
+                                     allow_unattested_fixtures=True)
     left, right = [1, 0, 2, 3], [0, 2, 1, 3]
     full = CheckpointExpression("full", "ancestor", "full-expression",
                                 tuple(_compose(agent, left, right)), 2)
