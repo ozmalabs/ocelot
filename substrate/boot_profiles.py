@@ -798,6 +798,13 @@ COGNITION_ON_SEEDS = (
     "imagined_candidate_arbitration",
     "decomposition_completion",
     "analog_imagery",
+    # P6 measured process-view closure. Process and solver policies remain
+    # disabled in this profile until an explicit evaluation enables them.
+    "process_schema",
+    "invention_operators",
+    "invention_round",
+    "invariant_miner",
+    "process_solving",
 )
 
 

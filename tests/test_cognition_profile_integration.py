@@ -153,7 +153,9 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
     manifold_policy = _nodes(agent, "CognitionManifoldPolicy")
     assert len(manifold_policy) == 1
     assert agent.s.node(manifold_policy[0])["attrs"].get("enabled") == 0.0
-    assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 5
+    # Track I's opt-in invention operator manifest contributes two additional
+    # disabled-policy tolerances to the cognition-on graph.
+    assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 7
 
 
 def test_p4_default_and_conversation_isolation():
@@ -219,6 +221,48 @@ def test_p5_planner_arbitration_receipt_chain():
     assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "grounded"
     assert adapter.s.node(context)["attrs"]["status"] == "committed"
     adapter.close()
+
+
+def test_p6_profile_chain():
+    p6 = {"process_schema", "invention_operators", "invention_round",
+          "invariant_miner", "process_solving"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p6:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    for node_type in ("ProcessSchemaPolicy", "SolverPolicy",
+                      "InventionPolicy", "InvariantMinerPolicy"):
+        for node in _nodes(agent, node_type):
+            assert agent.s.node(node)["attrs"].get("enabled") == 0.0
+
+
+def test_p6_default_isolation():
+    p6 = {"process_schema", "invention_operators", "invention_round",
+          "invariant_miner", "process_solving"}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    p6_rule_names = {r["name"] for sid in p6
+                     for r in manifest_for(sid).get("rules", ())
+                     if isinstance(r, dict) and r.get("name")}
+    default_rules = {r["name"] for r in default.inner.export_rules()}
+    conversation_rules = {r["name"] for r in conversation.inner.export_rules()}
+    assert p6_rule_names.isdisjoint(default_rules)
+    assert p6_rule_names.isdisjoint(conversation_rules)
+    default.close()
+    conversation.close()
+
+
+def test_p6_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
     agent.close()
 
 

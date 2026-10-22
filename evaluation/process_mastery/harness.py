@@ -128,6 +128,11 @@ class Agent:
             raise RuntimeError(f"unsupported: missing {adapter!r} action adapter")
         return handler(self, task, action)
 
+    def register_program_adapter(self):
+        """Opt this explicit PMB agent into family-e's native MBPP adapter."""
+        from evaluation.process_mastery.program_adapter import register
+        register(self)
+
     @staticmethod
     def trial_record(status, **fields):
         if status not in {"NOT_RUN", "UNSUPPORTED", "TIMEOUT", "FAILED", "COMPLETED"}:
@@ -138,11 +143,14 @@ class Agent:
     def run(self, max_ticks=400, max_steps=100_000):
         t0 = time.time()
         ticks = 0
+        quiescent = False
         for _ in range(max_ticks):
             ticks += 1
             if self.s.tick(max_steps) == 0:
+                quiescent = True
                 break
-        return {"ticks": ticks, "seconds": round(time.time() - t0, 2)}
+        return {"ticks": ticks, "seconds": round(time.time() - t0, 2),
+                "quiescent": quiescent}
 
     # -- reading -----------------------------------------------------------
     def attrs(self, nid):

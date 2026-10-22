@@ -67,7 +67,7 @@ All task `Verify cmd` entries below use the repository `.venv/bin/python`. They 
 
 ## Phase 6 — Measured foundation and executable process views
 
-**Entry:** P4/P5 reported results and partial foundation commit `53da7321`. **Status:** planned.
+**Entry:** P4/P5 reported results and partial foundation commit `53da7321`. **Status:** implementation and cognition-on integration are complete; preregistration/results remain. TransitionHypothesis execution and physical receipt-backed outcome observation remain explicitly unsupported, so no broad capability claim is authorized.
 
 Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views until their effect evaluation is supported. Baseline must omit Track I policies; the current `Agent` constructor does not. Keep the greedy solver as an explicitly named hand-written comparator.
 
@@ -164,6 +164,8 @@ Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views
 - **Non-goals:** claiming a new synthesis gain from exposing an adapter; using benchmark solutions as held processes.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**Implementation record (2026-10-22):** `evaluation/process_mastery/program_adapter.py` explicitly registers family (e) on either PMB profile and reuses `domains.prog_synthesis` plus the existing MBPP split/parser/scorer. Task 14's live baseline outcome matches the frozen MBPP artifact (`accepted_holdout_fail`); both profiles use the same task, revealed assertion, solver rules and external held-out scorer. The adapter emits the accepted native IR/node, solver status, attempts/budget, elapsed time, split report and fixture hash. The test split's solution code is stripped by the existing loader; held-out rows stay in the detached scorer record and are checked absent from the graph. Verification: `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_pmb_program_adapter.py tests/test_program_synthesis_migrated.py -q -p no:cacheprovider` — 21 passed. This registers a family adapter; it does not establish a synthesis gain or a P6 comparative result.
+
 ### P6.E1 — Integrate the phase and validate the evidence adapter
 
 - **ID:** P6.E1
@@ -178,6 +180,8 @@ Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_pmb_execution_contract.py tests/test_process_native_views.py tests/test_track_i_foundation.py tests/test_cognition_profile_integration.py tests/test_pmb_program_adapter.py -q -p no:cacheprovider`.
 - **Non-goals:** activating experimental processes in CORE; freezing evaluation before runtime integration.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P6.E1 integration record (2026-10-22):** Added the process-schema, invention-operator/round, invariant-miner and process-solving seed closure to `COGNITION_ON_SEEDS`; their policies remain disabled at profile boot. Default and conversation profile isolation is tested by rule-name absence. The cognition-on profile exposes one enabled ThinkingBudget for requesters (a second attached budget node remains disabled in the existing parameter bundle). A measured profile boot took 0.1342 s, with 879 graph nodes and 528 rules; native per-agent memory bytes are unavailable from the current allocator API. The PMB Loopover graph run emits a ProcessSchema trace and reaches the observed solved state, but it is a simulator mutation without an external sink receipt; physical observed-outcome parity is not established. Verification: the E1 focused bundle listed below passed, 42 tests.
 
 ### P6.E2 — Freeze a runnable preregistered evaluation
 
@@ -1359,4 +1363,4 @@ P3 rung-1 cache speedup remains failed. P4 C5's incremental-resolution test rema
 
 ## 7. Next executable action
 
-Start **P6.01**, then P6.02–P6.05, then P6.E1–E3. Do not restart completed P4/P5 implementation or treat the committed partial I foundation as a completed capability gate. The first new result should be a measured PMB baseline and an explicit, tested process-support matrix. Every later phase's next action is its first numbered task after the preceding results review.
+Continue the P6 acceptance audit, then execute P6.E1–E3 in order. Do not restart completed P4/P5 implementation or treat the committed partial I foundation as a completed capability gate. The first phase result must include a measured PMB baseline and an explicit, tested process-support matrix. Every later phase's next action is its first numbered task after the preceding results review.

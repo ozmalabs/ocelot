@@ -27,6 +27,16 @@ def test_actions_are_graph_selected():
     assert agent.s.has_edge(agent.ag, "has_solve_task", task)
     assert agent.s.has_edge(task, "about_domain", domain)
     assert "action" not in agent.attrs(task)
+    before = list(agent.attrs(task)["state"])
+    run = agent.run(max_ticks=100, max_steps=100_000)
+    after = agent.attrs(task)
+    assert run["ticks"] > 0
+    assert after["status"] == "solved"
+    assert after["state"] == after["goal"]
+    assert after["state"] != before
+    assert after["steps"] == len(after["trace"]) > 0
+    assert all(agent.s.node(schema)["type"] == "ProcessSchema"
+               for schema in after["trace"])
 
 
 def test_missing_adapter_not_zero_score():
