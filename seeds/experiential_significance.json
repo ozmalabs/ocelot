@@ -1,0 +1,1464 @@
+{
+  "id": "experiential_significance",
+  "version": "1.0.0",
+  "depends_on": [
+    "qualia_behavior"
+  ],
+  "self_load_only": true,
+  "area": "experiential_significance",
+  "description": "P17.03 context-bound significance earned from verified consequence receipts.",
+  "microtheory": {
+    "name": "experiential_significance",
+    "description": "Retain contextual consequence evidence and its review priority."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ExperientialSignificancePolicy",
+      "attrs": {
+        "name": "experiential_significance_policy",
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_experiential_significance_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:experiential_significance:has_experiential_significance_policy:Agent:ExperientialSignificancePolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experiential_significance_policy",
+      "tgt": {
+        "type": "ExperientialSignificancePolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:has_qualia_behavior_prediction:Agent:QualiaBehaviorPrediction",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_behavior_prediction",
+      "tgt": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:uses_feature_observation:QualiaBehaviorPrediction:ExperienceFeatureObservation",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_feature_observation",
+      "tgt": {
+        "type": "ExperienceFeatureObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:has_outcome_receipt:ExperienceFeatureObservation:ExperienceOutcomeReceipt",
+      "src": {
+        "type": "ExperienceFeatureObservation",
+        "var": "src"
+      },
+      "edge_type": "has_outcome_receipt",
+      "tgt": {
+        "type": "ExperienceOutcomeReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:has_experience_episode:Agent:ExperienceEpisode",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experience_episode",
+      "tgt": {
+        "type": "ExperienceEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:has_experience_event:ExperienceEpisode:ExperienceEvent",
+      "src": {
+        "type": "ExperienceEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_experience_event",
+      "tgt": {
+        "type": "ExperienceEvent",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:has_experiential_significance_evidence:Agent:ExperientialSignificanceEvidence",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experiential_significance_evidence",
+      "tgt": {
+        "type": "ExperientialSignificanceEvidence",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:verifies_prediction:ExperientialSignificanceEvidence:QualiaBehaviorPrediction",
+      "src": {
+        "type": "ExperientialSignificanceEvidence",
+        "var": "src"
+      },
+      "edge_type": "verifies_prediction",
+      "tgt": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:uses_outcome_receipt:ExperientialSignificanceEvidence:ExperienceOutcomeReceipt",
+      "src": {
+        "type": "ExperientialSignificanceEvidence",
+        "var": "src"
+      },
+      "edge_type": "uses_outcome_receipt",
+      "tgt": {
+        "type": "ExperienceOutcomeReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:has_experiential_significance:Agent:ExperientialSignificance",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experiential_significance",
+      "tgt": {
+        "type": "ExperientialSignificance",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiential_significance:supported_by:ExperientialSignificance:ExperientialSignificanceEvidence",
+      "src": {
+        "type": "ExperientialSignificance",
+        "var": "src"
+      },
+      "edge_type": "supported_by",
+      "tgt": {
+        "type": "ExperientialSignificanceEvidence",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "es_record_verified_consequence_evidence",
+      "area": "experiential_significance",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_experiential_significance_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_behavior_prediction",
+          "pred"
+        ],
+        [
+          "pred",
+          "uses_feature_observation",
+          "feature"
+        ],
+        [
+          "feature",
+          "has_outcome_receipt",
+          "receipt"
+        ],
+        [
+          "ag",
+          "has_experience_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_experience_event",
+          "ev"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "feature_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "feature_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_experiential_significance_evidence",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "evidence_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pred"
+                      },
+                      "key": "prediction_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "receipt"
+                      },
+                      "key": "receipt_id"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "evidence",
+          "ExperientialSignificanceEvidence",
+          {
+            "evidence_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pred"
+                    },
+                    "key": "prediction_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                    },
+                    "key": "receipt_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "episode_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "event_id"
+              }
+            },
+            "context_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "context_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "feature_value"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "prediction_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "prediction_key"
+              }
+            },
+            "predicted_consequence": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "predicted_consequence"
+              }
+            },
+            "observed_consequence": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "consequence_value"
+              }
+            },
+            "goal_effect": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "goal_effect"
+              }
+            },
+            "effect_category": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                    },
+                    "key": "goal_effect"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "supportive"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "adverse"
+                }
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "verified"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_experiential_significance_evidence",
+          "evidence",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "verifies_prediction",
+          "pred",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "uses_outcome_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "set_attr",
+          "pred",
+          "status",
+          "verified"
+        ]
+      ]
+    },
+    {
+      "name": "es_earn_contextual_significance_from_repeated_receipts",
+      "area": "experiential_significance",
+      "order": 10,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_experiential_significance_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_experiential_significance_evidence",
+          "e1"
+        ],
+        [
+          "ag",
+          "has_experiential_significance_evidence",
+          "e2"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "context_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "context_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "effect_category"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "effect_category"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e1"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "e2"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "episode_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e2"
+                },
+                "key": "episode_id"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_experiential_significance",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "significance_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "e1"
+                      },
+                      "key": "owner_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "e1"
+                      },
+                      "key": "feature_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "e1"
+                        },
+                        "key": "feature_value"
+                      }
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "e1"
+                      },
+                      "key": "context_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "e1"
+                      },
+                      "key": "effect_category"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "sig",
+          "ExperientialSignificance",
+          {
+            "significance_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "e1"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "e1"
+                    },
+                    "key": "feature_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "e1"
+                      },
+                      "key": "feature_value"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "e1"
+                    },
+                    "key": "context_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "e1"
+                    },
+                    "key": "effect_category"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "owner_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "feature_value"
+              }
+            },
+            "context_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "context_id"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "effect_category": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "e1"
+                },
+                "key": "effect_category"
+              }
+            },
+            "support_count": 2.0,
+            "status": "standing",
+            "attention_priority": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "e1"
+                    },
+                    "key": "effect_category"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "adverse"
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "protective_review"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "reuse_candidate"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_experiential_significance",
+          "sig",
+          {}
+        ],
+        [
+          "add_edge",
+          "sig",
+          "supported_by",
+          "e1",
+          {}
+        ],
+        [
+          "add_edge",
+          "sig",
+          "supported_by",
+          "e2",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "es_project_standing_relevance_into_attention_priority",
+      "area": "experiential_significance",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_experiential_significance_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_behavior_prediction",
+          "pred"
+        ],
+        [
+          "ag",
+          "has_experiential_significance",
+          "sig"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "standing"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "context_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "context_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "significance_key"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "sig"
+                },
+                "key": "significance_key"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "pred",
+          "significance_key",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "significance_key"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pred",
+          "attention_priority",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "sig"
+              },
+              "key": "attention_priority"
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

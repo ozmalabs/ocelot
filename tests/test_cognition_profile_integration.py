@@ -146,7 +146,9 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
     # P4 experimental adapters are cognition-on-only and remain inert by default.
     for node_type in ("QualiaShapeMintPolicy", "CognitionSignaturePolicy",
                       "SimilarityRecallPolicy", "CognitionAperturePolicy",
-                      "TemporalEscalationPolicy", "ThoughtManifoldPolicy"):
+                      "TemporalEscalationPolicy", "ThoughtManifoldPolicy",
+                      "QualiaBehaviorPolicy", "ExperientialSignificancePolicy",
+                      "QualiaRevisionPolicy"):
         nodes = _nodes(agent, node_type)
         assert len(nodes) == 1
         assert agent.s.node(nodes[0])["attrs"].get("enabled") == 0.0

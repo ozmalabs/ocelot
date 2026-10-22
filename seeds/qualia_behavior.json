@@ -1,0 +1,3185 @@
+{
+  "id": "qualia_behavior",
+  "version": "1.0.0",
+  "depends_on": [
+    "qualia_acquisition",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "qualia_behavior",
+  "description": "P17.02 source-bound native predictions and action proposals from standing acquired distinctions.",
+  "microtheory": {
+    "name": "qualia_behavior",
+    "description": "Use only verified acquired axes to predict later consequences."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "QualiaBehaviorPolicy",
+      "attrs": {
+        "name": "qualia_behavior_policy",
+        "enabled": 0.0,
+        "inference_cost": 1.0,
+        "max_predictions": 2000.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_qualia_behavior_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:qualia_behavior:has_qualia_behavior_policy:Agent:QualiaBehaviorPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_behavior_policy",
+      "tgt": {
+        "type": "QualiaBehaviorPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_network_mode_state:Agent:NetworkModeState",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_network_mode_state",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_experience_episode:Agent:ExperienceEpisode",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experience_episode",
+      "tgt": {
+        "type": "ExperienceEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_experience_event:ExperienceEpisode:ExperienceEvent",
+      "src": {
+        "type": "ExperienceEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_experience_event",
+      "tgt": {
+        "type": "ExperienceEvent",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_episode_feature:ExperienceEvent:ExperienceFeatureObservation",
+      "src": {
+        "type": "ExperienceEvent",
+        "var": "src"
+      },
+      "edge_type": "has_episode_feature",
+      "tgt": {
+        "type": "ExperienceFeatureObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_qualia_dimension:Agent:QualiaDimension",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_dimension",
+      "tgt": {
+        "type": "QualiaDimension",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_qualia_axis_candidate:Agent:QualiaAxisCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_axis_candidate",
+      "tgt": {
+        "type": "QualiaAxisCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_acquisition_witness:QualiaAxisCandidate:QualiaAcquisitionWitness",
+      "src": {
+        "type": "QualiaAxisCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_acquisition_witness",
+      "tgt": {
+        "type": "QualiaAcquisitionWitness",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_thinking_budget_request:Agent:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:funds_qualia_prediction:ThinkingBudgetRequest:ExperienceFeatureObservation",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "funds_qualia_prediction",
+      "tgt": {
+        "type": "ExperienceFeatureObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_qualia_behavior_prediction:Agent:QualiaBehaviorPrediction",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_behavior_prediction",
+      "tgt": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:uses_feature_observation:QualiaBehaviorPrediction:ExperienceFeatureObservation",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_feature_observation",
+      "tgt": {
+        "type": "ExperienceFeatureObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:uses_qualia_dimension:QualiaBehaviorPrediction:QualiaDimension",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_qualia_dimension",
+      "tgt": {
+        "type": "QualiaDimension",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:uses_acquisition_witness:QualiaBehaviorPrediction:QualiaAcquisitionWitness",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_acquisition_witness",
+      "tgt": {
+        "type": "QualiaAcquisitionWitness",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_qualia_action_context:Agent:QualiaActionContext",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_action_context",
+      "tgt": {
+        "type": "QualiaActionContext",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_qualia_action_authorization:Agent:QualiaActionAuthorization",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_action_authorization",
+      "tgt": {
+        "type": "QualiaActionAuthorization",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:uses_budget_request:QualiaBehaviorPrediction:ThinkingBudgetRequest",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:has_action_authorization:QualiaBehaviorPrediction:QualiaActionAuthorization",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "has_action_authorization",
+      "tgt": {
+        "type": "QualiaActionAuthorization",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:authorizes_prediction:QualiaActionAuthorization:QualiaBehaviorPrediction",
+      "src": {
+        "type": "QualiaActionAuthorization",
+        "var": "src"
+      },
+      "edge_type": "authorizes_prediction",
+      "tgt": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:applies_to_world_context:QualiaActionAuthorization:QualiaActionContext",
+      "src": {
+        "type": "QualiaActionAuthorization",
+        "var": "src"
+      },
+      "edge_type": "applies_to_world_context",
+      "tgt": {
+        "type": "QualiaActionContext",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_behavior:authorized_by_budget_request:QualiaActionAuthorization:ThinkingBudgetRequest",
+      "src": {
+        "type": "QualiaActionAuthorization",
+        "var": "src"
+      },
+      "edge_type": "authorized_by_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "qbh_request_funded_fresh_prediction",
+      "area": "qualia_behavior",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_qualia_behavior_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_experience_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_experience_event",
+          "ev"
+        ],
+        [
+          "ev",
+          "has_episode_feature",
+          "f"
+        ],
+        [
+          "ag",
+          "has_qualia_dimension",
+          "dim"
+        ],
+        [
+          "ag",
+          "has_qualia_axis_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_acquisition_witness",
+          "w"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_role"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "fresh_task"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "validated"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "candidate"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "ag"
+                    },
+                    "edge_type": "has_qualia_axis_candidate",
+                    "any_type": false
+                  },
+                  "var_name": "same",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "same"
+                      },
+                      "key": "candidate_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "candidate_key"
+                    }
+                  }
+                },
+                "var_name": "same",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "same"
+                  },
+                  "key": "created_epoch"
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "dim"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "ag"
+                    },
+                    "edge_type": "has_qualia_dimension",
+                    "any_type": false
+                  },
+                  "var_name": "same_dim",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "same_dim"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "dim"
+                      },
+                      "key": "name"
+                    }
+                  }
+                },
+                "var_name": "same_dim",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "same_dim"
+                  },
+                  "key": "name"
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "w"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "edge_type": "has_acquisition_witness",
+                    "any_type": false
+                  },
+                  "var_name": "same_w",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "same_w"
+                          },
+                          "key": "feature_value"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "f"
+                          },
+                          "key": "feature_value"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "same_w"
+                          },
+                          "key": "owner_id"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "ep"
+                          },
+                          "key": "owner_id"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "same_w",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "same_w"
+                  },
+                  "key": "event_id"
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_role"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "fresh_task"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "acquired"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "acquisition_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "standing"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "feature_family"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_family"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "value_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "value_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "feature_family"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_family"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "value_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "value_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "is_missing"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "feature_value"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_thinking_budget_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "requester_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "event_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "key": "feature_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "f"
+                        },
+                        "key": "source_epoch"
+                      }
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "dim"
+                      },
+                      "key": "name"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_qualia_behavior_prediction",
+                "any_type": false
+              },
+              "var_name": "oldp",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "oldp"
+                  },
+                  "key": "prediction_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "event_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "key": "feature_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "f"
+                        },
+                        "key": "source_epoch"
+                      }
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "dim"
+                      },
+                      "key": "name"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "qualia_behavior_inference",
+            "requester_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ev"
+                    },
+                    "key": "event_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "feature_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "dim"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "inference_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_thinking_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "funds_qualia_prediction",
+          "f",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "qbh_emit_source_bound_prediction_and_action_proposal",
+      "area": "qualia_behavior",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_qualia_behavior_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_experience_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_experience_event",
+          "ev"
+        ],
+        [
+          "ev",
+          "has_episode_feature",
+          "f"
+        ],
+        [
+          "ag",
+          "has_qualia_dimension",
+          "dim"
+        ],
+        [
+          "ag",
+          "has_qualia_axis_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_acquisition_witness",
+          "w"
+        ],
+        [
+          "ag",
+          "has_thinking_budget_request",
+          "req"
+        ],
+        [
+          "req",
+          "funds_qualia_prediction",
+          "f"
+        ],
+        [
+          "req",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "validated"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "candidate"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "ag"
+                    },
+                    "edge_type": "has_qualia_axis_candidate",
+                    "any_type": false
+                  },
+                  "var_name": "same",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "same"
+                      },
+                      "key": "candidate_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "candidate_key"
+                    }
+                  }
+                },
+                "var_name": "same",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "same"
+                  },
+                  "key": "created_epoch"
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "dim"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "ag"
+                    },
+                    "edge_type": "has_qualia_dimension",
+                    "any_type": false
+                  },
+                  "var_name": "same_dim",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "same_dim"
+                      },
+                      "key": "name"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "dim"
+                      },
+                      "key": "name"
+                    }
+                  }
+                },
+                "var_name": "same_dim",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "same_dim"
+                  },
+                  "key": "name"
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "w"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "edge_type": "has_acquisition_witness",
+                    "any_type": false
+                  },
+                  "var_name": "same_w",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "same_w"
+                          },
+                          "key": "feature_value"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "f"
+                          },
+                          "key": "feature_value"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "same_w"
+                          },
+                          "key": "owner_id"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "ep"
+                          },
+                          "key": "owner_id"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "var_name": "same_w",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "same_w"
+                  },
+                  "key": "event_id"
+                }
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "acquisition_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "standing"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "acquired"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "feature_family"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_family"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "value_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "value_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "feature_family"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_family"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "value_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "value_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "w"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "is_missing"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requested_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_qualia_behavior_prediction",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "prediction_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "event_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "key": "feature_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "f"
+                        },
+                        "key": "source_epoch"
+                      }
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "dim"
+                      },
+                      "key": "name"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "pred",
+          "QualiaBehaviorPrediction",
+          {
+            "prediction_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ev"
+                    },
+                    "key": "event_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "feature_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "f"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "dim"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "episode_id"
+              }
+            },
+            "context_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "context_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "feature_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "feature_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_family": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "feature_family"
+              }
+            },
+            "feature_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "feature_value"
+              }
+            },
+            "predicted_consequence_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "w"
+                },
+                "key": "consequence_kind"
+              }
+            },
+            "predicted_consequence": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "w"
+                },
+                "key": "consequence_value"
+              }
+            },
+            "proposed_action_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "w"
+                },
+                "key": "action_id"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "dim"
+                },
+                "key": "name"
+              }
+            },
+            "dimension_status": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "dim"
+                },
+                "key": "acquisition_status"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "witness_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "w"
+                },
+                "key": "event_id"
+              }
+            },
+            "attention_priority": "ordinary",
+            "status": "proposed"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_qualia_behavior_prediction",
+          "pred",
+          {}
+        ],
+        [
+          "add_edge",
+          "pred",
+          "uses_feature_observation",
+          "f",
+          {}
+        ],
+        [
+          "add_edge",
+          "pred",
+          "uses_qualia_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "add_edge",
+          "pred",
+          "uses_acquisition_witness",
+          "w",
+          {}
+        ],
+        [
+          "add_edge",
+          "pred",
+          "uses_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          "consumed"
+        ]
+      ]
+    },
+    {
+      "name": "qbh_authorize_only_source_bound_legal_funded_action",
+      "area": "qualia_behavior",
+      "order": 15,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_qualia_behavior_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_qualia_behavior_prediction",
+          "pred"
+        ],
+        [
+          "pred",
+          "uses_feature_observation",
+          "feature"
+        ],
+        [
+          "ag",
+          "has_experience_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_experience_event",
+          "ev"
+        ],
+        [
+          "ev",
+          "has_episode_feature",
+          "feature"
+        ],
+        [
+          "pred",
+          "uses_qualia_dimension",
+          "dim"
+        ],
+        [
+          "pred",
+          "uses_budget_request",
+          "req"
+        ],
+        [
+          "ag",
+          "has_qualia_action_context",
+          "ctx"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "acquisition_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "standing"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consumed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "world_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "world_epoch"
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "proposed_action_id"
+            },
+            "container": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ctx"
+              },
+              "key": "legal_actions"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_qualia_action_authorization",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "prediction_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pred"
+                  },
+                  "key": "prediction_key"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "auth",
+          "QualiaActionAuthorization",
+          {
+            "authorization_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pred"
+                    },
+                    "key": "prediction_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":authorized"
+                  }
+                ]
+              }
+            },
+            "prediction_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "prediction_key"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "owner_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "event_id"
+              }
+            },
+            "action_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "proposed_action_id"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "world_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                },
+                "key": "world_id"
+              }
+            },
+            "world_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ctx"
+                },
+                "key": "world_epoch"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "budget_request_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "requester_key"
+              }
+            },
+            "status": "authorized"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_qualia_action_authorization",
+          "auth",
+          {}
+        ],
+        [
+          "add_edge",
+          "pred",
+          "has_action_authorization",
+          "auth",
+          {}
+        ],
+        [
+          "add_edge",
+          "auth",
+          "authorizes_prediction",
+          "pred",
+          {}
+        ],
+        [
+          "add_edge",
+          "auth",
+          "applies_to_world_context",
+          "ctx",
+          {}
+        ],
+        [
+          "add_edge",
+          "auth",
+          "authorized_by_budget_request",
+          "req",
+          {}
+        ]
+      ]
+    }
+  ]
+}

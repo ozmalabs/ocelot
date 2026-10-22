@@ -791,6 +791,10 @@ COGNITION_ON_SEEDS = (
     "cognition_signature",
     "experience_signature",
     "qualia_acquisition",
+    # P17 behavioral consumers and verified significance/revision remain off.
+    "qualia_behavior",
+    "experiential_significance",
+    "qualia_revision",
     "numerosity",
     # P8 learned episode models and funded experiment design remain disabled.
     "process_induction",

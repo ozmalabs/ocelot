@@ -17,19 +17,20 @@ class NativeWorldAdapter:
     world_id: str
     epoch: int = 0
     legal_by_state: dict[tuple, tuple[str, ...]] | None = None
+    goal_action: str | None = None
 
     @classmethod
     def from_task(cls, task: dict[str, Any], *, world_id: str | None = None):
         family = task.get("family")
         if family not in {"sliding_3x3", "cube_2x2x2", "tool_goal", "permutation",
-                          "state_dependent_tool"}:
+                          "state_dependent_tool", "tool_contact", "social_request_repair"}:
             raise ValueError("UNSUPPORTED world family")
         legal_map = task.get("legal_actions_by_state", {})
         return cls(family, tuple(task["initial_state"]), tuple(task["goal_state"]),
                    {k: tuple(v) for k, v in task["primitive_affordances"].items()},
                    world_id or f"{family}:{task.get('seed', 'fixture')}", 0,
                    {tuple(map(int, key.split(","))): tuple(value)
-                    for key, value in legal_map.items()})
+                    for key, value in legal_map.items()}, task.get("expected_action"))
 
     def primitive_access(self) -> dict[str, Any]:
         """Return identical goal/action/legality data to baseline and treatment."""
@@ -71,6 +72,8 @@ class NativeWorldAdapter:
     def _apply(self, state, action):
         if action not in self.actions or action not in self.legal_actions(state):
             raise ValueError("illegal primitive action")
+        if self.family in {"tool_contact", "social_request_repair"}:
+            return (1,) if action == self.goal_action else (2,)
         if self.family == "sliding_3x3":
             return puzzle_worlds.sliding_apply(state, self.actions[action])
         return puzzle_worlds._apply_position_map(state, self.actions[action])
