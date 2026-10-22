@@ -106,7 +106,7 @@ def control_trial(seed,family,kind):
       'source_leaks':0,'input_labels_exposed':False,
       'detached_scorer_labels':(['failure','success','success'] if kind=='label_shuffled' else None)}
 
-def number_trial(seed,ratio=None,small=False):
+def number_trial(seed,ratio=None,small=False,scale=1.0):
     from domains.number_world import perceptual_scene_attrs
     s,ag=boot(acquisition=False,numerosity=True)
     def grp(name,area,density,mode):
@@ -119,11 +119,11 @@ def number_trial(seed,ratio=None,small=False):
     if small:
       a=grp(f'a-{seed}',seed%5,0,'small');b=grp(f'b-{seed}',(seed*3)%5,0,'small');expected='MORE' if seed%5>(seed*3)%5 else 'LESS' if seed%5<(seed*3)%5 else 'SAME_WITHIN_RESOLUTION'
     else:
-      a=grp(f'a-{seed}',ratio,2.0,'aggregate');b=grp(f'b-{seed}',1.0,2.0,'aggregate');expected='MORE'
+      a=grp(f'a-{seed}',ratio*scale,2.0,'aggregate');b=grp(f'b-{seed}',scale,2.0,'aggregate');expected='MORE'
     req=s.add_node('NumerosityCompareRequest',{'request_id':str(seed),'owner_id':'owner-a','source_epoch':2,'frame_epoch':5,'status':'pending'})
     s.add_edge(ag,'has_numerosity_request',req);s.add_edge(req,'compares_group_a',a);s.add_edge(req,'compares_group_b',b)
     tick(s);actual=s.node(req)['attrs'].get('result');passed=actual==expected
-    return {'family':'numerosity_small' if small else f'numerosity_ratio_{ratio}','seed':seed,'profile':'perceptual-graph','status':'COMPLETED' if actual else 'UNSUPPORTED','outcome':actual,'external_outcome':{'pass':passed},'truth':{'relation':expected},'hidden_truth_exposed':False,'compute':{'graph_nodes':len(s.nodes())}}
+    return {'family':'numerosity_small' if small else f'numerosity_ratio_{ratio}','seed':seed,'profile':'perceptual-graph','status':'COMPLETED' if actual else 'UNSUPPORTED','outcome':actual,'external_outcome':{'pass':passed},'truth':{'relation':expected},'hidden_truth_exposed':False,'scale':scale,'compute':{'graph_nodes':len(s.nodes())}}
 
 def run(*,split='development',self_check=False,n=None):
     if self_check:
@@ -140,7 +140,7 @@ def run(*,split='development',self_check=False,n=None):
           for i in range(100): rows.append(control_trial(offset+base+k*100+i,family,kind))
       for i in range(n): rows.append(number_trial(offset+1000+i,small=True))
       for ratio,block in ((1.1,1200),(1.25,1400),(1.5,1600),(2.0,1800)):
-        for i in range(n): rows.append(number_trial(offset+block+i,ratio=ratio))
+        for i in range(n): rows.append(number_trial(offset+block+i,ratio=ratio,scale=(1.0 if i<100 else 10.0)))
     return {'schema':'pmb-scorecard-v1','metadata':{**provenance(),'split':split,'registered_draw':not self_check,'n_records':len(rows)},'records':rows}
 
 def main():
