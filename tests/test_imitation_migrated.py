@@ -65,7 +65,9 @@ def test_no_directed_teaching_required():
 def _agent(*, enabled=True):
     from evaluation.process_mastery.harness import Agent
     agent = Agent(extra_seeds=("imitation",),
-                  policy_overrides={"ImitationPolicy": {"enabled": 1.0 if enabled else 0.0}})
+                  policy_overrides={"ImitationPolicy": {"enabled": 1.0 if enabled else 0.0}},
+                  budget={"enabled": 1.0, "remaining": 10.0,
+                          "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
     return agent
 
 
@@ -91,7 +93,8 @@ def _observed_candidate(agent, episode_id, binding_id, *, map_status="verified",
     assert requests
     request = s.add_node("ThinkingBudgetRequest", {
         "requester_kind": "imitation", "episode_id": episode_id,
-        "status": "approved", "source_epoch": 4,
+        "status": "pending", "source_epoch": 4, "cost": 1.0,
+        "operation_id": f"imitation:{episode_id}",
         "source_key": f"imitation:{episode_id}"})
     s.add_edge(ag, "has_imitation_request", request, {})
     s.add_edge(request, "draws_on_thinking_budget", requests[0], {})
@@ -122,7 +125,8 @@ def _verify_candidate(agent, candidate, *, expected_state=None):
     budget = list(s.neighbours(agent.ag, "has_thinking_budget"))[0]
     request = s.add_node("ThinkingBudgetRequest", {
         "requester_kind": "imitation_validation", "candidate_id": attrs["candidate_id"],
-        "status": "approved", "source_epoch": attrs["source_epoch"],
+        "status": "pending", "source_epoch": attrs["source_epoch"], "cost": 1.0,
+        "operation_id": f"validation:{attrs['candidate_id']}",
         "source_key": f"validation:{attrs['candidate_id']}"})
     s.add_edge(candidate, "has_validation_request", request, {})
     s.add_edge(request, "draws_on_thinking_budget", budget, {})
@@ -246,8 +250,8 @@ def test_demo_lifts_to_unseen_binding_only_after_fresh_rollout():
     budget = list(agent.s.neighbours(agent.ag, "has_thinking_budget"))[0]
     replay_request = agent.s.add_node("ThinkingBudgetRequest", {
         "requester_kind": "imitation_binding_replay", "replay_id": "replay-object-green",
-        "status": "approved", "source_epoch": 4,
-        "source_key": "replay:object-green"})
+        "status": "pending", "source_epoch": 4, "cost": 1.0,
+        "operation_id": "replay:object-green", "source_key": "replay:object-green"})
     agent.s.add_edge(replay, "funded_by", replay_request, {})
     agent.s.add_edge(replay_request, "draws_on_thinking_budget", budget, {})
     receipt = agent.s.add_node("DetachedOwnModelVerification", {
