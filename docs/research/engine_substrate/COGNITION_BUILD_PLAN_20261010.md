@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03–P10.05 implemented, P10.E1 integrated.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** complete through P10.E3 with limits; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03–P10.05 implemented, and P10.E1 integrated. V1 evaluation was invalidated for missing domain-linked schemas; V2 held-out results are authoritative and the registered strategy-advantage criterion is `FAIL`.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -715,12 +715,14 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Non-goals:** a dummy baseline, depth-shortcut comparator or rescoring old results; treating a human baseline as available without protocol matching.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P10.E2 freeze record:** V1 preregistration was frozen in [`COGNITION_LINEAR_P10_PREREG.md`](COGNITION_LINEAR_P10_PREREG.md) and retained, then its draw was invalidated because `ProcessSchemaPolicy` was disabled in the runner. Corrected V2 was frozen before a fresh allocation in [`COGNITION_LINEAR_P10_PREREG_V2.md`](COGNITION_LINEAR_P10_PREREG_V2.md). V2 self-check confirmed the primitive schemas were installed in both runnable arms, identical world-access hashes, no input leakage, native trace replay, and real per-arm outcomes. V2 development raw scorecard SHA-256: `1514550d2df274cd6223370c1a2f500643b4ac6b461674c843c3b6a6729ab75f`; analysis SHA-256: `1369affe8e78488c11017c06eef172a328bb47cca05f013c21c5bb3bd3fb5065`.
+
 ### P10.E3 — Run the frozen phase, report results and authorize the next entry
 
 - **ID:** P10.E3
 - **Tier:** T1
 - **Goal:** Run the frozen phase, report results and authorize the next entry.
-- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P10_PREREG.md`; `evaluation/process_mastery/linear_p10_v1.py`; `evaluation/process_mastery/analyze_linear_p10_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P10_PREREG_V2.md`; `evaluation/process_mastery/linear_p10_v2.py`; `evaluation/process_mastery/analyze_linear_p10_v2.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
 - **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P10_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
 - **Pattern to copy:** P4 C5 negative outcome and P5 versioned corrections retained in results.
 - **Steps:** 1. Run all fixed held-out arms and controls with §5 commands and archive raw hashes outside git. 2. Report every primary metric, exact work, actions, evidence exposure, memory, boot time and inherited regression exception. 3. Update this phase status and assessment; list the next phase’s supported inputs/fallbacks. Do not close an unmet safety/mechanism prerequisite.
@@ -729,6 +731,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_goal_invention.py tests/test_process_lifting.py tests/test_strategy_discovery.py tests/test_pmb_puzzle_worlds.py -q -p no:cacheprovider`.
 - **Non-goals:** rerunning/tuning the same holdout; claiming a whole L-level from one mechanism panel.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P10.E3 result record (2026-10-22):** V2 completed 4,100 rows on its fresh registered allocation; see [`COGNITION_LINEAR_P10_RESULTS.md`](COGNITION_LINEAR_P10_RESULTS.md). On the 800 supported paired tasks, greedy and discovered-strategy both solved 128/800 (all 128 were tool-goal cases), for 0 pp gain against the ≥20 pp criterion (`FAIL`). All 100 misleading-precondition controls passed; input/trace audit failures were zero. Baseline, primitive-search and sliding panels remain `UNSUPPORTED`. The frozen P10 acceptance bundle passed 82 tests. P11 is authorized for representation proposals and cross-domain maps over verified ProcessSchema effects and acquired P7 distinctions; the failed P10 advantage remains in force and does not authorize transferable-strategy or L-level claims.
 
 ## Phase 11 — Representation invention and cross-domain transfer
 
