@@ -51,6 +51,10 @@ def IndexedMap(source, item_name, index_name, value):
     return {"type": "IndexedMap", "source": source, "item_name": item_name,
             "index_name": index_name, "value": value}
 
+
+def Attr(node, key):
+    return {"type": "Attr", "node": node, "key": key}
+
 SEED_ID = "process_schema"
 OUT = ROOT / "seeds" / f"{SEED_ID}.json"
 
@@ -81,12 +85,37 @@ def domain_identity_rule():
         "A permutation domain whose probes include the identity state has EXACT fingerprints: "
         "the identity probe's image is the permutation itself.",
         [["agent", "has_process_schema_policy", "pol"], ["agent", "has_process_domain", "d"]],
-        And(policy_on(), Not(Eq(A("d", "identity_checked"), L(1)))),
+        And(policy_on(), Or(Not(Eq(A("d", "identity_checked"), L(1))),
+                            Not(Eq(A("d", "identity_probe_epoch"), A("d", "probe_epoch"))))),
         [
             ["set_attr", "d", "identity_fingerprint", T(PFingerprint(Vec(L("seq")), A("d", "probes")))],
             ["set_attr", "d", "exact_probes",
              T(IfThenElse(And(Eq(A("d", "kind"), L("permutation")), identity_probe), L(1), L(0)))],
             ["set_attr", "d", "identity_checked", 1],
+            ["set_attr", "d", "identity_probe_epoch", T(A("d", "probe_epoch"))],
+        ],
+    )
+
+
+def reopen_stale_merge_rule():
+    return rule(
+        "ps_reopen_merge_on_probe_epoch_change", OFFLINE_AREA, 9,
+        "A schema merged under an older probe epoch is reopened before the new fingerprint is checked.",
+        [
+            ["agent", "has_process_schema_policy", "pol"],
+            ["agent", "has_process_schema", "s"],
+            ["agent", "has_process_domain", "d"],
+            ["s", "merged_into", "target"],
+        ],
+        And(policy_on(), Eq(A("s", "owner_agent"), V("agent")),
+            Eq(A("s", "domain"), A("d", "name")),
+            Eq(A("s", "status"), L("merged")),
+            Not(Eq(A("s", "probe_epoch"), A("d", "probe_epoch")))),
+        [
+            ["set_attr", "s", "status", "active"],
+            ["set_attr", "s", "fingerprint_checked", 0],
+            ["set_attr", "s", "dedup_checked", 0],
+            ["del_edge", "s", "merged_into", "target"],
         ],
     )
 
@@ -101,11 +130,16 @@ def fingerprint_rule():
             ["agent", "has_process_schema", "s"],
             ["agent", "has_process_domain", "d"],
         ],
-        And(policy_on(), Eq(A("s", "domain"), A("d", "name")),
-            Not(Eq(A("s", "fingerprint_checked"), L(1)))),
+        And(policy_on(), Eq(A("s", "owner_agent"), V("agent")),
+            Eq(A("s", "status"), L("active")),
+            Eq(A("s", "domain"), A("d", "name")),
+            Or(Not(Eq(A("s", "fingerprint_checked"), L(1))),
+               Not(Eq(A("s", "probe_epoch"), A("d", "probe_epoch"))))),
         [
             ["set_attr", "s", "fingerprint", T(PFingerprint(A("s", "params"), A("d", "probes")))],
             ["set_attr", "s", "support", T(PSupport(A("s", "params")))],
+            ["set_attr", "s", "probe_epoch", T(A("d", "probe_epoch"))],
+            ["set_attr", "s", "dedup_checked", 0],
             ["set_attr", "s", "fingerprint_checked", 1],
         ],
     )
@@ -132,7 +166,22 @@ def index_held_rule():
 
 def _same_effect(a, b):
     return And(
-        Eq(A(b, "domain"), A(a, "domain")),
+        Eq(A(b, "domain"), A("d", "name")),
+        Eq(A(a, "domain"), A("d", "name")),
+        Eq(A("d", "exact_probes"), L(1)),
+        Eq(A(a, "owner_agent"), V("agent")),
+        Eq(A(b, "owner_agent"), V("agent")),
+        Eq(A(a, "owner_agent"), A(b, "owner_agent")),
+        Eq(A(a, "frame_epoch"), A(b, "frame_epoch")),
+        Eq(A(a, "model_epoch"), A(b, "model_epoch")),
+        Eq(A(a, "source_epoch"), A(b, "source_epoch")),
+        Eq(A(a, "probe_epoch"), A(b, "probe_epoch")),
+        Eq(A(a, "source_probe_epoch"), A(b, "source_probe_epoch")),
+        not_none(A(a, "frame_epoch")),
+        not_none(A(a, "model_epoch")),
+        not_none(A(a, "source_epoch")),
+        not_none(A(a, "probe_epoch")),
+        not_none(A(a, "source_probe_epoch")),
         Eq(A(a, "status"), L("active")),
         Not(Eq(V(a), V(b))),
         not_none(A(b, "fingerprint")),
@@ -150,6 +199,7 @@ def merge_newcomer_rule():
             ["agent", "has_process_schema_policy", "pol"],
             ["agent", "has_process_schema", "b"],
             ["agent", "has_process_schema", "a"],
+            ["agent", "has_process_domain", "d"],
         ],
         And(
             policy_on(),
@@ -180,6 +230,7 @@ def merge_older_costlier_rule():
             ["agent", "has_process_schema_policy", "pol"],
             ["agent", "has_process_schema", "b"],
             ["agent", "has_process_schema", "a"],
+            ["agent", "has_process_domain", "d"],
         ],
         And(
             policy_on(),
@@ -211,7 +262,17 @@ def settle_dedup_rule():
 def _unviewed(src_type):
     return Filter(
         NodesOfType(src_type), "g",
-        Not(Exists(NodesOfType("ProcessSchema"), "vs", Eq(A("vs", "realised_by"), V("g")))),
+        And(
+            Eq(A("g", "owner_agent"), V("agent")),
+            Not(Exists(
+                NodesOfType("ProcessSchema"), "vs",
+                And(
+                    Eq(A("vs", "realised_by"), V("g")),
+                    Eq(A("vs", "owner_agent"), V("agent")),
+                    Eq(A("vs", "status"), L("active")),
+                ),
+            )),
+        ),
     )
 
 
@@ -234,6 +295,12 @@ def view_rule(src_type, kind, domain_term, params_term, extra=None, order=5):
         "provenance": "held",
         "source_type": src_type,
         "realised_by": of_g(V("g")),
+        "owner_agent": T(V("agent")),
+        "source_epoch": of_g(A("g", "source_epoch")),
+        "model_epoch": of_g(A("g", "model_epoch")),
+        "frame_epoch": of_g(A("g", "frame_epoch")),
+        "probe_epoch": T(L(0)),
+        "source_probe_epoch": of_g(A("g", "probe_epoch")),
         "status": "active",
     }
     for k, v in (extra or {}).items():
@@ -280,6 +347,35 @@ def view_rules():
     ]
 
 
+def stale_view_rules():
+    rules = []
+    for src_type in (
+        "DimensionGenerator", "Program", "CapabilityProgram",
+        "TransitionHypothesis", "EmbodiedMotorProgram", "FamilyProgram",
+    ):
+        current_source = Exists(
+            NodesOfType(src_type), "g",
+            And(
+                Eq(A("s", "realised_by"), V("g")),
+                Eq(A("g", "owner_agent"), V("agent")),
+                *[Eq(A("s", key), Attr(V("g"), key)) for key in (
+                    "source_epoch", "model_epoch", "frame_epoch",
+                )],
+                Eq(A("s", "source_probe_epoch"), Attr(V("g"), "probe_epoch")),
+            ),
+        )
+        rules.append(rule(
+            f"ps_stale_{src_type[0].lower()}{''.join('_' + c.lower() if c.isupper() else c for c in src_type[1:])}_view",
+            OFFLINE_AREA, 4,
+            f"Retire the {src_type} ProcessSchema view when its owner or source/frame/model/probe epoch no longer matches.",
+            [["agent", "has_process_schema_policy", "pol"], ["agent", "has_process_schema", "s"]],
+            And(policy_on(), Eq(A("s", "source_type"), L(src_type)),
+                Eq(A("s", "status"), L("active")), Not(current_source)),
+            [["set_attr", "s", "status", "stale"]],
+        ))
+    return rules
+
+
 def build():
     specs = [
         ("Agent", "has_process_schema_policy", "ProcessSchemaPolicy"),
@@ -309,6 +405,7 @@ def build():
                 "name": "core_process_schema_policy", "enabled": 0.0, "view_enabled": 1.0}},
             {"local_id": 1, "type": "ProcessDomain", "attrs": {
                 "name": SHAPE_DOMAIN, "kind": "generator_step", "probes": SHAPE_PROBES,
+                "probe_epoch": 0, "frame_epoch": 0,
                 "description": "Shape signatures ['cell', r, c]; the DimensionGenerator view domain."}},
         ],
         "edges": [
@@ -318,7 +415,8 @@ def build():
              "tgt": {"local": 1}, "attrs": {}},
         ],
         "productions": productions(SEED_ID, specs),
-        "rules": view_rules() + [
+        "rules": stale_view_rules() + view_rules() + [
+            reopen_stale_merge_rule(),
             domain_identity_rule(),
             fingerprint_rule(),
             index_held_rule(),

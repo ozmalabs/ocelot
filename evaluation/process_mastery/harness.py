@@ -87,13 +87,18 @@ class Agent:
 
     # -- world installation ------------------------------------------------
     def add_domain(self, name, kind, probes, held: dict[str, object], trees=None, **attrs):
-        d = self.s.add_node("ProcessDomain", {"name": name, "kind": kind, "probes": probes, **attrs})
+        d = self.s.add_node("ProcessDomain", {
+            "name": name, "kind": kind, "probes": probes, "probe_epoch": 0,
+            "frame_epoch": 0, **attrs,
+        })
         self.s.add_edge(self.ag, "has_process_domain", d, {})
         for hname, params in held.items():
             node = {
                 "kind": kind, "domain": name, "domain_kind": kind, "name": hname,
                 "params": list(params), "cost": 1.0, "provenance": "held", "status": "active",
-                "invariants": [],
+                "invariants": [], "owner_agent": self.ag, "source_epoch": 0,
+                "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0,
+                "source_probe_epoch": 0,
             }
             if trees and hname in trees:
                 node["expr_tree"] = trees[hname]

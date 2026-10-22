@@ -1,8 +1,14 @@
 import json
+import sys
+from pathlib import Path
 
 from evaluation.process_mastery import generators as gen
 from evaluation.process_mastery.scorecard import write_scorecard
 from evaluation.process_mastery.harness import Agent
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from gen_process_schema_seed import build as build_process_schema_seed  # noqa: E402
 
 
 def test_pmb_generators_are_seeded_and_splits_disjoint():
@@ -34,3 +40,8 @@ def test_loopover_3x3_schema_views_are_graph_minted_and_effect_distinct():
     assert len(schemas) == 12
     assert all(agent.attrs(s).get("fingerprint_checked") == 1 for s in schemas)
     assert len({repr(agent.attrs(s).get("fingerprint")) for s in schemas}) == 12
+
+
+def test_process_schema_seed_matches_its_generator():
+    generated = json.loads((ROOT / "seeds" / "process_schema.json").read_text())
+    assert generated == build_process_schema_seed()
