@@ -3369,6 +3369,8 @@ pub enum TermNode {
     ProcessRepairVerify { p: TermIdx, fresh_states: TermIdx, goals: TermIdx },
     /// Validate finite `(outcome, probability)` pairs and return `(support, unknown_mass)`.
     ProcessDistribution { outcomes: TermIdx },
+    /// Instantiate a witnessed process template when all varying captures are source sizes.
+    ProcessLiftInstantiate { witness: TermIdx, source_sizes: TermIdx, target_size: TermIdx },
     EffectSupport { p: TermIdx },
     EffectFingerprint { p: TermIdx, probes: TermIdx },
     PermParity { p: TermIdx },
@@ -5160,6 +5162,11 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         },
         TermNode::ProcessDistribution { outcomes } => TermNode::ProcessDistribution {
             outcomes: copy_subtree(src, dst, outcomes),
+        },
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => TermNode::ProcessLiftInstantiate {
+            witness: copy_subtree(src, dst, witness),
+            source_sizes: copy_subtree(src, dst, source_sizes),
+            target_size: copy_subtree(src, dst, target_size),
         },
         TermNode::EffectSupport { p } => TermNode::EffectSupport { p: copy_subtree(src, dst, p) },
         TermNode::EffectFingerprint { p, probes } => TermNode::EffectFingerprint {
@@ -9261,6 +9268,12 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
         TermNode::ProcessDistribution { outcomes } => {
             let value = evaluate(arena, *outcomes, env, ctx);
             crate::process_algebra::finite_distribution_value(&value)
+        }
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            let w = evaluate(arena, *witness, env, ctx);
+            let ss = evaluate(arena, *source_sizes, env, ctx);
+            let ts = evaluate(arena, *target_size, env, ctx);
+            crate::process_algebra::instantiate_lifted_process(&w, &ss, &ts, ctx.interner)
         }
         TermNode::EffectSupport { p } => {
             let pv = evaluate(arena, *p, env, ctx);
@@ -15240,6 +15253,9 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
             out.extend([*p, *fresh_states, *goals]);
         }
         TermNode::ProcessDistribution { outcomes } => out.push(*outcomes),
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            out.extend([*witness, *source_sizes, *target_size]);
+        }
         TermNode::EffectFingerprint { p, probes } => out.extend([*p, *probes]),
         TermNode::LogQuantum { population, .. } => {
             out.push(*population);

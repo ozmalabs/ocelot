@@ -548,6 +548,126 @@ pub fn finite_distribution_value(value: &Value) -> Value {
     Value::Tuple(Arc::new(smallvec![Value::Tuple(Arc::new(encoded)), Value::Float(unknown_mass)]))
 }
 
+/// Instantiate a witnessed parametric process tree only when every captured
+/// hole is exactly the corresponding source size. This deliberately refuses
+/// general anti-unification guesses: callers get a concrete native process or
+/// `None`, never a partially-bound process.
+pub fn instantiate_lifted_process(
+    witness: &Value,
+    source_sizes: &Value,
+    target_size: &Value,
+    interner: &Interner,
+) -> Value {
+    let Some(witness_items) = seq_items(witness) else { return Value::None; };
+    if witness_items.len() != 2 { return Value::None; }
+    let Some(sizes) = seq_items(source_sizes) else { return Value::None; };
+    let Some(size) = as_int(target_size) else { return Value::None; };
+    if sizes.len() != 2 || !(2..=256).contains(&size) { return Value::None; }
+    let sizes: Option<Vec<i64>> = sizes.iter().map(as_int).collect();
+    let Some(sizes) = sizes else { return Value::None; };
+    if sizes[0] == sizes[1] || sizes.iter().any(|x| *x < 2 || *x >= size) { return Value::None; }
+    let sigmas = seq_items(&witness_items[1]);
+    let Some(sigmas) = sigmas else { return Value::None; };
+    if sigmas.len() != sizes.len() { return Value::None; }
+    let mut path = Vec::new();
+    let Some(tree) = replace_size_wildcards(
+        &witness_items[0], &sigmas, &sizes, size, &mut path, interner) else {
+        return Value::None;
+    };
+    eval_lift_tree(&tree, interner).unwrap_or(Value::None)
+}
+
+fn replace_size_wildcards(
+    value: &Value, sigmas: &[Value], source_sizes: &[i64], target_size: i64,
+    path: &mut Vec<Value>, interner: &Interner,
+) -> Option<Value> {
+    let is_wild = seq_items(value).is_some_and(|items| {
+        items.len() == 1 && text_of(&items[0], interner).as_deref() == Some("·?·")
+    });
+    if is_wild {
+        let path_value = Value::Tuple(Arc::new(path.iter().cloned().collect()));
+        let mut captures = Vec::with_capacity(sigmas.len());
+        for sigma in sigmas {
+            let Value::Dict(entries) = sigma else { return None; };
+            let Some((_, captured)) = entries.iter().find(|(key, _)| {
+                cmp_value(key, &path_value) == std::cmp::Ordering::Equal
+            }) else { return None; };
+            captures.push(as_int(captured)?);
+        }
+        if captures.len() != source_sizes.len()
+            || captures.iter().zip(source_sizes).any(|(a,b)| a != b) {
+            return None;
+        }
+        return Some(Value::Int(target_size));
+    }
+    match value {
+        Value::Tuple(items) => {
+            let mut out: SmallVec<[Value; 4]> = SmallVec::new();
+            for (index, child) in items.iter().enumerate() {
+                path.push(Value::Int(index as i64));
+                let result = replace_size_wildcards(child, sigmas, source_sizes, target_size, path, interner)?;
+                path.pop();
+                out.push(result);
+            }
+            Some(Value::Tuple(Arc::new(out)))
+        }
+        Value::List(items) => {
+            let mut out: SmallVec<[Value; 4]> = SmallVec::new();
+            for (index, child) in items.iter().enumerate() {
+                path.push(Value::Int(index as i64));
+                let result = replace_size_wildcards(child, sigmas, source_sizes, target_size, path, interner)?;
+                path.pop();
+                out.push(result);
+            }
+            Some(Value::List(Arc::new(out)))
+        }
+        _ => Some(value.clone()),
+    }
+}
+
+fn eval_lift_tree(tree: &Value, interner: &Interner) -> Option<Value> {
+    let items = seq_items(tree)?;
+    let tag = text_of(items.first()?, interner)?;
+    let int_at = |index: usize| items.get(index).and_then(as_int);
+    match tag.as_str() {
+        "cycle" => {
+            if items.len() != 4 { return None; }
+            let (n, start, len) = (int_at(1)?, int_at(2)?, int_at(3)?);
+            if !(2..=256).contains(&n) || start < 0 || start >= n || len < 2 || len > n { return None; }
+            let mut p: Vec<i64> = (0..n).collect();
+            for offset in 0..len {
+                p[((start + offset) % n) as usize] = (start + offset + 1) % n;
+            }
+            Some(Value::Tuple(Arc::new(p.into_iter().map(Value::Int).collect())))
+        }
+        "swap" => {
+            if items.len() != 4 { return None; }
+            let (n, i, j) = (int_at(1)?, int_at(2)?, int_at(3)?);
+            if !(2..=256).contains(&n) || i < 0 || j < 0 || i >= n || j >= n || i == j { return None; }
+            let mut p: Vec<i64> = (0..n).collect();
+            p.swap(i as usize, j as usize);
+            Some(Value::Tuple(Arc::new(p.into_iter().map(Value::Int).collect())))
+        }
+        "inverse" => {
+            if items.len() != 2 { return None; }
+            let process = eval_lift_tree(&items[1], interner)?;
+            let result = inverse(&process, interner);
+            (result != Value::None).then_some(result)
+        }
+        "compose" | "commutator" => {
+            if items.len() != 3 { return None; }
+            let a = eval_lift_tree(&items[1], interner)?;
+            let b = eval_lift_tree(&items[2], interner)?;
+            if tag == "compose" { return Some(compose(&a, &b, interner)); }
+            let ai = inverse(&a, interner);
+            let bi = inverse(&b, interner);
+            if ai == Value::None || bi == Value::None { return None; }
+            Some(compose(&compose(&compose(&a, &b, interner), &ai, interner), &bi, interner))
+        }
+        _ => None,
+    }
+}
+
 /// `EffectSupport{p}` — how much of the world the process touches: moved
 /// points for a permutation, non-identity entries for a matrix, non-zero
 /// components for a delta. `None` for kinds whose support is only defined
@@ -742,5 +862,41 @@ mod tests {
         assert!(finite_distribution(&[(ints(&[0]), 0.7), (ints(&[1]), 0.4)]).is_none());
         assert!(finite_distribution(&[(ints(&[0]), 1.0), (ints(&[1]), f64::EPSILON)]).is_none());
         assert!(finite_distribution(&[(ints(&[0]), 0.5), (ints(&[0]), 0.5)]).is_none());
+    }
+
+    #[test]
+    fn lifted_commutator_rebinds_only_consistent_size_witnesses() {
+        let ir = Interner::new();
+        let text = |s: &str| Value::Surface(SurfaceKind::Text, Arc::from(s.as_bytes()));
+        let seq = |xs: Vec<Value>| Value::Tuple(Arc::new(xs.into_iter().collect::<SmallVec<[Value; 4]>>()));
+        let path = |a, b| seq(vec![Value::Int(a), Value::Int(b)]);
+        let wild = seq(vec![text("·?·")]);
+        let template = seq(vec![
+            text("commutator"),
+            seq(vec![text("cycle"), wild.clone(), Value::Int(0), wild.clone()]),
+            seq(vec![text("swap"), wild.clone(), Value::Int(0), Value::Int(1)]),
+        ]);
+        let sigma = |n| Value::Dict(Arc::from([
+            (path(1, 1), Value::Int(n)),
+            (path(1, 3), Value::Int(n)),
+            (path(2, 1), Value::Int(n)),
+        ]));
+        let witness = seq(vec![template, seq(vec![sigma(3), sigma(5)])]);
+        let got = instantiate_lifted_process(&witness, &ints(&[3, 5]), &Value::Int(6), &ir);
+        assert!(matches!(parse(&got, &ir), Some(Proc::Perm(ref p)) if p.len() == 6));
+        // A hole that does not track source size is not guessed into a lift.
+        let bad = seq(vec![
+            Value::Dict(Arc::from([(path(1, 1), Value::Int(3)),
+                                   (path(1, 3), Value::Int(2)),
+                                   (path(2, 1), Value::Int(3))])),
+            Value::Dict(Arc::from([(path(1, 1), Value::Int(5)),
+                                   (path(1, 3), Value::Int(4)),
+                                   (path(2, 1), Value::Int(5))])),
+        ]);
+        let bad_witness = seq(vec![
+            seq(vec![text("commutator"),
+                seq(vec![text("cycle"), wild.clone(), Value::Int(0), wild.clone()]),
+                seq(vec![text("swap"), wild, Value::Int(0), Value::Int(1)])]), bad]);
+        assert_eq!(instantiate_lifted_process(&bad_witness, &ints(&[3, 5]), &Value::Int(6), &ir), Value::None);
     }
 }
