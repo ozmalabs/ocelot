@@ -230,6 +230,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::ProcessApply { .. } => "ProcessApply",
         TermNode::ProcessRepairVerify { .. } => "ProcessRepairVerify",
         TermNode::ProcessDistribution { .. } => "ProcessDistribution",
+        TermNode::ProcessLiftInstantiate { .. } => "ProcessLiftInstantiate",
         TermNode::EffectSupport { .. } => "EffectSupport",
         TermNode::EffectFingerprint { .. } => "EffectFingerprint",
         TermNode::PermParity { .. } => "PermParity",
@@ -882,6 +883,11 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
         }
         TermNode::ProcessDistribution { outcomes } => {
             m.insert("outcomes".into(), child(*outcomes, arena, interner));
+        }
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            m.insert("witness".into(), child(*witness, arena, interner));
+            m.insert("source_sizes".into(), child(*source_sizes, arena, interner));
+            m.insert("target_size".into(), child(*target_size, arena, interner));
         }
         TermNode::EffectSupport { p } | TermNode::PermParity { p } => {
             m.insert("p".into(), child(*p, arena, interner));
@@ -2276,6 +2282,11 @@ fn read_term(
         },
         "ProcessDistribution" => TermNode::ProcessDistribution {
             outcomes: child_of("outcomes", obj, arena, interner, variant)?,
+        },
+        "ProcessLiftInstantiate" => TermNode::ProcessLiftInstantiate {
+            witness: child_of("witness", obj, arena, interner, variant)?,
+            source_sizes: child_of("source_sizes", obj, arena, interner, variant)?,
+            target_size: child_of("target_size", obj, arena, interner, variant)?,
         },
         "EffectSupport" => TermNode::EffectSupport {
             p: child_of("p", obj, arena, interner, variant)?,

@@ -1307,6 +1307,11 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
         TermNode::ProcessDistribution { outcomes } => (
             "ProcessDistribution", vec![Child { name: "outcomes", child: *outcomes }],
         ),
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => (
+            "ProcessLiftInstantiate", vec![Child { name: "witness", child: *witness },
+                Child { name: "source_sizes", child: *source_sizes },
+                Child { name: "target_size", child: *target_size }],
+        ),
         TermNode::EffectSupport { p } => ("EffectSupport", vec![Child { name: "p", child: *p }]),
         TermNode::EffectFingerprint { p, probes } => (
             "EffectFingerprint",
@@ -4570,6 +4575,10 @@ fn reconstruct(
             p: take_child!("p"), fresh_states: take_child!("fresh_states"), goals: take_child!("goals"),
         },
         "ProcessDistribution" => TermNode::ProcessDistribution { outcomes: take_child!("outcomes") },
+        "ProcessLiftInstantiate" => TermNode::ProcessLiftInstantiate {
+            witness: take_child!("witness"), source_sizes: take_child!("source_sizes"),
+            target_size: take_child!("target_size"),
+        },
         "EffectSupport" => TermNode::EffectSupport { p: take_child!("p") },
         "EffectFingerprint" => TermNode::EffectFingerprint {
             p: take_child!("p"),
