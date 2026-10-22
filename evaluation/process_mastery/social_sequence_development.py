@@ -109,27 +109,28 @@ def _settle(agent):
     agent._p20_native_rule_steps = getattr(agent, "_p20_native_rule_steps", 0) + total
 
 
-def _one_stream(arm, index):
+def _one_stream(arm, index, *, stream_prefix="dev"):
     started = time.perf_counter()
     agent = _agent()
     source_agent = None
+    stream_id = f"{stream_prefix}:{arm}:{index:04d}"
     if arm == "observation":
-        source = RequestRepairWorld(world_id=f"observed-source:{index}")
-        witnessed_episode(agent, episode_id=f"observation:{index}",
+        source = RequestRepairWorld(world_id=f"observed-source:{stream_id}")
+        witnessed_episode(agent, episode_id=stream_id,
                           receipts=[source.apply("request"), source.apply("repair")])
         source_units = 2
     elif arm == "demonstration":
-        source = RequestRepairWorld(world_id=f"demonstration-source:{index}")
-        demonstrated_episode(agent, episode_id=f"demonstration:{index}", demonstration={
-            "status": "complete", "actor_id": f"demonstrator:{index}",
+        source = RequestRepairWorld(world_id=f"demonstration-source:{stream_id}")
+        demonstrated_episode(agent, episode_id=stream_id, demonstration={
+            "status": "complete", "actor_id": f"demonstrator:{stream_id}",
             "receipts": [source.apply("request"), source.apply("repair")],
         })
         source_units = 2
     elif arm == "instruction":
         text, parsed, source_units, source_agent = _instruction_parse(agent)
-        instructed_episode(agent, episode_id=f"instruction:{index}", text=text, parsed=parsed)
+        instructed_episode(agent, episode_id=stream_id, text=text, parsed=parsed)
     elif arm == "reward_only":
-        reward_only_episode(agent, episode_id=f"reward:{index}", feedback={
+        reward_only_episode(agent, episode_id=stream_id, feedback={
             "status": "observed", "outcome": "rewarded", "reward_value": 1.0})
         source_units = 1
     else:
@@ -163,7 +164,7 @@ def _one_stream(arm, index):
         verification_status = verification["status"]
         if verification_status != "VERIFIED":
             raise RuntimeError(f"{arm} failed independent fresh-world verification: {verification}")
-        own_world = RequestRepairWorld(world_id=f"own:{arm}:{index}", case_id="unseen-case")
+        own_world = RequestRepairWorld(world_id=f"own:{stream_id}", case_id="unseen-case")
         execution = execute_verified_observed_sequence(
             agent, candidate, world=own_world, authorize=lambda proposal: True)
         solved = execution.get("status") == "COMPLETED" and own_world.solved
@@ -187,7 +188,7 @@ def _one_stream(arm, index):
                                          sort_keys=True, default=str).encode())
                           if source_agent is not None else 0)
     return {
-        "arm": arm, "stream_id": f"dev:{arm}:{index:04d}", "outcome": outcome,
+        "arm": arm, "stream_id": stream_id, "outcome": outcome,
         "evidence_opportunities": 1, "visible_observations": visible_observations,
         "source_world_actions": source_actions,
         "source_information_units": source_units,
@@ -212,11 +213,13 @@ def _one_stream(arm, index):
     }
 
 
-def run_development_panel(*, streams_per_arm=2):
-    records = [_one_stream(arm, index) for arm in ARMS
+def run_development_panel(*, streams_per_arm=2, stream_prefix="dev"):
+    records = [_one_stream(arm, index, stream_prefix=stream_prefix) for arm in ARMS
                for index in range(streams_per_arm)]
     return {
-        "status": "development_only", "arms": list(ARMS),
+        "status": ("development_only" if stream_prefix == "dev"
+                   else "heldout_unanalyzed"),
+        "stream_prefix": stream_prefix, "arms": list(ARMS),
         "streams_per_arm": streams_per_arm, "records": records,
         "arm_summary": {
             arm: {
@@ -235,14 +238,14 @@ def run_development_panel(*, streams_per_arm=2):
     }
 
 
-def run_development_controls(*, per_kind=1):
+def run_development_controls(*, per_kind=1, control_prefix="dev-control"):
     """Validate the four registered social evidence rejection controls."""
     kinds = ("wrong_frame", "missing_step", "body_mismatch", "false_description")
     records = []
     for kind in kinds:
         for index in range(per_kind):
             agent = _agent()
-            control_id = f"dev-control:{kind}:{index:04d}"
+            control_id = f"{control_prefix}:{kind}:{index:04d}"
             rejected = False
             if kind == "wrong_frame":
                 source = RequestRepairWorld(world_id=control_id)

@@ -201,12 +201,12 @@ def _mismatched_stream(pair, stream_id):
             "map_status": "abstained_conflicting_source"}
 
 
-def run_development_panel(*, streams_per_pair=4):
-    """Run all declared development streams; no held-out allocation is read."""
+def run_development_panel(*, streams_per_pair=4, stream_prefix="dev"):
+    """Run a disjointly named panel; split authorization belongs to caller."""
     records = []
     for pair in DOMAIN_PAIRS:
         for index in range(streams_per_pair):
-            stream_id = f"dev:{pair.name}:{index:04d}"
+            stream_id = f"{stream_prefix}:{pair.name}:{index:04d}"
             records.append(_fresh_stream(pair, stream_id))
             records.append(_mapped_stream(pair, stream_id))
             records.append(_mismatched_stream(pair, stream_id))
@@ -243,7 +243,9 @@ def run_development_panel(*, streams_per_pair=4):
                                       if row["arm"] == arm),
         } for arm in curves
     }
-    return {"status": "development_only", "streams_per_pair": streams_per_pair,
+    return {"status": ("development_only" if stream_prefix == "dev"
+                        else "heldout_unanalyzed"),
+            "stream_prefix": stream_prefix, "streams_per_pair": streams_per_pair,
             "domain_pairs": [pair.name for pair in DOMAIN_PAIRS],
             "checkpoints": checkpoints, "curves": curves, "normalized_auc": auc,
             "paired_auc_difference_mapped_minus_fresh": auc["mapped_source"] - auc["fresh"],

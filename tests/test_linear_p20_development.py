@@ -3,7 +3,7 @@ import pytest
 import copy
 
 from evaluation.process_mastery.analyze_linear_p20_v1 import analyze
-from evaluation.process_mastery.linear_p20_v1 import run
+from evaluation.process_mastery.linear_p20_v1 import allocation, run
 
 
 def test_development_runner_includes_target_social_and_structural_panels():
@@ -29,8 +29,26 @@ def test_development_runner_includes_target_social_and_structural_panels():
 
 
 def test_heldout_panel_is_closed_before_standalone_freeze():
-    with pytest.raises(RuntimeError, match="standalone preregistration freeze"):
+    with pytest.raises(RuntimeError, match="requires --preregistration"):
         run("heldout")
+
+
+def test_heldout_allocation_is_fixed_and_disjoint_from_development():
+    dev = allocation("development", target_streams_per_pair=8,
+                     social_streams_per_arm=8, social_controls_per_kind=25,
+                     explanation_streams=8)
+    heldout = allocation("heldout")
+    assert len(heldout["target"]) == 400
+    assert len(heldout["social"]) == 800
+    assert len(heldout["controls"]) == 100
+    assert len(heldout["explanations"]) == 200
+    assert not ({row["stream_id"] for row in dev["target"]}
+                & {row["stream_id"] for row in heldout["target"]})
+    assert not ({row["stream_id"] for row in dev["social"]}
+                & {row["stream_id"] for row in heldout["social"]})
+    assert not ({row["control_id"] for row in dev["controls"]}
+                & {row["control_id"] for row in heldout["controls"]})
+    assert not (set(dev["explanations"]) & set(heldout["explanations"]))
 
 
 def test_development_analyzer_rejects_missing_arm_and_false_control():

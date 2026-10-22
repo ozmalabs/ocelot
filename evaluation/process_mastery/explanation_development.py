@@ -61,8 +61,9 @@ def _graph_bytes(substrate):
                           sort_keys=True, default=str).encode())
 
 
-def run_explanation_trial(index):
+def run_explanation_trial(index, *, stream_prefix="dev"):
     started = time.perf_counter()
+    trial_id = f"{stream_prefix}:explanation:{index:04d}"
     bank = [row for row in training_bank() if row["language"] == "en"]
     source = Agent(extra_seeds=("process_explanation",), track_i=False,
                    policy_overrides={"ProcessExplanationPolicy": {"enabled": 1.0}},
@@ -78,14 +79,14 @@ def run_explanation_trial(index):
                                                "speech_act": "inform"}},
     ]
     source_schema = source.s.add_node("ProcessSchema", {
-        "name": f"private-composed-source:{index}", "kind": "sequence",
+        "name": f"private-composed-source:{trial_id}", "kind": "sequence",
         "domain": "private-source", "params": ["seq", [["add", [1]], ["add", [1]]]],
         "status": "active", "source_epoch": 1, "model_epoch": 7, "frame_epoch": 9,
         "public_explanation_frame": None, "public_explanation_steps": steps,
         "public_vocabulary": ["love", "sit"],
     })
     source.s.add_edge(source.ag, "has_process_schema", source_schema, {})
-    request_id = f"p20-explanation-author:{index}"
+    request_id = f"p20-explanation-author:{trial_id}"
     author = source.s.add_node("ProcessExplanationRequest", {
         "request_id": request_id, "status": "requested", "language": "en"})
     source.s.add_edge(source.ag, "has_process_explanation_request", author, {})
@@ -131,7 +132,7 @@ def run_explanation_trial(index):
         })
         receiver.s.add_edge(receiver.ag, "has_process_primitive_vocabulary", primitive, {})
         primitives.append(primitive)
-    explanation_id = f"p20-explanation-receiver:{index}"
+    explanation_id = f"p20-explanation-receiver:{trial_id}"
     explanation = receiver.s.add_node("ProcessExplanationInput", {
         "explanation_id": explanation_id, "text": authored["text"], "language": "en",
         "parse_status": "parsed", "explanation_kind": "ordered_two_step",
@@ -147,7 +148,7 @@ def run_explanation_trial(index):
     rebuild_funding = receiver.s.add_node("ThinkingBudgetRequest", {
         "requester_kind": "process_explanation_rebuild", "explanation_id": explanation_id,
         "source_key": explanation_id, "source_epoch": 1,
-        "operation_id": f"rebuild:{index}", "status": "pending", "cost": 1.0})
+        "operation_id": f"rebuild:{trial_id}", "status": "pending", "cost": 1.0})
     receiver.s.add_edge(rebuild_request, "funded_by", rebuild_funding, {})
     receiver.s.add_edge(rebuild_funding, "draws_on_thinking_budget",
                         receiver.s.nodes("ThinkingBudget")[0], {})
@@ -160,8 +161,8 @@ def run_explanation_trial(index):
     validation = receiver.s.add_node("ThinkingBudgetRequest", {
         "requester_kind": "process_rebuild_validation",
         "candidate_id": candidate_attrs["candidate_id"],
-        "source_key": f"verify:{index}", "source_epoch": 1,
-        "operation_id": f"verify:{index}", "status": "pending", "cost": 2.0})
+        "source_key": f"verify:{trial_id}", "source_epoch": 1,
+        "operation_id": f"verify:{trial_id}", "status": "pending", "cost": 2.0})
     receiver.s.add_edge(candidate, "has_verification_request", validation, {})
     receiver.s.add_edge(validation, "draws_on_thinking_budget",
                         receiver.s.nodes("ThinkingBudget")[0], {})
@@ -192,7 +193,7 @@ def run_explanation_trial(index):
     receiver_debits = sum(receiver.s.node(node)["attrs"].get("debited_epoch") is not None
                           for node in receiver.s.nodes("ThinkingBudgetRequest"))
     return {
-        "trial_id": f"dev:explanation:{index:04d}", "status": "verified_and_adopted",
+        "trial_id": trial_id, "status": "verified_and_adopted",
         "language": "en", "explanation_words": len(authored["text"].split()),
         "explanation_characters": len(authored["text"]),
         "semantic_steps": len(parsed["semantic_sequence"][1]),
@@ -216,10 +217,13 @@ def run_explanation_trial(index):
     }
 
 
-def run_development_panel(*, streams=2):
-    records = [run_explanation_trial(index) for index in range(streams)]
+def run_development_panel(*, streams=2, stream_prefix="dev"):
+    records = [run_explanation_trial(index, stream_prefix=stream_prefix)
+               for index in range(streams)]
     return {
-        "status": "development_only", "streams": streams, "records": records,
+        "status": ("development_only" if stream_prefix == "dev"
+                   else "heldout_unanalyzed"),
+        "stream_prefix": stream_prefix, "streams": streams, "records": records,
         "summary": {
             "verified_and_adopted": sum(row["status"] == "verified_and_adopted"
                                          for row in records),

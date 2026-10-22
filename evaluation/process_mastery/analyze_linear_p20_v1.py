@@ -1,9 +1,4 @@
-"""Fail-closed structural analysis for P20 development panels.
-
-This analyzer deliberately labels all results DEVELOPMENT_ONLY. It does not
-estimate the preregistered efficacy criterion and rejects held-out payloads
-until the frozen analyzer implementation is added with the preregistration.
-"""
+"""Fail-closed analysis of frozen P20 panels and development checks."""
 from __future__ import annotations
 
 import argparse
@@ -12,19 +7,44 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from evaluation.process_mastery.linear_p20_v1 import PROVENANCE_FILES, ROOT
+from evaluation.process_mastery.linear_p20_v1 import (
+    PROVENANCE_FILES, ROOT, _verify_preregistration,
+)
 
 TARGET_ARMS = {"fresh", "mapped_source", "mismatched_source"}
 SOCIAL_ARMS = {"observation", "demonstration", "instruction", "reward_only"}
 CONTROL_KINDS = {"wrong_frame", "missing_step", "body_mismatch", "false_description"}
 
 
-def analyze(payload):
+def analyze(payload, *, preregistration=None):
     failures = []
+    split = payload.get("split")
+    heldout = split == "heldout"
     if payload.get("phase") != "linear-p20-v1":
         failures.append("phase_mismatch")
-    if payload.get("split") != "development" or payload.get("heldout_accessed") is not False:
-        failures.append("non_development_or_holdout_access")
+    if split not in {"development", "heldout"}:
+        failures.append("unknown_split")
+    if (not heldout and payload.get("heldout_accessed") is not False):
+        failures.append("development_holdout_access")
+    frozen = None
+    if heldout:
+        if preregistration is None:
+            failures.append("heldout_analysis_requires_preregistration")
+        else:
+            try:
+                frozen, _current_provenance, expected_allocation, expected_sha = (
+                    _verify_preregistration(Path(preregistration).resolve()))
+                if payload.get("preregistration_sha256") != hashlib.sha256(
+                        Path(preregistration).read_bytes()).hexdigest():
+                    failures.append("preregistration_hash_mismatch")
+                if payload.get("allocation_sha256") != expected_sha:
+                    failures.append("heldout_allocation_mismatch")
+                if payload.get("allocation_plan") != expected_allocation:
+                    failures.append("heldout_allocation_content_mismatch")
+                if payload.get("status") != "heldout_pending_analysis":
+                    failures.append("heldout_payload_status_mismatch")
+            except Exception as exc:
+                failures.append(f"preregistration_validation_failed:{type(exc).__name__}")
     provenance = payload.get("provenance", {})
     runtime = provenance.get("runtime_attestation", {})
     source_hashes = provenance.get("source_file_sha256", {})
@@ -54,11 +74,19 @@ def analyze(payload):
             or not provenance.get("loaded_extension_sha256")
             or not provenance.get("build_receipt_sha256")):
         failures.append("runtime_provenance_unattested")
+    if heldout and frozen:
+        for field in ("runner_sha256", "analyzer_sha256", "source_bundle_sha256",
+                      "wrapper_sha256", "loaded_extension_sha256", "build_receipt_sha256",
+                      "profile_sha256", "world_adapter_sha256", "dependency_closure_sha256"):
+            if frozen.get(field) != provenance.get(field):
+                failures.append(f"frozen_provenance_mismatch:{field}")
     allocation_plan = payload.get("allocation_plan", {})
     allocation_sha = hashlib.sha256(json.dumps(
         allocation_plan, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     if allocation_sha != payload.get("allocation_sha256"):
         failures.append("allocation_digest_mismatch")
+    if allocation_plan.get("split") != split:
+        failures.append("allocation_split_mismatch")
     if allocation_plan.get("primary") != {
             "metric": "normalized_learning_curve_auc",
             "comparison": "mapped_source_minus_fresh", "minimum_gain": 0.20}:
@@ -152,13 +180,15 @@ def analyze(payload):
             (row.get("kind"), row.get("control_id"))
             for row in allocation_plan.get("controls", [])}:
         failures.append("control_rows_do_not_match_allocation")
-    if social.get("status") != "development_only" or target.get("status") != "development_only":
+    expected_panel_status = "heldout_unanalyzed" if heldout else "development_only"
+    if (social.get("status") != expected_panel_status
+            or target.get("status") != expected_panel_status):
         failures.append("panel_status_mismatch")
 
     explanations = payload.get("explanation_rebuild", {})
     explanation_rows = explanations.get("records", [])
     expected_explanations = payload.get("allocation", {}).get("explanation_streams")
-    if (explanations.get("status") != "development_only"
+    if (explanations.get("status") != expected_panel_status
             or len(explanation_rows) != expected_explanations):
         failures.append("explanation_allocation_mismatch")
     for row in explanation_rows:
@@ -179,11 +209,27 @@ def analyze(payload):
             allocation_plan.get("explanations", [])):
         failures.append("explanation_rows_do_not_match_allocation")
 
+    effect = target.get("paired_auc_difference_mapped_minus_fresh")
+    if not isinstance(effect, (int, float)):
+        failures.append("primary_effect_missing")
+    if not heldout:
+        primary_status = "NOT_ESTIMATED"
+        evidence_class = "DEVELOPMENT_ONLY"
+    elif failures:
+        primary_status = "NOT_ESTABLISHED"
+        evidence_class = "HELDOUT_INVALID"
+    else:
+        primary_status = "PASS" if effect >= 0.20 else "FAIL"
+        evidence_class = "HELDOUT"
     return {
         "phase": "linear-p20-v1", "status": "PASS" if not failures else "FAIL",
-        "evidence_class": "DEVELOPMENT_ONLY", "primary_status": "NOT_ESTIMATED",
+        "evidence_class": evidence_class, "primary_status": primary_status,
         "provenance_status": "ATTESTED" if "runtime_provenance_unattested" not in failures
                             else "NOT_ESTABLISHED",
+        "primary": {"comparison": "mapped_source_minus_fresh",
+                    "metric": "normalized_learning_curve_auc",
+                    "observed_gain": effect, "threshold": 0.20,
+                    "status": primary_status},
         "counts": {"target_rows": len(target_rows), "social_rows": len(social_rows),
                    "explanation_rows": len(explanation_rows),
                    "controls": len(controls), "target_by_pair_arm": {
@@ -205,8 +251,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--preregistration", type=Path)
     args = parser.parse_args()
-    result = analyze(json.loads(args.input.read_text(encoding="utf-8")))
+    result = analyze(json.loads(args.input.read_text(encoding="utf-8")),
+                     preregistration=args.preregistration)
     encoded = json.dumps(result, sort_keys=True, indent=2) + "\n"
     if args.output:
         args.output.write_text(encoded, encoding="utf-8")
