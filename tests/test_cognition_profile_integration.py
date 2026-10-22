@@ -1465,6 +1465,19 @@ def test_p22_native_causal_chain_and_shared_budget():
             world_transition=lambda action: pytest.fail("guarded action reached world"))
         assert perturbed["status"] == "ABSTAIN"
         assert perturbed["reason"] == "candidate_guard_not_satisfied"
+        # A post-approval operator mutation must invalidate the native causal
+        # chain too, even when the original state guard still matches.
+        original_params = list(agent.s.node(candidate)["attrs"]["params"])
+        mutated_params = list(original_params)
+        mutated_params[0], mutated_params[1] = mutated_params[1], mutated_params[0]
+        agent.s.set_attr(candidate, "params", mutated_params)
+        operator_perturbed = execute_open_process_candidate(
+            agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: True,
+            world_transition=lambda action: pytest.fail(
+                "operator mutation reached the world transition"))
+        assert operator_perturbed["status"] == "ABSTAIN"
+        assert operator_perturbed["reason"] == "adoption_approval_binding_changed"
         budgets = [n for n in _nodes(agent, "ThinkingBudget")
                    if agent.s.node(n)["attrs"].get("enabled") == 1.0]
         assert len(budgets) == 1
