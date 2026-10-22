@@ -1,0 +1,956 @@
+{
+  "id": "representation_search",
+  "version": "1.0.0",
+  "depends_on": [
+    "thinking_budget",
+    "cognition_aperture",
+    "similarity_recall",
+    "process_lifting"
+  ],
+  "self_load_only": true,
+  "area": "representation_search",
+  "description": "P11 bounded funded representation candidate selection over complete package costs.",
+  "microtheory": {
+    "name": "representation_search",
+    "description": "Select only verified, current, development-supported proposals."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "RepresentationSearchPolicy",
+      "attrs": {
+        "name": "representation_search_policy",
+        "enabled": 0.0,
+        "max_candidates": 16.0,
+        "minimum_discriminating_rows": 3.0,
+        "probe_cost": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_representation_search_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:representation_search:has_representation_search_policy:Agent:RepresentationSearchPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_representation_search_policy",
+      "tgt": {
+        "type": "RepresentationSearchPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_representation_search_request:Agent:RepresentationSearchRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_representation_search_request",
+      "tgt": {
+        "type": "RepresentationSearchRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:funded_by_request:RepresentationSearchRequest:ThinkingBudgetRequest",
+      "src": {
+        "type": "RepresentationSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "funded_by_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_candidate_proposal:RepresentationSearchRequest:RepresentationProposal",
+      "src": {
+        "type": "RepresentationSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "has_candidate_proposal",
+      "tgt": {
+        "type": "RepresentationProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_representation_proposal:Agent:RepresentationProposal",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_representation_proposal",
+      "tgt": {
+        "type": "RepresentationProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_thinking_budget_request:Agent:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_source_frame:RepresentationProposal:ObserverFrame",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "has_source_frame",
+      "tgt": {
+        "type": "ObserverFrame",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_target_frame:RepresentationProposal:ObserverFrame",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "has_target_frame",
+      "tgt": {
+        "type": "ObserverFrame",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:invalidates_recall:RepresentationProposal:RecallRecord",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "invalidates_recall",
+      "tgt": {
+        "type": "RecallRecord",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:invalidates_transfer:RepresentationProposal:ProcessTransferCandidate",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "invalidates_transfer",
+      "tgt": {
+        "type": "ProcessTransferCandidate",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "rs_request_shared_funded_bounded_search",
+      "area": "representation_search",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_representation_search_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_representation_search_request",
+          "request"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "candidate_cap"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_candidates"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "training_only"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "fund",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "representation_search",
+            "requester_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "representation-search:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "operation_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "operation_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "probe_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_thinking_budget_request",
+          "fund",
+          {}
+        ],
+        [
+          "add_edge",
+          "fund",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "funded_by_request",
+          "fund",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "funding_pending"
+        ]
+      ]
+    },
+    {
+      "name": "rs_adopt_verified_lower_training_description",
+      "area": "representation_search",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_representation_search_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_representation_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_candidate_proposal",
+          "proposal"
+        ],
+        [
+          "request",
+          "funded_by_request",
+          "fund"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "verified_candidate"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "owner_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "owner_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "source_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "source_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "model_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "model_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "frame_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "frame_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "training_split_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "training_split_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "candidate_cap"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "candidate_cap"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "package_cost_complete"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "heldout_used_for_selection"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": false
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "forced_frame_preserved"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "discriminating_evidence"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "target_effect_verified"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "representation_search"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "search_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "operation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "operation_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_representation_proposal",
+                "any_type": false
+              },
+              "var_name": "other",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "owner_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "owner_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "verified_candidate"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "training_split_id"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "training_split_id"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "frame_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  },
+                  {
+                    "type": "Lt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "training_total_bits"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "training_total_bits"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "proposal",
+          "status",
+          "adopted"
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "adopted_frame_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "next_frame_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "transition_from_frame",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "source_frame_id"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "transition_to_frame",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "target_frame_id"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "recall_invalidated",
+          true
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "transfer_invalidated",
+          true
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,691 @@
+{
+  "id": "process_transfer",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_schema",
+    "process_lifting",
+    "representation_search"
+  ],
+  "self_load_only": true,
+  "area": "process_transfer",
+  "description": "P11 exact process transfer requires a typed bijection and fresh native target verification.",
+  "microtheory": {
+    "name": "process_transfer",
+    "description": "Candidate recall with local fallback unless exact transfer is verified."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessTransferPolicy",
+      "attrs": {
+        "name": "process_transfer_policy",
+        "enabled": 0.0,
+        "max_candidates": 16.0,
+        "fresh_target_probes": 3.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_transfer_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_transfer:has_process_transfer_policy:Agent:ProcessTransferPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_transfer_policy",
+      "tgt": {
+        "type": "ProcessTransferPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:has_process_transfer_candidate:Agent:ProcessTransferCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_transfer_candidate",
+      "tgt": {
+        "type": "ProcessTransferCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:maps_source_schema:ProcessTransferCandidate:ProcessSchema",
+      "src": {
+        "type": "ProcessTransferCandidate",
+        "var": "src"
+      },
+      "edge_type": "maps_source_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:targets_domain:ProcessTransferCandidate:ProcessDomain",
+      "src": {
+        "type": "ProcessTransferCandidate",
+        "var": "src"
+      },
+      "edge_type": "targets_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:uses_frame_map:ProcessTransferCandidate:RepresentationMap",
+      "src": {
+        "type": "ProcessTransferCandidate",
+        "var": "src"
+      },
+      "edge_type": "uses_frame_map",
+      "tgt": {
+        "type": "RepresentationMap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:has_target_verification:ProcessTransferCandidate:ProcessTransferVerification",
+      "src": {
+        "type": "ProcessTransferCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_target_verification",
+      "tgt": {
+        "type": "ProcessTransferVerification",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:funded_by_request:ProcessTransferCandidate:ThinkingBudgetRequest",
+      "src": {
+        "type": "ProcessTransferCandidate",
+        "var": "src"
+      },
+      "edge_type": "funded_by_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:has_process_schema:Agent:ProcessSchema",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pt_adopt_only_fresh_exact_target_verified_candidate",
+      "area": "process_transfer",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_transfer_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_process_transfer_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "maps_source_schema",
+          "source"
+        ],
+        [
+          "candidate",
+          "targets_domain",
+          "target"
+        ],
+        [
+          "candidate",
+          "uses_frame_map",
+          "map"
+        ],
+        [
+          "candidate",
+          "has_target_verification",
+          "verification"
+        ],
+        [
+          "candidate",
+          "funded_by_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_transfer"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "search_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "terminal_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "map_direction"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "source_to_target"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "is_bijection"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "inverse_verified"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "target_frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "target_frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "target_probe_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target"
+              },
+              "key": "probe_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "verification"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "verification"
+              },
+              "key": "verification_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "fresh_native_target_effect"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "verification"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "verification"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "verification"
+              },
+              "key": "target_probe_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target"
+              },
+              "key": "probe_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "verification"
+              },
+              "key": "composition_order"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "f_after_g_after_f_inv"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "nonconjugate"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "wrong_frame"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "complete_separating_set"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "transferred",
+          "ProcessSchema",
+          {
+            "name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "target_process_name"
+              }
+            },
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "target"
+                },
+                "key": "kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "target"
+                },
+                "key": "name"
+              }
+            },
+            "domain_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "target"
+                },
+                "key": "kind"
+              }
+            },
+            "operator": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "source"
+                },
+                "key": "operator"
+              }
+            },
+            "status": "active",
+            "provenance": "verified_process_transfer",
+            "effect_evaluation": "exact:native_target_conjugacy",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "target_frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "target"
+                },
+                "key": "probe_epoch"
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "composed_target_program"
+              }
+            },
+            "verification_receipt": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "verification"
+                },
+                "key": "receipt_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_process_schema",
+          "transferred",
+          {}
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "adopted"
+        ]
+      ]
+    }
+  ]
+}
