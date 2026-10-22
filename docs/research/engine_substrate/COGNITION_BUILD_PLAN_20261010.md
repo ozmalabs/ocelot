@@ -221,7 +221,7 @@ Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views
 
 ## Phase 7 — Qualia acquired from episodes and perceptual numerosity
 
-**Entry:** Phase 6 executable supported views and actual baseline arms. **Status:** in progress; P7.01 semantics frozen, implementation and registered evaluation remain.
+**Entry:** Phase 6 executable supported views and actual baseline arms. **Status:** evidence closeout complete with limits; P7.01/P7.04 semantics frozen, P7.02/P7.03/P7.05 implemented, P7.E1 integrated, P7.E2 preregistered, P7.E3 reported. The transfer hypothesis and real-world perceptual criteria remain NOT_ESTABLISHED.
 
 Explicitly close the developmental gap discussed in this session. Existing P4 schemas, numeric signatures and receipt-backed recall are infrastructure. Acquire distinctions and significance from episodes and preserve contradictory outcomes; do not import a table of qualia or ask fixtures to supply the target dimension name. Include the former P6.D7 task here.
 
@@ -1386,3 +1386,8 @@ Start **P7.01**, then execute the remaining tasks in their printed order. Phase 
 **P7.E1 integration record (2026-10-22):** Added `experience_signature`, `qualia_acquisition` and `numerosity` to the explicit cognition-on profile only. The three profile acceptance tests verify rule registration, default/conversation isolation, one enabled shared ThinkingBudget and disabled P7 policies. Boot measured 0.1509 s, 974 graph nodes and 546 rules; allocator memory remains unavailable. Focused profile plus P7 implementation bundle passed 49 tests. Evidence remains simulator/graph observations; no external sensor or physical receipt adapter is claimed.
 
 **P7 implementation limits before evaluation:** Aggregate magnitude is currently the product of two supplied sensor signals with first-order uncertainty bounds; no calibrated visual sensor producer has been established. The graph does not yet learn uncertainty parameters, and it does not route unresolved numerosity to a learned significance dimension. P7.E2/E3 must report these limitations and may not score synthetic aggregate inputs as real-world perception.
+
+
+**P7.E2 freeze record (2026-10-22):** `COGNITION_LINEAR_P7_PREREG.md` was committed alone as `60546572` after both runner/analyzer self-checks and seven concrete development outcomes passed. It freezes 1,760 held-out scorecard rows, disjoint seed allocations, profile/engine/source hashes, limits, scorer separation, control criteria and the explicit unsupported disposition for downstream transfer and calibrated visual perception.
+
+**P7.E3 result record (2026-10-22):** See [`COGNITION_LINEAR_P7_RESULTS.md`](COGNITION_LINEAR_P7_RESULTS.md) for all metrics and hashes. All 1,760 rows completed; episode acquisition validated 40/40 trials in each experience-built world versus 0/40 frozen-space, with zero source leaks. Exposure-only and orthogonal controls produced no candidates, and shuffled labels remained detached. Synthetic numerosity fixtures passed 200/200 small-set and 200/200 in each of four ratio bins, with zero equal-ratio scale difference. Downstream transfer and real-world perception remain NOT_ESTABLISHED, not inferred from the mechanism panel. P8 entry is authorized for source-bound observed episode learning and the acquired-axis interface only; unsupported P7 capabilities are not prerequisites for that entry.
