@@ -259,6 +259,8 @@ Explicitly close the developmental gap discussed in this session. Existing P4 sc
 - **Non-goals:** changing lexical parsing or fabricating experiences to fill absent coordinates.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P7.02 implementation record (2026-10-22):** Added generated `experience_signature` (self-load-only, depends on the existing cognition-signature projection, policy disabled by default). It projects only observed episode events with an exact owner/episode/event/action and source/model/frame-epoch matched outcome receipt. The descriptor retains a source-linked `sequence_ref` of measured features, explicit missing values, a separate live overlay, and no target-axis or outcome-class field. Unsupported modalities and mismatched receipts produce no source. Verification: `tests/test_experience_signature.py tests/test_cognition_signature_migrated.py` — 21 passed. The P7.01 acquisition tests remain skipped until P7.03 adds graph-rule acquisition; P7.02 creates signatures only and makes no qualia-acquisition claim.
+
 ### P7.03 — Grow and revise qualia dimensions from recurring residuals
 
 - **ID:** P7.03
