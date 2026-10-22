@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -629,7 +629,7 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Non-goals:** claiming unseen-size generalization from training-size enumeration.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
-**P10.02 partial implementation record (2026-10-22):** Added opt-in `process_lifting` seed rules that retain an AntiUnifyWitness family, source pair, domains, and parent-schema links only for same-kind commutator schemas from distinct domains. Family search is capped by `max_sources`; added tests for parameterized family minting, incompatible-kind rejection, and witness provenance. The native term can generalize the structural tree but does not construct a new permutation from a symbolic size or reject executable bad bindings; `test_unseen_size_verified` and `test_bad_binding_rejected` remain skipped. No unseen-size executable schema is claimed. P10.02 is not complete until a bounded native constructor and fresh-effect verification are available. Verification: 16 passed, 3 staged skips across P10.01/P10.02 and P9 regression tests.
+**P10.02 implementation record (2026-10-22):** Added opt-in `process_lifting` rules that retain an AntiUnifyWitness family and instantiate only the frozen native grammar (cycle, swap, compose, inverse, commutator). Every wildcard capture used by the grammar must equal both corresponding source sizes; malformed or mismatched captures return unknown. The graph caps family count, requires target size larger than both sources and ≤16, then fingerprints the concrete process on target-domain probes before minting a lifted ProcessSchema with witness/source provenance. Native code has an independent size cap of 256. Tests cover a size-3/5 commutator lifted to size 6, fresh target effect, altered-binding refusal, incompatible kinds, and provenance. General AST/program lifting remains unsupported. Focused verification: 18 passed, 1 staged P10.01 skip across lifting, goal-contract, and P9 suites; Rust process-algebra unit tests: 6 passed. The extension was rebuilt and provenance verified.
 
 ### P10.03 — Regress goals into targeted invention and a later thinking rung
 

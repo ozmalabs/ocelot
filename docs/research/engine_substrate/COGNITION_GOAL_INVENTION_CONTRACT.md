@@ -39,3 +39,7 @@ Every lifted schema records its witnesses, parent schema IDs, binding constraint
 - P10.04 adds task-trace strategy discovery, delayed-progress controls, odd-wall breaker use, and graph-decision-only traces.
 
 Controls include variable capture, missing bindings, out-of-range indices, mismatched dimensions, stale epochs, duplicate request/debit IDs, denied budget, unsupported effect families, cycles, held-out target leakage, and attempted Python strategy injection. No control may be converted to a passed identity or guessed solution.
+
+## 6. P10.02 native lifting subset
+
+The first executable lifted-template grammar is deliberately finite: `cycle(size,start,length)`, `swap(size,i,j)`, and recursive `compose`, `inverse`, and `commutator`. The anti-unification witness must show that every wildcard capture used for size or cycle length equals the corresponding size in every source domain. Captures that vary for another reason, missing paths, malformed trees, non-permutations, and unsupported operators return unknown. Target sizes must be strictly greater than both source sizes and no greater than the policy cap (16 in the seed); native constructors independently cap size at 256. The graph stores a lifted ProcessSchema only after the native constructor returns a concrete process and the target domain probe fingerprint evaluates. This subset does not claim lifting arbitrary programs or every process family.

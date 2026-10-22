@@ -20,7 +20,8 @@
         "enabled": 0.0,
         "max_sources": 8.0,
         "max_bindings": 64.0,
-        "unseen_size_enabled": 0.0
+        "unseen_size_enabled": 0.0,
+        "max_size": 16.0
       }
     }
   ],
@@ -72,6 +73,30 @@
         "type": "ProcessSchema",
         "var": "tgt"
       }
+    },
+    {
+      "provenance": "seed:process_lifting:has_lifted_instance:LiftedProcessFamily:ProcessSchema",
+      "src": {
+        "type": "LiftedProcessFamily",
+        "var": "src"
+      },
+      "edge_type": "has_lifted_instance",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_lifting:lifted_from_family:ProcessSchema:LiftedProcessFamily",
+      "src": {
+        "type": "ProcessSchema",
+        "var": "src"
+      },
+      "edge_type": "lifted_from_family",
+      "tgt": {
+        "type": "LiftedProcessFamily",
+        "var": "tgt"
+      }
     }
   ],
   "rules": [
@@ -96,6 +121,16 @@
           "agent",
           "has_process_schema",
           "b"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "da"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "db"
         ]
       ],
       "where": {
@@ -163,6 +198,96 @@
                 "name": "pol"
               },
               "key": "max_sources"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "a"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "da"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "db"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "da"
+              },
+              "key": "size"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "db"
+              },
+              "key": "size"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "da"
+                },
+                "key": "size"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "db"
+                },
+                "key": "size"
+              }
             }
           },
           {
@@ -426,6 +551,52 @@
                 ]
               }
             },
+            "source_sizes": {
+              "__term__": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "da"
+                    },
+                    "key": "size"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "db"
+                    },
+                    "key": "size"
+                  }
+                ]
+              }
+            },
+            "max_source_size": {
+              "__term__": {
+                "type": "Max",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "da"
+                    },
+                    "key": "size"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "db"
+                    },
+                    "key": "size"
+                  }
+                ]
+              }
+            },
             "provenance": "anti_unify_witness",
             "effect_evaluation": "unverified_template"
           }
@@ -449,6 +620,556 @@
           "f",
           "has_source_schema",
           "b",
+          {}
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "pl_instantiate_unseen_size",
+      "area": "memory_consolidation",
+      "order": 31,
+      "latency_class": "background",
+      "comment": "Instantiate only size-tracking witnesses on a larger unseen domain, then require an exact native effect fingerprint there.",
+      "match": [
+        [
+          "agent",
+          "has_process_lifting_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_lifted_process_family",
+          "f"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "unseen_size_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "witnessed_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "domain_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "kind"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "size"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "f"
+              },
+              "key": "max_source_size"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "size"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_size"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probes"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessLiftInstantiate",
+                  "witness": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "template"
+                  },
+                  "source_sizes": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "source_sizes"
+                  },
+                  "target_size": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "size"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessLiftInstantiate",
+                  "witness": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "template"
+                  },
+                  "source_sizes": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "source_sizes"
+                  },
+                  "target_size": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "size"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "identity_fingerprint"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "edge_type": "has_lifted_instance",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "domain"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "name"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": {
+              "__term__": {
+                "type": "Lit",
+                "value": "permutation"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "domain_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "lifted:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "ProcessLiftInstantiate",
+                "witness": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "f"
+                  },
+                  "key": "template"
+                },
+                "source_sizes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "f"
+                  },
+                  "key": "source_sizes"
+                },
+                "target_size": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "size"
+                }
+              }
+            },
+            "fingerprint": {
+              "__term__": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessLiftInstantiate",
+                  "witness": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "template"
+                  },
+                  "source_sizes": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "source_sizes"
+                  },
+                  "target_size": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "size"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              }
+            },
+            "support": {
+              "__term__": {
+                "type": "EffectSupport",
+                "p": {
+                  "type": "ProcessLiftInstantiate",
+                  "witness": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "template"
+                  },
+                  "source_sizes": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "f"
+                    },
+                    "key": "source_sizes"
+                  },
+                  "target_size": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "size"
+                  }
+                }
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            },
+            "provenance": "lifted_from_witness",
+            "operator": "lifted_commutator",
+            "expr_tree": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "f"
+                },
+                "key": "template"
+              }
+            },
+            "status": "active",
+            "invented": 1,
+            "fingerprint_checked": 1,
+            "dedup_checked": 1,
+            "indexed": 1,
+            "effect_evaluation": "exact:native_lift_on_target_probes",
+            "verification_receipt": "native_target_domain_fingerprint",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probe_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "d",
+          "has_held_process",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "f",
+          "has_lifted_instance",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "s",
+          "lifted_from_family",
+          "f",
           {}
         ]
       ],
