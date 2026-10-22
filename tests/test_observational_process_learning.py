@@ -15,7 +15,8 @@ def _agent():
                          "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
 
 
-def _episode(agent, *, coverage="complete", teacher=False):
+def _episode(agent, *, coverage="complete", teacher=False,
+             source_kind="witnessed_interaction"):
     s, ag = agent.s, agent.ag
     model = s.add_node("ProcessSchema", {
         "name": "held-request-repair", "kind": "sequence", "domain": "social",
@@ -28,12 +29,13 @@ def _episode(agent, *, coverage="complete", teacher=False):
         "status": "active", "source_epoch": 4, "model_epoch": 7, "frame_epoch": 9})
     s.add_edge(ag, "has_process_schema", repair, {})
     attrs = {"episode_id": "observed-peer-1", "status": "observed",
-             "source_kind": "witnessed_interaction", "observation_status": coverage,
+             "source_kind": source_kind, "observation_status": coverage,
              "interaction_kind": "request_repair", "owner_id": "learner",
              "actor_id": "peer", "source_epoch": 4, "model_epoch": 7,
              "frame_epoch": 9,
-             "request_action": "request", "repair_action": "repair",
-             "action_sequence": ["seq", ["request", "repair"]]}
+             "request_action": "request", "repair_action": "repair"}
+    if source_kind != "reward_only":
+        attrs["action_sequence"] = ["seq", ["request", "repair"]]
     if teacher:
         attrs["teacher_id"] = "teacher"
     episode = s.add_node("SocialEpisode", attrs)
@@ -75,6 +77,7 @@ def test_incidental_interaction_teaches_multistep_process_without_teacher_flag()
     sequence_attrs = agent.s.node(sequence_candidates[0])["attrs"]
     assert sequence_attrs["action_sequence"] == ["seq", ["request", "repair"]]
     assert sequence_attrs["status"] == "unverified_candidate"
+    assert sequence_attrs["source_kind"] == "witnessed_interaction"
     assert sequence_attrs["source_ast_included"] is False
 
 
@@ -156,3 +159,27 @@ def test_denied_sequence_step_stops_before_world_action():
     assert world.state == "requested"
     assert len(world.receipts) == 1
     assert len(agent.native.neighbours(candidate, "has_own_trial_receipt")) == 1
+
+
+def test_demonstration_and_parsed_instruction_share_bounded_sequence_consumer():
+    for source_kind in ("demonstration", "parsed_instruction"):
+        agent = _agent()
+        _episode(agent, source_kind=source_kind)
+        _tick(agent)
+        candidates = agent.s.nodes("ObservedProcessSequenceCandidate")
+        assert len(candidates) == 1
+        attrs = agent.s.node(candidates[0])["attrs"]
+        assert attrs["source_kind"] == source_kind
+        assert attrs["action_sequence"] == ["seq", ["request", "repair"]]
+
+
+def test_reward_only_arm_abstains_without_inventing_action_sequence():
+    agent = _agent()
+    _episode(agent, source_kind="reward_only")
+    _tick(agent)
+    assert not agent.s.nodes("ObservedProcessSequenceCandidate")
+    results = agent.s.nodes("ObservedSequenceInferenceResult")
+    assert len(results) == 1
+    attrs = agent.s.node(results[0])["attrs"]
+    assert attrs["status"] == "abstained_underidentified"
+    assert attrs["reason"] == "reward_has_no_action_sequence"

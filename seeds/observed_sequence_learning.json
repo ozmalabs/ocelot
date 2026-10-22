@@ -85,6 +85,18 @@
       }
     },
     {
+      "provenance": "seed:observed_sequence_learning:has_observed_sequence_result:Agent:ObservedSequenceInferenceResult",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_observed_sequence_result",
+      "tgt": {
+        "type": "ObservedSequenceInferenceResult",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:observed_sequence_learning:from_social_episode:ObservedProcessSequenceCandidate:SocialEpisode",
       "src": {
         "type": "ObservedProcessSequenceCandidate",
@@ -290,19 +302,54 @@
             }
           },
           {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "episode"
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "key": "source_kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "witnessed_interaction"
+                }
               },
-              "key": "source_kind"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "witnessed_interaction"
-            }
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "key": "source_kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "demonstration"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "key": "source_kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "parsed_instruction"
+                }
+              }
+            ]
           },
           {
             "type": "Eq",
@@ -804,7 +851,17 @@
               }
             },
             "status": "unverified_candidate",
-            "provenance": "ordered_incidental_action_observations",
+            "source_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "episode"
+                },
+                "key": "source_kind"
+              }
+            },
+            "provenance": "ordered_social_action_sequence",
             "source_ast_included": false,
             "teacher_marker_used": false,
             "actor_outcome_is_own_trial": false
@@ -836,6 +893,253 @@
           "candidate",
           "uses_second_primitive",
           "second",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "osl_abstain_reward_only_without_action_sequence",
+      "area": "observed_sequence_learning",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_observed_sequence_learning_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_social_episode",
+          "episode"
+        ],
+        [
+          "ag",
+          "has_thinking_budget_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "episode"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "episode"
+              },
+              "key": "source_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "reward_only"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "episode"
+              },
+              "key": "observation_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "complete"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed_sequence_learning"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "episode"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "episode"
+              },
+              "key": "action_sequence"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_observed_sequence_result",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "episode_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "episode"
+                  },
+                  "key": "episode_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "result",
+          "ObservedSequenceInferenceResult",
+          {
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "episode"
+                },
+                "key": "episode_id"
+              }
+            },
+            "status": "abstained_underidentified",
+            "evidence_kind": "reward_only",
+            "candidate_count": 0.0,
+            "reason": "reward_has_no_action_sequence"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_observed_sequence_result",
+          "result",
           {}
         ],
         [

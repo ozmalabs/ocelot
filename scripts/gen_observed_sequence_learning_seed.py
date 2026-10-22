@@ -16,6 +16,7 @@ def A(n, k): return {"type": "Attr", "node": V(n), "key": k}
 def T(v): return {"__term__": v}
 def Eq(a, b): return {"type": "Eq", "a": a, "b": b}
 def And(*xs): return {"type": "And", "items": list(xs)}
+def Or(*xs): return {"type": "Or", "items": list(xs)}
 def Not(x): return {"type": "Not", "arg": x}
 def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
 def Count(src): return {"type": "Count", "source": src}
@@ -34,6 +35,7 @@ def build_seed():
         ("Agent", "has_social_episode", "SocialEpisode"),
         ("Agent", "has_process_schema", "ProcessSchema"),
         ("Agent", "has_observed_sequence_candidate", "ObservedProcessSequenceCandidate"),
+        ("Agent", "has_observed_sequence_result", "ObservedSequenceInferenceResult"),
         ("ObservedProcessSequenceCandidate", "from_social_episode", "SocialEpisode"),
         ("ObservedProcessSequenceCandidate", "uses_first_primitive", "ProcessSchema"),
         ("ObservedProcessSequenceCandidate", "uses_second_primitive", "ProcessSchema"),
@@ -60,7 +62,9 @@ def build_seed():
         "where": And(
             Eq(A("pol", "enabled"), L(1.0)),
             Eq(A("episode", "status"), L("observed")),
-            Eq(A("episode", "source_kind"), L("witnessed_interaction")),
+            Or(Eq(A("episode", "source_kind"), L("witnessed_interaction")),
+               Eq(A("episode", "source_kind"), L("demonstration")),
+               Eq(A("episode", "source_kind"), L("parsed_instruction"))),
             Eq(A("episode", "observation_status"), L("complete")),
             Not(Eq(A("episode", "actor_id"), A("episode", "owner_id"))),
             Eq(Count(Nth(A("episode", "action_sequence"), 1)), L(2)),
@@ -97,13 +101,45 @@ def build_seed():
                 "step_count": 2.0,
                 "action_sequence": T(A("episode", "action_sequence")),
                 "status": "unverified_candidate",
-                "provenance": "ordered_incidental_action_observations",
+                "source_kind": T(A("episode", "source_kind")),
+                "provenance": "ordered_social_action_sequence",
                 "source_ast_included": False, "teacher_marker_used": False,
                 "actor_outcome_is_own_trial": False}],
             ["add_edge", "ag", "has_observed_sequence_candidate", "candidate", {}],
             ["add_edge", "candidate", "from_social_episode", "episode", {}],
             ["add_edge", "candidate", "uses_first_primitive", "first", {}],
             ["add_edge", "candidate", "uses_second_primitive", "second", {}],
+            ["set_attr", "request", "terminal_status", "completed"],
+        ],
+    }
+    abstain_reward_only = {
+        "name": "osl_abstain_reward_only_without_action_sequence",
+        "area": AREA, "order": 1, "latency_class": "hard_realtime", "batch": False,
+        "match": [
+            ["ag", "has_observed_sequence_learning_policy", "pol"],
+            ["ag", "has_social_episode", "episode"],
+            ["ag", "has_thinking_budget_request", "request"],
+            ["request", "draws_on_thinking_budget", "budget"],
+        ],
+        "where": And(
+            Eq(A("pol", "enabled"), L(1.0)),
+            Eq(A("episode", "status"), L("observed")),
+            Eq(A("episode", "source_kind"), L("reward_only")),
+            Eq(A("episode", "observation_status"), L("complete")),
+            Eq(A("request", "requester_kind"), L("observed_sequence_learning")),
+            Eq(A("request", "episode_id"), A("episode", "episode_id")),
+            Eq(A("request", "status"), L("approved")),
+            Not(Eq(A("request", "debited_epoch"), L(None))),
+            Eq(A("episode", "action_sequence"), L(None)),
+            Not(Exists(N("ag", "has_observed_sequence_result"), "old",
+                       Eq(A("old", "episode_id"), A("episode", "episode_id")))),
+        ),
+        "effects": [
+            ["add_node", "result", "ObservedSequenceInferenceResult", {
+                "episode_id": T(A("episode", "episode_id")),
+                "status": "abstained_underidentified", "evidence_kind": "reward_only",
+                "candidate_count": 0.0, "reason": "reward_has_no_action_sequence"}],
+            ["add_edge", "ag", "has_observed_sequence_result", "result", {}],
             ["set_attr", "request", "terminal_status", "completed"],
         ],
     }
@@ -156,7 +192,7 @@ def build_seed():
                          "src": {"type": src, "var": "src"},
                          "edge_type": edge, "tgt": {"type": tgt, "var": "tgt"}}
                         for src, edge, tgt in relations],
-        "rules": [rule, promote],
+        "rules": [rule, abstain_reward_only, promote],
     }
 
 
