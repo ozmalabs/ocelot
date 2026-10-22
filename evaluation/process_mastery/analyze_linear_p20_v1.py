@@ -7,9 +7,12 @@ until the frozen analyzer implementation is added with the preregistration.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from collections import Counter
 from pathlib import Path
+
+from evaluation.process_mastery.linear_p20_v1 import PROVENANCE_FILES, ROOT
 
 TARGET_ARMS = {"fresh", "mapped_source", "mismatched_source"}
 SOCIAL_ARMS = {"observation", "demonstration", "instruction", "reward_only"}
@@ -22,6 +25,44 @@ def analyze(payload):
         failures.append("phase_mismatch")
     if payload.get("split") != "development" or payload.get("heldout_accessed") is not False:
         failures.append("non_development_or_holdout_access")
+    provenance = payload.get("provenance", {})
+    runtime = provenance.get("runtime_attestation", {})
+    source_hashes = provenance.get("source_file_sha256", {})
+    current_source = hashlib.sha256()
+    source_match = set(source_hashes) == set(PROVENANCE_FILES)
+    if source_match:
+        for relative in PROVENANCE_FILES:
+            path = ROOT / relative
+            if not path.is_file():
+                source_match = False
+                break
+            data = path.read_bytes()
+            if hashlib.sha256(data).hexdigest() != source_hashes.get(relative):
+                source_match = False
+            current_source.update(relative.encode() + b"\0" + data + b"\0")
+    if (runtime.get("status") != "ATTESTED"
+            or runtime.get("native_symbols_bound") is not True
+            or runtime.get("build_sources_match") is not True
+            or runtime.get("wrapper_sha256") != provenance.get("wrapper_sha256")
+            or runtime.get("loaded_extension_sha256")
+            != provenance.get("loaded_extension_sha256")
+            or runtime.get("build_receipt_sha256") != provenance.get("build_receipt_sha256")
+            or not provenance.get("source_bundle_sha256")
+            or not source_match
+            or current_source.hexdigest() != provenance.get("source_bundle_sha256")
+            or not provenance.get("wrapper_sha256")
+            or not provenance.get("loaded_extension_sha256")
+            or not provenance.get("build_receipt_sha256")):
+        failures.append("runtime_provenance_unattested")
+    allocation_plan = payload.get("allocation_plan", {})
+    allocation_sha = hashlib.sha256(json.dumps(
+        allocation_plan, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    if allocation_sha != payload.get("allocation_sha256"):
+        failures.append("allocation_digest_mismatch")
+    if allocation_plan.get("primary") != {
+            "metric": "normalized_learning_curve_auc",
+            "comparison": "mapped_source_minus_fresh", "minimum_gain": 0.20}:
+        failures.append("primary_criterion_mismatch")
     target = payload.get("target_learning", {})
     expected_pairs = set(target.get("domain_pairs", []))
     streams_per_pair = payload.get("allocation", {}).get("target_streams_per_pair")
@@ -49,6 +90,15 @@ def analyze(payload):
         for arm in TARGET_ARMS:
             if target_counts[(pair, arm)] != streams_per_pair:
                 failures.append(f"target_allocation_mismatch:{pair}:{arm}")
+    planned_target_keys = {(row.get("domain_pair"), row.get("stream_id"), arm)
+                           for row in allocation_plan.get("target", [])
+                           for arm in row.get("arms", [])}
+    observed_target_keys = {(next((name for name in expected_pairs
+                                   if name in row.get("stream_id", "")), None),
+                             row.get("stream_id"), row.get("arm"))
+                            for row in target_rows}
+    if observed_target_keys != planned_target_keys:
+        failures.append("target_rows_do_not_match_allocation")
     if set(target.get("curves", {})) != TARGET_ARMS:
         failures.append("target_curve_arm_mismatch")
     if set(target.get("normalized_auc", {})) != TARGET_ARMS:
@@ -81,6 +131,10 @@ def analyze(payload):
     for arm in SOCIAL_ARMS:
         if social_counts[arm] != social_per_arm:
             failures.append(f"social_allocation_mismatch:{arm}")
+    planned_social = {(row.get("arm"), row.get("stream_id"))
+                      for row in allocation_plan.get("social", [])}
+    if {(row.get("arm"), row.get("stream_id")) for row in social_rows} != planned_social:
+        failures.append("social_rows_do_not_match_allocation")
 
     controls = payload.get("structural_controls", [])
     control_per_kind = payload.get("allocation", {}).get("social_controls_per_kind")
@@ -94,6 +148,10 @@ def analyze(payload):
         if (row.get("status") != "PASS" or row.get("state_unchanged") is not True
                 or row.get("false_candidate_count") != 0):
             failures.append(f"control_failure:{row.get('kind')}:{row.get('control_id')}")
+    if {(row.get("kind"), row.get("control_id")) for row in controls} != {
+            (row.get("kind"), row.get("control_id"))
+            for row in allocation_plan.get("controls", [])}:
+        failures.append("control_rows_do_not_match_allocation")
     if social.get("status") != "development_only" or target.get("status") != "development_only":
         failures.append("panel_status_mismatch")
 
@@ -117,10 +175,15 @@ def analyze(payload):
                 or row.get("source_graph_bytes", 0) <= 0
                 or row.get("receiver_graph_bytes", 0) <= 0):
             failures.append(f"explanation_failure:{row.get('trial_id')}")
+    if {row.get("trial_id") for row in explanation_rows} != set(
+            allocation_plan.get("explanations", [])):
+        failures.append("explanation_rows_do_not_match_allocation")
 
     return {
         "phase": "linear-p20-v1", "status": "PASS" if not failures else "FAIL",
         "evidence_class": "DEVELOPMENT_ONLY", "primary_status": "NOT_ESTIMATED",
+        "provenance_status": "ATTESTED" if "runtime_provenance_unattested" not in failures
+                            else "NOT_ESTABLISHED",
         "counts": {"target_rows": len(target_rows), "social_rows": len(social_rows),
                    "explanation_rows": len(explanation_rows),
                    "controls": len(controls), "target_by_pair_arm": {
@@ -133,6 +196,7 @@ def analyze(payload):
         "target_learning": {"normalized_auc": target.get("normalized_auc"),
                             "paired_auc_difference_mapped_minus_fresh":
                                 target.get("paired_auc_difference_mapped_minus_fresh")},
+        "registered_development_criterion": allocation_plan.get("primary"),
         "failures": failures,
     }
 

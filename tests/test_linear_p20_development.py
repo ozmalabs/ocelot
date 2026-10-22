@@ -11,6 +11,9 @@ def test_development_runner_includes_target_social_and_structural_panels():
                  social_streams_per_arm=1, social_controls_per_kind=1)
     assert result["status"] == "development_only"
     assert result["heldout_accessed"] is False
+    assert result["provenance"]["runtime_attestation"]["status"] == "ATTESTED"
+    assert result["allocation_sha256"]
+    assert result["allocation_plan"]["primary"]["minimum_gain"] == 0.20
     assert result["target_learning"]["domain_pairs"] == [
         "heat_to_thermal", "lever_to_latch"]
     assert {row["arm"] for row in result["target_learning"]["records"]} == {
@@ -40,8 +43,10 @@ def test_development_analyzer_rejects_missing_arm_and_false_control():
     changed["social_acquisition"]["records"].pop()
     changed["structural_controls"][0]["false_candidate_count"] = 1
     changed["explanation_rebuild"]["records"][0]["fidelity_match"] = False
+    changed["provenance"]["runtime_attestation"]["status"] = "MISMATCH"
     rejected = analyze(changed)
     assert rejected["status"] == "FAIL"
     assert any("social_allocation_mismatch" in item for item in rejected["failures"])
     assert any("control_failure" in item for item in rejected["failures"])
     assert any("explanation_failure" in item for item in rejected["failures"])
+    assert "runtime_provenance_unattested" in rejected["failures"]

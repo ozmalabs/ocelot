@@ -7,10 +7,17 @@ P20 preregistration. This runner currently exposes only development checks.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import platform
 import subprocess
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+for _path in (ROOT, ROOT / "runners/dsl/python"):
+    if str(_path) not in sys.path:
+        sys.path.insert(0, str(_path))
 
 from evaluation.process_mastery.social_sequence_development import (
     run_development_controls, run_development_panel as run_social_panel,
@@ -21,17 +28,118 @@ from evaluation.process_mastery.explanation_development import (
 from evaluation.process_mastery.target_learning_curve import (
     run_development_panel as run_target_panel,
 )
+from evaluation.process_mastery.runtime_attestation import attest
+import substrate_rs
 
 PHASE = "linear-p20-v1"
+TARGET_ARMS = ("fresh", "mapped_source", "mismatched_source")
+SOCIAL_ARMS = ("observation", "demonstration", "instruction", "reward_only")
+CONTROL_KINDS = ("wrong_frame", "missing_step", "body_mismatch", "false_description")
+PROVENANCE_FILES = (
+    "evaluation/process_mastery/linear_p20_v1.py",
+    "evaluation/process_mastery/analyze_linear_p20_v1.py",
+    "evaluation/process_mastery/target_learning_curve.py",
+    "evaluation/process_mastery/target_learner.py",
+    "evaluation/process_mastery/target_learning_worlds.py",
+    "evaluation/process_mastery/social_sequence_development.py",
+    "evaluation/process_mastery/observed_sequence_inputs.py",
+    "evaluation/process_mastery/observed_sequence_execution.py",
+    "evaluation/process_mastery/explanation_development.py",
+    "evaluation/process_mastery/explanation_rebuild.py",
+    "evaluation/process_mastery/harness.py",
+    "evaluation/process_mastery/runtime_attestation.py",
+    "domains/language_world.py", "domains/language_production.py",
+    "domains/process_explanation_language.py", "scripts/language_test.py",
+    "substrate/boot_profiles.py", "seeds/cognition_on_params.json",
+    "scripts/gen_target_learning_seed.py", "seeds/target_learning.json",
+    "scripts/gen_observed_sequence_learning_seed.py", "seeds/observed_sequence_learning.json",
+    "scripts/gen_process_explanation_seed.py", "seeds/process_explanation.json",
+    "docs/research/engine_substrate/COGNITION_LEARNING_TRANSFER_CONTRACT.md",
+    "runners/dsl/python/substrate_rs/__init__.py",
+    "runners/dsl/python/substrate_rs/_native.build.json",
+    "runners/dsl/Cargo.toml", "runners/dsl/pyproject.toml", "runners/dsl/uv.lock",
+    "runners/dsl/src/process_algebra.rs", "runners/dsl/src/term.rs",
+    "runners/dsl/src/cognitive_cycle.rs",
+)
 
 
 def _commit():
-    root = Path(__file__).resolve().parents[2]
     try:
-        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root,
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT,
                                        text=True).strip()
     except Exception:
         return "unavailable"
+
+
+def _bundle(paths, hashes):
+    items = [(path, hashes[path]) for path in paths]
+    return hashlib.sha256(json.dumps(items, sort_keys=True,
+                                     separators=(",", ":")).encode()).hexdigest()
+
+
+def _provenance():
+    hashes = {}
+    source = hashlib.sha256()
+    for relative in PROVENANCE_FILES:
+        data = (ROOT / relative).read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        hashes[relative] = digest
+        source.update(relative.encode() + b"\0" + data + b"\0")
+    package_dir = Path(substrate_rs.__file__).resolve().parent
+    extension = Path(substrate_rs._native.__file__).resolve()
+    receipt = package_dir / "_native.build.json"
+    profile_paths = ("substrate/boot_profiles.py", "seeds/cognition_on_params.json")
+    world_paths = ("evaluation/process_mastery/target_learning_worlds.py",
+                   "evaluation/process_mastery/social_sequence_development.py",
+                   "evaluation/process_mastery/explanation_development.py",
+                   "domains/language_world.py", "domains/language_production.py",
+                   "domains/process_explanation_language.py")
+    dependency_paths = ("runners/dsl/Cargo.toml", "runners/dsl/pyproject.toml",
+                        "runners/dsl/uv.lock",
+                        "runners/dsl/python/substrate_rs/_native.build.json")
+    return {
+        "git_commit": _commit(), "python": sys.version.split()[0],
+        "runner_sha256": hashes["evaluation/process_mastery/linear_p20_v1.py"],
+        "analyzer_sha256": hashes["evaluation/process_mastery/analyze_linear_p20_v1.py"],
+        "source_bundle_sha256": source.hexdigest(), "source_file_sha256": hashes,
+        "wrapper_path": str(Path(substrate_rs.__file__).resolve()),
+        "wrapper_sha256": hashes["runners/dsl/python/substrate_rs/__init__.py"],
+        "loaded_extension_path": str(extension),
+        "loaded_extension_sha256": hashlib.sha256(extension.read_bytes()).hexdigest(),
+        "build_receipt_path": str(receipt),
+        "build_receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
+        "runtime_attestation": attest(package=substrate_rs, build_receipt=receipt,
+                                      require_clean=True),
+        "profile_sha256": _bundle(profile_paths, hashes),
+        "world_adapter_sha256": _bundle(world_paths, hashes),
+        "dependency_closure_sha256": _bundle(dependency_paths, hashes),
+    }
+
+
+def allocation(split, *, target_streams_per_pair=4, social_streams_per_arm=2,
+               social_controls_per_kind=1, explanation_streams=2):
+    """Enumerate development rows. Held-out allocations require a future freeze."""
+    if split != "development":
+        raise RuntimeError("held-out P20 allocation has not been preregistered")
+    pairs = ("heat_to_thermal", "lever_to_latch")
+    return {
+        "split": "development",
+        "target": [{"domain_pair": pair, "stream_id": f"dev:{pair}:{index:04d}",
+                    "arms": list(TARGET_ARMS)}
+                   for pair in pairs for index in range(target_streams_per_pair)],
+        "social": [{"stream_id": f"dev:{arm}:{index:04d}", "arm": arm}
+                   for arm in SOCIAL_ARMS for index in range(social_streams_per_arm)],
+        "controls": [{"control_id": f"dev-control:{kind}:{index:04d}", "kind": kind}
+                     for kind in CONTROL_KINDS for index in range(social_controls_per_kind)],
+        "explanations": [f"dev:explanation:{index:04d}"
+                         for index in range(explanation_streams)],
+        "primary": {"metric": "normalized_learning_curve_auc",
+                    "comparison": "mapped_source_minus_fresh",
+                    "minimum_gain": 0.20},
+        "secondary_interaction_rule": {"enabled": False,
+                                       "minimum_reduction": 0.25,
+                                       "maximum_success_loss": 0.02},
+    }
 
 
 def run_development(*, target_streams_per_pair=4, social_streams_per_arm=2,
@@ -41,10 +149,21 @@ def run_development(*, target_streams_per_pair=4, social_streams_per_arm=2,
     social = run_social_panel(streams_per_arm=social_streams_per_arm)
     controls = run_development_controls(per_kind=social_controls_per_kind)
     explanations = run_explanation_panel(streams=explanation_streams)
+    provenance = _provenance()
+    allocation_plan = allocation(
+        "development", target_streams_per_pair=target_streams_per_pair,
+        social_streams_per_arm=social_streams_per_arm,
+        social_controls_per_kind=social_controls_per_kind,
+        explanation_streams=explanation_streams)
+    allocation_sha = hashlib.sha256(json.dumps(
+        allocation_plan, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
     return {
         "phase": PHASE, "split": "development", "status": "development_only",
         "heldout_accessed": False, "development_commit": _commit(),
         "python": platform.python_version(),
+        "provenance": provenance,
+        "allocation_plan": allocation_plan,
+        "allocation_sha256": allocation_sha,
         "allocation": {
             "target_streams_per_pair": target_streams_per_pair,
             "target_domain_pairs": target["domain_pairs"],
@@ -53,6 +172,9 @@ def run_development(*, target_streams_per_pair=4, social_streams_per_arm=2,
             "social_controls_per_kind": social_controls_per_kind,
             "social_control_count": len(controls),
             "explanation_streams": explanation_streams,
+            "primary_metric": "normalized_learning_curve_auc",
+            "primary_comparison": "mapped_source_minus_fresh",
+            "primary_minimum_gain": 0.20,
         },
         "target_learning": target,
         "social_acquisition": social,
