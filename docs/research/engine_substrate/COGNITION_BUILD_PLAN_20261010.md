@@ -2157,6 +2157,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 **P22 resource-accounting update (2026-10-23):** Each immutable checkpoint now binds parent-linked cumulative primitive work and a digest-verified read-only native graph snapshot. The snapshot records enabled shared ThinkingBudget capacity, remaining and spent values; all node and status counts; search attempts and requests; proposals, qualifications, approval events, world receipts, solve and curriculum tasks, budget denials; and canonical serialized graph bytes. Failed, pending and timed-out statuses remain recorded. Common-world comparisons report whether all recorded dimensions match. This still does not establish training-data exposure, native rule-step or model-call totals, allocator memory or wall-time accounting. Serialized graph bytes measure graph readback size only. Two resource-accounting tests and the P22 regression bundle (103 tests) pass; no P22 held-out evaluation has run.
 
+**P22.01 contract reconciliation (2026-10-23):** The written arm specification now matches P22.03's required four-arm design: unchanged, adaptive-only, invention-only and full. Adaptive-only uses the native curriculum selector with the ancestor portfolio frozen; invention-only uses a frozen nonadaptive task schedule with native proposal/verification/promotion enabled; full enables both. This resolves the prior three-versus-four-arm protocol inconsistency before any E2 freeze. These conditions are specified but their end-to-end learner adapters are still unimplemented.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1
