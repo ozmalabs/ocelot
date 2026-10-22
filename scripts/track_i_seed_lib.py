@@ -232,6 +232,10 @@ def PRepairVerify(p, fresh_states, goals):
             "fresh_states": fresh_states, "goals": goals}
 
 
+def PAntiUnifyWitness(values, wild="·?·"):
+    return {"type": "AntiUnifyWitness", "values": values, "wild": wild}
+
+
 def PDistribution(outcomes):
     return {"type": "ProcessDistribution", "outcomes": outcomes}
 

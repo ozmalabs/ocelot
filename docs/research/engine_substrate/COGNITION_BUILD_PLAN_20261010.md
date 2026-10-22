@@ -629,6 +629,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Non-goals:** claiming unseen-size generalization from training-size enumeration.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P10.02 partial implementation record (2026-10-22):** Added opt-in `process_lifting` seed rules that retain an AntiUnifyWitness family, source pair, domains, and parent-schema links only for same-kind commutator schemas from distinct domains. Added tests for parameterized family minting, incompatible-kind rejection, and witness provenance. The native term can generalize the structural tree but does not construct a new permutation from a symbolic size; `test_unseen_size_verified` remains skipped and no unseen-size executable schema is claimed. P10.02 is not complete until a bounded native constructor and fresh-effect verification are available. Verification: 16 passed, 2 staged skips across P10.01/P10.02 and P9 regression tests.
+
 ### P10.03 — Regress goals into targeted invention and a later thinking rung
 
 - **ID:** P10.03
