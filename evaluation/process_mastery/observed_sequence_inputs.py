@@ -30,8 +30,8 @@ def _add_episode(agent, *, episode_id, source_kind, action_sequence,
     request = agent.s.add_node("ThinkingBudgetRequest", {
         "requester_kind": "observed_sequence_learning", "episode_id": episode_id,
         "source_key": f"sequence:{episode_id}", "source_epoch": source_epoch,
-        "operation_id": f"observe-sequence:{episode_id}", "status": "approved",
-        "debited_epoch": 10.0, "cost": 1.0,
+        "operation_id": f"observe-sequence:{episode_id}", "status": "pending",
+        "cost": 1.0,
     })
     agent.s.add_edge(agent.ag, "has_thinking_budget_request", request, {})
     agent.s.add_edge(request, "draws_on_thinking_budget",

@@ -50,12 +50,19 @@ def _candidate(agent):
 
 def test_observation_adapter_requires_actual_ordered_world_receipts():
     agent = _agent()
+    budget = agent.s.node(agent.s.nodes("ThinkingBudget")[0])["attrs"]["remaining"]
     witnessed_episode(agent, episode_id="witness", receipts=_receipts("witness-world"))
     attrs = _candidate(agent)
     assert attrs["source_kind"] == "witnessed_interaction"
     assert attrs["action_sequence"] == ["seq", ["request", "repair"]]
     assert attrs["actor_outcome_is_own_trial"] is False
     assert len(agent.s.nodes("ObservedInteractionTrace")) == 1
+    request = next(node for node in agent.s.nodes("ThinkingBudgetRequest")
+                   if agent.s.node(node)["attrs"].get("requester_kind")
+                   == "observed_sequence_learning")
+    assert agent.s.node(request)["attrs"]["status"] == "approved"
+    assert agent.s.node(request)["attrs"].get("debited_epoch") is not None
+    assert agent.s.node(agent.s.nodes("ThinkingBudget")[0])["attrs"]["remaining"] < budget
 
 
 def test_demonstration_adapter_keeps_the_other_actor_and_receipt_ids():
