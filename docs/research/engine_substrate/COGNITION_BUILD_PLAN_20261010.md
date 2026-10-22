@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** planned.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -611,6 +611,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_track_i_foundation.py -q -p no:cacheprovider`.
 - **Non-goals:** lifting equal-looking syntax without verified effect conditions.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P10.01 semantic freeze (2026-10-22):** `COGNITION_GOAL_INVENTION_CONTRACT.md` defines positional witness bindings, symbolic size/index constraints, domain/epoch-scoped goal identity, typed ProcessGap/interface states, native postcondition checks, depth/expansion/budget bounds, provenance and Python strategy/answer exclusion. AntiUnifyWitness/Substitute reconstruction, unseen valid/invalid size constraints, and the no-authored-strategy input boundary pass. `test_goal_gap_mints_interface` remains explicitly staged for P10.03's policy producer. Verification: 7 passed, 1 staged skip (`tests/test_goal_invention.py tests/test_track_i_foundation.py`).
 
 ### P10.02 — Lift process families and verify unseen instances
 
