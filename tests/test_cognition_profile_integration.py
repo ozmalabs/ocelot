@@ -550,6 +550,100 @@ def test_p14_shared_budget():
     agent.close()
 
 
+def test_p15_profile_chain():
+    p15 = {"process_portfolio", "process_curriculum", "recursive_process_improvement"}
+    boot_started = time.perf_counter()
+    agent = boot_cognition_on()
+    boot_seconds = time.perf_counter() - boot_started
+    graph_before = agent.inner.graph_to_dict()
+    nodes_before = len(graph_before["nodes"])
+    bytes_before = len(json.dumps(graph_before, sort_keys=True).encode("utf-8"))
+    exported = {rule["name"] for rule in agent.inner.export_rules()}
+    for sid in p15:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for ptype in ("ProcessPortfolioPolicy", "ProcessCurriculumPolicy",
+                  "RecursiveProcessImprovementPolicy"):
+        policy = _nodes(agent, ptype)
+        assert len(policy) == 1
+        assert agent.s.node(policy[0])["attrs"].get("enabled") == 0.0
+
+    # Turn on only curriculum for this profile-native event. Its task must be
+    # created from the observed training transition through native rules.
+    policy = _nodes(agent, "ProcessCurriculumPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    hyp = agent.s.add_node("ProcessInductionHypothesis", {
+        "owner_id": "agent-root", "action_kind": "press", "object_type": "switch",
+        "feature_key": "light", "before_value": "off", "after_value": "on",
+        "source_epoch": 3, "model_epoch": 2, "frame_epoch": 5,
+        "status": "disputed", "counterexample_count": 1,
+    })
+    ce = agent.s.add_node("ProcessCounterexample", {
+        "event_id": "p15-profile-event", "status": "observed",
+    })
+    obs = agent.s.add_node("TransitionObservation", {
+        "owner_id": "agent-root", "event_id": "p15-profile-event",
+        "action_kind": "press", "object_type": "switch", "feature_key": "light",
+        "before_value": "off", "after_value": "on", "split": "training",
+        "source_epoch": 3, "model_epoch": 2, "frame_epoch": 5,
+    })
+    _edge(agent, agent.agent, "has_process_induction_hypothesis", hyp)
+    _edge(agent, hyp, "has_counterexample", ce)
+    _edge(agent, ce, "counterexample_transition", obs)
+    budget = next(n for n in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    before = agent.s.node(budget)["attrs"]["remaining"]
+    _p4_tick(agent)
+    evidence = _nodes(agent, "ProcessCurriculumEvidence")
+    tasks = _nodes(agent, "ProcessCurriculumTask")
+    assert len(evidence) == len(tasks) == 1
+    assert agent.s.node(tasks[0])["attrs"]["split"] == "training"
+    assert agent.s.node(tasks[0])["attrs"]["answer_fields_absent"] is True
+    assert agent.s.node(budget)["attrs"]["remaining"] == before - 1.0
+    fund = agent.inner.neighbours(evidence[0], "funded_by")[0]
+    assert agent.s.node(fund)["attrs"]["requester_kind"] == "process_curriculum"
+    assert agent.s.node(fund)["attrs"]["status"] == "approved"
+    assert agent.inner.neighbours(tasks[0], "from_evidence") == evidence
+    graph_after = agent.inner.graph_to_dict()
+    nodes_after = len(graph_after["nodes"])
+    bytes_after = len(json.dumps(graph_after, sort_keys=True).encode("utf-8"))
+    assert 0 < boot_seconds < 10
+    assert nodes_after > nodes_before and bytes_after > bytes_before
+    agent.close()
+
+
+def test_p15_default_isolation():
+    p15 = {"process_portfolio", "process_curriculum", "recursive_process_improvement"}
+    p15_rules = {item["name"] for sid in p15 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p15.isdisjoint(installed_seeds(default.s))
+    assert p15.isdisjoint(installed_seeds(conversation.s))
+    assert p15_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p15_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p15_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    for ptype, edge in (("ProcessPortfolioPolicy", "has_process_portfolio_policy"),
+                        ("ProcessCurriculumPolicy", "has_process_curriculum_policy"),
+                        ("RecursiveProcessImprovementPolicy", "has_recursive_improvement_policy")):
+        policy = _nodes(agent, ptype)[0]
+        assert agent.s.node(policy)["attrs"]["enabled"] == 0.0
+        assert policy in agent.inner.neighbours(agent.agent, edge)
+    agent.close()
+
+
 def test_p12_profile_chain():
     p12 = {"imitation", "social_process", "process_explanation"}
     agent = boot_cognition_on()

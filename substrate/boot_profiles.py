@@ -821,6 +821,11 @@ COGNITION_ON_SEEDS = (
     "process_laws",
     "process_proof_adoption",
     "invention_operator_authorship",
+    # P15 deterministic portfolio scheduling, verified self-curriculum and
+    # the approval/budget-gated recursive operator generation lifecycle.
+    "process_portfolio",
+    "process_curriculum",
+    "recursive_process_improvement",
     # P10 goal-directed invention and exact-context strategy replay remain
     # policy-disabled until an explicit cognition-on evaluation enables them.
     "process_lifting",
