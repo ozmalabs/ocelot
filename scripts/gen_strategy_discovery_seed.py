@@ -28,7 +28,9 @@ def build():
         ("DiscoveredStrategy", "about_domain", "ProcessDomain"),
         ("DiscoveredStrategy", "witnessed_by_task", "SolveTask"),
         ("SolveTask", "has_open_process_world_receipt", "OpenProcessWorldReceipt"),
+        ("SolveTask", "uses_approved_open_process_candidate", "OpenProcessCandidate"),
         ("DiscoveredStrategy", "witnessed_by_world_receipt", "OpenProcessWorldReceipt"),
+        ("DiscoveredStrategy", "learned_from_open_process_candidate", "OpenProcessCandidate"),
         ("SolveTask", "executes_discovered_strategy", "DiscoveredStrategy"),
     ]
     record = rule(
@@ -126,11 +128,15 @@ def build():
         "Retain a strategy only when a solved graph trace is linked to an exact verified native-process world receipt.",
         [["agent", "has_strategy_discovery_policy", "pol"],
          ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"],
-         ["t", "has_open_process_world_receipt", "receipt"]],
+         ["t", "has_open_process_world_receipt", "receipt"],
+         ["t", "uses_approved_open_process_candidate", "candidate"]],
         And(policy_on(), Eq(A("t", "status"), L("solved")),
             Not(Eq(A("t", "trace"), L([]))),
             Eq(A("receipt", "status"), L("verified")),
             Eq(A("receipt", "observed_state"), A("t", "state")),
+            Eq(A("receipt", "candidate_id"), V("candidate")),
+            Eq(A("receipt", "expression_digest"), A("candidate", "expression_digest")),
+            Eq(A("candidate", "status"), L("adopted_candidate")),
             Lt(Count(N("agent", "has_discovered_strategy")), A("pol", "max_records")),
             Not(Eq(A("t", "strategy_recorded"), L(1)))),
         [["add_node", "s", "DiscoveredStrategy", {
@@ -138,6 +144,12 @@ def build():
             "trace": T(A("t", "trace")), "step_count": T(A("t", "steps")),
             "initial_state": T(A("t", "initial_state")), "goal_state": T(A("t", "goal")),
             "object_count": T(A("t", "object_count")),
+            "strategy_kind": "verified_process_subgoal",
+            "expression_tree": T(A("candidate", "expression_tree")),
+            "expression_digest": T(A("candidate", "expression_digest")),
+            "guard_state": T(A("candidate", "guard_state")),
+            "subgoal_state": T(A("candidate", "subgoal_state")),
+            "work_cost": T(A("candidate", "work_cost")),
             "source": "native_world_receipt", "status": "verified",
             "witnessed_effect": "solved_goal_with_world_receipt",
             "source_epoch": T(A("d", "source_epoch")),
@@ -149,6 +161,7 @@ def build():
          ["add_edge", "s", "about_domain", "d", {}],
          ["add_edge", "s", "witnessed_by_task", "t", {}],
          ["add_edge", "s", "witnessed_by_world_receipt", "receipt", {}],
+         ["add_edge", "s", "learned_from_open_process_candidate", "candidate", {}],
          ["set_attr", "t", "strategy_recorded", 1]], batch=False)
     return {
         "id": SEED_ID, "version": "1.0.0", "depends_on": ["process_solving"],

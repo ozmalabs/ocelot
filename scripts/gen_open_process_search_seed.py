@@ -11,9 +11,9 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (  # noqa: E402
-    A, And, Count, Eq, Exists, Gt, IfThenElse, L, Lt, N, Not, OFFLINE_AREA,
+    A, And, Argmin, Count, Eq, Exists, Gt, IfThenElse, L, Lt, N, Not, OFFLINE_AREA,
     ONLINE_AREA, PApply, PCompose, PFingerprint, PInverse, PPower, Plus, T, Times,
-    StringConcat, Vec, is_none, not_none, policy_on, productions, rule,
+    StringConcat, V, Vec, is_none, not_none, policy_on, productions, rule,
 )
 
 SEED_ID = "open_process_search"
@@ -83,7 +83,11 @@ def _expression_rule(operator, order):
             "frame_epoch": T(A("d", "frame_epoch")),
             "work_cost": T(work), "status": T(IfThenElse(is_none(params), L("unknown"),
                 IfThenElse(is_none(applied), L("unknown"),
-                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))) }],
+                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))),
+            "rank_score": T(IfThenElse(is_none(params), Plus(L(2000000.0), work),
+                IfThenElse(is_none(applied), Plus(L(2000000.0), work),
+                    IfThenElse(Eq(applied, A("task", "goal")), work,
+                        Plus(L(1000000.0), work)))))}],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}]] + parent_effects,
@@ -93,6 +97,8 @@ def _expression_rule(operator, order):
         "Retain an exact candidate only when its native effect reaches the observed goal; preserve expression, guard, subgoal and source witnesses.",
         [["agent", "has_open_process_search_policy", "pol"],
          ["agent", "has_open_process_search_attempt", "attempt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "has_search_attempt", "attempt"],
          ["attempt", "about_task", "task"], ["task", "about_domain", "d"]],
         And(policy_on(), Eq(A("attempt", "operator_kind"), L(operator)),
             Eq(A("attempt", "status"), L("verified")),
@@ -100,6 +106,8 @@ def _expression_rule(operator, order):
             Eq(A("attempt", "source_epoch"), A("d", "source_epoch")),
             Eq(A("attempt", "model_epoch"), A("d", "model_epoch")),
             Eq(A("attempt", "frame_epoch"), A("d", "frame_epoch")),
+            Eq(V("attempt"), Argmin(N("request", "has_search_attempt"),
+                                    "best", A("best", "rank_score"))),
             Lt(Count(N("agent", "has_open_process_candidate")), A("pol", "max_candidates")),
             Not(Exists(N("agent", "has_open_process_candidate"), "old",
                        Eq(A("old", "expression_key"), A("attempt", "expression_key"))))),

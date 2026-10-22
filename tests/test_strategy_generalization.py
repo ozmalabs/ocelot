@@ -15,7 +15,7 @@ def _tick(agent, count=16):
         agent.s.tick(4000)
 
 
-def test_new_binding_uses_discovered_strategy():
+def _new_binding_transfer():
     agent = _agent()
     domain = agent.add_domain("lift", "permutation", [[0, 1, 2]], {
         "turn": [1, 2, 0]})
@@ -39,7 +39,15 @@ def test_new_binding_uses_discovered_strategy():
     assert agent.attrs(agent.s.neighbours(task, "executes_discovered_strategy")[0])["source"] == "observed_graph_trace"
 
 
-def test_lift_rejects_different_object_count_and_stale_constraints():
+def test_new_binding_uses_discovered_strategy():
+    _new_binding_transfer()
+
+
+def test_strategy_not_exact_trace_lookup():
+    _new_binding_transfer()
+
+
+def test_failed_constraint_not_replayed():
     agent = _agent()
     domain = agent.add_domain("lift", "permutation", [[0, 1, 2]], {
         "turn": [1, 2, 0]})

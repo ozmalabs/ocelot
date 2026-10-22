@@ -34,7 +34,7 @@ def _tick(agent):
         agent.s.tick(4000)
 
 
-def test_candidate_name_does_not_choose_recipe_and_new_effect_drives_search():
+def test_new_candidate_executed_not_host_rebuilt():
     agent, _ = _agent()
     left, right = [1, 0, 2, 3], [0, 2, 1, 3]
     goal = _apply(agent, _compose(agent, left, right), [0, 1, 2, 3])
@@ -58,6 +58,7 @@ def test_candidate_name_does_not_choose_recipe_and_new_effect_drives_search():
     attempt = agent.native.neighbours(candidates[0], "derived_from_attempt")[0]
     assert agent.attrs(attempt)["predicted_state"] == goal
     assert agent.attrs(attempt)["status"] == "verified"
+    assert agent.attrs(attempt)["rank_score"] == agent.attrs(attempt)["work_cost"]
 
 
 def test_renaming_parents_does_not_change_expression_choice():
@@ -73,6 +74,35 @@ def test_renaming_parents_does_not_change_expression_choice():
     assert results[0] == results[1]
 
 
+def test_candidate_name_does_not_choose_recipe():
+    agent, _ = _agent()
+    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
+    goal = _apply(agent, _compose(agent, left, right), [0, 1, 2, 3])
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
+                                candidate_name="power3_candidate")
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = agent.nodes("OpenProcessCandidate")
+    assert any(agent.attrs(candidate)["expression_tree"][2][2][0] == "compose"
+               and agent.attrs(candidate)["params"] == _compose(agent, left, right)
+               for candidate in candidates)
+
+
+def test_unseen_operator_expression_generated():
+    agent, _ = _agent(held={"turn": [1, 2, 3, 0]})
+    initial = [0, 1, 2, 3]
+    inverse = agent.native.evaluate(
+        {"type": "ProcessInverse", "a": {"type": "Var", "name": "p"}},
+        {"p": [1, 2, 3, 0]})
+    goal = _apply(agent, inverse, initial)
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = [agent.attrs(node) for node in agent.nodes("OpenProcessCandidate")]
+    assert any(attrs["expression_tree"][2][0] == "inverse"
+               and attrs["params"] == inverse for attrs in candidates)
+
+
 def test_changed_goal_changes_candidate_set():
     agent, _ = _agent()
     task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
@@ -85,7 +115,7 @@ def test_changed_goal_changes_candidate_set():
     assert all(agent.attrs(n)["goal_state"] == [3, 2, 1, 0] for n in attempts)
 
 
-def test_invalid_composition_is_unknown_and_not_promoted():
+def test_invalid_composition_unknown():
     agent, _ = _agent(held={"short": [1, 0, 2], "long": [1, 0, 2, 3]})
     task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
     agent.s.set_attr(task, "status", "stuck")
@@ -93,11 +123,13 @@ def test_invalid_composition_is_unknown_and_not_promoted():
     attempts = agent.nodes("OpenProcessSearchAttempt")
     assert attempts
     assert any(agent.attrs(n)["status"] == "unknown" for n in attempts)
+    assert all(agent.attrs(n)["rank_score"] >= 2_000_000 for n in attempts
+               if agent.attrs(n)["status"] == "unknown")
     assert not [n for n in agent.nodes("OpenProcessCandidate")
                 if agent.attrs(n)["status"] == "promoted"]
 
 
-def test_proposal_budget_counts_failed_and_residual_attempts():
+def test_proposal_budget_includes_failures():
     agent, _ = _agent(attempts=1)
     task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
     agent.s.set_attr(task, "status", "stuck")

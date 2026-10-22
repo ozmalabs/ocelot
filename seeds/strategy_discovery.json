@@ -121,6 +121,18 @@
       }
     },
     {
+      "provenance": "seed:strategy_discovery:uses_approved_open_process_candidate:SolveTask:OpenProcessCandidate",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "uses_approved_open_process_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:strategy_discovery:witnessed_by_world_receipt:DiscoveredStrategy:OpenProcessWorldReceipt",
       "src": {
         "type": "DiscoveredStrategy",
@@ -129,6 +141,18 @@
       "edge_type": "witnessed_by_world_receipt",
       "tgt": {
         "type": "OpenProcessWorldReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_discovery:learned_from_open_process_candidate:DiscoveredStrategy:OpenProcessCandidate",
+      "src": {
+        "type": "DiscoveredStrategy",
+        "var": "src"
+      },
+      "edge_type": "learned_from_open_process_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
         "var": "tgt"
       }
     },
@@ -1147,6 +1171,11 @@
           "t",
           "has_open_process_world_receipt",
           "receipt"
+        ],
+        [
+          "t",
+          "uses_approved_open_process_candidate",
+          "candidate"
         ]
       ],
       "where": {
@@ -1232,6 +1261,55 @@
                 "name": "t"
               },
               "key": "state"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Var",
+              "name": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "expression_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "expression_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "adopted_candidate"
             }
           },
           {
@@ -1353,6 +1431,57 @@
                 "key": "object_count"
               }
             },
+            "strategy_kind": "verified_process_subgoal",
+            "expression_tree": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "expression_tree"
+              }
+            },
+            "expression_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "expression_digest"
+              }
+            },
+            "guard_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "guard_state"
+              }
+            },
+            "subgoal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "subgoal_state"
+              }
+            },
+            "work_cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "work_cost"
+              }
+            },
             "source": "native_world_receipt",
             "status": "verified",
             "witnessed_effect": "solved_goal_with_world_receipt",
@@ -1424,6 +1553,13 @@
           "s",
           "witnessed_by_world_receipt",
           "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "s",
+          "learned_from_open_process_candidate",
+          "candidate",
           {}
         ],
         [

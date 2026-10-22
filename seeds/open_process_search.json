@@ -1232,6 +1232,232 @@
                   }
                 }
               }
+            },
+            "rank_score": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "b"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2000000.0
+                    },
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "b"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "b"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 2000000.0
+                      },
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "b"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "b"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "b"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    },
+                    "other": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        },
+                        {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "cost"
+                            },
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "b"
+                              },
+                              "key": "cost"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -1288,6 +1514,16 @@
         [
           "agent",
           "has_open_process_search_attempt",
+          "attempt"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_search_attempt",
           "attempt"
         ],
         [
@@ -1423,6 +1659,34 @@
                 "name": "d"
               },
               "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "attempt"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              },
+              "var_name": "best",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "best"
+                },
+                "key": "rank_score"
+              }
             }
           },
           {
@@ -2141,6 +2405,156 @@
                   }
                 }
               }
+            },
+            "rank_score": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessInverse",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2000000.0
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "cost"
+                    }
+                  ]
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessInverse",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 2000000.0
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "cost"
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessInverse",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "cost"
+                    },
+                    "other": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -2190,6 +2604,16 @@
         [
           "agent",
           "has_open_process_search_attempt",
+          "attempt"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_search_attempt",
           "attempt"
         ],
         [
@@ -2325,6 +2749,34 @@
                 "name": "d"
               },
               "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "attempt"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              },
+              "var_name": "best",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "best"
+                },
+                "key": "rank_score"
+              }
             }
           },
           {
@@ -3104,6 +3556,216 @@
                   }
                 }
               }
+            },
+            "rank_score": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2000000.0
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 2.0
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 2000000.0
+                      },
+                      {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 2.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 2.0
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    },
+                    "other": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        },
+                        {
+                          "type": "Times",
+                          "items": [
+                            {
+                              "type": "Lit",
+                              "value": 2.0
+                            },
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "cost"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -3153,6 +3815,16 @@
         [
           "agent",
           "has_open_process_search_attempt",
+          "attempt"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_search_attempt",
           "attempt"
         ],
         [
@@ -3288,6 +3960,34 @@
                 "name": "d"
               },
               "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "attempt"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              },
+              "var_name": "best",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "best"
+                },
+                "key": "rank_score"
+              }
             }
           },
           {
@@ -4133,6 +4833,249 @@
                   }
                 }
               }
+            },
+            "rank_score": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "ProcessCompose",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2000000.0
+                    },
+                    {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 3.0
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 2000000.0
+                      },
+                      {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 3.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Times",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 3.0
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    },
+                    "other": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        },
+                        {
+                          "type": "Times",
+                          "items": [
+                            {
+                              "type": "Lit",
+                              "value": 3.0
+                            },
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "cost"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
             }
           }
         ],
@@ -4182,6 +5125,16 @@
         [
           "agent",
           "has_open_process_search_attempt",
+          "attempt"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_search_attempt",
           "attempt"
         ],
         [
@@ -4317,6 +5270,34 @@
                 "name": "d"
               },
               "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "attempt"
+            },
+            "b": {
+              "type": "Argmin",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              },
+              "var_name": "best",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "best"
+                },
+                "key": "rank_score"
+              }
             }
           },
           {
