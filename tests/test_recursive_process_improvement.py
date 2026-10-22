@@ -63,7 +63,7 @@ def test_generation_has_complete_ancestry():
     assert agent.s.node(child)["attrs"]["status"] == "pending_approval"
     assert agent.s.neighbours(child, "parent_generation")
     assert agent.s.neighbours(child, "generation_candidate") == [candidate]
-    assert agent.s.node(child)["attrs"]["budget_remaining"] == 100000.0
+    assert agent.s.node(child)["attrs"]["budget_remaining"] == 99988.0
     _approve(agent, candidate)
     assert agent.s.node(child)["attrs"]["status"] == "active"
     assert len(agent.s.neighbours(child, "generation_operator")) == 1
@@ -78,6 +78,20 @@ def test_no_human_authored_operator_in_claimed_generation():
     assert agent.s.node(candidate)["attrs"]["authoring"] == "native_graph_rule"
     assert agent.s.node(child)["attrs"]["human_authored_operator_count"] == 0.0
     assert agent.s.node(child)["attrs"]["autonomy_claim"] == "valid"
+
+
+def test_next_candidate_waits_for_its_own_approval():
+    agent = _agent(budget=300000.0)
+    candidate = _qualify(agent)
+    _approve(agent, candidate)
+    successor = next(n for n in agent.s.nodes()
+                     if agent.s.node(n)["type"] == "CandidateOperator"
+                     and agent.s.node(n)["attrs"].get("name") == "commutator_cube_v2")
+    assert agent.s.node(successor)["attrs"]["authoring"] == "native_graph_rule"
+    assert agent.s.node(successor)["attrs"]["status"] == "draft"
+    assert not agent.nodes("InventionOperator", name="commutator_cube_v2")
+    assert len([n for n in agent.nodes("OperatorPromotionApproval")
+                if agent.s.node(n)["attrs"].get("candidate_name") == "commutator_square_v1"]) == 1
 
 
 def test_failed_generation_not_promoted():

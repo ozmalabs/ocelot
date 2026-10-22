@@ -21,6 +21,7 @@ def Gt(a, b): return {"type": "Gt", "a": a, "b": b}
 def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
 def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
 def Count(src): return {"type": "Count", "source": src}
+def Minus(a, b): return {"type": "Minus", "a": a, "b": b}
 def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
 def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
 def T(x): return {"__term__": x}
@@ -51,6 +52,7 @@ def build():
     }}, {"local_id": 1, "type": "RecursiveProcessGeneration", "attrs": {
         "generation_id": "generation-0", "generation_index": 0.0,
         "operator_digest": "held:commutator", "status": "frozen_ancestor",
+        "active_operator": "commutator",
         "arm": "frozen_ancestor", "human_authored_operator_count": 0.0,
         "budget_initial": 100000.0, "budget_remaining": 100000.0,
         "cumulative_work": 0.0, "autonomy_claim": "valid",
@@ -97,18 +99,21 @@ def build():
             Eq(A("c", "criteria_digest"), A("pol", "frozen_criteria_digest")),
             Eq(A("request", "status"), L("approved")),
             Eq(A("request", "source_key"), A("c", "name")),
-            Eq(A("g", "status"), L("frozen_ancestor")),
-            Lt(Count(N("agent", "has_process_generation")), A("pol", "max_generations")),
+            Or(Eq(A("g", "status"), L("frozen_ancestor")),
+               Eq(A("g", "status"), L("active"))),
+            Eq(A("c", "parent_operator_name"), A("g", "active_operator")),
+            Lt(A("g", "generation_index"), A("pol", "max_generations")),
             Not(Exists(N("agent", "has_process_generation"), "old",
                 Eq(A("old", "candidate_name"), A("c", "name"))))),
         "effects": [
             ["add_node", "child", "RecursiveProcessGeneration", {
                 "generation_id": T(Concat(L("generation:"), A("c", "name"))),
-                "generation_index": 1.0, "candidate_name": T(A("c", "name")),
+                "generation_index": T({"type": "Plus", "items": [A("g", "generation_index"), L(1.0)]}),
+                "candidate_name": T(A("c", "name")),
                 "operator_digest": T(A("c", "name")), "status": "pending_approval",
                 "arm": "full_system", "human_authored_operator_count": 0.0,
                 "budget_initial": T(A("request", "cost")),
-                "budget_remaining": T(A("request", "cost")),
+                "budget_remaining": T(Minus(A("request", "cost"), A("c", "candidate_work"))),
                 "cumulative_work": T(A("c", "candidate_work")),
                 "autonomy_claim": "valid", "criteria_digest": T(A("c", "criteria_digest")),
             }],
@@ -133,6 +138,37 @@ def build():
         "effects": [["add_edge", "g", "generation_operator", "op", {}],
                     ["set_attr", "g", "status", "active"],
                     ["set_attr", "g", "active_operator", T(A("op", "name"))]]})
+
+    def successor_rule(name, parent_name, child_name, order):
+        return {"name": f"rpi_propose_{child_name}", "area": AREA,
+            "order": order, "latency_class": "background", "batch": False,
+            "comment": "Propose a graph-authored successor operator from the active generation; it cannot activate without its own explicit approval.",
+            "match": [policy, generation],
+            "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                Eq(A("g", "status"), L("active")),
+                Eq(A("g", "active_operator"), L(parent_name)),
+                Lt(A("g", "generation_index"), A("pol", "max_generations")),
+                Not(Exists(N("agent", "has_candidate_operator"), "old",
+                           Eq(A("old", "name"), L(child_name))))),
+            "effects": [
+                ["add_node", "c", "CandidateOperator", {
+                    "name": child_name, "status": "draft", "grammar": "held_algebra_v1",
+                    "operator": "compose", "authoring": "native_graph_rule",
+                    "parent_operator_name": parent_name, "expression_node_cap": 7,
+                    "resource_cap": 32, "criteria_digest": "pmb-v1-frozen-criteria",
+                    "lineage": f"{parent_name} -> compose({parent_name},commutator)"}],
+                ["add_edge", "agent", "has_candidate_operator", "c", {}],
+                ["add_node", "root", "OperatorExpression", {"kind": "operator", "operator": "compose"}],
+                ["add_node", "left", "OperatorExpression", {"kind": "operator_reference", "name": parent_name}],
+                ["add_node", "right", "OperatorExpression", {"kind": "operator_reference", "name": "commutator"}],
+                ["add_edge", "c", "has_expression_root", "root", {}],
+                ["add_edge", "root", "expr_child", "left", {"slot": 0}],
+                ["add_edge", "root", "expr_child", "right", {"slot": 1}],
+            ]}
+    seed["rules"].append(successor_rule("v1_to_v2", "commutator_square_v1",
+                                        "commutator_cube_v2", 26))
+    seed["rules"].append(successor_rule("v2_to_v3", "commutator_cube_v2",
+                                        "commutator_fourth_v3", 27))
     seed["rules"].append({"name": "rpi_suspend_operator_without_funded_generation", "area": AREA,
         "order": 36, "latency_class": "hard_realtime", "batch": False,
         "comment": "An operator cannot remain active if its generation could not reserve the shared work ceiling.",

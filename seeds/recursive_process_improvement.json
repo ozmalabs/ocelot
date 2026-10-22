@@ -28,6 +28,7 @@
         "generation_index": 0.0,
         "operator_digest": "held:commutator",
         "status": "frozen_ancestor",
+        "active_operator": "commutator",
         "arm": "frozen_ancestor",
         "human_authored_operator_count": 0.0,
         "budget_initial": 100000.0,
@@ -1605,33 +1606,68 @@
             }
           },
           {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "frozen_ancestor"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              }
+            ]
+          },
+          {
             "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "parent_operator_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "active_operator"
+            }
+          },
+          {
+            "type": "Lt",
             "a": {
               "type": "Attr",
               "node": {
                 "type": "Var",
                 "name": "g"
               },
-              "key": "status"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "frozen_ancestor"
-            }
-          },
-          {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "agent"
-                },
-                "edge_type": "has_process_generation",
-                "any_type": false
-              }
+              "key": "generation_index"
             },
             "b": {
               "type": "Attr",
@@ -1704,7 +1740,25 @@
                 ]
               }
             },
-            "generation_index": 1.0,
+            "generation_index": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "generation_index"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
             "candidate_name": {
               "__term__": {
                 "type": "Attr",
@@ -1740,12 +1794,23 @@
             },
             "budget_remaining": {
               "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "cost"
                 },
-                "key": "cost"
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "candidate_work"
+                }
               }
             },
             "cumulative_work": {
@@ -1957,6 +2022,402 @@
               },
               "key": "name"
             }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "rpi_propose_commutator_cube_v2",
+      "area": "memory_consolidation",
+      "order": 26,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Propose a graph-authored successor operator from the active generation; it cannot activate without its own explicit approval.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "active_operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_square_v1"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "generation_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_generations"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_candidate_operator",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "name"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "commutator_cube_v2"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "c",
+          "CandidateOperator",
+          {
+            "name": "commutator_cube_v2",
+            "status": "draft",
+            "grammar": "held_algebra_v1",
+            "operator": "compose",
+            "authoring": "native_graph_rule",
+            "parent_operator_name": "commutator_square_v1",
+            "expression_node_cap": 7,
+            "resource_cap": 32,
+            "criteria_digest": "pmb-v1-frozen-criteria",
+            "lineage": "commutator_square_v1 -> compose(commutator_square_v1,commutator)"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_candidate_operator",
+          "c",
+          {}
+        ],
+        [
+          "add_node",
+          "root",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "compose"
+          }
+        ],
+        [
+          "add_node",
+          "left",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator_square_v1"
+          }
+        ],
+        [
+          "add_node",
+          "right",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator"
+          }
+        ],
+        [
+          "add_edge",
+          "c",
+          "has_expression_root",
+          "root",
+          {}
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "left",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "right",
+          {
+            "slot": 1
+          }
+        ]
+      ]
+    },
+    {
+      "name": "rpi_propose_commutator_fourth_v3",
+      "area": "memory_consolidation",
+      "order": 27,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Propose a graph-authored successor operator from the active generation; it cannot activate without its own explicit approval.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "active_operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_cube_v2"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "generation_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_generations"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_candidate_operator",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "name"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "commutator_fourth_v3"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "c",
+          "CandidateOperator",
+          {
+            "name": "commutator_fourth_v3",
+            "status": "draft",
+            "grammar": "held_algebra_v1",
+            "operator": "compose",
+            "authoring": "native_graph_rule",
+            "parent_operator_name": "commutator_cube_v2",
+            "expression_node_cap": 7,
+            "resource_cap": 32,
+            "criteria_digest": "pmb-v1-frozen-criteria",
+            "lineage": "commutator_cube_v2 -> compose(commutator_cube_v2,commutator)"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_candidate_operator",
+          "c",
+          {}
+        ],
+        [
+          "add_node",
+          "root",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "compose"
+          }
+        ],
+        [
+          "add_node",
+          "left",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator_cube_v2"
+          }
+        ],
+        [
+          "add_node",
+          "right",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator"
+          }
+        ],
+        [
+          "add_edge",
+          "c",
+          "has_expression_root",
+          "root",
+          {}
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "left",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "right",
+          {
+            "slot": 1
           }
         ]
       ]
