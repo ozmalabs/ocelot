@@ -25,7 +25,8 @@ def test_p22_arm_switches_one_native_policy_closure_and_shared_budget(
         assert configured["budget_remaining"] == 32.0
         expected = {
             "ProcessCurriculumPolicy": curriculum,
-            "CurriculumLearningBridgePolicy": curriculum,
+            "IndependentImprovementCurriculumBridgePolicy": curriculum,
+            "CurriculumLearningBridgePolicy": False,
             "OpenProcessSearchPolicy": invention,
             "IndependentImprovementPolicy": invention,
             "OpenProcessAdoptionPolicy": invention,

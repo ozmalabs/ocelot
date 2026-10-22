@@ -4,6 +4,7 @@ from pathlib import Path
 
 from evaluation.process_mastery.native_process_execution import attest_open_process_candidate
 from evaluation.process_mastery.native_process_execution import execute_open_process_candidate
+from evaluation.process_mastery.native_process_execution import params_digest
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointWorldAdapter, capture_adopted_checkpoint,
     capture_held_process_checkpoint,
@@ -12,6 +13,8 @@ from evaluation.process_mastery.independent_worlds import (
     generate_d4_world, generate_loopover_world,
 )
 from substrate.seed_loader import manifest_for
+from substrate.boot_profiles import boot_cognition_on
+from evaluation.process_mastery.p22_arms import configure_p22_arm
 from tests.test_open_process_search import _agent as _p19_agent, _apply, _compose
 from tests.test_open_process_adoption import (
     _agent as _adoption_agent, _approve, _candidate as _adoption_candidate, _tick,
@@ -289,6 +292,75 @@ def test_no_holdout_in_proposal():
     for _ in range(8):
         agent.s.tick(4000)
     assert not agent.nodes("IndependentImprovementProposal")
+
+
+def test_native_curriculum_releases_training_task_to_same_process_search_graph():
+    agent = boot_cognition_on()
+    try:
+        configure_p22_arm(agent, "full", budget_capacity=64.0)
+        domain_name = "p22-curriculum-bridge"
+        domain = agent.s.add_node("ProcessDomain", {
+            "name": domain_name, "kind": "permutation", "domain_kind": "permutation",
+            "object_count": 4.0, "probes": [[0, 1, 2, 3]],
+            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+            "probe_epoch": 0})
+        agent.s.add_edge(agent.agent, "has_process_domain", domain, {})
+        held = {"rot90": [3, 0, 1, 2], "flip_r": [2, 1, 0, 3]}
+        for name, params in held.items():
+            schema = agent.s.add_node("ProcessSchema", {
+                "name": name, "kind": "permutation", "domain_kind": "permutation",
+                "domain": domain_name, "params": params,
+                "source_digest": params_digest(params), "cost": 1.0,
+                "status": "active", "provenance": "world_affordance",
+                "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0})
+            agent.s.add_edge(agent.agent, "has_process_schema", schema, {})
+            agent.s.add_edge(domain, "has_held_process", schema, {})
+
+        target = agent.inner.evaluate({"type": "ProcessCompose",
+            "a": {"type": "Var", "name": "a"},
+            "b": {"type": "Var", "name": "b"}},
+            {"a": held["rot90"], "b": held["flip_r"]})
+        goal = agent.inner.evaluate({"type": "ProcessApply",
+            "p": {"type": "Var", "name": "p"},
+            "state": {"type": "Var", "name": "state"}},
+            {"p": target, "state": [0, 1, 2, 3]})
+        evidence = agent.s.add_node("ProcessCurriculumEvidence", {
+            "evidence_key": "p22:training:bridge:0001",
+            "source_kind": "registered_training_pool", "source_id": "p22:train:0001",
+            "task_kind": "process_composition", "action_kind": "apply",
+            "object_type": "Permutation", "feature_key": "permutation",
+            "before_value": [0, 1, 2, 3], "domain": domain_name,
+            "initial_state": [0, 1, 2, 3], "goal": goal,
+            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+            "status": "eligible", "split": "training",
+            "expected_outcome": "unknown", "sealed_labels_present": False,
+            "fixed_rank": 0.0, "random_rank": 0.0})
+        agent.s.add_edge(agent.agent, "has_process_curriculum_evidence", evidence, {})
+
+        for _ in range(64):
+            if agent.inner.run_rules(20_000) == 0:
+                break
+        curriculum_tasks = agent.s.nodes("ProcessCurriculumTask")
+        assert len(curriculum_tasks) == 1
+        curriculum_attrs = agent.s.node(curriculum_tasks[0])["attrs"]
+        assert curriculum_attrs["status"] == "delivered_to_native_search"
+        assert curriculum_attrs["split"] == "training"
+        solve_tasks = [node for node in agent.s.nodes("SolveTask")
+                       if agent.s.node(node)["attrs"].get("task_key") ==
+                       curriculum_attrs["task_key"]]
+        assert len(solve_tasks) == 1
+        solve_attrs = agent.s.node(solve_tasks[0])["attrs"]
+        assert solve_attrs["status"] == "stuck"
+        assert solve_attrs["split"] == "training"
+        assert solve_attrs["initial_state"] == [0, 1, 2, 3]
+        assert solve_attrs["goal"] == goal
+        assert agent.inner.neighbours(solve_tasks[0], "about_domain") == [domain]
+        assert any(agent.s.node(attempt)["attrs"].get("status") == "verified"
+                   for attempt in agent.s.nodes("OpenProcessSearchAttempt"))
+        assert agent.s.nodes("OpenProcessAdoptionApproval") == []
+        assert agent.s.nodes("OpenProcessWorldReceipt") == []
+    finally:
+        agent.close()
 
 
 def test_new_approval_exact_expression():

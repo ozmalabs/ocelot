@@ -12,10 +12,12 @@ _ARM_SWITCHES = {
 }
 
 _POLICY_GROUPS = {
-    "curriculum": ("ProcessCurriculumPolicy", "CurriculumLearningBridgePolicy"),
+    "curriculum": ("ProcessCurriculumPolicy",
+                   "IndependentImprovementCurriculumBridgePolicy"),
     "invention": ("OpenProcessSearchPolicy", "IndependentImprovementPolicy",
                   "OpenProcessAdoptionPolicy"),
 }
+_P21_ONLY_POLICIES = ("CurriculumLearningBridgePolicy",)
 
 
 def configure_p22_arm(agent, arm: str, *, budget_capacity: float) -> dict:
@@ -49,6 +51,13 @@ def configure_p22_arm(agent, arm: str, *, budget_capacity: float) -> dict:
             if group == "curriculum" and enabled:
                 store.set_attr(nodes[0], "selector_mode", "residual")
             policy_state[kind] = {"node_id": str(nodes[0]), "enabled": bool(enabled)}
+
+    for kind in _P21_ONLY_POLICIES:
+        nodes = store.nodes(kind)
+        if len(nodes) != 1:
+            raise RuntimeError(f"P22 profile must contain exactly one {kind}")
+        store.set_attr(nodes[0], "enabled", 0.0)
+        policy_state[kind] = {"node_id": str(nodes[0]), "enabled": False}
 
     budgets = list(native.neighbours(root, "has_thinking_budget"))
     enabled_budgets = [node for node in budgets

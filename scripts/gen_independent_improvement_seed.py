@@ -27,8 +27,18 @@ def build():
         "required_split": "training", "criteria_digest": "p22-independent-improvement-v1"}})
     base["edges"].append({"src": {"role": "agent_root"},
         "type": "has_independent_improvement_policy", "tgt": {"local": local_id}, "attrs": {}})
+    local_id += 1
+    base["nodes"].append({"local_id": local_id,
+        "type": "IndependentImprovementCurriculumBridgePolicy", "attrs": {
+            "name": "p22_curriculum_search_bridge", "enabled": 0.0,
+            "required_split": "training"}})
+    base["edges"].append({"src": {"role": "agent_root"},
+        "type": "has_independent_improvement_curriculum_bridge_policy",
+        "tgt": {"local": local_id}, "attrs": {}})
     rels = [
         ("Agent", "has_independent_improvement_policy", "IndependentImprovementPolicy"),
+        ("Agent", "has_independent_improvement_curriculum_bridge_policy",
+         "IndependentImprovementCurriculumBridgePolicy"),
         ("Agent", "has_independent_improvement_proposal", "IndependentImprovementProposal"),
         ("Agent", "has_independent_improvement_qualification", "IndependentImprovementQualification"),
         ("Agent", "has_open_process_search_request", "OpenProcessSearchRequest"),
@@ -44,6 +54,42 @@ def build():
         "src": {"type": src, "var": "src"}, "edge_type": edge,
         "tgt": {"type": dst, "var": "tgt"}} for src, edge, dst in rels]
     policy = ["agent", "has_independent_improvement_policy", "policy"]
+    # The native P21 curriculum selector can dispatch an answer-free selected
+    # task into the same graph's P19 learner. The world adapter supplies the
+    # training task pool as ProcessCurriculumEvidence; native rules select and
+    # release one task, and this rule constructs only its graph-side SolveTask.
+    bridge = ["agent", "has_independent_improvement_curriculum_bridge_policy", "bridge"]
+    base["rules"].append({"name": "iicb_release_selected_training_task_to_search",
+        "area": "memory_consolidation", "order": 10,
+        "latency_class": "background", "batch": False,
+        "comment": "Release only the native-selected training curriculum task to the same graph's open-process learner.",
+        "match": [bridge,
+            ["agent", "has_process_curriculum_policy", "curriculum_policy"],
+            ["agent", "has_process_curriculum_task", "curriculum_task"],
+            ["curriculum_task", "from_evidence", "evidence"],
+            ["agent", "has_process_domain", "domain"]],
+        "where": And(policy_on("bridge"), policy_on("curriculum_policy"),
+            Eq(A("bridge", "required_split"), L("training")),
+            Eq(A("curriculum_task", "split"), A("bridge", "required_split")),
+            Eq(A("curriculum_task", "status"), L("awaiting_experience")),
+            Eq(A("evidence", "status"), L("scheduled")),
+            Eq(A("domain", "name"), A("curriculum_task", "domain")),
+            Not(Exists(N("agent", "has_solve_task"), "prior_task",
+                Eq(A("prior_task", "task_key"), A("curriculum_task", "task_key"))))),
+        "effects": [
+            ["add_node", "solve_task", "SolveTask", {
+                "task_key": T(A("curriculum_task", "task_key")),
+                "training_trial_key": T(A("curriculum_task", "task_key")),
+                "domain": T(A("curriculum_task", "domain")),
+                "initial_state": T(A("curriculum_task", "initial_state")),
+                "state": T(A("curriculum_task", "initial_state")),
+                "object_count": T(A("domain", "object_count")),
+                "goal": T(A("curriculum_task", "goal")),
+                "status": "stuck", "trace": [], "steps": 0,
+                "moves": 0.0, "stuck_count": 1, "split": "training"}],
+            ["add_edge", "agent", "has_solve_task", "solve_task", {}],
+            ["add_edge", "solve_task", "about_domain", "domain", {}],
+            ["set_attr", "curriculum_task", "status", "delivered_to_native_search"]]})
     # A proposal is a reference to a generic P19 expression, never a named recipe.
     base["rules"].append({"name": "iip_propose_native_training_candidate",
         "area": "memory_consolidation", "order": 12,

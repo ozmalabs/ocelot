@@ -2161,6 +2161,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 **P22 arm wiring update (2026-10-23):** Added `configure_p22_arm` to set the five curriculum/invention policy switches on a fresh cognition-on graph for each of the four specified conditions and initialize exactly one shared ThinkingBudget to the same capacity. It does not select tasks, expressions, approvals or actions. Five tests verify all arm switch patterns, unchanged active ancestor portfolios, unknown-arm rejection and the native budget ceiling. This establishes condition wiring only; P22 still lacks an end-to-end learner path that executes and learns through every arm.
 
+**P22 curriculum/search bridge update (2026-10-23):** The P22 seed now contains a disabled-by-default native bridge from a native-selected `ProcessCurriculumTask` to a training-split `SolveTask` in the same graph and domain. The P22 arm setup enables this bridge only with curriculum conditions and disables the P21 target-learning bridge to prevent cross-phase dispatch. A cognition-on development regression feeds registered training evidence through native curriculum selection, verifies the resulting task enters native process search and produces a verified search attempt, and confirms no adoption approval or world-action receipt was fabricated. The full focused P22 bundle passes 109 tests. This proves one same-graph task handoff; multi-task curriculum feedback, all-arm learner comparisons, candidate approvals and held-out evidence remain open.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1

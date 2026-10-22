@@ -11,6 +11,15 @@
         "required_split": "training",
         "criteria_digest": "p22-independent-improvement-v1"
       }
+    },
+    {
+      "local_id": 1,
+      "type": "IndependentImprovementCurriculumBridgePolicy",
+      "attrs": {
+        "name": "p22_curriculum_search_bridge",
+        "enabled": 0.0,
+        "required_split": "training"
+      }
     }
   ],
   "edges": [
@@ -21,6 +30,16 @@
       "type": "has_independent_improvement_policy",
       "tgt": {
         "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_independent_improvement_curriculum_bridge_policy",
+      "tgt": {
+        "local": 1
       },
       "attrs": {}
     }
@@ -35,6 +54,18 @@
       "edge_type": "has_independent_improvement_policy",
       "tgt": {
         "type": "IndependentImprovementPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_independent_improvement_curriculum_bridge_policy:Agent:IndependentImprovementCurriculumBridgePolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_independent_improvement_curriculum_bridge_policy",
+      "tgt": {
+        "type": "IndependentImprovementCurriculumBridgePolicy",
         "var": "tgt"
       }
     },
@@ -160,6 +191,299 @@
     }
   ],
   "rules": [
+    {
+      "name": "iicb_release_selected_training_task_to_search",
+      "area": "memory_consolidation",
+      "order": 10,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Release only the native-selected training curriculum task to the same graph's open-process learner.",
+      "match": [
+        [
+          "agent",
+          "has_independent_improvement_curriculum_bridge_policy",
+          "bridge"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "curriculum_policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "curriculum_task"
+        ],
+        [
+          "curriculum_task",
+          "from_evidence",
+          "evidence"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "domain"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "bridge"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "bridge"
+              },
+              "key": "required_split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "bridge"
+              },
+              "key": "required_split"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_experience"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "evidence"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "scheduled"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "domain"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_task"
+              },
+              "key": "domain"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_solve_task",
+                "any_type": false
+              },
+              "var_name": "prior_task",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior_task"
+                  },
+                  "key": "task_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "curriculum_task"
+                  },
+                  "key": "task_key"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "solve_task",
+          "SolveTask",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "task_key"
+              }
+            },
+            "training_trial_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "task_key"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "domain"
+              }
+            },
+            "initial_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "initial_state"
+              }
+            },
+            "state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "initial_state"
+              }
+            },
+            "object_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "domain"
+                },
+                "key": "object_count"
+              }
+            },
+            "goal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "goal"
+              }
+            },
+            "status": "stuck",
+            "trace": [],
+            "steps": 0,
+            "moves": 0.0,
+            "stuck_count": 1,
+            "split": "training"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_solve_task",
+          "solve_task",
+          {}
+        ],
+        [
+          "add_edge",
+          "solve_task",
+          "about_domain",
+          "domain",
+          {}
+        ],
+        [
+          "set_attr",
+          "curriculum_task",
+          "status",
+          "delivered_to_native_search"
+        ]
+      ]
+    },
     {
       "name": "iip_propose_native_training_candidate",
       "area": "memory_consolidation",
