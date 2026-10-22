@@ -131,7 +131,7 @@ def test_p19_shared_budget():
         world.close()
 
 
-def test_p19_native_causal_chain_and_perturbation_abstention():
+def _run_p19_native_causal_chain():
     """Cognition-on graph proposal crosses approval and the world receipt boundary."""
     agent = boot_cognition_on()
     try:
@@ -243,6 +243,14 @@ def test_p19_native_causal_chain_and_perturbation_abstention():
         assert len(calls) == 1
     finally:
         agent.close()
+
+
+def test_p19_native_causal_chain():
+    _run_p19_native_causal_chain()
+
+
+def test_p19_state_perturbation_changes_execution():
+    _run_p19_native_causal_chain()
 
 
 def test_cognition_on_profile_boots_and_attaches_enabled_params():

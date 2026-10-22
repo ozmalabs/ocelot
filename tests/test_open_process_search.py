@@ -34,7 +34,7 @@ def _tick(agent):
         agent.s.tick(4000)
 
 
-def test_new_candidate_executed_not_host_rebuilt():
+def _verify_new_effect_drives_search():
     agent, _ = _agent()
     left, right = [1, 0, 2, 3], [0, 2, 1, 3]
     goal = _apply(agent, _compose(agent, left, right), [0, 1, 2, 3])
@@ -59,6 +59,14 @@ def test_new_candidate_executed_not_host_rebuilt():
     assert agent.attrs(attempt)["predicted_state"] == goal
     assert agent.attrs(attempt)["status"] == "verified"
     assert agent.attrs(attempt)["rank_score"] == agent.attrs(attempt)["work_cost"]
+
+
+def test_new_candidate_executed_not_host_rebuilt():
+    _verify_new_effect_drives_search()
+
+
+def test_new_effect_drives_search():
+    _verify_new_effect_drives_search()
 
 
 def test_renaming_parents_does_not_change_expression_choice():
@@ -103,7 +111,7 @@ def test_unseen_operator_expression_generated():
                and attrs["params"] == inverse for attrs in candidates)
 
 
-def test_changed_goal_changes_candidate_set():
+def test_changed_goal_changes_proposal():
     agent, _ = _agent()
     task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
     agent.s.set_attr(task, "status", "stuck")
