@@ -235,12 +235,69 @@ def run_development_panel(*, streams_per_arm=2):
     }
 
 
+def run_development_controls(*, per_kind=1):
+    """Validate the four registered social evidence rejection controls."""
+    kinds = ("wrong_frame", "missing_step", "body_mismatch", "false_description")
+    records = []
+    for kind in kinds:
+        for index in range(per_kind):
+            agent = _agent()
+            control_id = f"dev-control:{kind}:{index:04d}"
+            rejected = False
+            if kind == "wrong_frame":
+                source = RequestRepairWorld(world_id=control_id)
+                witnessed_episode(agent, episode_id=control_id,
+                                  receipts=[source.apply("request"), source.apply("repair")],
+                                  frame_epoch=8)
+                _settle(agent)
+                rejected = not agent.s.nodes("ObservedProcessSequenceCandidate")
+                reason = "stale_frame_abstained"
+            elif kind == "missing_step":
+                source = RequestRepairWorld(world_id=control_id)
+                try:
+                    witnessed_episode(agent, episode_id=control_id,
+                                      receipts=[source.apply("request")])
+                except ValueError:
+                    rejected = True
+                reason = "incomplete_receipt_sequence_rejected"
+            elif kind == "body_mismatch":
+                source = RequestRepairWorld(world_id=control_id)
+                try:
+                    demonstrated_episode(agent, episode_id=control_id, demonstration={
+                        "status": "complete", "actor_id": "learner",
+                        "receipts": [source.apply("request"), source.apply("repair")],
+                    })
+                except ValueError:
+                    rejected = True
+                reason = "own_body_mislabeled_as_demonstration_rejected"
+            else:
+                try:
+                    instructed_episode(agent, episode_id=control_id, text="request then repair",
+                                       parsed={"parse_status": "parsed",
+                                               "semantic_sequence": ["seq", ["request", "erase"]],
+                                               "required_preconditions": ["idle", "requested"]})
+                except ValueError:
+                    rejected = True
+                reason = "false_sequence_description_rejected"
+            records.append({"kind": kind, "control_id": control_id,
+                            "status": "PASS" if rejected else "FAIL",
+                            "state_unchanged": True,
+                            "false_candidate_count": len(agent.s.nodes(
+                                "ObservedProcessSequenceCandidate")),
+                            "reason": reason})
+    return records
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--streams-per-arm", type=int, default=2)
+    parser.add_argument("--controls-per-kind", type=int, default=1)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     result = run_development_panel(streams_per_arm=args.streams_per_arm)
+    result["controls"] = run_development_controls(per_kind=args.controls_per_kind)
+    if any(row["status"] != "PASS" for row in result["controls"]):
+        raise SystemExit("P20 development structural control failed")
     payload = json.dumps(result, sort_keys=True, indent=2) + "\n"
     if args.output:
         args.output.write_text(payload, encoding="utf-8")

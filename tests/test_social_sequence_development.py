@@ -1,6 +1,6 @@
 """P20 social development panel exercises each source adapter and sink."""
 from evaluation.process_mastery.social_sequence_development import (
-    ARMS, run_development_panel,
+    ARMS, run_development_controls, run_development_panel,
 )
 
 
@@ -31,3 +31,12 @@ def test_all_social_source_arms_run_through_native_verification_and_sink():
     assert reward["verification_status"] == "not_applicable"
     assert reward["own_actions"] == 0
     assert reward["budget_debits"] == 1
+
+
+def test_registered_social_structure_controls_fail_closed():
+    controls = run_development_controls(per_kind=1)
+    assert {row["kind"] for row in controls} == {
+        "wrong_frame", "missing_step", "body_mismatch", "false_description"}
+    assert len(controls) == 4
+    assert all(row["status"] == "PASS" and row["state_unchanged"]
+               and row["false_candidate_count"] == 0 for row in controls)
