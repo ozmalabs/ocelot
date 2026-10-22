@@ -135,6 +135,61 @@ def test_new_object_count_uses_witnessed_lifted_strategy():
     assert len(agent.attrs(used[0])["params"]) == target_size
 
 
+def test_failed_subgoal_order_guides_open_search():
+    p = [1, 0, 2, 3]
+    q = [0, 1, 3, 2]
+    agent = Agent(track_i=True,
+        extra_seeds=("strategy_discovery", "open_process_search"),
+        policy_overrides={
+            "ProcessSchemaPolicy": {"enabled": 1.0},
+            "InventionPolicy": {"enabled": 0.0},
+            "InvariantMinerPolicy": {"enabled": 0.0},
+            "StrategyDiscoveryPolicy": {"enabled": 1.0, "allow_lift": 1.0},
+            "OpenProcessSearchPolicy": {"enabled": 1.0, "max_attempts": 16.0},
+            "SolverPolicy": {"enabled": 1.0},
+        }, budget={"enabled": 1.0, "remaining": 100.0, "capacity": 100.0,
+                   "last_refill_epoch": 0.0, "refill_per_epoch": 0.0})
+    agent.add_domain("search", "permutation", [[0, 1, 2, 3]], {"p": p, "q": q})
+    schemas = {agent.attrs(node)["name"]: node for node in agent.schemas("search")}
+    agent.s.set_attr(schemas["q"], "cost", 2.0)
+    training_initial = [1, 0, 2, 3]
+    training_goal = _apply_native(agent, p, training_initial)
+    training = agent.add_solve_task("search", training_initial, training_goal)
+    _tick(agent)
+    assert agent.attrs(training)["status"] == "solved"
+    strategy = agent.nodes("DiscoveredStrategy")[0]
+    learned_process = agent.attrs(strategy)["trace"][0]
+    assert agent.attrs(learned_process)["params"] == p
+    for policy in agent.nodes("SolverPolicy"):
+        agent.s.set_attr(policy, "enabled", 0.0)
+
+    initial = [0, 1, 2, 3]
+    failed_subgoal = _apply_native(agent, p, initial)
+    goal = _apply_native(agent, q, failed_subgoal)
+    failed_replay = agent.add_solve_task("search", initial, goal)
+    _tick(agent)
+    assert agent.attrs(failed_replay)["status"] == "strategy_failed"
+    constraint = agent.native.neighbours(strategy, "has_strategy_failure_constraint")[0]
+    assert agent.attrs(constraint)["failed_state"] == failed_subgoal
+
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    attempts = [agent.attrs(node) for node in agent.nodes("OpenProcessSearchAttempt")
+                if agent.native.neighbours(node, "about_task") == [task]]
+    failed_order = _compose(agent, p, q)
+    assert any(attrs["params"] == failed_order
+               and attrs["subgoal_state"] == failed_subgoal
+               and attrs["status"] == "constraint_failed" for attrs in attempts)
+    expected = _compose(agent, q, p)
+    assert any(attrs["params"] == expected and attrs["status"] == "verified"
+               for attrs in attempts)
+    candidates = [agent.attrs(node) for node in agent.nodes("OpenProcessCandidate")]
+    assert any(attrs["params"] == expected for attrs in candidates)
+    assert all(attrs.get("subgoal_state") != failed_subgoal
+               for attrs in candidates if attrs["params"] == failed_order)
+
+
 def test_temporary_regression_allowed():
     agent, _ = _open_agent(held={"p": [3, 2, 0, 1], "q": [0, 3, 1, 2]})
     initial = [2, 0, 3, 1]

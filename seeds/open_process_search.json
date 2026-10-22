@@ -136,6 +136,42 @@
       }
     },
     {
+      "provenance": "seed:open_process_search:has_discovered_strategy:Agent:DiscoveredStrategy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_discovered_strategy",
+      "tgt": {
+        "type": "DiscoveredStrategy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_search:has_strategy_failure_constraint:DiscoveredStrategy:StrategyFailureConstraint",
+      "src": {
+        "type": "DiscoveredStrategy",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_failure_constraint",
+      "tgt": {
+        "type": "StrategyFailureConstraint",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_search:has_relevant_strategy_failure:SolveTask:StrategyFailureConstraint",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_relevant_strategy_failure",
+      "tgt": {
+        "type": "StrategyFailureConstraint",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:open_process_search:has_open_process_candidate:Agent:OpenProcessCandidate",
       "src": {
         "type": "Agent",
@@ -221,6 +257,326 @@
     }
   ],
   "rules": [
+    {
+      "name": "ops_link_exact_strategy_failure_to_task",
+      "area": "process_solving",
+      "order": 8,
+      "latency_class": "background",
+      "comment": "Attach matching failed-strategy evidence once per task before enumerating candidate expressions.",
+      "match": [
+        [
+          "agent",
+          "has_open_process_search_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "task"
+        ],
+        [
+          "task",
+          "about_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_discovered_strategy",
+          "strategy"
+        ],
+        [
+          "strategy",
+          "has_strategy_failure_constraint",
+          "failure"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "initial_state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "initial_state"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "goal_state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "goal"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "object_count"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "object_count"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "kind"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "kind"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "source_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "source_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "model_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "model_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "frame_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "frame_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "probe_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probe_epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "edge_type": "has_relevant_strategy_failure",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "old"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "failure"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "task",
+          "has_relevant_strategy_failure",
+          "failure",
+          {}
+        ],
+        [
+          "set_attr",
+          "task",
+          "known_failed_subgoals",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "known_failed_subgoals"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "failure"
+                    },
+                    "key": "failed_state"
+                  }
+                ]
+              },
+              "other": {
+                "type": "Append",
+                "seq": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "known_failed_subgoals"
+                },
+                "item": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "failure"
+                  },
+                  "key": "failed_state"
+                }
+              }
+            }
+          }
+        ]
+      ],
+      "batch": false
+    },
     {
       "name": "ops_request_bounded_search",
       "area": "process_solving",
@@ -1119,59 +1475,37 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "a"
-                      },
-                      "key": "params"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "b"
-                      },
-                      "key": "params"
-                    }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
-                  }
-                },
-                "then": {
-                  "type": "Lit",
-                  "value": "unknown"
-                },
-                "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
                       "type": "ProcessApply",
                       "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
                         },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "b"
-                          },
-                          "key": "params"
-                        }
+                        "key": "params"
                       },
                       "state": {
                         "type": "Attr",
@@ -1180,6 +1514,43 @@
                           "name": "task"
                         },
                         "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "constraint_failed"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessCompose",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "b"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -1226,21 +1597,65 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "b"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -1250,29 +1665,55 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "b"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
@@ -1280,7 +1721,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Plus",
@@ -1310,33 +1751,22 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "b"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "b"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -1409,41 +1839,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Plus",
                       "items": [
                         {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "cost"
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "b"
-                          },
-                          "key": "cost"
-                        }
-                      ]
-                    },
-                    "other": {
-                      "type": "Plus",
-                      "items": [
-                        {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Plus",
@@ -1467,6 +1872,101 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "b"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "b"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "cost"
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "b"
+                                },
+                                "key": "cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -2475,59 +2975,37 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "a"
-                      },
-                      "key": "params"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "b"
-                      },
-                      "key": "params"
-                    }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
-                  }
-                },
-                "then": {
-                  "type": "Lit",
-                  "value": "unknown"
-                },
-                "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
                       "type": "ProcessApply",
                       "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
                         },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "b"
-                          },
-                          "key": "params"
-                        }
+                        "key": "params"
                       },
                       "state": {
                         "type": "Attr",
@@ -2536,6 +3014,43 @@
                           "name": "task"
                         },
                         "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "constraint_failed"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessCompose",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "b"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -2582,21 +3097,65 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "b"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -2606,29 +3165,55 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "b"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
@@ -2636,7 +3221,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Plus",
@@ -2666,33 +3251,22 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "b"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "b"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -2765,41 +3339,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Plus",
                       "items": [
                         {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "cost"
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "b"
-                          },
-                          "key": "cost"
-                        }
-                      ]
-                    },
-                    "other": {
-                      "type": "Plus",
-                      "items": [
-                        {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Plus",
@@ -2823,6 +3372,101 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "b"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "b"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "cost"
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "b"
+                                },
+                                "key": "cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -3264,51 +3908,59 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessInverse",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
                   "type": "Lit",
-                  "value": "unknown"
+                  "value": "constraint_failed"
                 },
                 "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessInverse",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessInverse",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -3347,21 +3999,57 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessInverse",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -3371,21 +4059,40 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessInverse",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
@@ -3393,7 +4100,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Attr",
@@ -3410,25 +4117,14 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessInverse",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessInverse",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -3480,28 +4176,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "a"
-                      },
-                      "key": "cost"
-                    },
-                    "other": {
                       "type": "Plus",
                       "items": [
                         {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Attr",
@@ -3512,6 +4196,67 @@
                           "key": "cost"
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessInverse",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "cost"
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -4392,67 +5137,67 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
                   "type": "Lit",
-                  "value": "unknown"
+                  "value": "constraint_failed"
                 },
                 "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -4499,21 +5244,65 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -4523,29 +5312,40 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
@@ -4553,7 +5353,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Times",
@@ -4579,33 +5379,22 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -4674,37 +5463,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
-                      "type": "Times",
-                      "items": [
-                        {
-                          "type": "Lit",
-                          "value": 2.0
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "cost"
-                        }
-                      ]
-                    },
-                    "other": {
                       "type": "Plus",
                       "items": [
                         {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Times",
@@ -4724,6 +5492,93 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 2.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Lit",
+                                "value": 2.0
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -5637,72 +6492,61 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
-                      "type": "ProcessCompose",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "a"
-                        },
-                        "key": "params"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "a"
-                        },
-                        "key": "params"
-                      }
-                    },
-                    "b": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
                   "type": "Lit",
-                  "value": "unknown"
+                  "value": "constraint_failed"
                 },
                 "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "ProcessCompose",
                         "a": {
-                          "type": "ProcessCompose",
-                          "a": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "a"
-                            },
-                            "key": "params"
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
                           },
-                          "b": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "a"
-                            },
-                            "key": "params"
-                          }
+                          "key": "params"
                         },
                         "b": {
                           "type": "Attr",
@@ -5713,13 +6557,13 @@
                           "key": "params"
                         }
                       },
-                      "state": {
+                      "b": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -5777,21 +6621,76 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "ProcessCompose",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "params"
+                              }
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -5801,40 +6700,40 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
-                      "type": "ProcessCompose",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "a"
-                        },
-                        "key": "params"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "a"
-                        },
-                        "key": "params"
-                      }
-                    },
-                    "b": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
@@ -5842,7 +6741,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Times",
@@ -5868,27 +6767,16 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "ProcessCompose",
                         "a": {
-                          "type": "ProcessCompose",
-                          "a": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "a"
-                            },
-                            "key": "params"
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
                           },
-                          "b": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "a"
-                            },
-                            "key": "params"
-                          }
+                          "key": "params"
                         },
                         "b": {
                           "type": "Attr",
@@ -5899,13 +6787,13 @@
                           "key": "params"
                         }
                       },
-                      "state": {
+                      "b": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -5985,37 +6873,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
-                      "type": "Times",
-                      "items": [
-                        {
-                          "type": "Lit",
-                          "value": 3.0
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "cost"
-                        }
-                      ]
-                    },
-                    "other": {
                       "type": "Plus",
                       "items": [
                         {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Times",
@@ -6035,6 +6902,104 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "ProcessCompose",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "params"
+                              }
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 3.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Lit",
+                                "value": 3.0
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -7096,59 +8061,37 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "prior"
-                      },
-                      "key": "params"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "a"
-                      },
-                      "key": "params"
-                    }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
-                  }
-                },
-                "then": {
-                  "type": "Lit",
-                  "value": "unknown"
-                },
-                "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
                       "type": "ProcessApply",
                       "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
                         },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        }
+                        "key": "params"
                       },
                       "state": {
                         "type": "Attr",
@@ -7157,6 +8100,43 @@
                           "name": "task"
                         },
                         "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "constraint_failed"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessCompose",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -7203,21 +8183,65 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -7227,29 +8251,55 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
@@ -7257,7 +8307,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Plus",
@@ -7287,33 +8337,22 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "prior"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -7386,41 +8425,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Plus",
                       "items": [
                         {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "work_cost"
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "cost"
-                        }
-                      ]
-                    },
-                    "other": {
-                      "type": "Plus",
-                      "items": [
-                        {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Plus",
@@ -7444,6 +8458,101 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "work_cost"
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -8103,59 +9212,37 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "a"
-                      },
-                      "key": "params"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "prior"
-                      },
-                      "key": "params"
-                    }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
-                  }
-                },
-                "then": {
-                  "type": "Lit",
-                  "value": "unknown"
-                },
-                "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
                       "type": "ProcessApply",
                       "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
                         },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        }
+                        "key": "params"
                       },
                       "state": {
                         "type": "Attr",
@@ -8164,6 +9251,43 @@
                           "name": "task"
                         },
                         "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "constraint_failed"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessCompose",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "a"
+                        },
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -8210,21 +9334,65 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -8234,29 +9402,55 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "a"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
@@ -8264,7 +9458,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Plus",
@@ -8294,33 +9488,22 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "a"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -8393,41 +9576,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Plus",
                       "items": [
                         {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "a"
-                          },
-                          "key": "cost"
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "work_cost"
-                        }
-                      ]
-                    },
-                    "other": {
-                      "type": "Plus",
-                      "items": [
-                        {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Plus",
@@ -8451,6 +9609,101 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Plus",
+                            "items": [
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "cost"
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "work_cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -8966,51 +10219,59 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessInverse",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
                   "type": "Lit",
-                  "value": "unknown"
+                  "value": "constraint_failed"
                 },
                 "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessInverse",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessInverse",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "prior"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -9049,21 +10310,57 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessInverse",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -9073,21 +10370,40 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessInverse",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "Lit",
+                      "value": null
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
@@ -9095,7 +10411,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Attr",
@@ -9112,25 +10428,14 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessInverse",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessInverse",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "prior"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -9182,28 +10487,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "prior"
-                      },
-                      "key": "work_cost"
-                    },
-                    "other": {
                       "type": "Plus",
                       "items": [
                         {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Attr",
@@ -9214,6 +10507,67 @@
                           "key": "work_cost"
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessInverse",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "work_cost"
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -9789,59 +11143,37 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "prior"
-                      },
-                      "key": "params"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "prior"
-                      },
-                      "key": "params"
-                    }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
-                  }
-                },
-                "then": {
-                  "type": "Lit",
-                  "value": "unknown"
-                },
-                "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
                       "type": "ProcessApply",
                       "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
                         },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        }
+                        "key": "params"
                       },
                       "state": {
                         "type": "Attr",
@@ -9850,6 +11182,43 @@
                           "name": "task"
                         },
                         "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "constraint_failed"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessCompose",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -9896,21 +11265,65 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -9920,29 +11333,55 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     },
                     "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
                     }
-                  },
-                  "b": {
-                    "type": "Lit",
-                    "value": null
                   }
                 },
                 "then": {
@@ -9950,7 +11389,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Times",
@@ -9976,33 +11415,22 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
-                        "type": "ProcessCompose",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      "state": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "prior"
                         },
-                        "key": "initial_state"
+                        "key": "params"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -10071,37 +11499,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
-                      "type": "Times",
-                      "items": [
-                        {
-                          "type": "Lit",
-                          "value": 2.0
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "work_cost"
-                        }
-                      ]
-                    },
-                    "other": {
                       "type": "Plus",
                       "items": [
                         {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Times",
@@ -10121,6 +11528,93 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 2.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Lit",
+                                "value": 2.0
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "work_cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }
@@ -10729,72 +12223,76 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
-                      "type": "ProcessCompose",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "prior"
-                        },
-                        "key": "params"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "prior"
-                        },
-                        "key": "params"
-                      }
-                    },
-                    "b": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
                   "type": "Lit",
-                  "value": "unknown"
+                  "value": "constraint_failed"
                 },
                 "other": {
                   "type": "IfThenElse",
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "ProcessCompose",
                         "a": {
-                          "type": "ProcessCompose",
-                          "a": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "prior"
-                            },
-                            "key": "params"
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
                           },
-                          "b": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "prior"
-                            },
-                            "key": "params"
-                          }
+                          "key": "params"
                         },
                         "b": {
                           "type": "Attr",
@@ -10805,13 +12303,13 @@
                           "key": "params"
                         }
                       },
-                      "state": {
+                      "b": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "prior"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -10869,21 +12367,76 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
                       "type": "Lit",
-                      "value": "verified"
+                      "value": "unknown"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "residual"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "ProcessCompose",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "params"
+                              }
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "verified"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "residual"
+                      }
                     }
                   }
                 }
@@ -10893,40 +12446,55 @@
               "__term__": {
                 "type": "IfThenElse",
                 "cond": {
-                  "type": "Eq",
-                  "a": {
-                    "type": "ProcessCompose",
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
                     "a": {
-                      "type": "ProcessCompose",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "prior"
-                        },
-                        "key": "params"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "prior"
-                        },
-                        "key": "params"
-                      }
-                    },
-                    "b": {
                       "type": "Attr",
                       "node": {
                         "type": "Var",
-                        "name": "prior"
+                        "name": "task"
                       },
-                      "key": "params"
+                      "key": "known_failed_subgoals"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
                     }
                   },
-                  "b": {
+                  "then": {
                     "type": "Lit",
-                    "value": null
+                    "value": false
+                  },
+                  "other": {
+                    "type": "In",
+                    "member": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "prior"
+                        },
+                        "key": "params"
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "container": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "known_failed_subgoals"
+                    }
                   }
                 },
                 "then": {
@@ -10934,7 +12502,7 @@
                   "items": [
                     {
                       "type": "Lit",
-                      "value": 2000000.0
+                      "value": 3000000.0
                     },
                     {
                       "type": "Times",
@@ -10960,27 +12528,16 @@
                   "cond": {
                     "type": "Eq",
                     "a": {
-                      "type": "ProcessApply",
-                      "p": {
+                      "type": "ProcessCompose",
+                      "a": {
                         "type": "ProcessCompose",
                         "a": {
-                          "type": "ProcessCompose",
-                          "a": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "prior"
-                            },
-                            "key": "params"
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
                           },
-                          "b": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "prior"
-                            },
-                            "key": "params"
-                          }
+                          "key": "params"
                         },
                         "b": {
                           "type": "Attr",
@@ -10991,13 +12548,13 @@
                           "key": "params"
                         }
                       },
-                      "state": {
+                      "b": {
                         "type": "Attr",
                         "node": {
                           "type": "Var",
-                          "name": "task"
+                          "name": "prior"
                         },
-                        "key": "initial_state"
+                        "key": "params"
                       }
                     },
                     "b": {
@@ -11077,37 +12634,16 @@
                         }
                       },
                       "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "task"
-                        },
-                        "key": "goal"
+                        "type": "Lit",
+                        "value": null
                       }
                     },
                     "then": {
-                      "type": "Times",
-                      "items": [
-                        {
-                          "type": "Lit",
-                          "value": 3.0
-                        },
-                        {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "prior"
-                          },
-                          "key": "work_cost"
-                        }
-                      ]
-                    },
-                    "other": {
                       "type": "Plus",
                       "items": [
                         {
                           "type": "Lit",
-                          "value": 1000000.0
+                          "value": 2000000.0
                         },
                         {
                           "type": "Times",
@@ -11127,6 +12663,104 @@
                           ]
                         }
                       ]
+                    },
+                    "other": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessCompose",
+                            "a": {
+                              "type": "ProcessCompose",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "params"
+                              }
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "task"
+                            },
+                            "key": "initial_state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "goal"
+                        }
+                      },
+                      "then": {
+                        "type": "Times",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 3.0
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": 1000000.0
+                          },
+                          {
+                            "type": "Times",
+                            "items": [
+                              {
+                                "type": "Lit",
+                                "value": 3.0
+                              },
+                              {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "work_cost"
+                              }
+                            ]
+                          }
+                        ]
+                      }
                     }
                   }
                 }

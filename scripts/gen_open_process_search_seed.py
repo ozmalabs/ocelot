@@ -11,7 +11,7 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (  # noqa: E402
-    A, And, Argmin, Count, Eq, Exists, Gt, IfThenElse, L, Lt, N, Not, OFFLINE_AREA,
+    A, And, Append, Argmin, Count, Eq, Exists, Gt, IfThenElse, In, L, Lt, N, Not, OFFLINE_AREA,
     ONLINE_AREA, PApply, PCompose, PFingerprint, PInverse, PPower, Plus, T, Times,
     StringConcat, V, Vec, is_none, not_none, policy_on, productions, rule,
 )
@@ -22,6 +22,52 @@ OUT = ROOT / "seeds" / f"{SEED_ID}.json"
 
 def _tree(name):
     return IfThenElse(is_none(A(name, "expr_tree")), A(name, "name"), A(name, "expr_tree"))
+
+
+def _known_failed_subgoal(task, domain, subgoal):
+    known = A(task, "known_failed_subgoals")
+    return IfThenElse(is_none(known), L(False), In(subgoal, known))
+
+
+def _link_failure_evidence_rule():
+    binding = And(Eq(A("failure", "initial_state"), A("task", "initial_state")),
+        Eq(A("failure", "goal_state"), A("task", "goal")),
+        Eq(A("failure", "object_count"), A("task", "object_count")),
+        Eq(A("failure", "kind"), A("d", "kind")),
+        Eq(A("failure", "source_epoch"), A("d", "source_epoch")),
+        Eq(A("failure", "model_epoch"), A("d", "model_epoch")),
+        Eq(A("failure", "frame_epoch"), A("d", "frame_epoch")),
+        Eq(A("failure", "probe_epoch"), A("d", "probe_epoch")))
+    return rule("ops_link_exact_strategy_failure_to_task", ONLINE_AREA, 8,
+        "Attach matching failed-strategy evidence once per task before enumerating candidate expressions.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_solve_task", "task"], ["task", "about_domain", "d"],
+         ["agent", "has_discovered_strategy", "strategy"],
+         ["strategy", "has_strategy_failure_constraint", "failure"]],
+        And(policy_on(), Eq(A("task", "status"), L("stuck")), binding,
+            Not(Exists(N("task", "has_relevant_strategy_failure"), "old",
+                        Eq(V("old"), V("failure"))))),
+        [["add_edge", "task", "has_relevant_strategy_failure", "failure", {}],
+         ["set_attr", "task", "known_failed_subgoals", T(IfThenElse(
+             is_none(A("task", "known_failed_subgoals")),
+             Vec(A("failure", "failed_state")),
+             Append(A("task", "known_failed_subgoals"), A("failure", "failed_state"))))]],
+        batch=False)
+
+
+def _attempt_status(params, applied, task, domain, subgoal):
+    return IfThenElse(_known_failed_subgoal(task, domain, subgoal), L("constraint_failed"),
+        IfThenElse(is_none(params), L("unknown"),
+            IfThenElse(is_none(applied), L("unknown"),
+                IfThenElse(Eq(applied, A(task, "goal")), L("verified"), L("residual")))))
+
+
+def _attempt_rank(params, applied, task, domain, subgoal, work):
+    return IfThenElse(_known_failed_subgoal(task, domain, subgoal), Plus(L(3000000.0), work),
+        IfThenElse(is_none(params), Plus(L(2000000.0), work),
+            IfThenElse(is_none(applied), Plus(L(2000000.0), work),
+                IfThenElse(Eq(applied, A(task, "goal")), work,
+                    Plus(L(1000000.0), work)))))
 
 
 def _expression_rule(operator, order, *, reverse=False):
@@ -83,13 +129,9 @@ def _expression_rule(operator, order, *, reverse=False):
             "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")),
-            "work_cost": T(work), "status": T(IfThenElse(is_none(params), L("unknown"),
-                IfThenElse(is_none(applied), L("unknown"),
-                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))),
-            "rank_score": T(IfThenElse(is_none(params), Plus(L(2000000.0), work),
-                IfThenElse(is_none(applied), Plus(L(2000000.0), work),
-                    IfThenElse(Eq(applied, A("task", "goal")), work,
-                        Plus(L(1000000.0), work)))))}],
+            "work_cost": T(work),
+            "status": T(_attempt_status(params, applied, "task", "d", subgoal)),
+            "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))}],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}]] + parent_effects,
@@ -191,13 +233,8 @@ def _recursive_compose_rule(*, reverse=False):
             "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "work_cost": T(work),
-            "status": T(IfThenElse(is_none(params), L("unknown"),
-                IfThenElse(is_none(applied), L("unknown"),
-                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))),
-            "rank_score": T(IfThenElse(is_none(params), Plus(L(2000000.0), work),
-                IfThenElse(is_none(applied), Plus(L(2000000.0), work),
-                    IfThenElse(Eq(applied, A("task", "goal")), work,
-                        Plus(L(1000000.0), work)))))}],
+            "status": T(_attempt_status(params, applied, "task", "d", prior_state)),
+            "rank_score": T(_attempt_rank(params, applied, "task", "d", prior_state, work))}],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}],
@@ -250,13 +287,8 @@ def _recursive_unary_rule(operator, power=None):
             "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "work_cost": T(work),
-            "status": T(IfThenElse(is_none(params), L("unknown"),
-                IfThenElse(is_none(applied), L("unknown"),
-                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))),
-            "rank_score": T(IfThenElse(is_none(params), Plus(L(2000000.0), work),
-                IfThenElse(is_none(applied), Plus(L(2000000.0), work),
-                    IfThenElse(Eq(applied, A("task", "goal")), work,
-                        Plus(L(1000000.0), work)))))}],
+            "status": T(_attempt_status(params, applied, "task", "d", subgoal)),
+            "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))}],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}],
@@ -314,6 +346,9 @@ def build():
         ("OpenProcessSearchAttempt", "about_task", "SolveTask"),
         ("OpenProcessSearchAttempt", "uses_parent_process", "ProcessSchema"),
         ("OpenProcessSearchAttempt", "extends_search_attempt", "OpenProcessSearchAttempt"),
+        ("Agent", "has_discovered_strategy", "DiscoveredStrategy"),
+        ("DiscoveredStrategy", "has_strategy_failure_constraint", "StrategyFailureConstraint"),
+        ("SolveTask", "has_relevant_strategy_failure", "StrategyFailureConstraint"),
         ("Agent", "has_open_process_candidate", "OpenProcessCandidate"),
         ("OpenProcessCandidate", "derived_from_attempt", "OpenProcessSearchAttempt"),
         ("ProcessDomain", "has_held_process", "ProcessSchema"),
@@ -354,7 +389,7 @@ def build():
         And(policy_on(), Eq(A("request", "status"), L("awaiting_budget")),
             Eq(A("budget_request", "status"), L("approved"))),
         [["set_attr", "request", "status", "funded"]])
-    rules = [request, funded]
+    rules = [_link_failure_evidence_rule(), request, funded]
     rules.extend(_expression_rule("compose", 0))
     rules.extend(_expression_rule("compose", 1, reverse=True))
     for index, operator in enumerate(("inverse", "power2", "power3"), start=2):
