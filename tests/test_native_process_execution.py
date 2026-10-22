@@ -1,5 +1,5 @@
 from evaluation.process_mastery.harness import Agent
-from evaluation.process_mastery.native_process_execution import execute_selected
+from evaluation.process_mastery.native_process_execution import execute_selected, params_digest
 from evaluation.process_mastery.linear_p15_v1 import _pair, _permutation
 
 
@@ -44,7 +44,18 @@ def _setup():
     agent.run(max_ticks=12)
     candidate = agent.nodes("CandidateOperator", name="commutator_square_v1")[0]
     agent.add_domain("dev", "permutation", [[0, 1, 2, 3]], {})
+    left_params, right_params, _ = _pair(139)
+    left = agent.s.add_node("ProcessSchema", {"name": "bound-a", "kind": "permutation",
+        "domain": "dev", "params": left_params, "status": "active", "source_epoch": 0,
+        "source_digest": params_digest(left_params), "owner_agent": agent.ag})
+    right = agent.s.add_node("ProcessSchema", {"name": "bound-b", "kind": "permutation",
+        "domain": "dev", "params": right_params, "status": "active", "source_epoch": 0,
+        "source_digest": params_digest(right_params), "owner_agent": agent.ag})
+    agent.s.add_edge(agent.ag, "has_process_schema", left, {})
+    agent.s.add_edge(agent.ag, "has_process_schema", right, {})
     task = agent.add_solve_task("dev", [0, 1, 2, 3], [3, 2, 1, 0])
+    agent.s.add_edge(task, "has_process_input_a", left, {})
+    agent.s.add_edge(task, "has_process_input_b", right, {})
     agent.run(max_ticks=12)
     execution = agent.nodes("NativeExecutionRequest", status="funded")[0]
     budget_request = agent.native.neighbours(execution, "has_execution_budget_request")[0]
@@ -55,20 +66,10 @@ def _setup():
     return agent, candidate, task, execution
 
 
-def _schemas(agent, seed):
-    a, b, _ = _pair(seed)
-    left = agent.s.add_node("ProcessSchema", {"name": f"a-{seed}", "kind": "permutation",
-        "params": a, "status": "active"})
-    right = agent.s.add_node("ProcessSchema", {"name": f"b-{seed}", "kind": "permutation",
-        "params": b, "status": "active"})
-    return left, right
-
-
 def test_graph_selected_expression_reaches_world():
-    agent, _, _, request = _setup()
-    left, right = _schemas(agent, 141)
+    agent, _, task, request = _setup()
     initial = _permutation(149)
-    result = execute_selected(agent, request, a=left, b=right, state=initial,
+    result = execute_selected(agent, request, state=initial,
         authorize=lambda proposal: True,
         world_transition=lambda action: {"observed_state": [action[x] for x in initial]})
     assert result["status"] == "COMPLETED"
@@ -79,8 +80,7 @@ def test_mutated_expression_changes_outcome():
     agent, candidate, _, request = _setup()
     root = agent.native.neighbours(candidate, "has_expression_root")[0]
     agent.s.set_attr(root, "operator", "unsupported")
-    left, right = _schemas(agent, 151)
-    result = execute_selected(agent, request, a=left, b=right, state=_permutation(157),
+    result = execute_selected(agent, request, state=_permutation(157),
         authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
     assert result["status"] == "ABSTAIN"
 
@@ -89,25 +89,53 @@ def test_missing_expression_abstains():
     agent, candidate, _, request = _setup()
     root = agent.native.neighbours(candidate, "has_expression_root")[0]
     agent.native.remove_edge(candidate, "has_expression_root", root)
-    left, right = _schemas(agent, 163)
-    result = execute_selected(agent, request, a=left, b=right, state=_permutation(167),
+    result = execute_selected(agent, request, state=_permutation(167),
         authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
     assert result["status"] == "ABSTAIN"
+
+
+def test_missing_graph_bound_input_abstains():
+    agent, _, _, request = _setup()
+    source = agent.native.neighbours(request, "uses_process_input_a")[0]
+    agent.native.remove_edge(request, "uses_process_input_a", source)
+    result = execute_selected(agent, request, state=_permutation(171),
+        authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
+    assert result["status"] == "ABSTAIN"
+    assert result["reason"] == "missing_or_ambiguous_source_or_expression"
+
+
+def test_changed_input_epoch_abstains_before_execution():
+    agent, _, _, request = _setup()
+    source = agent.native.neighbours(request, "uses_process_input_a")[0]
+    agent.s.set_attr(source, "source_epoch", 1.0)
+    result = execute_selected(agent, request, state=_permutation(173),
+        authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
+    assert result["status"] == "ABSTAIN"
+    assert result["reason"] == "stale_process_source"
+
+
+def test_mutated_input_digest_abstains_before_execution():
+    agent, _, _, request = _setup()
+    source = agent.native.neighbours(request, "uses_process_input_a")[0]
+    params = agent.s.node(source)["attrs"]["params"]
+    agent.s.set_attr(source, "params", list(reversed(params)))
+    result = execute_selected(agent, request, state=_permutation(179),
+        authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
+    assert result["status"] == "ABSTAIN"
+    assert result["reason"] == "stale_or_unversioned_process_source_digest"
 
 
 def test_revocation_blocks_execution():
     agent, _, _, request = _setup()
     agent.s.set_attr(request, "status", "revoked")
-    left, right = _schemas(agent, 173)
-    result = execute_selected(agent, request, a=left, b=right, state=_permutation(179),
+    result = execute_selected(agent, request, state=_permutation(179),
         authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
     assert result["status"] == "ABSTAIN"
 
 
 def test_meter_includes_composition():
     agent, _, _, request = _setup()
-    left, right = _schemas(agent, 181)
-    result = execute_selected(agent, request, a=left, b=right, state=_permutation(191),
+    result = execute_selected(agent, request, state=_permutation(191),
         authorize=lambda proposal: True, world_transition=lambda action: {"observed_state": action})
     assert result["status"] == "COMPLETED"
     assert result["meter"]["compositions"] >= 1

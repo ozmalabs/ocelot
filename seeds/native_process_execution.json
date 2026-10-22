@@ -81,6 +81,30 @@
       }
     },
     {
+      "provenance": "seed:native_process_execution:has_process_input_a:SolveTask:ProcessSchema",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_process_input_a",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:has_process_input_b:SolveTask:ProcessSchema",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_process_input_b",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:native_process_execution:has_native_execution_request:SolveTask:NativeExecutionRequest",
       "src": {
         "type": "SolveTask",
@@ -129,6 +153,30 @@
       }
     },
     {
+      "provenance": "seed:native_process_execution:uses_process_input_a:NativeExecutionRequest:ProcessSchema",
+      "src": {
+        "type": "NativeExecutionRequest",
+        "var": "src"
+      },
+      "edge_type": "uses_process_input_a",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:uses_process_input_b:NativeExecutionRequest:ProcessSchema",
+      "src": {
+        "type": "NativeExecutionRequest",
+        "var": "src"
+      },
+      "edge_type": "uses_process_input_b",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:native_process_execution:has_execution_budget_request:NativeExecutionRequest:ThinkingBudgetRequest",
       "src": {
         "type": "NativeExecutionRequest",
@@ -168,6 +216,16 @@
           "agent",
           "has_solve_task",
           "task"
+        ],
+        [
+          "task",
+          "has_process_input_a",
+          "input_a"
+        ],
+        [
+          "task",
+          "has_process_input_b",
+          "input_b"
         ],
         [
           "agent",
@@ -244,6 +302,36 @@
               "type": "Attr",
               "node": {
                 "type": "Var",
+                "name": "input_a"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input_b"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
                 "name": "task"
               },
               "key": "status"
@@ -303,6 +391,46 @@
                 },
                 "key": "source_epoch"
               }
+            },
+            "input_a_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input_a"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "input_b_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input_b"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "input_a_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input_a"
+                },
+                "key": "source_digest"
+              }
+            },
+            "input_b_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input_b"
+                },
+                "key": "source_digest"
+              }
             }
           }
         ],
@@ -339,6 +467,20 @@
           "request",
           "for_solve_task",
           "task",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "uses_process_input_a",
+          "input_a",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "uses_process_input_b",
+          "input_b",
           {}
         ],
         [

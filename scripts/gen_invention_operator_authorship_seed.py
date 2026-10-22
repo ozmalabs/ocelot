@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 import sys
 
@@ -16,6 +17,21 @@ OUT = ROOT / "seeds" / f"{SEED_ID}.json"
 
 
 def build():
+    var_a = {"type": "Var", "name": "a"}
+    var_b = {"type": "Var", "name": "b"}
+    commutator = {"type": "ProcessCompose", "a": {
+        "type": "ProcessCompose", "a": {
+            "type": "ProcessCompose", "a": var_a, "b": var_b},
+        "b": {"type": "ProcessInverse", "a": var_a}},
+        "b": {"type": "ProcessInverse", "a": var_b}}
+    native_term = {"type": "ProcessCompose", "a": commutator, "b": commutator}
+    graph_shape = [("operator", "compose"), ("operator", "commutator"),
+                   ("input", "a"), ("input", "b"), ("operator", "commutator"),
+                   ("input", "a"), ("input", "b")]
+    graph_digest = hashlib.sha256(json.dumps(graph_shape, separators=(",", ":"))
+                                  .encode()).hexdigest()
+    term_digest = hashlib.sha256(json.dumps(native_term, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
     specs = [
         ("Agent", "has_invention_operator_authorship_policy", "InventionOperatorAuthorshipPolicy"),
         ("Agent", "has_operator_composition_request", "OperatorCompositionRequest"),
@@ -45,7 +61,9 @@ def build():
             "criteria_digest": "pmb-v1-frozen-criteria",
             "lineage": "commutator -> compose(commutator,commutator)"}],
          ["add_edge", "agent", "has_candidate_operator", "candidate", {}],
-         ["add_node", "root", "OperatorExpression", {"kind": "operator", "operator": "compose"}],
+         ["add_node", "root", "OperatorExpression", {"kind": "operator", "operator": "compose",
+            "native_term": native_term, "native_term_digest": term_digest,
+            "expression_graph_digest": graph_digest}],
          ["add_node", "left", "OperatorExpression", {"kind": "operator", "operator": "commutator"}],
          ["add_node", "right", "OperatorExpression", {"kind": "operator", "operator": "commutator"}],
          ["add_node", "arg_a0", "OperatorExpression", {"kind": "input", "name": "a"}],
