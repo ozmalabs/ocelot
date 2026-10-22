@@ -54,6 +54,8 @@ class NativeTargetLearner:
         self.accounting = LearningAccounting()
         self._ingested_world_receipts: set[str] = set()
         self._ingested_map_pairs: set[str] = set()
+        self._ingested_source_map_events: set[str] = set()
+        self._ingested_target_map_events: set[str] = set()
         self._pending_learning_records: list[dict] = []
         self.learning_records: list[dict] = []
         for node in self.s.nodes("NetworkModeState"):
@@ -78,12 +80,14 @@ class NativeTargetLearner:
         """Translate external verifier records; this method does not verify them."""
         if not map_evidence or not target_receipt:
             raise ValueError("source prior requires independent map and target receipts")
-        source_events = map_evidence.get("source_events", ())
-        target_events = map_evidence.get("target_events", ())
-        self.accounting.source_map_observations += len(source_events)
-        self.accounting.source_information_units += float(len(source_events))
-        self.accounting.target_map_interactions += len(target_events)
-        self.accounting.target_actions += len(target_events)
+        source_events = set(map_evidence.get("source_events", ()))
+        target_events = set(map_evidence.get("target_events", ()))
+        new_source_events = source_events - self._ingested_source_map_events
+        new_target_events = target_events - self._ingested_target_map_events
+        self.accounting.source_map_observations += len(new_source_events)
+        self.accounting.source_information_units += float(len(new_source_events))
+        self.accounting.target_map_interactions += len(new_target_events)
+        self.accounting.target_actions += len(new_target_events)
         self.accounting.map_verification_queries += len(source_events) + len(target_events)
         prior = self.s.add_node("TargetProcessPrior", {
             "prior_id": prior_id, "source_id": source_id, "owner_id": self.owner_id,
@@ -165,12 +169,16 @@ class NativeTargetLearner:
         """Expose one paired source/target interaction to native map induction."""
         if not isinstance(source, WorldReceipt) or not isinstance(target, WorldReceipt):
             raise TypeError("map induction requires typed source and target world receipts")
-        if pair_id in self._ingested_map_pairs:
+        if (pair_id in self._ingested_map_pairs
+                or source.event_id in self._ingested_source_map_events
+                or target.event_id in self._ingested_target_map_events):
             raise ValueError("paired map evidence already ingested")
         if (source.status != "observed" or target.status != "observed"
                 or not source.action_authorized or not target.action_authorized):
             raise ValueError("map induction requires authorized observed receipt pairs")
         self._ingested_map_pairs.add(pair_id)
+        self._ingested_source_map_events.add(source.event_id)
+        self._ingested_target_map_events.add(target.event_id)
         observation = self.s.add_node("TargetMapObservation", {
             "pair_id": str(pair_id), "source_event_id": source.event_id,
             "target_event_id": target.event_id,

@@ -510,12 +510,22 @@ def test_native_source_prior_transfers_through_map_and_fresh_target_receipt():
         assert source_hypothesis["action_kind"] == source_action
         assert source_hypothesis["after_value"] == source_after
 
-        map_record = verify_categorical_effect_map(
-            source_receipts=source_receipts,
-            target_receipts=[target_step(target_world, key) for key in ("t1", "t2")],
-            map_id=f"transfer:{source_world.__class__.__name__}",
-            action_map=actions, object_type_map=types, feature_map=features,
-            value_map=values, object_map=objects, target_frame_epoch=5)
+        target_map_receipts = [target_step(target_world, key) for key in ("t1", "t2")]
+        target_learner = NativeTargetLearner(transfer_enabled=True)
+        for ix, (source_receipt, target_receipt) in enumerate(
+                zip(source_receipts, target_map_receipts), 1):
+            target_learner.observe_map_pair(
+                pair_id=f"transfer-pair:{source_world.__class__.__name__}:{ix}",
+                source=source_receipt, target=target_receipt)
+        target_learner.settle()
+        candidates = [target_learner.s.node(node) for node
+                      in target_learner.s.nodes("RepresentationMap")
+                      if target_learner.s.node(node)["attrs"].get("mapping_kind")
+                      == "induced_categorical_effect"]
+        assert len(candidates) == 1
+        map_record = verify_induced_map_candidate(
+            candidate=candidates[0], source_receipts=source_receipts,
+            target_receipts=target_map_receipts, object_pairs=objects)
         assert map_record["status"] == "verified"
         target_validation_receipt = target_step(target_world, "t3")
         prior_id = f"prior:{source_hypothesis['hypothesis_key']}"
@@ -524,7 +534,6 @@ def test_native_source_prior_transfers_through_map_and_fresh_target_receipt():
             map_record=map_record, target_receipt=target_validation_receipt)
         assert effect_receipt["status"] == "verified"
 
-        target_learner = NativeTargetLearner(transfer_enabled=True)
         target_learner.import_source_prior(
             prior_id=prior_id, source_id="source-model", action_kind=target_action,
             object_type=target_type, feature_key=target_feature,
