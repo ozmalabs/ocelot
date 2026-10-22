@@ -252,6 +252,41 @@ def test_heldout_can_reject_training_choice_but_cannot_replace_it():
     assert s.node(req)["attrs"]["status"] == "holdout_pending"
 
 
+def test_graph_rule_verifies_training_cost_and_discrimination_before_selection():
+    agent = Agent(extra_seeds=("representation_search",),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}})
+    s, ag = agent.s, agent.ag
+    req = s.add_node("RepresentationSearchRequest", {"owner_id": "owner-d",
+        "source_epoch": 1, "model_epoch": 2, "frame_epoch": 3,
+        "training_split_id": "train-d", "candidate_cap": 16})
+    s.add_edge(ag, "has_representation_search_request", req, {})
+    passing = s.add_node("RepresentationProposal", {"candidate_id": "pass",
+        "status": "candidate", "owner_id": "owner-d", "source_epoch": 1,
+        "model_epoch": 2, "frame_epoch": 3, "package_bits": 80})
+    passing_validation = s.add_node("RepresentationDevelopmentValidation", {
+        "candidate_id": "pass", "status": "scored_frozen_training",
+        "training_split_id": "train-d", "training_model_epoch": 2,
+        "package_bits": 80, "residual_bits": 24, "total_bits": 104,
+        "discriminating_rows": 3, "heldout_used": False})
+    failing = s.add_node("RepresentationProposal", {"candidate_id": "fail",
+        "status": "candidate", "owner_id": "owner-d", "source_epoch": 1,
+        "model_epoch": 2, "frame_epoch": 3, "package_bits": 80})
+    failing_validation = s.add_node("RepresentationDevelopmentValidation", {
+        "candidate_id": "fail", "status": "scored_frozen_training",
+        "training_split_id": "train-d", "training_model_epoch": 2,
+        "package_bits": 80, "residual_bits": 24, "total_bits": 105,
+        "discriminating_rows": 2, "heldout_used": False})
+    for proposal, validation in ((passing, passing_validation),
+                                 (failing, failing_validation)):
+        s.add_edge(req, "has_candidate_proposal", proposal, {})
+        s.add_edge(proposal, "has_development_validation", validation, {})
+    for _ in range(5):
+        s.tick(1000)
+    assert s.node(passing)["attrs"]["status"] == "verified_candidate"
+    assert s.node(passing)["attrs"]["training_total_bits"] == 104
+    assert s.node(failing)["attrs"]["status"] == "candidate"
+
+
 def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
     agent = Agent(extra_seeds=("representation_search",),
                   policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}},

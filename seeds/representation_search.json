@@ -113,6 +113,18 @@
       }
     },
     {
+      "provenance": "seed:representation_search:has_development_validation:RepresentationProposal:RepresentationDevelopmentValidation",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "has_development_validation",
+      "tgt": {
+        "type": "RepresentationDevelopmentValidation",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:representation_search:has_representation_proposal:Agent:RepresentationProposal",
       "src": {
         "type": "Agent",
@@ -895,6 +907,271 @@
           "has_representation_proposal",
           "proposal",
           {}
+        ]
+      ]
+    },
+    {
+      "name": "rs_validate_candidate_on_frozen_development_rows",
+      "area": "representation_search",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_representation_search_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_representation_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_candidate_proposal",
+          "proposal"
+        ],
+        [
+          "proposal",
+          "has_development_validation",
+          "validation"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "scored_frozen_training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "training_split_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "training_split_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "training_model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "package_bits"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "package_bits"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "total_bits"
+            },
+            "b": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "validation"
+                  },
+                  "key": "package_bits"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "validation"
+                  },
+                  "key": "residual_bits"
+                }
+              ]
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "discriminating_rows"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "minimum_discriminating_rows"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "heldout_used"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "proposal",
+          "status",
+          "verified_candidate"
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "training_total_bits",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "total_bits"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "training_residual_bits",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "residual_bits"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "discriminating_evidence",
+          true
         ]
       ]
     },

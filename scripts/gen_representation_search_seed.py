@@ -24,6 +24,8 @@ def Count(src): return {"type": "Count", "source": src}
 def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
 def Lte(a, b): return {"type": "Lte", "a": a, "b": b}
 def Filter(src, var, pred): return {"type": "Filter", "source": src, "var_name": var, "predicate": pred}
+def Gte(a, b): return {"type": "Gte", "a": a, "b": b}
+def Plus(*items): return {"type": "Plus", "items": list(items)}
 
 
 def build_seed():
@@ -57,6 +59,7 @@ def build_seed():
         ("RepresentationSearchRequest", "has_candidate_proposal", "RepresentationProposal"),
         ("RepresentationSearchRequest", "has_transform_evidence", "RepresentationTransformEvidence"),
         ("RepresentationProposal", "has_heldout_validation", "RepresentationHeldoutValidation"),
+        ("RepresentationProposal", "has_development_validation", "RepresentationDevelopmentValidation"),
         ("Agent", "has_representation_proposal", "RepresentationProposal"),
         ("Agent", "has_thinking_budget_request", "ThinkingBudgetRequest"),
         ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
@@ -115,6 +118,29 @@ def build_seed():
                         ["set_attr", "proposal", "transition_to_frame", T(A("proposal", "target_frame_id"))],
                         ["set_attr", "proposal", "recall_invalidated", True],
                         ["set_attr", "proposal", "transfer_invalidated", True]]}
+    develop_rule = {"name": "rs_validate_candidate_on_frozen_development_rows", "area": AREA,
+                    "order": 2, "latency_class": "hard_realtime", "batch": False,
+                    "match": [["ag", "has_representation_search_policy", "pol"],
+                              ["ag", "has_representation_search_request", "request"],
+                              ["request", "has_candidate_proposal", "proposal"],
+                              ["proposal", "has_development_validation", "validation"]],
+                    "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                                 Eq(A("proposal", "status"), L("candidate")),
+                                 Eq(A("validation", "status"), L("scored_frozen_training")),
+                                 Eq(A("validation", "candidate_id"), A("proposal", "candidate_id")),
+                                 Eq(A("validation", "training_split_id"), A("request", "training_split_id")),
+                                 Eq(A("validation", "training_model_epoch"), A("proposal", "model_epoch")),
+                                 Eq(A("validation", "package_bits"), A("proposal", "package_bits")),
+                                 Eq(A("validation", "total_bits"),
+                                    Plus(A("validation", "package_bits"),
+                                         A("validation", "residual_bits"))),
+                                 Gte(A("validation", "discriminating_rows"),
+                                     A("pol", "minimum_discriminating_rows")),
+                                 Eq(A("validation", "heldout_used"), L(False))),
+                    "effects": [["set_attr", "proposal", "status", "verified_candidate"],
+                                ["set_attr", "proposal", "training_total_bits", T(A("validation", "total_bits"))],
+                                ["set_attr", "proposal", "training_residual_bits", T(A("validation", "residual_bits"))],
+                                ["set_attr", "proposal", "discriminating_evidence", True]]}
     proposal_rule = {"name": "rs_propose_from_held_transform_evidence", "area": AREA,
                     "order": 1, "latency_class": "hard_realtime", "batch": False,
                     "match": [["ag", "has_representation_search_policy", "pol"],
@@ -195,7 +221,7 @@ def build_seed():
                        "tgt": {"local": 0}, "attrs": {}}],
             "productions": [{"provenance": f"seed:{AREA}:{e}:{s}:{t}", "src": {"type": s, "var": "src"},
                              "edge_type": e, "tgt": {"type": t, "var": "tgt"}} for s,e,t in relations],
-            "rules": [request_rule, proposal_rule, select_rule, adopt_rule]}
+            "rules": [request_rule, proposal_rule, develop_rule, select_rule, adopt_rule]}
 
 
 def main():
