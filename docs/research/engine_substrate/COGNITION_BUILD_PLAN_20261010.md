@@ -466,7 +466,7 @@ Complete I4.1–I4.3 using observed state/action/consequence traces. A simple ex
 
 ## Phase 9 — Verified invention and invariant walls
 
-**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** implementation and runtime integration complete through P9.E1; evaluation freeze and held-out reporting remain.
+**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** complete through P9.E3; finite verified-invention evidence recorded with explicit limits.
 
 Finish committed I2 seed behavior with honest effect semantics. Exact inverses, repair-to-equivalence, and distributional outcomes are different contracts. Invention and wall explanations can be tested here without claiming the no-hand-written-strategy solve gate; that gate follows Phase 10.
 
@@ -570,6 +570,8 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 - **Non-goals:** a dummy baseline, depth-shortcut comparator or rescoring old results; treating a human baseline as available without protocol matching.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P9.E2 freeze record (2026-10-22):** `COGNITION_LINEAR_P9_PREREG.md` was committed alone as `829f824b` after all three arms produced development outcomes. The 1,500-row development allocation completed without missing adapters; exact verified coverage was 200/200 on versus 0/200 in both controls, with zero verification failures and answer leaks. Runner/analyzer self-checks passed. Exact seeds, arm budgets, six-tick/1,000-step limits, criteria and source/engine hashes are frozen in the preregistration.
+
 ### P9.E3 — Run the frozen phase, report results and authorize the next entry
 
 - **ID:** P9.E3
@@ -584,6 +586,8 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_invention.py tests/test_invariant_walls.py tests/test_process_repair.py -q -p no:cacheprovider`.
 - **Non-goals:** rerunning/tuning the same holdout; claiming a whole L-level from one mechanism panel.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P9.E3 result record (2026-10-22):** See [`COGNITION_LINEAR_P9_RESULTS.md`](COGNITION_LINEAR_P9_RESULTS.md). All 1,500 held-out rows completed. Exact verified coverage was 200/200 operators-on versus 0/200 operators-off and held-only, a paired +100-point difference with zero verification failures and answer leaks. Irreversible/stochastic evaluator and alias/invalid-inverse controls passed 200/200 and 100/100 per arm. Separate boot time and heap/RSS were not captured; total time includes boot and graph size is reported. No human comparator was available. This finite result authorizes P10.01 contract work only; general induction, stochastic learning, external refinement and capability-level closure remain unsupported.
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
