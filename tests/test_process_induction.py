@@ -64,6 +64,7 @@ def test_counterexample_revises_model():
  assert s.node(hyp)['attrs']['counterexample_count']>=1
  assert s.neighbours(hyp,'has_counterexample')
  assert len(s.neighbours(hyp,'supported_by_transition'))==2
+ assert s.node(s.nodes('TransitionHypothesis')[0])['attrs']['status']=='disputed'
 
 def test_indistinguishable_hypotheses_retained():
  s,ag=_boot()
@@ -100,3 +101,19 @@ def test_old_plan_invalidated_on_new_model_epoch():
  attrs=s.node(plan)['attrs']
  assert attrs['status']=='stale'
  assert attrs['stale_reason']=='model_epoch_changed'
+
+def test_transition_view_is_minted_from_receipted_observations_only():
+ s,ag=_boot();_two_support(s,ag);_tick(s)
+ models=s.nodes('TransitionHypothesis')
+ assert len(models)==1
+ model=s.node(models[0])['attrs']
+ assert model['status']=='candidate'
+ assert model['effect_evaluation']=='observed_categorical_transition'
+ receipt=s.neighbours(models[0],'has_model_receipt')[0]
+ assert s.node(receipt)['attrs']['status']=='verified_observations'
+ assert len(s.neighbours(receipt,'supported_by_transition'))==2
+
+def test_no_supplied_transition_hypothesis_is_ingested():
+ s,ag=_boot();_two_support(s,ag);_tick(s)
+ assert len(s.nodes('TransitionHypothesis'))==1
+ assert s.node(s.nodes('TransitionHypothesis')[0])['attrs']['hypothesis_key'] == s.node(s.nodes('ProcessInductionHypothesis')[0])['attrs']['hypothesis_key']

@@ -242,6 +242,42 @@
         "type": "TransitionObservation",
         "var": "tgt"
       }
+    },
+    {
+      "provenance": "seed:experiment_design:has_process_prediction:Agent:ProcessPrediction",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_prediction",
+      "tgt": {
+        "type": "ProcessPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiment_design:predicts_for_query:ProcessPrediction:ProcessPredictionQuery",
+      "src": {
+        "type": "ProcessPrediction",
+        "var": "src"
+      },
+      "edge_type": "predicts_for_query",
+      "tgt": {
+        "type": "ProcessPredictionQuery",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experiment_design:based_on_hypothesis:ProcessPrediction:ProcessInductionHypothesis",
+      "src": {
+        "type": "ProcessPrediction",
+        "var": "src"
+      },
+      "edge_type": "based_on_hypothesis",
+      "tgt": {
+        "type": "ProcessInductionHypothesis",
+        "var": "tgt"
+      }
     }
   ],
   "rules": [
@@ -692,6 +728,621 @@
           "req",
           "funds_experiment_probe",
           "probe",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "ed_propose_probe_from_disagreeing_observed_models",
+      "area": "experiment_design",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_experiment_design_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_process_prediction",
+          "p1"
+        ],
+        [
+          "ag",
+          "has_process_prediction",
+          "p2"
+        ],
+        [
+          "p1",
+          "predicts_for_query",
+          "q1"
+        ],
+        [
+          "p2",
+          "predicts_for_query",
+          "q2"
+        ],
+        [
+          "p1",
+          "based_on_hypothesis",
+          "h1"
+        ],
+        [
+          "p2",
+          "based_on_hypothesis",
+          "h2"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p1"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p2"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p1"
+              },
+              "key": "object_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p2"
+              },
+              "key": "object_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p1"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p2"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q1"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q2"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q1"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q2"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q1"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q2"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q1"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "q2"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "h1"
+              },
+              "key": "hypothesis_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "h2"
+              },
+              "key": "hypothesis_key"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "expected_after_value"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p2"
+                },
+                "key": "expected_after_value"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "h1"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "h2"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_experiment_probe",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "probe_id"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "model-probe:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q1"
+                      },
+                      "key": "query_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "q2"
+                      },
+                      "key": "query_id"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "probe",
+          "ExperimentProbe",
+          {
+            "probe_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "model-probe:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q1"
+                    },
+                    "key": "query_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q2"
+                    },
+                    "key": "query_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q1"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q1"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "object_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "object_id"
+              }
+            },
+            "action_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q1"
+                },
+                "key": "action_kind"
+              }
+            },
+            "status": "proposed",
+            "host_veto": false,
+            "cost": 1.0,
+            "candidate_source": "observed_model_disagreement"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_experiment_probe",
+          "probe",
+          {}
+        ],
+        [
+          "add_node",
+          "pp1",
+          "ProbePrediction",
+          {
+            "prediction_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "prediction:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q1"
+                    },
+                    "key": "query_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "owner_id"
+              }
+            },
+            "hypothesis_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "h1"
+                },
+                "key": "hypothesis_key"
+              }
+            },
+            "predicted_outcome": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "expected_after_value"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p1"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q1"
+                },
+                "key": "frame_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "probe",
+          "has_probe_prediction",
+          "pp1",
+          {}
+        ],
+        [
+          "add_edge",
+          "pp1",
+          "based_on_hypothesis",
+          "h1",
+          {}
+        ],
+        [
+          "add_node",
+          "pp2",
+          "ProbePrediction",
+          {
+            "prediction_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "prediction:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "q2"
+                    },
+                    "key": "query_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p2"
+                },
+                "key": "owner_id"
+              }
+            },
+            "hypothesis_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "h2"
+                },
+                "key": "hypothesis_key"
+              }
+            },
+            "predicted_outcome": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p2"
+                },
+                "key": "expected_after_value"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p2"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "q2"
+                },
+                "key": "frame_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "probe",
+          "has_probe_prediction",
+          "pp2",
+          {}
+        ],
+        [
+          "add_edge",
+          "pp2",
+          "based_on_hypothesis",
+          "h2",
           {}
         ]
       ]

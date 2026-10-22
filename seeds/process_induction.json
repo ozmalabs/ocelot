@@ -172,6 +172,42 @@
       }
     },
     {
+      "provenance": "seed:process_induction:has_transition_hypothesis:Agent:TransitionHypothesis",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_transition_hypothesis",
+      "tgt": {
+        "type": "TransitionHypothesis",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_induction:has_model_receipt:TransitionHypothesis:TransitionModelReceipt",
+      "src": {
+        "type": "TransitionHypothesis",
+        "var": "src"
+      },
+      "edge_type": "has_model_receipt",
+      "tgt": {
+        "type": "TransitionModelReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_induction:supported_by_transition:TransitionModelReceipt:TransitionObservation",
+      "src": {
+        "type": "TransitionModelReceipt",
+        "var": "src"
+      },
+      "edge_type": "supported_by_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:process_induction:has_model_dependent_plan:Agent:ProcessPlan",
       "src": {
         "type": "Agent",
@@ -2864,6 +2900,434 @@
           "q",
           "status",
           "predicted"
+        ]
+      ]
+    },
+    {
+      "name": "pi_materialize_receipted_transition_model",
+      "area": "process_induction",
+      "order": 21,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_model_learning_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_process_induction_hypothesis",
+          "hyp"
+        ],
+        [
+          "hyp",
+          "supported_by_transition",
+          "o1"
+        ],
+        [
+          "hyp",
+          "supported_by_transition",
+          "o2"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "support_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o1"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "o2"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_transition_hypothesis",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "hypothesis_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "hyp"
+                  },
+                  "key": "hypothesis_key"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "th",
+          "TransitionHypothesis",
+          {
+            "hypothesis_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "hypothesis_key"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": 0.0,
+            "source_state_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "before_value"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "action_kind"
+              }
+            },
+            "successor_state_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "after_value"
+              }
+            },
+            "status": "candidate",
+            "effect_evaluation": "observed_categorical_transition"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_transition_hypothesis",
+          "th",
+          {}
+        ],
+        [
+          "add_node",
+          "mr",
+          "TransitionModelReceipt",
+          {
+            "hypothesis_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "hypothesis_key"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "support_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "support_count"
+              }
+            },
+            "status": "verified_observations"
+          }
+        ],
+        [
+          "add_edge",
+          "th",
+          "has_model_receipt",
+          "mr",
+          {}
+        ],
+        [
+          "add_edge",
+          "mr",
+          "supported_by_transition",
+          "o1",
+          {}
+        ],
+        [
+          "add_edge",
+          "mr",
+          "supported_by_transition",
+          "o2",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "pi_retire_disputed_transition_model",
+      "area": "process_induction",
+      "order": 22,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_induction_hypothesis",
+          "hyp"
+        ],
+        [
+          "ag",
+          "has_transition_hypothesis",
+          "th"
+        ],
+        [
+          "th",
+          "has_model_receipt",
+          "mr"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "disputed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "th"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "hypothesis_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "th"
+              },
+              "key": "hypothesis_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mr"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified_observations"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "th",
+          "status",
+          "disputed"
+        ],
+        [
+          "set_attr",
+          "mr",
+          "status",
+          "disputed_by_counterexample"
         ]
       ]
     }
