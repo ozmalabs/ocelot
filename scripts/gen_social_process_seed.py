@@ -42,6 +42,10 @@ def build_seed():
         ("SocialProcessSchema", "evidenced_by_candidate", "SocialProcessCandidate"),
         ("SocialProcessSchema", "instantiates_effect", "ProcessSchema"),
         ("SocialProcessSchema", "has_counterexample", "SocialProcessCounterexample"),
+        ("SocialProcessSchema", "has_own_trial_receipt", "OwnTrialReceipt"),
+        ("OwnTrialReceipt", "binds_action_request", "ActionRequest"),
+        ("ActionRequest", "has_action_authorization", "ActionAuthorization"),
+        ("Agent", "has_action_request", "ActionRequest"),
         ("Agent", "has_social_process_request", "ThinkingBudgetRequest"),
         ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
     ]
@@ -218,6 +222,33 @@ def build_seed():
                     ["set_attr", "candidate", "status", "revision_pending"],
                     ["set_attr", "social_schema", "status", "stale_counterexample"]],
     }
+    ground = {
+        "name": "sp_ground_only_from_actual_owned_action_receipt", "area": AREA,
+        "order": 6, "latency_class": "hard_realtime", "batch": False,
+        "match": [["ag", "has_social_process_schema", "schema"],
+                  ["schema", "instantiates_effect", "model"],
+                  ["schema", "has_own_trial_receipt", "receipt"],
+                  ["receipt", "binds_action_request", "action_request"],
+                  ["ag", "has_action_request", "action_request"],
+                  ["action_request", "has_action_authorization", "authorization"]],
+        "where": And(Eq(A("schema", "status"), L("verified")),
+                      Eq(A("receipt", "status"), L("observed")),
+                      Eq(A("receipt", "actual_own_trial"), L(True)),
+                      Eq(A("receipt", "owner_id"), A("receipt", "learner_body_owner_id")),
+                      Eq(A("action_request", "actor_id"), A("receipt", "owner_id")),
+                      Eq(A("action_request", "status"), L("emitted")),
+                      Eq(A("authorization", "status"), L("consumed")),
+                      Eq(A("authorization", "request_id"), A("action_request", "request_id")),
+                      Eq(A("authorization", "source_epoch"), A("receipt", "source_epoch")),
+                      Eq(A("action_request", "source_epoch"), A("receipt", "source_epoch")),
+                      Eq(A("action_request", "sink_receipt_id"), A("receipt", "sink_receipt_id")),
+                      Not(Eq(A("receipt", "sink_receipt_id"), L(None))),
+                      Eq(A("receipt", "source_epoch"), A("schema", "source_epoch")),
+                      Eq(A("receipt", "model_epoch"), A("schema", "model_epoch")),
+                      Eq(A("receipt", "model_epoch"), A("model", "model_epoch"))),
+        "effects": [["set_attr", "schema", "grounding_status", "own_trial_grounded"],
+                    ["set_attr", "schema", "own_trial_receipt_id", T(A("receipt", "receipt_id"))]],
+    }
     return {"id": "social_process", "version": "1.0.0",
             "depends_on": ["imitation", "instruction_understanding"],
             "self_load_only": True, "area": AREA,
@@ -228,7 +259,7 @@ def build_seed():
             "edges": [{"src": {"role": "agent_root"}, "type": "has_social_process_policy", "tgt": {"local": 0}, "attrs": {}}],
             "productions": [{"provenance": f"seed:{AREA}:{src}:{edge}:{tgt}", "src": {"type": src, "var": "src"},
                              "edge_type": edge, "tgt": {"type": tgt, "var": "tgt"}} for src, edge, tgt in productions],
-            "rules": [instruction, witnessed, fail, verify, revise]}
+            "rules": [instruction, witnessed, fail, verify, revise, ground]}
 
 
 if __name__ == "__main__":

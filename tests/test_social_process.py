@@ -148,6 +148,32 @@ def test_no_teacher_marker_needed():
     assert len(agent.s.nodes("SocialProcessCandidate")) == 1
 
 
+def test_own_grounding_requires_owned_authorized_action_and_matching_sink_receipt():
+    agent = _agent()
+    _message, model, _intake = _instruction(agent)
+    _tick(agent)
+    candidate = agent.s.nodes("SocialProcessCandidate")[0]
+    _validate_candidate(agent, candidate, model)
+    schema = agent.s.nodes("SocialProcessSchema")[0]
+    assert agent.s.node(schema)["attrs"].get("grounding_status") is None
+    request = agent.s.add_node("ActionRequest", {
+        "request_id": "social-own-action", "actor_id": "agent-root",
+        "source_epoch": 4, "status": "emitted", "sink_receipt_id": "sink:social-own"})
+    authorization = agent.s.add_node("ActionAuthorization", {
+        "request_id": "social-own-action", "source_epoch": 4, "status": "consumed"})
+    agent.s.add_edge(agent.ag, "has_action_request", request, {})
+    agent.s.add_edge(request, "has_action_authorization", authorization, {})
+    receipt = agent.s.add_node("OwnTrialReceipt", {
+        "receipt_id": "social-own", "status": "observed", "actual_own_trial": True,
+        "owner_id": "agent-root", "learner_body_owner_id": "agent-root",
+        "source_epoch": 4, "model_epoch": 7, "sink_receipt_id": "sink:social-own"})
+    agent.s.add_edge(schema, "has_own_trial_receipt", receipt, {})
+    agent.s.add_edge(receipt, "binds_action_request", request, {})
+    _tick(agent)
+    assert agent.s.node(schema)["attrs"]["grounding_status"] == "own_trial_grounded"
+    assert agent.s.node(schema)["attrs"]["own_trial_receipt_id"] == "social-own"
+
+
 def test_wrong_interpretation_counterexample_revises():
     agent = _agent()
     _message, model, _intake = _instruction(agent)

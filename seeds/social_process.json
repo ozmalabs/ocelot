@@ -229,6 +229,54 @@
       }
     },
     {
+      "provenance": "seed:social_process:SocialProcessSchema:has_own_trial_receipt:OwnTrialReceipt",
+      "src": {
+        "type": "SocialProcessSchema",
+        "var": "src"
+      },
+      "edge_type": "has_own_trial_receipt",
+      "tgt": {
+        "type": "OwnTrialReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:social_process:OwnTrialReceipt:binds_action_request:ActionRequest",
+      "src": {
+        "type": "OwnTrialReceipt",
+        "var": "src"
+      },
+      "edge_type": "binds_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:social_process:ActionRequest:has_action_authorization:ActionAuthorization",
+      "src": {
+        "type": "ActionRequest",
+        "var": "src"
+      },
+      "edge_type": "has_action_authorization",
+      "tgt": {
+        "type": "ActionAuthorization",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:social_process:Agent:has_action_request:ActionRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:social_process:Agent:has_social_process_request:ThinkingBudgetRequest",
       "src": {
         "type": "Agent",
@@ -2148,6 +2196,337 @@
           "social_schema",
           "status",
           "stale_counterexample"
+        ]
+      ]
+    },
+    {
+      "name": "sp_ground_only_from_actual_owned_action_receipt",
+      "area": "social_process",
+      "order": 6,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_social_process_schema",
+          "schema"
+        ],
+        [
+          "schema",
+          "instantiates_effect",
+          "model"
+        ],
+        [
+          "schema",
+          "has_own_trial_receipt",
+          "receipt"
+        ],
+        [
+          "receipt",
+          "binds_action_request",
+          "action_request"
+        ],
+        [
+          "ag",
+          "has_action_request",
+          "action_request"
+        ],
+        [
+          "action_request",
+          "has_action_authorization",
+          "authorization"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "schema"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "actual_own_trial"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "learner_body_owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "actor_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "emitted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consumed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "request_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "request_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "authorization"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "sink_receipt_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "sink_receipt_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "sink_receipt_id"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "schema"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "schema"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "model"
+              },
+              "key": "model_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "schema",
+          "grounding_status",
+          "own_trial_grounded"
+        ],
+        [
+          "set_attr",
+          "schema",
+          "own_trial_receipt_id",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "receipt_id"
+            }
+          }
         ]
       ]
     }
