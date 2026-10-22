@@ -856,7 +856,9 @@ Use acquired distinctions and current observer/frame contracts to propose and te
 
 ## Phase 12 — Social acquisition observation and explain/rebuild
 
-**Entry:** Phase 11 compatible process/representation interfaces and P5 actual action authorization. **Status:** planned.
+**Entry:** Phase 11 compatible process/representation interfaces and P5 actual action authorization. **Status:** in progress; P12.01 evidence/source contract frozen and boundary fixtures added. Runtime imitation, social acquisition, explain/rebuild and registered evaluation remain open. The existing instruction-understanding suite has one observed full-boot failure (`test_full_boot_hypothesises_unknown_initial_head_before_instruction_activation`); retain and resolve or classify it before P12.03 closeout.
+
+**P12.01 contract record (2026-10-22):** [`COGNITION_SOCIAL_ACQUISITION_CONTRACT.md`](COGNITION_SOCIAL_ACQUISITION_CONTRACT.md) freezes source attribution, witnessed versus directed versus instructed inputs, partial-visibility unknowns, body/frame mapping, three separate outcome receipts, own-grounding requirements and isolated explain/rebuild boundaries. New `tests/test_imitation_migrated.py` boundary fixtures pass 4/4; they intentionally do not claim runtime imitation. The prescribed combined verification also ran the existing instruction-understanding suite: 13 passed, one full-boot unknown-instruction-head case failed and reproduces alone. No P12 runtime behavior has been promoted on the basis of these fixtures.
 
 Integrate former P6.F3 and I6 rather than duplicating demonstration pipelines. Observation of others pursuing ordinary goals is a first-class input route; no caregiver or teacher framing is required. Explicit instruction remains another route. Understanding is tested by reconstruction from an explanation with no access to the original schema.
 
