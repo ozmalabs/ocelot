@@ -491,6 +491,8 @@ def run(*, n=N_DEVELOPMENT, self_check=False, split="development"):
         "family_codes": [11, 12, 13], "selection_control_block": 1, "training_control_block": 0,
         "evaluation_control_block": 2, "integrity_control_block": 3,
         "task_control_block": control_block,
+        "integrity_control_seeds": {"family_code": 11, "start": 25_113_000,
+                                    "end_exclusive": 25_113_100},
         "training_seed_base": TRAINING_SEED_BASE,
         "selection_draws_per_generation": list(range(n)),
         "candidate_selection_draws": {"generation_1": [800, 801],

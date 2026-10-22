@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 import json
 import math
 import random
@@ -176,7 +177,33 @@ def _verify_frozen_hashes(meta):
         raise ValueError(f"held-out artifact hash mismatch: missing={missing}, mismatches={mismatches}")
 
 
-def analyze(payload):
+def _integrity_controls(payload):
+    controls = []
+    fields = ("world", "access", "input", "invariant", "action")
+    for draw in range(100):
+        kind = fields[draw % len(fields)]
+        altered = deepcopy(payload)
+        row = altered["records"][draw % len(altered["records"])]
+        if kind == "world":
+            row["world_sha256"] = "tampered-world"
+        elif kind == "access":
+            row["world_access_sha256"] = "tampered-access"
+        elif kind == "input":
+            row["input_audit"]["answer_fields_absent"] = False
+        elif kind == "invariant":
+            row["invariant_checks_passed"] = 0
+        else:
+            row["actions"] = 1
+        detected = analyze(altered, _skip_controls=True)["integrity_status"] == "FAIL"
+        controls.append({"seed": 25_113_000 + draw, "control": kind,
+                         "tampering_detected": detected})
+    return {"n": len(controls), "passed": sum(x["tampering_detected"] for x in controls),
+            "failed": sum(not x["tampering_detected"] for x in controls),
+            "seed_start": 25_113_000, "seed_end_exclusive": 25_113_100,
+            "controls": controls}
+
+
+def analyze(payload, _skip_controls=False):
     if payload.get("schema") != "pmb-scorecard-v1":
         raise ValueError("expected pmb-scorecard-v1")
     meta = payload.get("metadata", {})
@@ -220,6 +247,9 @@ def analyze(payload):
     block = 1 if meta["split"] == "development" else 2
     if meta.get("family_codes") != [11, 12, 13] or meta.get("task_control_block") != block:
         raise ValueError("P15 family or split allocation does not match the preregistration")
+    if meta.get("integrity_control_seeds") != {
+            "family_code": 11, "start": 25_113_000, "end_exclusive": 25_113_100}:
+        raise ValueError("P15 integrity-control allocation differs from the preregistration")
     expected_selection = {f"generation_{generation}": [800, 801] for generation in generations}
     if meta.get("candidate_selection_draws") != expected_selection or \
             meta.get("training_seed_base") != 25_110_000:
@@ -259,7 +289,7 @@ def analyze(payload):
         by_generation[str(generation)]["paired_full_vs_unchanged_mcnemar"] = _mcnemar_exact(
             paired_by_generation[generation], "full_system", "unchanged_operator")
     integrity_failures = sum(failures.values())
-    return {"schema": "pmb-linear-p15-v1-analysis-v1", "phase": meta["phase"],
+    result = {"schema": "pmb-linear-p15-v1-analysis-v1", "phase": meta["phase"],
             "split": meta["split"], "family": "permutation_process_macro",
             "paired_tasks": len(paired), "arms": rates, "by_generation": by_generation,
             "trend": _trend(paired), "paired_bootstrap_cost_latency": _bootstrap_differences(paired),
@@ -271,6 +301,12 @@ def analyze(payload):
                 and rates["unchanged_operator"]["accuracy"] is not None else None),
             "human_comparison": "UNAVAILABLE_PROTOCOL_NOT_MATCHED",
             "claim_boundary": "finite permutation process-macro family only; report registered trend and costs without general capability or human-comparison claims"}
+    if meta["split"] == "heldout" and not _skip_controls:
+        controls = _integrity_controls(payload)
+        result["integrity_controls"] = controls
+        if controls["failed"]:
+            result["integrity_status"] = "FAIL"
+    return result
 
 
 def main():

@@ -5,7 +5,7 @@ import pytest
 pytest.importorskip("substrate_rs")
 
 from evaluation.process_mastery.linear_p15_v1 import run
-from evaluation.process_mastery.analyze_linear_p15_v1 import analyze
+from evaluation.process_mastery.analyze_linear_p15_v1 import analyze, _integrity_controls
 
 
 def test_self_check_runs_three_approved_generations():
@@ -47,3 +47,6 @@ def test_heldout_is_fixed_at_200_and_development_is_disjoint():
         run(n=2, split="heldout")
     payload = run(n=2, self_check=True)
     assert payload["metadata"]["task_control_block"] == 1
+    controls = _integrity_controls(payload)
+    assert controls["n"] == controls["passed"] == 100
+    assert controls["failed"] == 0
