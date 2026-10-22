@@ -36,3 +36,28 @@ def test_p19_control_world_rejects_illegal_and_precondition_actions_without_muta
                        ("precondition_failure", BASE_SEED + 100_001),
                        ("impossible_goal", BASE_SEED + 100_002)):
         assert run_control(kind, seed)["state_unchanged"]
+
+
+def test_p19_invention_requires_candidate_scoped_approval_before_world_execution():
+    from evaluation.process_mastery.linear_p19_worlds import generate_task
+    from evaluation.process_mastery.linear_p19_v1 import run_invention
+
+    seed = BASE_SEED + 10_000
+    task, world, _ = generate_task("permutation", "multi_step_constraint", seed)
+    proposal = run_invention(task, world)
+    assert proposal["status"] == "AWAITING_CANDIDATE_APPROVAL"
+    assert world.epoch == 0
+
+    task, world, _ = generate_task("permutation", "multi_step_constraint", seed)
+    result = run_trial("permutation", "multi_step_constraint", seed,
+        "invention_discovery", approval_provider=lambda candidate:
+            candidate.get("expression_digest") == proposal["candidate_digest"],
+        approval_source="synthetic_development_fixture")
+    assert result["approval_source"] == "synthetic_development_fixture"
+    assert result["status"] == "COMPLETED"
+    assert result["solved"]
+    assert result["receipts"] and world.verify_receipt(result["receipts"][0])
+    assert result["strategy_learned_from_receipt"]
+    assert result["unseen_binding_strategy"]["binding_changed"]
+    assert result["unseen_binding_strategy"]["goal_changed"]
+    assert result["unseen_binding_strategy"]["solved"]
