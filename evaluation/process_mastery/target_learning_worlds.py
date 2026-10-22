@@ -132,6 +132,41 @@ class LeverSourceWorld:
         return receipt
 
 
+class RequestRepairWorld:
+    """Fresh social task world with an ordered request→repair precondition."""
+
+    family = "request_repair"
+    object_type = "RepairCase"
+    feature_key = "interaction_state"
+
+    def __init__(self, *, world_id="repair-world", case_id="case-1", initial="idle"):
+        self.world_id = world_id
+        self.case_id = case_id
+        self.state = initial
+        self.epoch = 0
+        self.receipts: list[WorldReceipt] = []
+
+    def apply(self, action: str) -> WorldReceipt:
+        before = self.state
+        if action == "request" and before == "idle":
+            self.state = "requested"
+        elif action == "repair" and before == "requested":
+            self.state = "repaired"
+        else:
+            raise ValueError(f"precondition_failed:{action}:{before}")
+        self.epoch += 1
+        receipt = WorldReceipt(
+            f"{self.world_id}:{self.epoch}:{self.case_id}", self.case_id,
+            self.object_type, action, self.feature_key, before, self.state,
+            "observed", True, self.epoch)
+        self.receipts.append(receipt)
+        return receipt
+
+    @property
+    def solved(self):
+        return self.state == "repaired"
+
+
 def verify_categorical_effect_map(*, source_receipts, target_receipts, map_id,
                                   action_map, object_type_map, feature_map,
                                   value_map, object_map, target_frame_epoch):

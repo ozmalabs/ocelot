@@ -121,6 +121,66 @@
       }
     },
     {
+      "provenance": "seed:observed_sequence_learning:has_verification_request:ObservedProcessSequenceCandidate:ThinkingBudgetRequest",
+      "src": {
+        "type": "ObservedProcessSequenceCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_verification_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:observed_sequence_learning:has_own_trial_receipt:ObservedProcessSequenceCandidate:OwnTrialReceipt",
+      "src": {
+        "type": "ObservedProcessSequenceCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_own_trial_receipt",
+      "tgt": {
+        "type": "OwnTrialReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:observed_sequence_learning:binds_action_request:OwnTrialReceipt:ActionRequest",
+      "src": {
+        "type": "OwnTrialReceipt",
+        "var": "src"
+      },
+      "edge_type": "binds_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:observed_sequence_learning:has_action_request:Agent:ActionRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_action_request",
+      "tgt": {
+        "type": "ActionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:observed_sequence_learning:has_action_authorization:ActionRequest:ActionAuthorization",
+      "src": {
+        "type": "ActionRequest",
+        "var": "src"
+      },
+      "edge_type": "has_action_authorization",
+      "tgt": {
+        "type": "ActionAuthorization",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:observed_sequence_learning:has_thinking_budget_request:Agent:ThinkingBudgetRequest",
       "src": {
         "type": "Agent",
@@ -777,6 +837,311 @@
           "uses_second_primitive",
           "second",
           {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "osl_promote_only_fresh_world_verified_sequence",
+      "area": "observed_sequence_learning",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_observed_sequence_learning_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_observed_sequence_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_verification",
+          "receipt"
+        ],
+        [
+          "candidate",
+          "has_verification_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unverified_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "exact_effect_match"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "step_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "action_sequence"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "action_sequence"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed_sequence_validation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "verified"
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "verification_receipt_id",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "receipt_id"
+            }
+          }
         ],
         [
           "set_attr",

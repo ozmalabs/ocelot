@@ -1,5 +1,9 @@
 """P20 observational acquisition preserves source and uncertainty boundaries."""
 from evaluation.process_mastery.harness import Agent
+from evaluation.process_mastery.observed_sequence_execution import (
+    execute_verified_observed_sequence, verify_observed_sequence_candidate,
+)
+from evaluation.process_mastery.target_learning_worlds import RequestRepairWorld
 
 
 def _agent():
@@ -102,3 +106,53 @@ def test_other_success_is_not_own_receipt_or_grounding():
     sequence_candidate = agent.s.nodes("ObservedProcessSequenceCandidate")[0]
     assert agent.s.node(sequence_candidate)["attrs"]["actor_outcome_is_own_trial"] is False
     assert agent.s.node(sequence_candidate)["attrs"]["status"] == "unverified_candidate"
+
+
+def _verified_sequence_candidate(agent):
+    _episode(agent)
+    _tick(agent)
+    candidate = agent.s.nodes("ObservedProcessSequenceCandidate")[0]
+    request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "observed_sequence_validation",
+        "candidate_id": agent.s.node(candidate)["attrs"]["candidate_id"],
+        "source_key": "fresh-world-verification", "source_epoch": 4,
+        "operation_id": "verify-observed-sequence", "status": "approved",
+        "debited_epoch": 10.0, "cost": 2.0})
+    agent.s.add_edge(agent.ag, "has_thinking_budget_request", request, {})
+    agent.s.add_edge(request, "draws_on_thinking_budget",
+                     agent.s.nodes("ThinkingBudget")[0], {})
+    agent.s.add_edge(candidate, "has_verification_request", request, {})
+    result = verify_observed_sequence_candidate(agent, candidate)
+    assert result["status"] == "VERIFIED"
+    assert agent.s.node(candidate)["attrs"]["status"] == "verified"
+    return candidate
+
+
+def test_sequence_candidate_requires_fresh_world_verification_then_own_trial():
+    agent = _agent()
+    candidate = _verified_sequence_candidate(agent)
+    world = RequestRepairWorld(world_id="own-world", case_id="new-case")
+    authorized = []
+    result = execute_verified_observed_sequence(
+        agent, candidate, world=world,
+        authorize=lambda proposal: authorized.append(proposal["action"]) or True)
+    assert result["status"] == "COMPLETED"
+    assert world.solved and authorized == ["request", "repair"]
+    own_receipts = agent.native.neighbours(candidate, "has_own_trial_receipt")
+    assert len(own_receipts) == 2
+    assert all(agent.s.node(node)["attrs"]["actual_own_trial"] for node in own_receipts)
+    assert len(agent.s.nodes("ActionAuthorization")) == 2
+
+
+def test_denied_sequence_step_stops_before_world_action():
+    agent = _agent()
+    candidate = _verified_sequence_candidate(agent)
+    world = RequestRepairWorld(world_id="denied-world", case_id="case-denied")
+    result = execute_verified_observed_sequence(
+        agent, candidate, world=world,
+        authorize=lambda proposal: proposal["action"] != "repair")
+    assert result["status"] == "ABSTAIN"
+    assert result["reason"] == "action_not_authorized"
+    assert world.state == "requested"
+    assert len(world.receipts) == 1
+    assert len(agent.native.neighbours(candidate, "has_own_trial_receipt")) == 1

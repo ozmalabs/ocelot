@@ -23,6 +23,10 @@ from substrate.world_adapter import WorldAdapter
 from evaluation.process_mastery.native_process_execution import (
     attest_open_process_candidate, execute_open_process_candidate, params_digest,
 )
+from evaluation.process_mastery.observed_sequence_execution import (
+    execute_verified_observed_sequence, verify_observed_sequence_candidate,
+)
+from evaluation.process_mastery.target_learning_worlds import RequestRepairWorld
 from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
 
 
@@ -1152,6 +1156,24 @@ def test_p20_observed_sequence_candidate_from_incidental_actions():
     assert agent.inner.neighbours(candidate, "uses_first_primitive") == first
     assert agent.inner.neighbours(candidate, "uses_second_primitive") == second
     assert not agent.s.nodes("OwnTrialReceipt")
+
+    validation_request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "observed_sequence_validation",
+        "candidate_id": agent.s.node(candidate)["attrs"]["candidate_id"],
+        "source_key": "p20-profile-validation", "source_epoch": 4,
+        "operation_id": "p20-profile-validation", "status": "approved",
+        "debited_epoch": 10.0, "cost": 2.0})
+    agent.s.add_edge(agent.agent, "has_thinking_budget_request", validation_request, {})
+    agent.s.add_edge(validation_request, "draws_on_thinking_budget", budget, {})
+    agent.s.add_edge(candidate, "has_verification_request", validation_request, {})
+    verified = verify_observed_sequence_candidate(agent, candidate)
+    assert verified["status"] == "VERIFIED"
+    own_world = RequestRepairWorld(world_id="p20-profile-own-world", case_id="new-case")
+    own_result = execute_verified_observed_sequence(
+        agent, candidate, world=own_world, authorize=lambda _proposal: True)
+    assert own_result["status"] == "COMPLETED"
+    assert own_world.solved
+    assert len(agent.inner.neighbours(candidate, "has_own_trial_receipt")) == 2
     agent.close()
 
 

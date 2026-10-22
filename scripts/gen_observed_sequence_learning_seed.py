@@ -37,6 +37,11 @@ def build_seed():
         ("ObservedProcessSequenceCandidate", "from_social_episode", "SocialEpisode"),
         ("ObservedProcessSequenceCandidate", "uses_first_primitive", "ProcessSchema"),
         ("ObservedProcessSequenceCandidate", "uses_second_primitive", "ProcessSchema"),
+        ("ObservedProcessSequenceCandidate", "has_verification_request", "ThinkingBudgetRequest"),
+        ("ObservedProcessSequenceCandidate", "has_own_trial_receipt", "OwnTrialReceipt"),
+        ("OwnTrialReceipt", "binds_action_request", "ActionRequest"),
+        ("Agent", "has_action_request", "ActionRequest"),
+        ("ActionRequest", "has_action_authorization", "ActionAuthorization"),
         ("Agent", "has_thinking_budget_request", "ThinkingBudgetRequest"),
         ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
         ("ObservedProcessSequenceCandidate", "has_verification", "ObservedSequenceVerification"),
@@ -102,6 +107,38 @@ def build_seed():
             ["set_attr", "request", "terminal_status", "completed"],
         ],
     }
+    promote = {
+        "name": "osl_promote_only_fresh_world_verified_sequence",
+        "area": AREA, "order": 2, "latency_class": "hard_realtime", "batch": False,
+        "match": [
+            ["ag", "has_observed_sequence_learning_policy", "pol"],
+            ["ag", "has_observed_sequence_candidate", "candidate"],
+            ["candidate", "has_verification", "receipt"],
+            ["candidate", "has_verification_request", "request"],
+            ["request", "draws_on_thinking_budget", "budget"],
+        ],
+        "where": And(
+            Eq(A("pol", "enabled"), L(1.0)),
+            Eq(A("candidate", "status"), L("unverified_candidate")),
+            Eq(A("receipt", "candidate_id"), A("candidate", "candidate_id")),
+            Eq(A("receipt", "status"), L("verified")),
+            Eq(A("receipt", "exact_effect_match"), L(True)),
+            Eq(A("receipt", "step_count"), L(2)),
+            Eq(A("receipt", "action_sequence"), A("candidate", "action_sequence")),
+            Eq(A("receipt", "source_epoch"), A("candidate", "source_epoch")),
+            Eq(A("receipt", "model_epoch"), A("candidate", "model_epoch")),
+            Eq(A("receipt", "frame_epoch"), A("candidate", "frame_epoch")),
+            Eq(A("request", "requester_kind"), L("observed_sequence_validation")),
+            Eq(A("request", "candidate_id"), A("candidate", "candidate_id")),
+            Eq(A("request", "status"), L("approved")),
+            Not(Eq(A("request", "debited_epoch"), L(None))),
+        ),
+        "effects": [
+            ["set_attr", "candidate", "status", "verified"],
+            ["set_attr", "candidate", "verification_receipt_id", T(A("receipt", "receipt_id"))],
+            ["set_attr", "request", "terminal_status", "completed"],
+        ],
+    }
     return {
         "id": "observed_sequence_learning", "version": "1.0.0",
         "depends_on": ["process_schema", "thinking_budget"],
@@ -119,7 +156,7 @@ def build_seed():
                          "src": {"type": src, "var": "src"},
                          "edge_type": edge, "tgt": {"type": tgt, "var": "tgt"}}
                         for src, edge, tgt in relations],
-        "rules": [rule],
+        "rules": [rule, promote],
     }
 
 
