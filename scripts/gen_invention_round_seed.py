@@ -11,8 +11,7 @@ An `InventionRound` is a budgeted episode of invention over one
 
 Funding goes through the generic ThinkingBudget pending-request contract
 (`ThinkingBudgetRequest{status: pending, cost, requester_kind}` +
-`draws_on_thinking_budget`); with no ThinkingBudget node at all the round
-opens directly.
+`draws_on_thinking_budget`). Without a budget node, invention does not run.
 
 While a round is `active`, one rule per operator applies that operator over
 the domain's held processes, computes the candidate's fingerprint on the
@@ -368,19 +367,6 @@ def open_round_rules():
                 ["add_edge", "r", "about_domain", "d", {}],
                 ["add_edge", "r", "funded_by", "req", {}],
                 ["add_edge", "req", "draws_on_thinking_budget", "budget", {}],
-            ] + link,
-            batch=False,
-        ))
-        out.append(rule(
-            f"ir_open_round_on_{trigger}_unbudgeted", OFFLINE_AREA, 20,
-            f"Open an InventionRound for the domain ({trigger}) directly when the agent holds no "
-            "ThinkingBudget at all.",
-            match,
-            And(*base, Eq(Count(N("agent", "has_thinking_budget")), ZERO)),
-            [
-                ["add_node", "r", "InventionRound", round_attrs(trigger, "active")],
-                ["add_edge", "agent", "has_invention_round", "r", {}],
-                ["add_edge", "r", "about_domain", "d", {}],
             ] + link,
             batch=False,
         ))

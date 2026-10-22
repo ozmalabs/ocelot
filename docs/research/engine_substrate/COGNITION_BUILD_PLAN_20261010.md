@@ -466,7 +466,7 @@ Complete I4.1–I4.3 using observed state/action/consequence traces. A simple ex
 
 ## Phase 9 — Verified invention and invariant walls
 
-**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** planned.
+**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** in progress; P9.01 frozen, P9.02 complete.
 
 Finish committed I2 seed behavior with honest effect semantics. Exact inverses, repair-to-equivalence, and distributional outcomes are different contracts. Invention and wall explanations can be tested here without claiming the no-hand-written-strategy solve gate; that gate follows Phase 10.
 
@@ -501,6 +501,8 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_invention.py tests/test_track_i_foundation.py -q -p no:cacheprovider`.
 - **Non-goals:** assuming generated operator data already executes correctly.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P9.02 implementation record (2026-10-22):** Native composition/inverse, all six executable operators, the six-element dihedral closure, precise conjugation, one-time budget debit, and restart bound pass in `tests/test_process_invention.py`. Review against the frozen funding contract found a legacy unbudgeted fallback; removed it from the authoring script and regenerated `seeds/invention_round.json`. Missing budget now leaves invention unopened. Focused verification: 14 passed (`tests/test_process_invention.py tests/test_track_i_foundation.py`). Bounded root search remains a library relation search; broad closure runtime and general strategy quality are not established here.
 
 ### P9.03 — Explain invariant walls and choose verified breakers
 
