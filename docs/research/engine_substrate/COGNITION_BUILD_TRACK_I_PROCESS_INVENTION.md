@@ -1,5 +1,7 @@
 # Cognition build — Track I: process understanding and invention, to human level and beyond
 
+> **Historical workstream specification (2026-10-22).** The [canonical linear plan](COGNITION_BUILD_PLAN_20261010.md) supersedes the execution order and gate schedule in this document. I0–I7 items are assigned to linear Phases 6–15 in the canonical coverage table. The committed I0/I1/I2 foundation is partial, as recorded below. All original task IDs and design details below remain reference material; statements about parallel tracks or waiting to detail phases are historical.
+
 Parent plan: `COGNITION_BUILD_PLAN_20261010.md`. The task template and tiering are defined in its §3, and the ground rules in its §1 apply here unchanged.
 
 Track I runs alongside Phases 3–6. It does not replace them. It is the part of the plan aimed at matching, then exceeding, human ability to **understand how processes work and to build new ones**.

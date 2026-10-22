@@ -1,5 +1,7 @@
 # Cognition build Phase 6 — Numerosity, imitation and staged sleep
 
+> **Historical workstream specification (2026-10-22).** The [canonical linear plan](COGNITION_BUILD_PLAN_20261010.md) supersedes the execution order and gate schedule in this document. Former P6.D7 is now linear Phase 7; former P6.F3 is Phase 12; former P6.B2 is Phase 13. All original task IDs and design details below remain reference material; statements about parallel tracks or waiting to detail phases are historical.
+
 **Detailed on:** 2026-10-21. **Status:** planned; dependent contracts are reconciled after P5 results.
 **Parent:** [Cognition build plan](COGNITION_BUILD_PLAN_20261010.md). **Entry:** P5 implementation/invariant gate and item results.
 
