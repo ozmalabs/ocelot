@@ -1,6 +1,9 @@
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointExpression, CheckpointWorldAdapter,
 )
+from evaluation.process_mastery.independent_worlds import (
+    agent_view, generate_d4_world, generate_loopover_world, p22_seed,
+)
 from evaluation.process_mastery.harness import Agent
 from tests.test_open_process_search import _compose
 
@@ -64,3 +67,50 @@ def test_checkpoint_restore_no_state_leak():
     second = adapter.score(full, **world)
     assert first == second
     assert initial == [0, 1, 2, 3]
+
+
+def test_d4_worlds_are_fixed_across_checkpoints_and_not_answer_leaking():
+    train = generate_d4_world(split="train", draw=4)
+    repeated = generate_d4_world(split="train", draw=4)
+    heldout = generate_d4_world(split="heldout", draw=4)
+    assert train == repeated
+    assert train["world_id"] == agent_view(train)["world_id"]
+    assert "hidden_transform_order" not in agent_view(train)
+    assert "hidden_target_params" not in agent_view(train)
+    assert train["seed"] != heldout["seed"]
+    assert p22_seed(family_code=2, split="train", draw=4) == train["seed"]
+
+
+def test_d4_goal_matches_native_process_composition():
+    agent, adapter = _adapter()
+    world = generate_d4_world(split="train", draw=9)
+    first, second = world["hidden_transform_order"]
+    left = world["held_processes"][first]
+    right = world["held_processes"][second]
+    composed = agent.native.evaluate(
+        {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+         "b": {"type": "Var", "name": "b"}}, {"a": left, "b": right})
+    checkpoint = CheckpointExpression("d4-composed", "ancestor", "d4-expression",
+                                      tuple(composed), 2)
+    scored = adapter.score(checkpoint, world_id=world["world_id"],
+                           initial_state=world["initial_state"],
+                           goal_state=world["goal_state"])
+    assert scored["score"] == 1
+
+
+def test_loopover_goal_matches_native_process_composition():
+    agent, adapter = _adapter()
+    world = generate_loopover_world(split="train", draw=11)
+    first, second = world["hidden_transform_order"]
+    composed = agent.native.evaluate(
+        {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+         "b": {"type": "Var", "name": "b"}},
+        {"a": world["held_processes"][first],
+         "b": world["held_processes"][second]})
+    checkpoint = CheckpointExpression("loopover-composed", "ancestor",
+                                      "loopover-expression", tuple(composed), 2)
+    scored = adapter.score(checkpoint, world_id=world["world_id"],
+                           initial_state=world["initial_state"],
+                           goal_state=world["goal_state"])
+    assert scored["score"] == 1
+    assert len(world["initial_state"]) == 9
