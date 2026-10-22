@@ -74,16 +74,14 @@ def test_fresh_has_real_learning_path():
 def test_same_target_affordances_and_empty_start_for_all_source_conditions():
     # Source availability is represented separately; it does not change the
     # target learner or its affordances before target evidence arrives.
-    starts = []
-    for source_condition in ("fresh", "matched", "mismatched"):
-        s, ag = _boot()
-        s.add_node("SourceExposure", {"condition": source_condition,
-                                       "charged_units": 1.0, "status": "observed"})
-        starts.append((s.node(s.nodes("ModelLearningPolicy")[0])["attrs"],
-                       len(s.nodes("ProcessInductionHypothesis")),
-                       s.node(ag)["attrs"]))
-    assert all(not hyps for _, hyps, _ in starts)
-    assert all(attrs["enabled"] == 1.0 for attrs, _, _ in starts)
+    learners = [NativeTargetLearner() for _ in ("fresh", "matched", "mismatched")]
+    learners[1].expose_source(source_id="source-a", relation="matched")
+    learners[2].expose_source(source_id="source-b", relation="mismatched")
+    for learner in learners:
+        assert learner.s.node(learner.s.nodes("ModelLearningPolicy")[0])["attrs"]["enabled"] == 1.0
+        assert len(learner.s.nodes("ThinkingBudget")) == 1
+        assert not learner.s.nodes("TransitionObservation")
+        assert not learner.s.nodes("ProcessInductionHypothesis")
 
 
 def test_missing_outcome_receipt_cannot_teach_fresh_target():
