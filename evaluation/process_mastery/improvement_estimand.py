@@ -22,7 +22,7 @@ def paired_generation_deltas(rows, *, candidate="full", ancestor="unchanged"):
         left = (family, generation, world_id, candidate)
         right = (family, generation, world_id, ancestor)
         if left not in by or right not in by:
-            continue
+            raise ValueError(f"unpaired checkpoint outcome: {(family, generation, world_id)}")
         differences[(family, generation)][world_id] = by[left] - by[right]
     return {key: dict(sorted(worlds.items())) for key, worlds in differences.items()}
 
@@ -44,7 +44,9 @@ def summarize_family(rows, *, family, candidate="full", ancestor="unchanged",
     if len(generations) < 2:
         return {"status": "NOT_ESTABLISHED", "reason": "insufficient_generations"}
     ids_by_gen = [set(grouped[(family, generation)]) for generation in generations]
-    common = sorted(set.intersection(*ids_by_gen))
+    if any(ids != ids_by_gen[0] for ids in ids_by_gen[1:]):
+        return {"status": "NOT_ESTABLISHED", "reason": "world_cluster_mismatch"}
+    common = sorted(ids_by_gen[0])
     if not common:
         return {"status": "NOT_ESTABLISHED", "reason": "no_common_world_clusters"}
     matrix = [[grouped[(family, generation)][world] for generation in generations]
@@ -80,6 +82,8 @@ def validate_efficiency_match(rows, *, work_key="primitive_work", tolerance=0.0)
     by = defaultdict(dict)
     for row in rows:
         by[(row["family"], row["generation"], row["world_id"])][row["arm"]] = row
+    if not by:
+        return False, {"reason": "empty_pair_set"}
     for key, arms in by.items():
         if "full" not in arms or "unchanged" not in arms:
             return False, {"reason": "unpaired_work", "key": key}

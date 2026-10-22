@@ -17,6 +17,8 @@ PMB separates world generation, agent policy, and scoring. A task generator supp
 
 Levels are gated by the Track I plan: L1 requires mechanism identification and explain/rebuild evidence; L2 requires held-out puzzle solving without a hand-written solver strategy; later levels require their named families. No level is passed by mechanism tests alone. Human-baseline claims require a cited, protocol-matched source; otherwise report the comparison as unavailable.
 
+The current dispositions and exact phase-ledger references are maintained in [`COGNITION_CAPABILITY_CLOSURE_MATRIX.md`](COGNITION_CAPABILITY_CLOSURE_MATRIX.md). No capability level is closed through P22 readiness work.
+
 ## Reproducibility contract
 
 The harness is mechanical: it installs a declared world, boots a declared profile, ticks under fixed limits, and emits raw records. It must not choose operators, rank candidate actions, or repair outcomes in Python. Baseline runs omit Track I seeds and report unsupported tasks as unsupported, not as agent failures. Track I runs opt into its seeds and policies explicitly. A result is capability evidence only when the held-out generator, profile, scoring rule, and human comparison were frozen before the run.

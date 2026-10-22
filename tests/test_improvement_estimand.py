@@ -60,3 +60,14 @@ def test_pair_cluster_preserved():
     assert result["bootstrap_unit"] == "world_id_cluster"
     assert result["paired_gain_by_generation"] == pytest.approx([0.2, 0.4, 0.6])
     assert result["generation_slope"] == pytest.approx(0.2)
+
+
+def test_missing_pair_or_checkpoint_world_invalidates_estimate():
+    rows = _rows([(0.5, 0.4), (0.6, 0.4), (0.7, 0.4)])
+    rows.pop()
+    with pytest.raises(ValueError, match="unpaired"):
+        paired_generation_deltas(rows)
+    rows = _rows([(0.5, 0.4), (0.6, 0.4), (0.7, 0.4)])
+    rows = [row for row in rows if not (row["generation"] == 2 and row["world_id"] == "w3")]
+    result = summarize_family(rows, family="perm", bootstrap_draws=50)
+    assert result == {"status": "NOT_ESTABLISHED", "reason": "world_cluster_mismatch"}

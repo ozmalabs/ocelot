@@ -845,6 +845,9 @@ COGNITION_ON_SEEDS = (
     # remain disabled until a phase-specific evaluation enables them.
     "open_process_search",
     "open_process_adoption",
+    # P22 generic proposals remain non-actionable until native qualification
+    # and candidate-specific approval complete.
+    "independent_improvement",
     # P11 frame search and exact process transfer remain opt-in at policy level.
     "representation_search",
     "process_transfer",

@@ -1,0 +1,360 @@
+{
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "IndependentImprovementPolicy",
+      "attrs": {
+        "name": "independent_improvement_policy",
+        "enabled": 0.0,
+        "minimum_native_trials": 2.0,
+        "max_proposals": 128.0,
+        "required_split": "training",
+        "criteria_digest": "p22-independent-improvement-v1"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_independent_improvement_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:p22:has_independent_improvement_policy:Agent:IndependentImprovementPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_independent_improvement_policy",
+      "tgt": {
+        "type": "IndependentImprovementPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_independent_improvement_proposal:Agent:IndependentImprovementProposal",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_independent_improvement_proposal",
+      "tgt": {
+        "type": "IndependentImprovementProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_independent_improvement_qualification:Agent:IndependentImprovementQualification",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_independent_improvement_qualification",
+      "tgt": {
+        "type": "IndependentImprovementQualification",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:proposes_native_candidate:IndependentImprovementProposal:OpenProcessCandidate",
+      "src": {
+        "type": "IndependentImprovementProposal",
+        "var": "src"
+      },
+      "edge_type": "proposes_native_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:derived_from_trial:IndependentImprovementProposal:OpenProcessSearchAttempt",
+      "src": {
+        "type": "IndependentImprovementProposal",
+        "var": "src"
+      },
+      "edge_type": "derived_from_trial",
+      "tgt": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:qualifies_proposal:IndependentImprovementQualification:IndependentImprovementProposal",
+      "src": {
+        "type": "IndependentImprovementQualification",
+        "var": "src"
+      },
+      "edge_type": "qualifies_proposal",
+      "tgt": {
+        "type": "IndependentImprovementProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:counts_native_trial:IndependentImprovementQualification:OpenProcessSearchAttempt",
+      "src": {
+        "type": "IndependentImprovementQualification",
+        "var": "src"
+      },
+      "edge_type": "counts_native_trial",
+      "tgt": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "iip_propose_native_training_candidate",
+      "area": "memory_consolidation",
+      "order": 12,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Track a generic native-search expression only when its source task is explicitly training data.",
+      "match": [
+        [
+          "agent",
+          "has_independent_improvement_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_open_process_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "derived_from_attempt",
+          "attempt"
+        ],
+        [
+          "attempt",
+          "about_task",
+          "task"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "required_split"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "attempt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unapproved_candidate"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_independent_improvement_proposal",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "expression_digest"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "candidate"
+                  },
+                  "key": "expression_digest"
+                }
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "edge_type": "has_thinking_budget",
+              "any_type": false
+            },
+            "var_name": "budget",
+            "predicate": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "budget"
+                },
+                "key": "enabled"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "proposal",
+          "IndependentImprovementProposal",
+          {
+            "expression_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "expression_digest"
+              }
+            },
+            "expression_tree": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "expression_tree"
+              }
+            },
+            "criteria_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "policy"
+                },
+                "key": "criteria_digest"
+              }
+            },
+            "source_split": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "split"
+              }
+            },
+            "status": "awaiting_native_qualification",
+            "actionable": false,
+            "qualified_trial_count": 0.0
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_independent_improvement_proposal",
+          "proposal",
+          {}
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "proposes_native_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "derived_from_trial",
+          "attempt",
+          {}
+        ]
+      ]
+    }
+  ],
+  "id": "independent_improvement",
+  "version": "1.0.0",
+  "depends_on": [
+    "open_process_search",
+    "recursive_process_improvement"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "P22 generic proposals and qualification receipts from native training trials; no named successor operators."
+}

@@ -1349,6 +1349,90 @@ def test_p20_shared_budget():
     assert budgets[0] in agent.inner.neighbours(agent.agent, "has_thinking_budget")
     agent.close()
 
+
+def test_p22_default_isolation():
+    agent = boot_cognition_on()
+    default, conversation = WorldAdapter(), WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    try:
+        policies = _nodes(agent, "IndependentImprovementPolicy")
+        assert len(policies) == 1
+        assert agent.s.node(policies[0])["attrs"].get("enabled") == 0.0
+        assert not _nodes(default, "IndependentImprovementPolicy")
+        assert not _nodes(conversation, "IndependentImprovementPolicy")
+        budgets = [n for n in _nodes(agent, "ThinkingBudget")
+                   if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+    finally:
+        agent.close()
+        default.close()
+        conversation.close()
+
+
+def test_p22_native_causal_chain_and_shared_budget():
+    agent = boot_cognition_on()
+    try:
+        for kind, enabled in (("OpenProcessSearchPolicy", 1.0),
+                              ("IndependentImprovementPolicy", 1.0),
+                              ("SolverPolicy", 0.0)):
+            for policy in _nodes(agent, kind):
+                agent.s.set_attr(policy, "enabled", enabled)
+        domain = agent.s.add_node("ProcessDomain", {
+            "name": "p22-causal", "kind": "permutation", "probes": [[0, 1, 2, 3]],
+            "probe_epoch": 0, "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0})
+        agent.s.add_edge(agent.agent, "has_process_domain", domain, {})
+        processes = (("source-a", [1, 0, 2, 3]), ("source-b", [0, 2, 1, 3]))
+        for name, params in processes:
+            schema = agent.s.add_node("ProcessSchema", {
+                "kind": "permutation", "domain": "p22-causal", "domain_kind": "permutation",
+                "name": name, "params": params, "source_digest": name, "cost": 1.0,
+                "provenance": "held", "status": "active", "invariants": [],
+                "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+                "probe_epoch": 0, "source_probe_epoch": 0})
+            agent.s.add_edge(agent.agent, "has_process_schema", schema, {})
+            agent.s.add_edge(domain, "has_held_process", schema, {})
+        params = agent.inner.evaluate(
+            {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+             "b": {"type": "Var", "name": "b"}},
+            {"a": processes[0][1], "b": processes[1][1]})
+        goal = agent.inner.evaluate(
+            {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+             "state": {"type": "Var", "name": "state"}},
+            {"p": params, "state": [0, 1, 2, 3]})
+        task = agent.s.add_node("SolveTask", {
+            "domain": "p22-causal", "initial_state": [0, 1, 2, 3],
+            "state": [0, 1, 2, 3], "goal": goal, "object_count": 4.0,
+            "status": "stuck", "split": "training"})
+        agent.s.add_edge(agent.agent, "has_solve_task", task, {})
+        agent.s.add_edge(task, "about_domain", domain, {})
+        for _ in range(20):
+            agent.inner.run_rules(4000)
+        attempts = _nodes(agent, "OpenProcessSearchAttempt")
+        candidates = _nodes(agent, "OpenProcessCandidate")
+        proposals = _nodes(agent, "IndependentImprovementProposal")
+        assert attempts and candidates and len(proposals) == 1
+        verified = [n for n in attempts
+                    if agent.s.node(n)["attrs"].get("status") == "verified"]
+        assert verified
+        assert agent.s.node(proposals[0])["attrs"]["actionable"] is False
+        budgets = [n for n in _nodes(agent, "ThinkingBudget")
+                   if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        assert agent.inner.neighbours(agent.agent, "has_thinking_budget") == budgets
+    finally:
+        agent.close()
+
+
+def test_p22_shared_budget():
+    agent = boot_cognition_on()
+    try:
+        budgets = [n for n in _nodes(agent, "ThinkingBudget")
+                   if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        assert budgets[0] in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+    finally:
+        agent.close()
+
 def test_p5_stop_at_native_sink():
     from tests.test_response_inhibition_migrated import _native_graph, _request, _tick
     substrate, agent = _native_graph(enabled=True)

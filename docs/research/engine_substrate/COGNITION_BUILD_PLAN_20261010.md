@@ -2083,7 +2083,7 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 ## Phase 22 — Independent-goal multi-generation improvement and capability audit
 
-**Entry:** P16 exact execution/provenance, P17–P21 supported learned behavior and P19 generic proposals; all claimed prerequisites reviewed. P21 mechanisms are available but both efficacy primaries failed at ceiling, so P22 must use a new independent-goal panel and cannot rely on a P21 benefit. **Status:** active; P22.01 estimand/specification work is the next gate.
+**Entry:** P16 exact execution/provenance, P17–P21 supported learned behavior and P19 generic proposals; all claimed prerequisites reviewed. P21 mechanisms are available but both efficacy primaries failed at ceiling, so P22 must use a new independent-goal panel and cannot rely on a P21 benefit. **Status:** active. P22.01 estimand and P22.04 evidence matrix are complete. P22.02 has a disabled non-actionable proposal boundary, but multi-trial qualification is incomplete. P22.03 has a read-only native checkpoint adapter with causal/work fixtures; a registered phase evaluation is not run. P22.E1 integration tests pass; P22.E2–E3 remain open.
 
 **Reason:** Replace operator-aligned targets and hard-coded successors with an actual learning/invention loop on independent task distributions. This is a new protocol on untouched goals; it must not repair/rescore the P15 trend or assume a human comparison.
 
@@ -2148,6 +2148,12 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_improvement_estimand.py tests/test_checkpoint_world_adapter.py -q -p no:cacheprovider`.
 - **Non-goals:** creating a new benchmark to label the system powerful without its underlying causal learning evidence.
 - **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P22.01 record (2026-10-23):** Added [`COGNITION_INDEPENDENT_IMPROVEMENT_CONTRACT.md`](COGNITION_INDEPENDENT_IMPROVEMENT_CONTRACT.md) and a ceiling-safe paired estimator. The estimator keeps repeated checkpoints clustered by world, reports exact zero for flat/ceiling/floor paired outcomes, requires complete paired worlds across checkpoints and blocks efficiency claims when paired work differs. Its six estimand fixtures pass.
+
+**P22.02/P22.03/E1 mechanism record (2026-10-23):** A disabled generic P22 policy references native-verified P19 expressions only when their source task is explicitly marked training; proposals remain non-actionable and record zero qualified trials until further native development evidence is connected. The five proposal/approval-boundary tests pass. A read-only native finite-process checkpoint adapter evaluates supplied expressions on common isolated world IDs and a shared primitive-work ceiling. Five adapter/causal-knockout tests pass; a cognition-on causal-chain fixture creates a training-only proposal from native search and confirms one shared enabled budget. This does not constitute multi-generation efficacy or a held-out P22 evaluation.
+
+**P22.04 record (2026-10-23):** Added [`COGNITION_CAPABILITY_CLOSURE_MATRIX.md`](COGNITION_CAPABILITY_CLOSURE_MATRIX.md) and linked it from PMB v1. It maps all L1–L7 levels to exact phase evidence and leaves each open as failed, not established, or unavailable; human comparisons and unsupported input breadth remain explicit. No level is closed.
 
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
@@ -2304,7 +2310,7 @@ P3 rung-1 cache speedup remains failed. P4 C5's incremental-resolution test rema
 
 ## 7. Next executable action
 
-Start **P17.01**. P16.E3 passed its corrected, versioned held-out conformance protocol; see [`COGNITION_LINEAR_P16_RESULTS.md`](COGNITION_LINEAR_P16_RESULTS.md). Keep the invalid v1 protocol and its raw bytes preserved without inference. P16 supports exact native provenance and finite one-step execution conformance only; it does not establish comparative strategy quality or autonomous process discovery. Phases 0–15 retain their historical outcomes, including P15's NOT_ESTABLISHED trend; do not rerun or rescore those sealed allocations.
+Continue **P22.02** by connecting non-actionable proposals to at least two independent native development trials per expression and a frozen qualification record. Then complete P22.03 arm coverage and resource accounting before attempting P22.E2. Do not freeze a P22 held-out draw while the second structurally distinct supported family, promotion lineage, or any working comparator is missing. P21's valid failures and P15's `NOT_ESTABLISHED` trend remain unchanged; do not rerun or rescore historical sealed allocations.
 
 The immediate next goal is to test whether acquired qualia changes what the agent predicts and does. P16's attested graph-selected expression path and verified finite-world receipts are available as bounded execution interfaces; its primitive-search solve rate is not a general strategy result. This user-requested extension authorizes planning and ordinary implementation tasks; it grants no new candidate-specific operator approval beyond those already recorded.
 
