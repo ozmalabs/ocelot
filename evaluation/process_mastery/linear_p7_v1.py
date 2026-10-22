@@ -103,7 +103,8 @@ def control_trial(seed,family,kind):
     has=bool(s.nodes('QualiaAxisCandidate'))
     return {'family':f'{family}_{kind}','seed':seed,'profile':'experience-built','status':'COMPLETED',
       'outcome':'candidate' if has else 'no_candidate','external_outcome':{'pass':(has if kind=='label_shuffled' else not has)},
-      'source_leaks':0,'input_labels_exposed':False}
+      'source_leaks':0,'input_labels_exposed':False,
+      'detached_scorer_labels':(['failure','success','success'] if kind=='label_shuffled' else None)}
 
 def number_trial(seed,ratio=None,small=False):
     from domains.number_world import perceptual_scene_attrs
