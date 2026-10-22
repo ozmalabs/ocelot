@@ -229,6 +229,8 @@ def analyze(payload, _skip_controls=False):
         audit = row.get("input_audit", {})
         failures["inputs"] += int(not all(audit.get(k) is True for k in
             ("answer_fields_absent", "hidden_strategy_absent", "sealed_ids_absent")))
+        failures["inputs"] += int(audit.get("same_primitive_access_hash") !=
+                                   row.get("world_access_sha256"))
         failures["invariants"] += int(row.get("invariant_checks_passed") != 1)
         failures["actions"] += int(row.get("actions") != 0)
         failures["status"] += int(row.get("graph_nodes_end", 0) >
@@ -238,6 +240,16 @@ def analyze(payload, _skip_controls=False):
         expected_work = (int(row.get("generation", 0)) + 2
                          if arm == "full_system" else 2)
         failures["work"] += int(row.get("agent_work_units") != expected_work)
+        failures["work"] += int(row.get("world_generation_work_units") != 2)
+        failures["work"] += int(row.get("scorer_evaluation_calls") != 1)
+        remaining = row.get("budget_remaining")
+        max_budget = 100_000 if arm == "full_system" else 400_000
+        failures["work"] += int(not isinstance(remaining, (int, float)) or
+                                not math.isfinite(remaining) or remaining < 0 or
+                                remaining > max_budget)
+        elapsed = row.get("task_seconds")
+        failures["status"] += int(not isinstance(elapsed, (int, float)) or
+                                   not math.isfinite(elapsed) or elapsed < 0)
     n_per_generation = int(meta.get("n_per_generation_per_arm", 0))
     generations = meta.get("completed_generations", [])
     if generations != [1, 2, 3]:

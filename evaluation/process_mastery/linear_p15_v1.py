@@ -471,6 +471,8 @@ def run(*, n=N_DEVELOPMENT, self_check=False, split="development"):
                         "seed": seed, "generation": generation, "profile": arm,
                         "solved": bool(solved), "operator_calls": 1,
                         "agent_work_units": task_work,
+                        "world_generation_work_units": 2,
+                        "scorer_evaluation_calls": 1,
                         "task_seconds": task_seconds,
                         "actions": 0, "invariant_checks_passed": int(all(sorted(p) == list(range(4)) for p in (comm, operator, square))),
                         "boot_seconds": boot_seconds, "graph_nodes_end": len(graph["nodes"]),
