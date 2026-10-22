@@ -233,6 +233,14 @@ def _attempt_status_counts(agent):
                         for node in _graph_nodes(agent, "OpenProcessSearchAttempt")))
 
 
+def _search_request_counts(agent):
+    return [{"task_key": agent.s.node(request)["attrs"].get("task_key"),
+             "status": agent.s.node(request)["attrs"].get("status"),
+             "attempts": len(agent.inner.neighbours(request, "has_search_attempt")),
+             "budget_requests": len(agent.inner.neighbours(request, "has_budget_request"))}
+            for request in _graph_nodes(agent, "OpenProcessSearchRequest")]
+
+
 def run_invention(task, world, *, approval_provider=None,
                   approval_source="candidate_specific_provider", unseen_binding=None):
     """Run generic graph search; execute only with an exact approval callback.
@@ -300,6 +308,7 @@ def run_invention(task, world, *, approval_provider=None,
             return {"status": "NO_CANDIDATE" if not candidates else "AMBIGUOUS_CANDIDATE",
                     "candidate_count": len(candidates), "attempt_count": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
                     "attempt_status_counts": _attempt_status_counts(agent),
+                    "search_requests": _search_request_counts(agent),
                     "task_seconds": time.perf_counter() - started}
         candidate = candidates[0]
         digest = attest_open_process_candidate(agent, candidate)
@@ -314,6 +323,7 @@ def run_invention(task, world, *, approval_provider=None,
                     "candidate": approval_context,
                     "attempt_count": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
                     "attempt_status_counts": _attempt_status_counts(agent),
+                    "search_requests": _search_request_counts(agent),
                     "approval_source": approval_source,
                     "task_seconds": time.perf_counter() - started}
         approval = agent.s.add_node("OpenProcessAdoptionApproval", {
@@ -374,6 +384,7 @@ def run_invention(task, world, *, approval_provider=None,
             "execution_reason": result.get("reason"),
             "attempt_count": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
             "attempt_status_counts": _attempt_status_counts(agent),
+            "search_requests": _search_request_counts(agent),
             "strategy_learned_from_receipt": len(strategies) == 1,
             "unseen_binding_strategy": strategy_reuse,
             "task_seconds": time.perf_counter() - started}
