@@ -1,5 +1,8 @@
 """P11 exact transfer gates; unknown and lossy maps abstain."""
 from evaluation.process_mastery.harness import Agent
+from evaluation.process_mastery.process_transfer_worlds import (
+    apply_program as apply_world_program, transfer_world, verify_world_conjugacy,
+)
 def _inverse(p):
     result = [0] * len(p)
     for i, x in enumerate(p):
@@ -182,3 +185,17 @@ def test_graph_rule_composes_transfer_candidate_natively():
          "state": {"type": "Var", "name": "state"}},
         {"p": attrs["composed_target_program"], "state": [0, 1, 2]})
     assert out == [2, 1, 0]
+
+
+def test_registered_transfer_world_pairings_have_separating_effects():
+    for pairing in ("permutation_relabel_4", "integer_matrix_basis_2"):
+        world = transfer_world(pairing, 19)
+        assert verify_world_conjugacy(world)
+        for state in world["training_states"] + world["heldout_states"]:
+            source_view = apply_world_program(world["kind"], state, world["forward_map"])
+            target_effect = apply_world_program(world["kind"], source_view,
+                                                world["target_program"])
+            source_effect = apply_world_program(world["kind"], state, world["source_program"])
+            mapped_source_effect = apply_world_program(world["kind"], source_effect,
+                                                       world["forward_map"])
+            assert target_effect == mapped_source_effect
