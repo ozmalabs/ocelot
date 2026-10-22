@@ -298,6 +298,10 @@ def test_native_curriculum_releases_training_task_to_same_process_search_graph()
     agent = boot_cognition_on()
     try:
         configure_p22_arm(agent, "full", budget_capacity=64.0)
+        # Isolate the curriculum-to-P19 dispatch path. Arm configuration tests
+        # verify that SolverPolicy is enabled in every real condition; this
+        # fixture turns it off so the P19 search handoff remains observable.
+        agent.s.set_attr(agent.s.nodes("SolverPolicy")[0], "enabled", 0.0)
         domain_name = "p22-curriculum-bridge"
         domain = agent.s.add_node("ProcessDomain", {
             "name": domain_name, "kind": "permutation", "domain_kind": "permutation",

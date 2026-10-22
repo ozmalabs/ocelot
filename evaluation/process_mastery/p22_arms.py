@@ -18,6 +18,7 @@ _POLICY_GROUPS = {
                   "OpenProcessAdoptionPolicy"),
 }
 _P21_ONLY_POLICIES = ("CurriculumLearningBridgePolicy",)
+_COMMON_ANCESTOR_POLICIES = ("ProcessSchemaPolicy", "SolverPolicy")
 
 
 def configure_p22_arm(agent, arm: str, *, budget_capacity: float) -> dict:
@@ -41,6 +42,12 @@ def configure_p22_arm(agent, arm: str, *, budget_capacity: float) -> dict:
 
     switches = _ARM_SWITCHES[arm]
     policy_state = {}
+    for kind in _COMMON_ANCESTOR_POLICIES:
+        nodes = store.nodes(kind)
+        if len(nodes) != 1:
+            raise RuntimeError(f"P22 profile must contain exactly one {kind}")
+        store.set_attr(nodes[0], "enabled", 1.0)
+        policy_state[kind] = {"node_id": str(nodes[0]), "enabled": True}
     for group, kinds in _POLICY_GROUPS.items():
         for kind in kinds:
             nodes = store.nodes(kind)
