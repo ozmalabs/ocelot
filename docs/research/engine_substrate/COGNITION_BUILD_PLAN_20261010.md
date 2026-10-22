@@ -353,7 +353,7 @@ Explicitly close the developmental gap discussed in this session. Existing P4 sc
 
 ## Phase 8 — Learned process models and informative experimentation
 
-**Entry:** Phase 7 episode evidence and acquired distinction interfaces. **Status:** planned.
+**Entry:** Phase 7 episode evidence and acquired distinction interfaces. **Status:** evidence closeout complete with limits; P8.01 contract frozen, P8.02–P8.04 implemented, P8.E1 integrated, P8.E2 preregistered, P8.E3 reported.
 
 Complete I4.1–I4.3 using observed state/action/consequence traces. A simple explicit held-model path is available from P5; this phase must construct and revise models through learning. Separate hidden-state invention from merely indexing more named states. C5’s old zero-gain result remains; evaluate whether acquired evidence and experiment choice add a new advantage.
 
@@ -1401,3 +1401,8 @@ Start **P7.01**, then execute the remaining tasks in their printed order. Phase 
 **P8.04 implementation record (2026-10-22):** Added generated `experiment_design` with a disabled policy. The native rules request budget only for allowed probes whose retained predictions differ, select the lowest-cost probe with a stable tie-break, and refuse host-vetoed or non-informative choices. Numeric VOI remains absent because prior probabilities are not established. An observed result appends per-hypothesis support/disconfirmation audits, retains a counterexample on a refuted hypothesis, and increments the world-model projection version with a result-linked recomputation audit. Verification: `tests/test_experiment_design.py tests/test_cognition_manifold_migrated.py tests/test_thinking_budget_migrated.py` — 23 passed. The projection revision is a finite graph projection fixture; no external world refinement or sink adapter is claimed.
 
 **P8.E1 integration record (2026-10-22):** Added process induction, latent-process search and experiment design to the explicit cognition-on profile. All three policies remain disabled at boot; default and conversation profiles remain isolated. The P8 focused bundle passed 37 tests. Boot measured 0.1501 s, 977 graph nodes and 563 rules; one shared ThinkingBudget remains enabled, allocator memory is unavailable. Inputs and receipts remain graph-simulator fixtures, not external actuator outcomes.
+
+
+**P8.E2 freeze record (2026-10-22):** `COGNITION_LINEAR_P8_PREREG.md` was committed alone as `df072293` after the runner/analyzer self-checks and six concrete development outcomes passed. The freeze records 1,100 held-out rows, non-overlapping seed blocks, three equal-exposure mechanism arms, temporal controls, funded refinement trials, runner/engine/profile hashes and the supplied-hypothesis limitation.
+
+**P8.E3 result record (2026-10-22):** See [`COGNITION_LINEAR_P8_RESULTS.md`](COGNITION_LINEAR_P8_RESULTS.md) for the full ledger. The native selector scored 200/200 versus 100/200 fixed and 0/200 passive on supplied finite portfolios; all arms used one interaction per world. One hundred regular latent continuations verified, and all missing/irregular controls stayed unknown. One hundred funded graph projection fixtures updated their audit/version. The registered mechanism thresholds pass within these fixtures; general world induction, numeric VOI and external refinement remain NOT_ESTABLISHED. Phase 9 entry is authorized only for the typed effects and finite evidence/probe interfaces delivered here.
