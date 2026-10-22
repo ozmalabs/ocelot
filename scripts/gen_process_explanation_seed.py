@@ -16,6 +16,7 @@ def A(n, k): return {"type": "Attr", "node": V(n), "key": k}
 def T(v): return {"__term__": v}
 def Eq(a, b): return {"type": "Eq", "a": a, "b": b}
 def And(*xs): return {"type": "And", "items": list(xs)}
+def Or(*xs): return {"type": "Or", "items": list(xs)}
 def Not(x): return {"type": "Not", "arg": x}
 def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
 def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
@@ -63,7 +64,8 @@ def build_seed():
                       Eq(A("funding", "status"), L("approved")),
                       Not(Eq(A("funding", "debited_epoch"), L(None))),
                       Eq(A("model", "status"), L("active")),
-                      Not(Eq(A("model", "public_explanation_frame"), L(None))),
+                      Or(Not(Eq(A("model", "public_explanation_frame"), L(None))),
+                         Not(Eq(A("model", "public_explanation_steps"), L(None)))),
                       Not(Eq(A("model", "public_vocabulary"), L(None))),
                       Not(Exists(N("ag", "has_process_explanation_draft"), "old",
                                  Eq(A("old", "request_id"), A("request", "request_id"))))),
@@ -71,6 +73,7 @@ def build_seed():
             "request_id": T(A("request", "request_id")),
             "language": T(A("request", "language")),
             "public_frame": T(A("model", "public_explanation_frame")),
+            "public_steps": T(A("model", "public_explanation_steps")),
             "supported_vocabulary": T(A("model", "public_vocabulary")),
             "source_epoch": T(A("model", "source_epoch")),
             "status": "ready_for_language_production",

@@ -145,18 +145,51 @@ class _LoveSitWorld:
 
 def test_receiver_rebuilds_language_produced_composition():
     bank = [row for row in training_bank() if row["language"] == "en"]
-    source = Agent()
-    source_world = LanguageWorld(source.native, bank, teacher_stub)
-    source_world.run()
-    source_production = LanguageProduction(source_world)
-    authored = produce_ordered_explanation("en", [
+    source = Agent(extra_seeds=("process_explanation",),
+                   policy_overrides={"ProcessExplanationPolicy": {"enabled": 1.0}},
+                   budget={"enabled": 1.0, "remaining": 8.0,
+                           "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
+    steps = [
         {"precondition": "idle", "frame": {"event": "love", "agent": "Mary",
                                              "patient": "John", "tense": "present",
                                              "speech_act": "inform"}},
         {"precondition": "loved", "frame": {"event": "sit", "agent": "cat",
                                              "location": "mat", "tense": "past",
                                              "speech_act": "inform"}},
-    ], source_production)
+    ]
+    schema = source.s.add_node("ProcessSchema", {
+        "name": "private-composed-source-process", "kind": "sequence",
+        "domain": "private-source", "params": ["seq", [["add", [1]], ["add", [1]]]],
+        "status": "active", "source_epoch": 1, "model_epoch": 7, "frame_epoch": 9,
+        "public_explanation_frame": None, "public_explanation_steps": steps,
+        "public_vocabulary": ["love", "sit"]})
+    source.s.add_edge(source.ag, "has_process_schema", schema, {})
+    request_id = "native-public-composition"
+    author_request = source.s.add_node("ProcessExplanationRequest", {
+        "request_id": request_id, "status": "requested", "language": "en"})
+    source.s.add_edge(source.ag, "has_process_explanation_request", author_request, {})
+    source.s.add_edge(author_request, "explains_process", schema, {})
+    funding = source.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "process_explanation_authoring", "source_key": request_id,
+        "source_epoch": 1, "operation_id": "author:composition",
+        "status": "pending", "cost": 1.0})
+    source.s.add_edge(author_request, "funded_by", funding, {})
+    source.s.add_edge(funding, "draws_on_thinking_budget",
+                      source.s.neighbours(source.ag, "has_thinking_budget")[0], {})
+    for _ in range(24):
+        if not source.s.tick(1000):
+            break
+    drafts = source.s.nodes("ProcessExplanationDraft")
+    assert len(drafts) == 1
+    draft_attrs = source.s.node(drafts[0])["attrs"]
+    assert draft_attrs["public_steps"] == steps
+    assert draft_attrs["source_ast_included"] is False
+
+    source_world = LanguageWorld(source.native, bank, teacher_stub)
+    source_world.run()
+    source_production = LanguageProduction(source_world)
+    authored = produce_ordered_explanation("en", draft_attrs["public_steps"],
+                                           source_production)
     assert authored["status"] == "produced"
     receiver_agent = Agent()
     receiver_world = LanguageWorld(receiver_agent.native, bank, teacher_stub)

@@ -435,22 +435,45 @@
             }
           },
           {
-            "type": "Not",
-            "arg": {
-              "type": "Eq",
-              "a": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "model"
-                },
-                "key": "public_explanation_frame"
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "model"
+                    },
+                    "key": "public_explanation_frame"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
               },
-              "b": {
-                "type": "Lit",
-                "value": null
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "model"
+                    },
+                    "key": "public_explanation_steps"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
               }
-            }
+            ]
           },
           {
             "type": "Not",
@@ -541,6 +564,16 @@
                   "name": "model"
                 },
                 "key": "public_explanation_frame"
+              }
+            },
+            "public_steps": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "model"
+                },
+                "key": "public_explanation_steps"
               }
             },
             "supported_vocabulary": {
