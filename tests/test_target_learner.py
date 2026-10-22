@@ -193,10 +193,11 @@ def test_source_uses_same_target_verifier_and_new_binding_predictor():
 
 
 def test_wrong_map_or_wrong_target_receipt_is_rejected():
-    for map_status, event_id in (("stale", "target-transfer-1"),
-                                 ("verified", "different-target-event")):
+    for map_status, event_id, exact in (("stale", "target-transfer-1", True),
+                                        ("verified", "different-target-event", True),
+                                        ("verified", "target-transfer-1", False)):
         learner = NativeTargetLearner(transfer_enabled=True)
-        _source_prior(learner, map_status=map_status, target_event=event_id)
+        _source_prior(learner, map_status=map_status, target_event=event_id, exact=exact)
         learner.observe_opportunity(event_id="target-transfer-1", action_kind="warm",
                                     object_id="target-object-1", object_type="Widget",
                                     feature_key="temperature", before_value="cold",
