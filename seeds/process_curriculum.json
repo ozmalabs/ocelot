@@ -1,0 +1,3354 @@
+{
+  "id": "process_curriculum",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_induction",
+    "representation_search",
+    "qualia_acquisition",
+    "strategy_library",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "process_curriculum",
+  "description": "P15.03: disabled graph-authored curriculum from verified counterexamples, frozen training residuals, contested acquired distinctions and fresh-task stale-strategy rechecks.",
+  "microtheory": {
+    "name": "process_curriculum",
+    "description": "Fund at most one bounded training task at a time from source- and epoch-bound residual evidence."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessCurriculumPolicy",
+      "attrs": {
+        "name": "process_curriculum_policy",
+        "enabled": 0.0,
+        "scheduler_status": "ready",
+        "last_evidence_epoch": -1,
+        "max_evidence": 512.0,
+        "max_tasks": 256.0,
+        "max_active_tasks": 1.0,
+        "max_attempts_per_evidence": 1.0,
+        "task_cost": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_curriculum_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_curriculum:has_process_curriculum_policy:Agent:ProcessCurriculumPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_curriculum_policy",
+      "tgt": {
+        "type": "ProcessCurriculumPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_process_curriculum_evidence:Agent:ProcessCurriculumEvidence",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_curriculum_evidence",
+      "tgt": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_process_curriculum_request:Agent:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_curriculum_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_process_curriculum_task:Agent:ProcessCurriculumTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_curriculum_task",
+      "tgt": {
+        "type": "ProcessCurriculumTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_process_induction_hypothesis:Agent:ProcessInductionHypothesis",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_induction_hypothesis",
+      "tgt": {
+        "type": "ProcessInductionHypothesis",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_counterexample:ProcessInductionHypothesis:ProcessCounterexample",
+      "src": {
+        "type": "ProcessInductionHypothesis",
+        "var": "src"
+      },
+      "edge_type": "has_counterexample",
+      "tgt": {
+        "type": "ProcessCounterexample",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:counterexample_transition:ProcessCounterexample:TransitionObservation",
+      "src": {
+        "type": "ProcessCounterexample",
+        "var": "src"
+      },
+      "edge_type": "counterexample_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_representation_search_request:Agent:RepresentationSearchRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_representation_search_request",
+      "tgt": {
+        "type": "RepresentationSearchRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_candidate_proposal:RepresentationSearchRequest:RepresentationProposal",
+      "src": {
+        "type": "RepresentationSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "has_candidate_proposal",
+      "tgt": {
+        "type": "RepresentationProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_development_validation:RepresentationProposal:RepresentationDevelopmentValidation",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "has_development_validation",
+      "tgt": {
+        "type": "RepresentationDevelopmentValidation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_qualia_axis_candidate:Agent:QualiaAxisCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_axis_candidate",
+      "tgt": {
+        "type": "QualiaAxisCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_acquisition_validation:QualiaAxisCandidate:QualiaAcquisitionValidation",
+      "src": {
+        "type": "QualiaAxisCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_acquisition_validation",
+      "tgt": {
+        "type": "QualiaAcquisitionValidation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_strategy_library_entry:Agent:StrategyLibraryEntry",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_library_entry",
+      "tgt": {
+        "type": "StrategyLibraryEntry",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:about_domain:StrategyLibraryEntry:ProcessDomain",
+      "src": {
+        "type": "StrategyLibraryEntry",
+        "var": "src"
+      },
+      "edge_type": "about_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_solve_task:Agent:SolveTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_solve_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:about_domain:SolveTask:ProcessDomain",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "about_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:derived_from_counterexample:ProcessCurriculumEvidence:ProcessCounterexample",
+      "src": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "src"
+      },
+      "edge_type": "derived_from_counterexample",
+      "tgt": {
+        "type": "ProcessCounterexample",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:derived_from_representation:ProcessCurriculumEvidence:RepresentationProposal",
+      "src": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "src"
+      },
+      "edge_type": "derived_from_representation",
+      "tgt": {
+        "type": "RepresentationProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:derived_from_qualia_candidate:ProcessCurriculumEvidence:QualiaAxisCandidate",
+      "src": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "src"
+      },
+      "edge_type": "derived_from_qualia_candidate",
+      "tgt": {
+        "type": "QualiaAxisCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:derived_from_stale_strategy:ProcessCurriculumEvidence:StrategyLibraryEntry",
+      "src": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "src"
+      },
+      "edge_type": "derived_from_stale_strategy",
+      "tgt": {
+        "type": "StrategyLibraryEntry",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:for_fresh_solve_task:ProcessCurriculumEvidence:SolveTask",
+      "src": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "src"
+      },
+      "edge_type": "for_fresh_solve_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:funded_by:ProcessCurriculumEvidence:ThinkingBudgetRequest",
+      "src": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "src"
+      },
+      "edge_type": "funded_by",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:from_evidence:ProcessCurriculumTask:ProcessCurriculumEvidence",
+      "src": {
+        "type": "ProcessCurriculumTask",
+        "var": "src"
+      },
+      "edge_type": "from_evidence",
+      "tgt": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:has_outcome:ProcessCurriculumTask:ProcessCurriculumOutcome",
+      "src": {
+        "type": "ProcessCurriculumTask",
+        "var": "src"
+      },
+      "edge_type": "has_outcome",
+      "tgt": {
+        "type": "ProcessCurriculumOutcome",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_curriculum:outcome_for:ProcessCurriculumOutcome:ProcessCurriculumTask",
+      "src": {
+        "type": "ProcessCurriculumOutcome",
+        "var": "src"
+      },
+      "edge_type": "outcome_for",
+      "tgt": {
+        "type": "ProcessCurriculumTask",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pc_capture_observed_process_counterexample_residual",
+      "area": "process_curriculum",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "A source- and epoch-bound observed counterexample creates a training task with the answer withheld.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_process_induction_hypothesis",
+          "hyp"
+        ],
+        [
+          "hyp",
+          "has_counterexample",
+          "ce"
+        ],
+        [
+          "ce",
+          "counterexample_transition",
+          "obs"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "disputed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ce"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "hyp"
+            },
+            "b": {
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_process_induction_hypothesis",
+                  "any_type": false
+                },
+                "var_name": "candidate_hyp",
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_hyp"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "disputed"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_hyp"
+                        },
+                        "key": "owner_id"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "hyp"
+                        },
+                        "key": "owner_id"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate_hyp"
+                        },
+                        "key": "source_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "hyp"
+                        },
+                        "key": "source_epoch"
+                      }
+                    }
+                  ]
+                }
+              },
+              "var_name": "candidate_hyp",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate_hyp"
+                },
+                "key": "source_epoch"
+              },
+              "default": null
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_evidence"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "evidence_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "counterexample:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ce"
+                      },
+                      "key": "event_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "hyp"
+                      },
+                      "key": "source_epoch"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "evidence",
+          "ProcessCurriculumEvidence",
+          {
+            "evidence_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "counterexample:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ce"
+                    },
+                    "key": "event_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "hyp"
+                    },
+                    "key": "source_epoch"
+                  }
+                ]
+              }
+            },
+            "source_kind": "verified_counterexample",
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ce"
+                },
+                "key": "event_id"
+              }
+            },
+            "task_kind": "counterexample_discrimination",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "eligible",
+            "split": "training",
+            "expected_outcome": "unknown",
+            "sealed_labels_present": false,
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "owner_id"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "action_kind"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "object_type"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "before_value"
+              }
+            },
+            "observed_after_value": null
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "derived_from_counterexample",
+          "ce",
+          {}
+        ],
+        [
+          "set_attr",
+          "ce",
+          "status",
+          "curriculum_captured"
+        ]
+      ]
+    },
+    {
+      "name": "pc_capture_frozen_training_representation_residual",
+      "area": "process_curriculum",
+      "order": 2,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Only verified frozen-training residual bits can seed representation curriculum; held-out outcomes are not copied.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_representation_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_candidate_proposal",
+          "proposal"
+        ],
+        [
+          "proposal",
+          "has_development_validation",
+          "validation"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "scored_frozen_training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "heldout_used"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "residual_bits"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_evidence"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "evidence_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "representation:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "candidate_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "validation"
+                      },
+                      "key": "training_split_id"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "evidence",
+          "ProcessCurriculumEvidence",
+          {
+            "evidence_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "representation:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "proposal"
+                    },
+                    "key": "candidate_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "validation"
+                    },
+                    "key": "training_split_id"
+                  }
+                ]
+              }
+            },
+            "source_kind": "verified_training_residual",
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "candidate_id"
+              }
+            },
+            "task_kind": "representation_residual",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "eligible",
+            "split": "training",
+            "expected_outcome": "unknown",
+            "sealed_labels_present": false,
+            "candidate_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "candidate_id"
+              }
+            },
+            "source_frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "source_frame_id"
+              }
+            },
+            "target_frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "target_frame_id"
+              }
+            },
+            "residual_bits": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "validation"
+                },
+                "key": "residual_bits"
+              }
+            },
+            "training_split_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "validation"
+                },
+                "key": "training_split_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "derived_from_representation",
+          "proposal",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "pc_capture_contested_acquired_distinction",
+      "area": "process_curriculum",
+      "order": 3,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Contested acquired dimensions generate fresh evidence tasks scoped to the exact owner and model/frame epochs.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_qualia_axis_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_acquisition_validation",
+          "validation"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "contested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "result"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "negative"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "revision_round"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "revision_count"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_evidence"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "evidence_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "qualia:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "candidate_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "model_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "evidence",
+          "ProcessCurriculumEvidence",
+          {
+            "evidence_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "qualia:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "candidate_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "model_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "frame_epoch"
+                  }
+                ]
+              }
+            },
+            "source_kind": "contested_acquired_distinction",
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "candidate_key"
+              }
+            },
+            "task_kind": "qualia_reacquisition",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "validation"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "eligible",
+            "split": "training",
+            "expected_outcome": "unknown",
+            "sealed_labels_present": false,
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "owner_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_family": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "feature_family"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "derived_from_qualia_candidate",
+          "candidate",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "pc_schedule_stale_strategy_on_fresh_matching_task",
+      "area": "process_curriculum",
+      "order": 4,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Recheck an old success only on a new active task with matching structure and the current domain epochs.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_strategy_library_entry",
+          "entry"
+        ],
+        [
+          "entry",
+          "about_domain",
+          "domain"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "task"
+        ],
+        [
+          "task",
+          "about_domain",
+          "domain"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "entry"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stale"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "stuck"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "steps"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "entry"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "domain"
+              },
+              "key": "kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "entry"
+              },
+              "key": "state_size"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "initial_state"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "entry"
+              },
+              "key": "goal_size"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "goal"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "domain"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "domain"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "domain"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_evidence"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "evidence_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "stale-strategy:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "entry"
+                      },
+                      "key": "source_task"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "task_id"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "evidence",
+          "ProcessCurriculumEvidence",
+          {
+            "evidence_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "stale-strategy:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "source_task"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "task_id"
+                  }
+                ]
+              }
+            },
+            "source_kind": "stale_strategy_success",
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "source_task"
+              }
+            },
+            "task_kind": "stale_strategy_recheck",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "domain"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "domain"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "domain"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "eligible",
+            "split": "training",
+            "expected_outcome": "unknown",
+            "sealed_labels_present": false,
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "domain"
+                },
+                "key": "name"
+              }
+            },
+            "initial_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "initial_state"
+              }
+            },
+            "goal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "goal"
+              }
+            },
+            "strategy_source_task": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "source_task"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "derived_from_stale_strategy",
+          "entry",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "for_fresh_solve_task",
+          "task",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "pc_fund_one_deterministic_training_residual",
+      "area": "process_curriculum",
+      "order": 10,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Fund one lowest-key verified residual at a time from the shared ThinkingBudget; the policy lock prevents over-requesting.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "scheduler_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ready"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "evidence"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "eligible"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_task",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_tasks"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_evidence",
+                "any_type": false
+              },
+              "var_name": "prior",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "eligible"
+                    }
+                  },
+                  {
+                    "type": "Lt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "evidence_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "evidence"
+                      },
+                      "key": "evidence_key"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "request",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "process_curriculum",
+            "requester_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "evidence_key"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "evidence_key"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "policy"
+                },
+                "key": "task_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_curriculum_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "evidence",
+          "funded_by",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "funding_pending"
+        ],
+        [
+          "set_attr",
+          "policy",
+          "scheduler_status",
+          "funding_pending"
+        ]
+      ]
+    },
+    {
+      "name": "pc_emit_training_task_only_after_budget_approval",
+      "area": "process_curriculum",
+      "order": 20,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Emit only a training-split task after approval and omit answers, held-out identifiers and labels.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence"
+        ],
+        [
+          "evidence",
+          "funded_by",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "scheduler_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "evidence"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_curriculum_task",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_tasks"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "task",
+          "ProcessCurriculumTask",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "evidence_key"
+              }
+            },
+            "task_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "task_kind"
+              }
+            },
+            "source_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "source_kind"
+              }
+            },
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "source_id"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "action_kind"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "object_type"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "before_value"
+              }
+            },
+            "candidate_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "candidate_id"
+              }
+            },
+            "source_frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "source_frame_id"
+              }
+            },
+            "target_frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "target_frame_id"
+              }
+            },
+            "training_residual_bits": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "residual_bits"
+              }
+            },
+            "feature_family": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "feature_family"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "domain"
+              }
+            },
+            "initial_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "initial_state"
+              }
+            },
+            "goal": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "goal"
+              }
+            },
+            "strategy_source_task": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "strategy_source_task"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "evidence"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "deadline_epoch"
+              }
+            },
+            "split": "training",
+            "expected_outcome": "unknown",
+            "status": "awaiting_experience",
+            "attempt_count": 1,
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "policy"
+                },
+                "key": "task_cost"
+              }
+            },
+            "answer_fields_absent": true
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_curriculum_task",
+          "task",
+          {}
+        ],
+        [
+          "add_edge",
+          "task",
+          "from_evidence",
+          "evidence",
+          {}
+        ],
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "scheduled"
+        ],
+        [
+          "set_attr",
+          "policy",
+          "scheduler_status",
+          "active"
+        ]
+      ]
+    },
+    {
+      "name": "pc_close_curriculum_task_on_observed_progress",
+      "area": "process_curriculum",
+      "order": 30,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Only a same-epoch observed experience outcome closes a curriculum task as completed.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "task"
+        ],
+        [
+          "task",
+          "has_outcome",
+          "outcome"
+        ],
+        [
+          "task",
+          "from_evidence",
+          "evidence"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "scheduler_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_experience"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "assessment"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "tractable_progress"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "frame_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "task",
+          "status",
+          "completed"
+        ],
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "resolved"
+        ],
+        [
+          "set_attr",
+          "policy",
+          "scheduler_status",
+          "ready"
+        ]
+      ]
+    },
+    {
+      "name": "pc_retire_unlearnable_task_without_repetition",
+      "area": "process_curriculum",
+      "order": 31,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "An observed unlearnable assessment is terminal for this exact residual key; later epochs need new evidence keys.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "task"
+        ],
+        [
+          "task",
+          "has_outcome",
+          "outcome"
+        ],
+        [
+          "task",
+          "from_evidence",
+          "evidence"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "scheduler_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_experience"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "assessment"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unlearnable"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "source_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "task",
+          "status",
+          "retired_unlearnable"
+        ],
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "suppressed"
+        ],
+        [
+          "set_attr",
+          "policy",
+          "scheduler_status",
+          "ready"
+        ]
+      ]
+    },
+    {
+      "name": "pc_mark_expired_residual_stale_without_retry",
+      "area": "process_curriculum",
+      "order": 32,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Epoch mismatch or expired task ends this attempt; it cannot be mistaken for progress or retried from stale evidence.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "task"
+        ],
+        [
+          "task",
+          "from_evidence",
+          "evidence"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "scheduler_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_experience"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "evidence"
+                    },
+                    "key": "source_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "evidence"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "frame_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "evidence"
+                    },
+                    "key": "frame_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "deadline_epoch"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "task",
+          "status",
+          "stale"
+        ],
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "stale"
+        ],
+        [
+          "set_attr",
+          "policy",
+          "scheduler_status",
+          "ready"
+        ]
+      ]
+    },
+    {
+      "name": "pc_close_denied_curriculum_request_without_retry",
+      "area": "process_curriculum",
+      "order": 33,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Denied funding suppresses this evidence key and never creates an unfunded training task.",
+      "match": [
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_evidence",
+          "evidence"
+        ],
+        [
+          "evidence",
+          "funded_by",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "scheduler_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "evidence"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "denied"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "suppressed"
+        ],
+        [
+          "set_attr",
+          "policy",
+          "scheduler_status",
+          "ready"
+        ]
+      ]
+    }
+  ]
+}
