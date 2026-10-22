@@ -194,11 +194,13 @@ def test_grounding_requires_own_receipt():
     attrs = agent.s.node(schema)["attrs"]
     action_request = agent.s.add_node("ActionRequest", {
         "request_id": "own-trial-action", "source_epoch": attrs["source_epoch"],
-        "action_key": "press", "status": "emitted", "sink_receipt_id": "sink:own-trial-1"})
+        "actor_id": "agent-root", "action_key": "press", "status": "emitted",
+        "sink_receipt_id": "sink:own-trial-1"})
     authorization = agent.s.add_node("ActionAuthorization", {
         "authorization_id": "auth-own-trial", "request_id": "own-trial-action",
         "source_epoch": attrs["source_epoch"], "action_key": "press", "status": "consumed"})
     agent.s.add_edge(action_request, "has_action_authorization", authorization, {})
+    agent.s.add_edge(agent.ag, "has_action_request", action_request, {})
     receipt = agent.s.add_node("OwnTrialReceipt", {
         "status": "observed", "actual_own_trial": True,
         "owner_id": "agent-root", "learner_body_owner_id": "agent-root",

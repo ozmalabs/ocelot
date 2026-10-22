@@ -1552,6 +1552,11 @@
           "action_request"
         ],
         [
+          "ag",
+          "has_action_request",
+          "action_request"
+        ],
+        [
           "action_request",
           "has_action_authorization",
           "authorization"
@@ -1603,6 +1608,25 @@
             "b": {
               "type": "Lit",
               "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_request"
+              },
+              "key": "actor_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "owner_id"
             }
           },
           {
