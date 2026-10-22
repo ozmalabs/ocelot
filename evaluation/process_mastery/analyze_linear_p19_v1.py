@@ -54,8 +54,14 @@ def analyze(payload):
             actions = receipt.get("requested_actions")
             replayed = world.transition_sequence(actions or (),
                 requested_process=receipt.get("requested_process"))
-            if (not world.verify_receipt(receipt) or replayed != receipt
-                    or not world.verify_receipt(replayed)):
+            valid = replayed == receipt
+            if receipt.get("status") == "verified":
+                valid = valid and world.verify_receipt(receipt) and world.verify_receipt(replayed)
+            elif receipt.get("status") == "rejected":
+                valid = valid and receipt.get("observed_state") == receipt.get("before")
+            else:
+                valid = False
+            if not valid:
                 audit["receipt_failures"] += 1
                 audit["failures"].append({"kind": "receipt_mismatch", "key": key, "arm": arm})
                 break

@@ -149,10 +149,12 @@ def run_greedy(task, world, *, primitive_cap=PRIMITIVE_CAP,
     started = time.perf_counter()
     primitives = queries = 0
     receipts = []
+    termination_reason = None
     while tuple(world.state) != tuple(world.goal) and primitives < primitive_cap:
         action, cost = _greedy_action(world)
         queries += cost
         if action is None or queries > model_query_cap:
+            termination_reason = "no_legal_action" if action is None else "model_query_cap"
             break
         receipt = world.transition(world.state, action)
         if not world.verify_receipt(receipt):
@@ -160,9 +162,12 @@ def run_greedy(task, world, *, primitive_cap=PRIMITIVE_CAP,
         receipts.append(receipt)
         primitives += len(receipt["applied_actions"])
     solved = tuple(world.state) == tuple(world.goal)
+    if not solved and termination_reason is None:
+        termination_reason = "primitive_cap"
     return {"status": "COMPLETED" if solved else "UNSOLVED", "solved": solved,
             "primitives": primitives, "model_queries": queries, "receipts": receipts,
             "receipt_verified": all(world.verify_receipt(receipt) for receipt in receipts),
+            "termination_reason": termination_reason,
             "task_seconds": time.perf_counter() - started}
 
 
@@ -171,6 +176,7 @@ def run_native_primitive(task, world, *, primitive_cap=PRIMITIVE_CAP,
     started = time.perf_counter()
     primitives = queries = 0
     receipts = []
+    failures = []
     remaining = float(model_query_cap)
     while tuple(world.state) != tuple(world.goal) and primitives < primitive_cap:
         current = dict(task)
@@ -183,6 +189,9 @@ def run_native_primitive(task, world, *, primitive_cap=PRIMITIVE_CAP,
                                     depth_limit=MAX_DEPTH,
                                     max_path_arrivals=MAX_PATH_ARRIVALS)
         if result.get("status") != "COMPLETED":
+            failures.append({"status": result.get("status"),
+                "planner_status": result.get("planner_status"), "reason": result.get("reason"),
+                "expanded": result.get("expanded", 0), "state": list(world.state)})
             break
         receipt = result["receipt"]
         if not world.verify_receipt(receipt):
@@ -195,9 +204,11 @@ def run_native_primitive(task, world, *, primitive_cap=PRIMITIVE_CAP,
         receipts.append(receipt)
         primitives += len(receipt["applied_actions"])
     solved = tuple(world.state) == tuple(world.goal)
+    termination_reason = None if solved else (failures[-1]["reason"] if failures else "primitive_cap")
     return {"status": "COMPLETED" if solved else "UNSOLVED", "solved": solved,
             "primitives": primitives, "model_queries": queries, "receipts": receipts,
             "receipt_verified": all(world.verify_receipt(receipt) for receipt in receipts),
+            "search_failures": failures, "termination_reason": termination_reason,
             "task_seconds": time.perf_counter() - started}
 
 
