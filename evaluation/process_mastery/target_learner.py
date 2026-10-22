@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from evaluation.process_mastery.harness import Agent
+from evaluation.process_mastery.target_learning_worlds import WorldReceipt
 
 TARGET_EXPOSURE_MANIFEST = {
     "id": "p20_target_evidence_adapter", "version": "1.0.0", "depends_on": [],
@@ -48,6 +49,7 @@ class NativeTargetLearner:
         self.ag = self.agent.ag
         self.s._inner.load_seed_manifest(TARGET_EXPOSURE_MANIFEST, self.ag)
         self.accounting = LearningAccounting()
+        self._ingested_world_receipts: set[str] = set()
         for node in self.s.nodes("NetworkModeState"):
             self.s.set_attr(node, "epoch", 10.0)
 
@@ -123,6 +125,24 @@ class NativeTargetLearner:
             self.accounting.target_actions += 1
         return observation
 
+    def observe_world_receipt(self, receipt: WorldReceipt, *, source_epoch=3,
+                              model_epoch=2, frame_epoch=5):
+        """Ingest an actual simulator receipt; reject replay and unauthorized data."""
+        if not isinstance(receipt, WorldReceipt):
+            raise TypeError("target learner requires a typed WorldReceipt")
+        if receipt.status != "observed" or not receipt.action_authorized:
+            raise ValueError("target evidence requires an authorized observed action")
+        if receipt.event_id in self._ingested_world_receipts:
+            raise ValueError("world receipt already ingested")
+        self._ingested_world_receipts.add(receipt.event_id)
+        return self.observe_opportunity(
+            event_id=receipt.event_id, action_kind=receipt.action_kind,
+            object_id=receipt.object_id, object_type=receipt.object_type,
+            feature_key=receipt.feature_key, before_value=receipt.before_value,
+            after_value=receipt.after_value, source_epoch=source_epoch,
+            model_epoch=model_epoch, frame_epoch=frame_epoch,
+            visible=True, action_occurred=True)
+
     def settle(self, *, max_rounds=40, steps_per_round=2000):
         steps = 0
         for _ in range(max_rounds):
@@ -156,3 +176,15 @@ class NativeTargetLearner:
         payload = [self.s.node(node) for node in nodes]
         return {"nodes": len(nodes), "bytes": len(json.dumps(payload, sort_keys=True,
                                                                default=str).encode())}
+
+
+def build_target_learner(adapter_factory, *, arm: str, **kwargs):
+    """Fail closed when an evaluation arm lacks the common target learner."""
+    if not callable(adapter_factory):
+        raise RuntimeError(f"missing target learner adapter for arm {arm}")
+    learner = adapter_factory(**kwargs)
+    required = ("observe_world_receipt", "predict", "settle", "graph_footprint")
+    missing = [name for name in required if not callable(getattr(learner, name, None))]
+    if missing:
+        raise RuntimeError(f"incomplete target learner adapter for arm {arm}: {missing}")
+    return learner

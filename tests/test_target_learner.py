@@ -4,7 +4,10 @@ from pathlib import Path
 
 from substrate_rs import _native
 from scripts.gen_process_induction_seed import build_seed
-from evaluation.process_mastery.target_learner import NativeTargetLearner
+from evaluation.process_mastery.target_learner import NativeTargetLearner, build_target_learner
+from evaluation.process_mastery.target_learning_worlds import (
+    LatchWorld, ThermalWorld, WorldReceipt,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -198,3 +201,69 @@ def test_wrong_map_or_wrong_target_receipt_is_rejected():
                                     after_value="warm")
         learner.settle()
         assert learner.hypotheses() == []
+
+
+def test_fresh_learns_unseen_target_in_two_independent_native_worlds():
+    cases = (
+        (ThermalWorld(object_ids=("t1", "t2", "t3")),
+         ("t1", "t2"), "warm", "ThermalSample", "temperature", "cold", "warm"),
+        (LatchWorld(latch_ids=("l1", "l2", "l3")),
+         ("l1", "l2"), "lift", "Latch", "position", "lowered", "raised"),
+    )
+    for world, training_ids, action, kind, feature, before, after in cases:
+        learner = NativeTargetLearner()
+        for object_id in training_ids:
+            receipt = (world.apply(object_id, action) if isinstance(world, ThermalWorld)
+                       else world.operate(object_id, action))
+            learner.observe_world_receipt(receipt)
+        learner.settle()
+        prediction = learner.predict(
+            query_id=f"unseen:{world.family}", action_kind=action,
+            object_type=kind, feature_key=feature, before_value=before,
+            object_id=f"{world.family}-unseen")
+        assert prediction["expected_after_value"] == after
+        assert learner.accounting.target_actions == 2
+        assert learner.accounting.visible_observations == 2
+
+
+def test_world_receipt_replay_and_unauthorized_receipt_are_rejected():
+    learner = NativeTargetLearner()
+    world = ThermalWorld(object_ids=("sample",))
+    receipt = world.apply("sample", "warm")
+    learner.observe_world_receipt(receipt)
+    try:
+        learner.observe_world_receipt(receipt)
+    except ValueError as exc:
+        assert "already ingested" in str(exc)
+    else:
+        raise AssertionError("replayed world receipt accepted")
+    bad = WorldReceipt("bad", "sample", "ThermalSample", "warm", "temperature",
+                       "cold", "warm", "observed", False, 2)
+    try:
+        learner.observe_world_receipt(bad)
+    except ValueError as exc:
+        assert "authorized observed action" in str(exc)
+    else:
+        raise AssertionError("unauthorized world receipt accepted")
+
+
+def test_missing_adapter_is_a_hard_error():
+    try:
+        build_target_learner(None, arm="fresh")
+    except RuntimeError as exc:
+        assert "missing target learner adapter" in str(exc)
+    else:
+        raise AssertionError("missing target learner adapter was scored")
+
+
+def test_evidence_and_work_separate():
+    learner = NativeTargetLearner()
+    learner.expose_source(source_id="source-exp", relation="matched", units=4.0)
+    learner.observe_opportunity(event_id="occluded", visible=False)
+    receipt = ThermalWorld(object_ids=("sample",)).apply("sample", "warm")
+    learner.observe_world_receipt(receipt)
+    assert learner.accounting.source_information_units == 4.0
+    assert learner.accounting.evidence_opportunities == 2
+    assert learner.accounting.visible_observations == 1
+    assert learner.accounting.missing_observations == 1
+    assert learner.accounting.target_actions == 1
