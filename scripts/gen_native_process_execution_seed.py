@@ -53,6 +53,22 @@ def build():
             "cost": 24.0, "deadline_epoch": None}],
          ["add_edge", "request", "has_execution_budget_request", "budget_request", {}],
          ["add_edge", "budget_request", "draws_on_thinking_budget", "budget", {}]], batch=True)
+    fund_selected = rule(
+        "npe_enable_only_funded_selection", OFFLINE_AREA, 11,
+        "Make a graph-selected operator executable only after its one shared-budget request is approved.",
+        [["agent", "has_native_process_execution_policy", "pol"],
+         ["agent", "has_native_execution_request", "request"],
+         ["request", "selected_operator", "operator"],
+         ["request", "selected_candidate", "candidate"],
+         ["request", "for_solve_task", "task"],
+         ["request", "has_execution_budget_request", "budget_request"]],
+        And(policy_on(), Eq(A("request", "status"), L("selected")),
+            Eq(A("request", "selected_by"), L("native_graph_rule")),
+            Eq(A("operator", "status"), L("active")),
+            Eq(A("candidate", "status"), L("promoted")),
+            Eq(A("task", "status"), L("active")),
+            Eq(A("budget_request", "status"), L("approved"))),
+        [["set_attr", "request", "status", "funded"]])
     return {
         "id": SEED_ID, "version": "1.0.0", "depends_on": ["recursive_process_improvement"],
         "self_load_only": True, "area": OFFLINE_AREA,
@@ -62,7 +78,7 @@ def build():
             "max_expression_visits": 64.0, "human_gate": 1.0}}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_native_process_execution_policy",
                    "tgt": {"local": 0}, "attrs": {}}],
-        "productions": productions(SEED_ID, specs), "rules": [select],
+        "productions": productions(SEED_ID, specs), "rules": [select, fund_selected],
     }
 
 

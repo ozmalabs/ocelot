@@ -20,8 +20,8 @@ def _setup():
     assert len(budgets) == 1
     for budget in budgets:
         agent.s.set_attr(budget, "enabled", 1.0)
-        agent.s.set_attr(budget, "remaining", 100.0)
-        agent.s.set_attr(budget, "capacity", 100.0)
+        agent.s.set_attr(budget, "remaining", 1000.0)
+        agent.s.set_attr(budget, "capacity", 1000.0)
     request = agent.s.add_node("OperatorCompositionRequest", {
         "name": "p16-dev", "status": "draft", "recipe": "commutator_square",
         "left_operator": "commutator", "right_operator": "commutator",
@@ -46,11 +46,12 @@ def _setup():
     agent.add_domain("dev", "permutation", [[0, 1, 2, 3]], {})
     task = agent.add_solve_task("dev", [0, 1, 2, 3], [3, 2, 1, 0])
     agent.run(max_ticks=12)
-    execution = agent.nodes("NativeExecutionRequest", status="selected")[0]
+    execution = agent.nodes("NativeExecutionRequest", status="funded")[0]
     budget_request = agent.native.neighbours(execution, "has_execution_budget_request")[0]
     assert agent.s.node(budget_request)["attrs"]["status"] == "approved"
     assert agent.native.neighbours(budget_request, "draws_on_thinking_budget") == budgets
-    assert agent.s.node(budgets[0])["attrs"]["remaining"] == 76.0
+    assert agent.s.node(budget_request)["attrs"]["cost"] == 24.0
+    assert agent.s.node(budget_request)["attrs"]["debited_epoch"] is not None
     return agent, candidate, task, execution
 
 

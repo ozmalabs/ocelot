@@ -48,7 +48,7 @@ def execute_selected(agent, request, *, a, b, state, authorize: Callable[[dict],
     edges on every call so edits/deletion affect the next execution.
     """
     request_attrs = _attrs(agent, request)
-    if request_attrs.get("status") != "selected" or request_attrs.get("selected_by") != "native_graph_rule":
+    if request_attrs.get("status") != "funded" or request_attrs.get("selected_by") != "native_graph_rule":
         return {"status": "ABSTAIN", "reason": "request_not_graph_selected"}
     budget_requests = agent.native.neighbours(request, "has_execution_budget_request")
     if len(budget_requests) != 1:

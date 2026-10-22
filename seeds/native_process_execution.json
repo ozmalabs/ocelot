@@ -368,6 +368,163 @@
         ]
       ],
       "batch": true
+    },
+    {
+      "name": "npe_enable_only_funded_selection",
+      "area": "memory_consolidation",
+      "order": 11,
+      "latency_class": "background",
+      "comment": "Make a graph-selected operator executable only after its one shared-budget request is approved.",
+      "match": [
+        [
+          "agent",
+          "has_native_process_execution_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_native_execution_request",
+          "request"
+        ],
+        [
+          "request",
+          "selected_operator",
+          "operator"
+        ],
+        [
+          "request",
+          "selected_candidate",
+          "candidate"
+        ],
+        [
+          "request",
+          "for_solve_task",
+          "task"
+        ],
+        [
+          "request",
+          "has_execution_budget_request",
+          "budget_request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "selected"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "selected_by"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "native_graph_rule"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "operator"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "promoted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "funded"
+        ]
+      ]
     }
   ]
 }
