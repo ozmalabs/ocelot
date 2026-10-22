@@ -67,6 +67,7 @@ def build():
         "comment": "Release only the native-selected training curriculum task to the same graph's open-process learner.",
         "match": [bridge,
             ["agent", "has_process_curriculum_policy", "curriculum_policy"],
+            ["agent", "has_solver_policy", "solver_policy"],
             ["agent", "has_process_curriculum_task", "curriculum_task"],
             ["curriculum_task", "from_evidence", "evidence"],
             ["agent", "has_process_domain", "domain"]],
@@ -87,11 +88,48 @@ def build():
                 "state": T(A("curriculum_task", "initial_state")),
                 "object_count": T(A("domain", "object_count")),
                 "goal": T(A("curriculum_task", "goal")),
-                "status": "stuck", "trace": [], "steps": 0,
+                "status": T(IfThenElse(Eq(A("solver_policy", "enabled"), L(1.0)),
+                    L("active"), L("stuck"))), "trace": [], "steps": 0,
                 "moves": 0.0, "stuck_count": 1, "split": "training"}],
             ["add_edge", "agent", "has_solve_task", "solve_task", {}],
             ["add_edge", "solve_task", "about_domain", "domain", {}],
             ["set_attr", "curriculum_task", "status", "delivered_to_native_search"]]})
+    # Adaptive-only has the common ancestor solver but deliberately disables
+    # P19 search. Close solved tasks, and explicit solver impasses, without
+    # requiring a search request that this arm must not create.
+    base["rules"].append({"name": "iicb_close_ancestor_solver_training_task",
+        "area": "memory_consolidation", "order": 90,
+        "latency_class": "background", "batch": False,
+        "comment": "Retain native solver completions in all curriculum arms and record stuck outcomes when P19 search is disabled.",
+        "match": [["agent", "has_independent_improvement_curriculum_bridge_policy", "bridge"],
+            ["agent", "has_process_curriculum_policy", "curriculum_policy"],
+            ["agent", "has_open_process_search_policy", "search_policy"],
+            ["agent", "has_process_curriculum_task", "curriculum_task"],
+            ["curriculum_task", "from_evidence", "evidence"],
+            ["agent", "has_solve_task", "solve_task"]],
+        "where": And(policy_on("bridge"), policy_on("curriculum_policy"),
+            Eq(A("bridge", "required_split"), L("training")),
+            Eq(A("curriculum_task", "split"), L("training")),
+            Eq(A("curriculum_task", "status"), L("delivered_to_native_search")),
+            Eq(A("curriculum_task", "task_key"), A("solve_task", "task_key")),
+            Or(Eq(A("solve_task", "status"), L("solved")),
+               And(Eq(A("search_policy", "enabled"), L(0.0)),
+                   Eq(A("solve_task", "status"), L("stuck")))),
+            Not(Exists(N("curriculum_task", "has_outcome"), "old", L(True)))),
+        "effects": [["add_node", "outcome", "ProcessCurriculumOutcome", {
+            "status": "observed", "evidence_status": "observed",
+            "assessment": T(IfThenElse(Eq(A("solve_task", "status"), L("solved")),
+                L("solved"), L("ancestor_solver_impasse"))),
+            "observed_terminal_status": T(A("solve_task", "status")),
+            "task_key": T(A("curriculum_task", "task_key")),
+            "split": "training", "attempt_count": 0.0,
+            "source_epoch": T(A("curriculum_task", "source_epoch")),
+            "model_epoch": T(A("curriculum_task", "model_epoch")),
+            "frame_epoch": T(A("curriculum_task", "frame_epoch"))}],
+            ["add_edge", "curriculum_task", "has_outcome", "outcome", {}],
+            ["set_attr", "curriculum_task", "status", "completed"],
+            ["set_attr", "evidence", "status", "resolved"],
+            ["set_attr", "curriculum_policy", "scheduler_status", "ready"]]})
     # The scheduler may release its next residual only after a delivered task
     # has a native terminal outcome. This runs after the finite P19 grammar
     # rules, so any recorded attempt means the bounded frontier has quiesced.

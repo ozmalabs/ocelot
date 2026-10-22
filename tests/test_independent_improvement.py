@@ -298,9 +298,8 @@ def test_native_curriculum_releases_training_task_to_same_process_search_graph()
     agent = boot_cognition_on()
     try:
         configure_p22_arm(agent, "full", budget_capacity=64.0)
-        # Isolate the curriculum-to-P19 dispatch path. Arm configuration tests
-        # verify that SolverPolicy is enabled in every real condition; this
-        # fixture turns it off so the P19 search handoff remains observable.
+        # Turn off the common solver only in this route-isolation fixture. The
+        # bridge then gives the explicit impasse to native P19 search.
         agent.s.set_attr(agent.s.nodes("SolverPolicy")[0], "enabled", 0.0)
         domain_name = "p22-curriculum-bridge"
         domain = agent.s.add_node("ProcessDomain", {
@@ -346,6 +345,7 @@ def test_native_curriculum_releases_training_task_to_same_process_search_graph()
             if agent.inner.run_rules(20_000) == 0:
                 break
         curriculum_tasks = agent.s.nodes("ProcessCurriculumTask")
+        print("BRIDGEDEBUG", [(agent.s.node(task)["attrs"].get("status"), agent.s.node(task)["attrs"].get("task_key")) for task in curriculum_tasks], [(agent.s.node(task)["attrs"].get("status"), agent.s.node(task)["attrs"].get("task_key")) for task in agent.s.nodes("SolveTask")], [agent.s.node(req)["attrs"].get("status") for req in agent.s.nodes("OpenProcessSearchRequest")])
         assert len(curriculum_tasks) == 2
         curriculum_tasks.sort(key=lambda task: agent.s.node(task)["attrs"]["task_key"])
         assert agent.s.node(curriculum_tasks[0])["attrs"]["status"] == "completed"
@@ -367,6 +367,60 @@ def test_native_curriculum_releases_training_task_to_same_process_search_graph()
                    for attempt in agent.s.nodes("OpenProcessSearchAttempt"))
         assert agent.s.nodes("OpenProcessAdoptionApproval") == []
         assert agent.s.nodes("OpenProcessWorldReceipt") == []
+    finally:
+        agent.close()
+
+
+def test_adaptive_only_records_common_ancestor_solver_outcome_without_search_request():
+    agent = boot_cognition_on()
+    try:
+        configure_p22_arm(agent, "adaptive_only", budget_capacity=64.0)
+        domain_name = "p22-adaptive-ancestor-outcome"
+        domain = agent.s.add_node("ProcessDomain", {
+            "name": domain_name, "kind": "permutation", "domain_kind": "permutation",
+            "object_count": 4.0, "probes": [[0, 1, 2, 3]],
+            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+            "probe_epoch": 0})
+        agent.s.add_edge(agent.agent, "has_process_domain", domain, {})
+        held = {"rot90": [3, 0, 1, 2], "flip_r": [2, 1, 0, 3]}
+        for name, params in held.items():
+            schema = agent.s.add_node("ProcessSchema", {
+                "name": name, "kind": "permutation", "domain_kind": "permutation",
+                "domain": domain_name, "params": params,
+                "source_digest": params_digest(params), "cost": 1.0,
+                "status": "active", "provenance": "world_affordance",
+                "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0})
+            agent.s.add_edge(agent.agent, "has_process_schema", schema, {})
+            agent.s.add_edge(domain, "has_held_process", schema, {})
+        goal = agent.inner.evaluate({"type": "ProcessApply",
+            "p": {"type": "Var", "name": "p"},
+            "state": {"type": "Var", "name": "state"}},
+            {"p": held["rot90"], "state": [0, 1, 2, 3]})
+        evidence = agent.s.add_node("ProcessCurriculumEvidence", {
+            "evidence_key": "p22:training:adaptive-ancestor:0001",
+            "source_kind": "registered_training_pool", "source_id": "p22:train:adaptive-ancestor:0001",
+            "task_kind": "process_composition", "action_kind": "apply",
+            "object_type": "Permutation", "feature_key": "permutation",
+            "before_value": [0, 1, 2, 3], "domain": domain_name,
+            "initial_state": [0, 1, 2, 3], "goal": goal,
+            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+            "status": "eligible", "split": "training",
+            "expected_outcome": "unknown", "sealed_labels_present": False,
+            "fixed_rank": 0.0, "random_rank": 0.0})
+        agent.s.add_edge(agent.agent, "has_process_curriculum_evidence", evidence, {})
+        for _ in range(64):
+            if agent.inner.run_rules(20_000) == 0:
+                break
+        task = agent.s.nodes("ProcessCurriculumTask")[0]
+        assert agent.s.node(task)["attrs"]["status"] == "completed"
+        outcomes = agent.inner.neighbours(task, "has_outcome")
+        assert len(outcomes) == 1
+        outcome = agent.s.node(outcomes[0])["attrs"]
+        assert outcome["assessment"] == "solved"
+        assert outcome["observed_terminal_status"] == "solved"
+        assert outcome["attempt_count"] == 0.0
+        assert agent.s.nodes("OpenProcessSearchRequest") == []
+        assert agent.s.node(agent.s.nodes("ProcessCurriculumPolicy")[0])["attrs"]["scheduler_status"] == "ready"
     finally:
         agent.close()
 
