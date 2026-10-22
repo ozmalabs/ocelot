@@ -44,8 +44,8 @@ class CheckpointWorldAdapter:
 
     def compare(self, checkpoints: tuple[CheckpointExpression, CheckpointExpression],
                 worlds: list[dict]) -> dict:
-        if len(checkpoints) != 2:
-            raise ValueError("exactly two checkpoints are required")
+        if len(checkpoints) < 2:
+            raise ValueError("at least two checkpoints are required")
         ids = [world["world_id"] for world in worlds]
         if len(ids) != len(set(ids)):
             raise ValueError("world IDs must be unique within a checkpoint block")
@@ -57,7 +57,7 @@ class CheckpointWorldAdapter:
                     for checkpoint in checkpoints]
             rows.append({"world_id": world["world_id"], "outcomes": pair,
                          "same_world": all(x["world_id"] == world["world_id"] for x in pair),
-                         "same_work": pair[0]["primitive_work"] == pair[1]["primitive_work"]})
+                         "same_work": len({x["primitive_work"] for x in pair}) == 1})
         return {"status": "COMPLETED",
                 "same_worlds": all(row["same_world"] for row in rows),
                 "efficiency_comparable": all(row["same_work"] for row in rows)

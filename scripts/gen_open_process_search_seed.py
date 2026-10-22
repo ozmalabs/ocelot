@@ -24,6 +24,12 @@ def _tree(name):
     return IfThenElse(is_none(A(name, "expr_tree")), A(name, "name"), A(name, "expr_tree"))
 
 
+def _task_identity():
+    """Permit repeated same-goal training worlds only with explicit IDs."""
+    return IfThenElse(is_none(A("task", "training_trial_key")),
+                      A("task", "goal"), A("task", "training_trial_key"))
+
+
 def _known_failed_subgoal(task, domain, subgoal):
     known = A(task, "known_failed_subgoals")
     return IfThenElse(is_none(known), L(False), In(subgoal, known))
@@ -365,9 +371,9 @@ def build():
         And(policy_on(), Eq(A("task", "status"), L("stuck")),
             Eq(A("budget", "enabled"), L(1.0)),
             Not(Exists(N("agent", "has_open_process_search_request"), "old",
-                       Eq(A("old", "task_key"), A("task", "goal"))))),
+                       Eq(A("old", "task_key"), _task_identity())))),
         [["add_node", "request", "OpenProcessSearchRequest", {
-            "task_key": T(A("task", "goal")), "domain": T(A("d", "name")),
+            "task_key": T(_task_identity()), "domain": T(A("d", "name")),
             "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "status": "awaiting_budget"}],
@@ -376,7 +382,7 @@ def build():
          ["add_node", "budget_request", "ThinkingBudgetRequest", {
             "requester_kind": "open_process_search", "status": "pending",
             "cost": T(A("pol", "search_cost")),
-            "source_key": T(A("task", "goal")),
+            "source_key": T(_task_identity()),
             "deadline_epoch": T(Plus(A("mode", "epoch"), L(1.0)))}],
          ["add_edge", "request", "has_budget_request", "budget_request", {}],
          ["add_edge", "agent", "has_thinking_budget_request", "budget_request", {}],

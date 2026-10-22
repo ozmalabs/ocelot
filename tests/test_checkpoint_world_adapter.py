@@ -22,12 +22,16 @@ def _checkpoints(agent, *, full_work=2, ancestor_work=2):
 def test_all_arms_same_world_and_compute():
     agent, adapter = _adapter()
     full, ancestor = _checkpoints(agent)
+    adaptive = CheckpointExpression("adaptive", "ancestor", "expr-adaptive",
+                                    full.params, 2)
+    invention = CheckpointExpression("invention", "ancestor", "expr-invention",
+                                     full.params, 2)
     worlds = [{"world_id": f"world-{i}", "initial_state": [0, 1, 2, 3],
                "goal_state": [1, 2, 0, 3]} for i in range(3)]
-    result = adapter.compare((full, ancestor), worlds)
+    result = adapter.compare((ancestor, adaptive, invention, full), worlds)
     assert result["same_worlds"]
     assert result["efficiency_comparable"]
-    assert all([x["world_id"] for x in row["outcomes"]] == [row["world_id"]] * 2
+    assert all([x["world_id"] for x in row["outcomes"]] == [row["world_id"]] * 4
                for row in result["rows"])
 
 

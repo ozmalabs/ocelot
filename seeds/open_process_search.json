@@ -683,12 +683,38 @@
                   "key": "task_key"
                 },
                 "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "task"
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "task"
+                      },
+                      "key": "training_trial_key"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
                   },
-                  "key": "goal"
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "goal"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "training_trial_key"
+                  }
                 }
               }
             }
@@ -703,12 +729,38 @@
           {
             "task_key": {
               "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "task"
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "training_trial_key"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
                 },
-                "key": "goal"
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "goal"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "training_trial_key"
+                }
               }
             },
             "domain": {
@@ -787,12 +839,38 @@
             },
             "source_key": {
               "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "task"
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "training_trial_key"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
                 },
-                "key": "goal"
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "goal"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "training_trial_key"
+                }
               }
             },
             "deadline_epoch": {

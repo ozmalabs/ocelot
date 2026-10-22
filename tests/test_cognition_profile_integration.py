@@ -1409,8 +1409,12 @@ def test_p22_native_causal_chain_and_shared_budget():
             agent.inner.run_rules(4000)
         attempts = _nodes(agent, "OpenProcessSearchAttempt")
         candidates = _nodes(agent, "OpenProcessCandidate")
+        assert attempts and candidates
+        attest_open_process_candidate(agent, candidates[0])
+        for _ in range(4):
+            agent.inner.run_rules(4000)
         proposals = _nodes(agent, "IndependentImprovementProposal")
-        assert attempts and candidates and len(proposals) == 1
+        assert len(proposals) == 1
         verified = [n for n in attempts
                     if agent.s.node(n)["attrs"].get("status") == "verified"]
         assert verified

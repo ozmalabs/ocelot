@@ -33,6 +33,7 @@ def build():
         ("Agent", "has_independent_improvement_qualification", "IndependentImprovementQualification"),
         ("IndependentImprovementProposal", "proposes_native_candidate", "OpenProcessCandidate"),
         ("IndependentImprovementProposal", "derived_from_trial", "OpenProcessSearchAttempt"),
+        ("IndependentImprovementProposal", "has_native_qualification", "IndependentImprovementQualification"),
         ("IndependentImprovementQualification", "qualifies_proposal", "IndependentImprovementProposal"),
         ("IndependentImprovementQualification", "counts_native_trial", "OpenProcessSearchAttempt"),
     ]
@@ -49,9 +50,12 @@ def build():
                   ["candidate", "derived_from_attempt", "attempt"],
                   ["attempt", "about_task", "task"]],
         "where": And(policy_on("policy"),
+            {"type": "Lt", "a": Count(N("agent", "has_independent_improvement_proposal")),
+             "b": A("policy", "max_proposals")},
             Eq(A("task", "split"), A("policy", "required_split")),
             Eq(A("attempt", "status"), L("verified")),
             Eq(A("candidate", "status"), L("unapproved_candidate")),
+            Eq(A("candidate", "expression_digest_status"), L("verified")),
             Not(Exists(N("agent", "has_independent_improvement_proposal"), "old",
                 Eq(A("old", "expression_digest"), A("candidate", "expression_digest")))),
             # One shared budget is required; the proposal itself is not actionable.
@@ -67,6 +71,36 @@ def build():
             ["add_edge", "agent", "has_independent_improvement_proposal", "proposal", {}],
             ["add_edge", "proposal", "proposes_native_candidate", "candidate", {}],
             ["add_edge", "proposal", "derived_from_trial", "attempt", {}]]})
+    base["rules"].append({"name": "iip_qualify_after_independent_native_trials",
+        "area": "memory_consolidation", "order": 14,
+        "latency_class": "background", "batch": False,
+        "comment": "Require a second distinct native-verified expression trial from the training split before a proposal may seek exact candidate approval.",
+        "match": [policy,
+            ["agent", "has_independent_improvement_proposal", "proposal"],
+            ["proposal", "derived_from_trial", "source"],
+            ["source", "about_task", "source_task"],
+            ["agent", "has_open_process_search_attempt", "trial"],
+            ["trial", "about_task", "task"]],
+        "where": And(policy_on("policy"),
+            Eq(A("policy", "minimum_native_trials"), L(2.0)),
+            Eq(A("source_task", "split"), A("policy", "required_split")),
+            Eq(A("task", "split"), A("policy", "required_split")),
+            Eq(A("trial", "status"), L("verified")),
+            Eq(A("trial", "expression_tree"), A("proposal", "expression_tree")),
+            {"type": "Not", "arg": Eq({"type": "Var", "name": "source_task"},
+                                         {"type": "Var", "name": "task"})},
+            Eq(A("proposal", "status"), L("awaiting_native_qualification"))),
+        "effects": [["add_node", "qualification", "IndependentImprovementQualification", {
+            "status": "qualified_for_candidate_specific_approval",
+            "trial_count": 2.0, "split": T(A("policy", "required_split")),
+            "expression_digest": T(A("proposal", "expression_digest")),
+            "criteria_digest": T(A("proposal", "criteria_digest"))}],
+            ["add_edge", "proposal", "has_native_qualification", "qualification", {}],
+            ["add_edge", "qualification", "qualifies_proposal", "proposal", {}],
+            ["add_edge", "qualification", "counts_native_trial", "source", {}],
+            ["add_edge", "qualification", "counts_native_trial", "trial", {}],
+            ["set_attr", "proposal", "qualified_trial_count", 2.0],
+            ["set_attr", "proposal", "status", "qualified_for_candidate_specific_approval"]]})
     return base
 
 
