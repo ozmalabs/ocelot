@@ -1,11 +1,16 @@
 from evaluation.process_mastery.checkpoint_world_adapter import (
-    CheckpointExpression, CheckpointWorldAdapter,
+    CheckpointExpression, CheckpointWorldAdapter, capture_adopted_checkpoint,
+    capture_held_process_checkpoint,
+)
+from evaluation.process_mastery.native_process_execution import (
+    attest_open_process_candidate, execute_open_process_candidate,
 )
 from evaluation.process_mastery.independent_worlds import (
     agent_view, generate_d4_world, generate_loopover_world, p22_seed,
 )
 from evaluation.process_mastery.harness import Agent
 from tests.test_open_process_search import _compose
+from tests.test_open_process_adoption import _agent as _adoption_agent, _approve, _candidate, _tick
 
 
 def _adapter():
@@ -114,3 +119,51 @@ def test_loopover_goal_matches_native_process_composition():
                            goal_state=world["goal_state"])
     assert scored["score"] == 1
     assert len(world["initial_state"]) == 9
+
+
+def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
+    agent = _adoption_agent()
+    candidate = _candidate(agent)
+    parent = capture_held_process_checkpoint(agent, agent.schemas("search")[0],
+        checkpoint_id="held-ancestor")
+    try:
+        capture_adopted_checkpoint(agent, 999999, checkpoint_id="invalid-generation",
+            parent=parent, generation=2, declared_primitive_work=2)
+    except ValueError as exc:
+        assert "immediate parent" in str(exc)
+    else:
+        raise AssertionError("skipped generation was accepted")
+    digest = attest_open_process_candidate(agent, candidate)
+    _approve(agent, candidate)
+    _tick(agent)
+    assert agent.attrs(candidate)["status"] == "adopted_candidate"
+    state = agent.attrs(candidate)["guard_state"]
+    predicted = agent.native.evaluate(
+        {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+         "state": {"type": "Var", "name": "state"}},
+        {"p": agent.attrs(candidate)["params"], "state": state})
+    result = execute_open_process_candidate(agent, candidate, state=state,
+        authorize=lambda proposal: proposal["expression_digest"] == digest,
+        world_transition=lambda action: {"observed_state": predicted})
+    assert result["status"] == "COMPLETED"
+    checkpoint = capture_adopted_checkpoint(agent, candidate,
+        checkpoint_id="generation-1", parent=parent,
+        generation=1, declared_primitive_work=2)
+    assert checkpoint.generation == 1
+    assert checkpoint.parent_digest == parent.checkpoint_digest
+    assert checkpoint.approval_id is not None and checkpoint.receipt_id is not None
+    before = checkpoint.checkpoint_digest
+    original_params = checkpoint.params
+    changed = list(agent.attrs(candidate)["params"])
+    changed[0], changed[1] = changed[1], changed[0]
+    agent.s.set_attr(candidate, "params", changed)
+    assert checkpoint.params == original_params
+    assert checkpoint.checkpoint_digest == before
+    try:
+        capture_adopted_checkpoint(agent, candidate, checkpoint_id="generation-1b",
+            parent=checkpoint, generation=2,
+            declared_primitive_work=2)
+    except ValueError as exc:
+        assert "expression" in str(exc)
+    else:
+        raise AssertionError("mutated candidate was captured as an approved checkpoint")

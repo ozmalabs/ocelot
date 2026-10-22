@@ -2,6 +2,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
+
+from evaluation.process_mastery.native_process_execution import (
+    open_process_candidate_digest, params_digest,
+)
 
 
 @dataclass(frozen=True)
@@ -11,6 +17,92 @@ class CheckpointExpression:
     expression_digest: str
     params: tuple[int, ...]
     declared_primitive_work: int
+    generation: int = 0
+    checkpoint_digest: str = ""
+    approval_id: str | None = None
+    receipt_id: str | None = None
+
+
+def capture_held_process_checkpoint(agent, process_schema: int, *,
+                                    checkpoint_id: str,
+                                    declared_primitive_work: int = 0) -> CheckpointExpression:
+    """Create generation-zero parent evidence from an active native process source."""
+    native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+    store = getattr(agent, "s", None)
+    if native is None or store is None:
+        raise TypeError("agent must expose native substrate and graph store")
+    if not checkpoint_id:
+        raise ValueError("checkpoint identity is required")
+    node = store.node(process_schema)
+    if node["type"] != "ProcessSchema":
+        raise ValueError("ancestor must be a native ProcessSchema")
+    attrs = node["attrs"]
+    params = attrs.get("params")
+    if (attrs.get("status") != "active" or not isinstance(params, list)
+            or not all(isinstance(x, int) for x in params)
+            or attrs.get("source_digest") != params_digest(params)):
+        raise ValueError("ancestor process is inactive or has an invalid source digest")
+    payload = {"schema": "p22_native_checkpoint_v1", "checkpoint_id": checkpoint_id,
+        "generation": 0, "source_digest": attrs["source_digest"],
+        "params": params, "primitive_work": int(declared_primitive_work)}
+    digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    return CheckpointExpression(checkpoint_id, "", attrs["source_digest"],
+        tuple(params), int(declared_primitive_work), 0, digest)
+
+
+def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
+                               parent: CheckpointExpression, generation: int,
+                               declared_primitive_work: int) -> CheckpointExpression:
+    """Freeze an adopted candidate only after its exact approval and world receipt.
+
+    This captures graph-authored expression provenance into an immutable value;
+    it does not create approval or turn a proposal into an actionable candidate.
+    """
+    if (not checkpoint_id or not parent.checkpoint_digest or generation < 1
+            or generation != parent.generation + 1):
+        raise ValueError("checkpoint must extend a frozen immediate parent by one generation")
+    native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+    store = getattr(agent, "s", None)
+    if native is None or store is None:
+        raise TypeError("agent must expose native substrate and graph store")
+    attrs = store.node(candidate)["attrs"]
+    if attrs.get("status") != "adopted_candidate" or attrs.get("adoption_status") != "approved":
+        raise ValueError("checkpoint candidate is not adopted")
+    current_digest = open_process_candidate_digest(agent, candidate)
+    if (current_digest != attrs.get("expression_digest")
+            or current_digest != attrs.get("adopted_expression_digest")):
+        raise ValueError("checkpoint expression no longer matches its adopted digest")
+    approvals = list(native.neighbours(candidate, "approved_by_open_process_adoption"))
+    receipts = list(native.neighbours(candidate, "has_world_execution_receipt"))
+    if len(approvals) != 1 or len(receipts) != 1:
+        raise ValueError("checkpoint requires one exact approval and one execution receipt")
+    approval = store.node(approvals[0])["attrs"]
+    if approval.get("status") != "consumed" or approval.get("approval_kind") != "human":
+        raise ValueError("checkpoint approval is not consumed human approval")
+    for key in ("expression_digest", "expression_key", "expression_tree", "effect_digest",
+                "params", "guard_state", "domain", "source_epoch", "model_epoch", "frame_epoch"):
+        if approval.get(key) != attrs.get(key):
+            raise ValueError("checkpoint approval binding changed")
+    receipt = store.node(receipts[0])["attrs"]
+    if (receipt.get("status") != "verified"
+            or receipt.get("expression_digest") != current_digest
+            or receipt.get("params_digest") != params_digest(attrs.get("params"))
+            or receipt.get("effect_digest") != attrs.get("effect_digest")):
+        raise ValueError("checkpoint requires a matching verified execution receipt")
+    params = attrs.get("params")
+    if not isinstance(params, list) or not all(isinstance(x, int) for x in params):
+        raise ValueError("checkpoint expression is outside supported integer permutation domain")
+    payload = {"schema": "p22_native_checkpoint_v1", "checkpoint_id": checkpoint_id,
+        "parent_digest": parent.checkpoint_digest, "generation": int(generation),
+        "expression_digest": current_digest, "params": params,
+        "primitive_work": int(declared_primitive_work),
+        "approval_id": str(approvals[0]), "receipt_id": str(receipts[0])}
+    frozen_digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    return CheckpointExpression(checkpoint_id, parent.checkpoint_digest, current_digest,
+        tuple(params), int(declared_primitive_work), int(generation), frozen_digest,
+        str(approvals[0]), str(receipts[0]))
 
 
 class CheckpointWorldAdapter:
