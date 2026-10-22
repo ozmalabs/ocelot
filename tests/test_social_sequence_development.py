@@ -20,6 +20,12 @@ def test_all_social_source_arms_run_through_native_verification_and_sink():
     assert by_arm["observation"]["source_evidence_types"] == ["ObservedInteractionTrace"]
     assert by_arm["demonstration"]["source_evidence_types"] == ["ProcessDemonstration"]
     assert by_arm["instruction"]["source_evidence_types"] == ["ParsedProcessInstruction"]
+    assert by_arm["instruction"]["source_graph_nodes"] > 0
+    assert by_arm["instruction"]["visible_observations"] == 2
+    assert by_arm["instruction"]["source_world_actions"] == 0
+    assert by_arm["instruction"]["target_primitive_actions"] == 2
+    assert by_arm["instruction"]["native_rule_steps"] > 0
+    assert by_arm["instruction"]["graph_bytes"] > 0
     reward = by_arm["reward_only"]
     assert reward["outcome"] == "abstained_underidentified"
     assert reward["verification_status"] == "not_applicable"

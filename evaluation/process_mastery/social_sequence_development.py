@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -51,7 +52,7 @@ def _agent():
     return agent
 
 
-def _instruction_parse(agent):
+def _instruction_parse(receiver_agent):
     bank = training_bank() + [
         {"text": "The peer requests the case.", "language": "en",
          "expected_meaning": {"event": "request", "agent": "peer",
@@ -62,9 +63,10 @@ def _instruction_parse(agent):
     ]
     teacher = make_stub_teacher({"en": {"peer": "peer", "requests": ("request", "present"),
                                           "repaired": ("repair", "past"), "case": "case"}})
-    world = LanguageWorld(agent.native, bank, teacher)
-    world.run()
-    production = LanguageProduction(world)
+    source_agent = Agent(track_i=False, profile="p20-instruction-sender")
+    source_world = LanguageWorld(source_agent.native, bank, teacher)
+    source_world.run()
+    production = LanguageProduction(source_world)
     authored = produce_ordered_explanation("en", [
         {"precondition": "idle", "frame": {"event": "request", "agent": "peer",
                                                   "patient": "case", "tense": "present",
@@ -75,10 +77,13 @@ def _instruction_parse(agent):
     ], production)
     if authored.get("status") != "produced":
         raise RuntimeError(f"instruction production failed: {authored}")
-    parsed = parse_ordered_explanation(authored["text"], "en", production)
+    receiver_world = LanguageWorld(receiver_agent.native, bank, teacher)
+    receiver_world.run()
+    parsed = parse_ordered_explanation(authored["text"], "en",
+                                       LanguageProduction(receiver_world))
     if parsed.get("parse_status") != "parsed":
         raise RuntimeError(f"independent instruction parse failed: {parsed}")
-    return authored["text"], parsed, len(authored["text"].split())
+    return authored["text"], parsed, len(authored["text"].split()), source_agent
 
 
 def _request(agent, *, requester_kind, candidate_id, cost):
@@ -105,7 +110,9 @@ def _settle(agent):
 
 
 def _one_stream(arm, index):
+    started = time.perf_counter()
     agent = _agent()
+    source_agent = None
     if arm == "observation":
         source = RequestRepairWorld(world_id=f"observed-source:{index}")
         witnessed_episode(agent, episode_id=f"observation:{index}",
@@ -119,7 +126,7 @@ def _one_stream(arm, index):
         })
         source_units = 2
     elif arm == "instruction":
-        text, parsed, source_units = _instruction_parse(agent)
+        text, parsed, source_units, source_agent = _instruction_parse(agent)
         instructed_episode(agent, episode_id=f"instruction:{index}", text=text, parsed=parsed)
     elif arm == "reward_only":
         reward_only_episode(agent, episode_id=f"reward:{index}", feedback={
@@ -168,14 +175,35 @@ def _one_stream(arm, index):
     debits = sum(agent.s.node(node)["attrs"].get("debited_epoch") is not None
                  for node in requests)
     budget = agent.s.node(agent.s.nodes("ThinkingBudget")[0])["attrs"]
+    source_actions = (source_units if arm in ("observation", "demonstration") else 0)
+    visible_observations = source_units if arm in ("observation", "demonstration") else (
+        2 if arm == "instruction" else 1)
+    graph_nodes = len(agent.s.nodes())
+    graph_bytes = len(json.dumps([agent.s.node(node) for node in agent.s.nodes()],
+                                 sort_keys=True, default=str).encode())
+    source_graph_nodes = len(source_agent.s.nodes()) if source_agent is not None else 0
+    source_graph_bytes = (len(json.dumps([source_agent.s.node(node)
+                                          for node in source_agent.s.nodes()],
+                                         sort_keys=True, default=str).encode())
+                          if source_agent is not None else 0)
     return {
         "arm": arm, "stream_id": f"dev:{arm}:{index:04d}", "outcome": outcome,
-        "source_information_units": source_units, "own_actions": own_actions,
+        "evidence_opportunities": 1, "visible_observations": visible_observations,
+        "source_world_actions": source_actions,
+        "source_information_units": source_units,
+        "source_information_unit_kind": ("world_receipt" if arm in ("observation", "demonstration")
+                                          else "public_word" if arm == "instruction"
+                                          else "scalar_reward"),
+        "target_primitive_actions": own_actions, "own_actions": own_actions,
         "verification_status": verification_status, "solved": solved,
         "budget_requests": len(requests), "budget_debits": debits,
         "budget_remaining": budget.get("remaining"),
         "native_rule_steps": getattr(agent, "_p20_native_rule_steps", 0),
-        "graph_nodes": len(agent.s.nodes()),
+        "native_rule_steps_scope": "sequence learner and verification/execution settlement ticks",
+        "graph_nodes": graph_nodes, "graph_bytes": graph_bytes,
+        "source_graph_nodes": source_graph_nodes, "source_graph_bytes": source_graph_bytes,
+        "elapsed_seconds": round(time.perf_counter() - started, 6),
+        "authorized_actions": own_actions,
         "source_evidence_types": sorted({agent.s.node(node)["type"] for node in
                                           (agent.s.nodes("ObservedInteractionTrace")
                                            + agent.s.nodes("ProcessDemonstration")
