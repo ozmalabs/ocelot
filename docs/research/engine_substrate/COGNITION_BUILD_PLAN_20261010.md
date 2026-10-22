@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03 implemented and focused acceptance passed.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -645,6 +645,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_goal_invention.py tests/test_extended_thinking_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** migrating RelaxLadder wholesale or restoring the invalid P1 assumption that generic collapse calls code synthesis.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P10.03 implementation record (2026-10-22):** Added opt-in `goal_invention` graph rules. A stuck task creates a typed, epoch-scoped `ProcessGap`; one targeted inverse request draws on the shared ThinkingBudget. Approval temporarily enables the bounded invention policy, and denial leaves it disabled. A candidate is minted only when native inverse/application strictly reduces the current goal distance and its probe fingerprint is available; the existing solver then consumes the graph-held ProcessSchema. Unsupported domains terminate as `needs_tool` with a `SynthesisInterfaceRequest`; no Program/ProgramCandidate bypass is created. Successful and denied paths restore the prior invention-policy state. Verification: `tests/test_goal_invention.py tests/test_extended_thinking_migrated.py` — 20 passed. General effect families and arbitrary program synthesis remain unsupported.
 
 ### P10.04 — Discover and execute strategies without the probe solver
 
