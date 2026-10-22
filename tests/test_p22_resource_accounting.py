@@ -47,3 +47,30 @@ def test_resource_comparison_checks_digest_and_keeps_each_arm_vector():
             compare_resource_snapshots({"unchanged": before, "full": after})
     finally:
         del agent
+
+
+def test_resource_snapshot_counts_training_exposure_and_native_work():
+    agent, _domain = _p19_agent(attempts=32)
+    try:
+        evidence = agent.s.add_node("ProcessCurriculumEvidence", {"split": "training"})
+        heldout = agent.s.add_node("ProcessCurriculumEvidence", {"split": "heldout"})
+        outcome = agent.s.add_node("ProcessCurriculumOutcome", {"split": "training"})
+        task = agent.s.add_node("SolveTask", {"steps": 3, "moves": 5.5})
+        attempt = agent.s.add_node("OpenProcessSearchAttempt", {"work_cost": 4.0})
+        approved = agent.s.add_node("ThinkingBudgetRequest", {
+            "status": "approved", "cost": 2.0})
+        denied = agent.s.add_node("ThinkingBudgetRequest", {
+            "status": "denied", "cost": 1.5})
+        snapshot = snapshot_native_resources(agent)
+        resources = snapshot["cumulative_resources"]
+        assert resources["training_evidence_exposures"] == 1
+        assert resources["training_outcomes"] == 1
+        assert resources["native_solver_steps"] == 3.0
+        assert resources["native_solver_primitive_work"] == 5.5
+        assert resources["search_declared_primitive_work"] == 4.0
+        assert resources["budget_requested"] == 3.5
+        assert resources["budget_approved"] == 2.0
+        assert resources["budget_denied_cost"] == 1.5
+        assert snapshot["snapshot_sha256"]
+    finally:
+        del agent

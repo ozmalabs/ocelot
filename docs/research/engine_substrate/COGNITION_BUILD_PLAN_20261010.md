@@ -2167,6 +2167,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 **P22 arm feedback correction (2026-10-23):** Curriculum dispatch now creates a runnable `SolveTask` (`active` when the common SolverPolicy is enabled; `stuck` only in the explicit search-isolation fixture where that solver is disabled). Native solver completions now close a curriculum task even when no P19 request exists, which is required for the adaptive-only condition; solver impasses are recorded directly only when open-process search is disabled. Development regressions verify both the common-ancestor solve path without invention and the full-condition path through P19 search and sequential task release. The focused P22 regression bundle passes 111 tests. This repairs arm task lifecycle wiring; it does not establish matched learning outcomes, adaptive benefit, candidate approval, or held-out efficacy.
 
+**P22 cumulative accounting update (2026-10-23):** Digest-bound checkpoint snapshots now include registered training-evidence exposures, training outcomes, native solver steps and declared primitive work, P19 attempt work, and requested/approved/denied ThinkingBudget cost. The matched-resource comparator includes these dimensions, so mismatches preclude efficiency claims. The new resource fixtures pass (3 tests). This measures graph-recorded work and exposure only; model-call coverage, allocator memory, and wall time remain unavailable, and the existing serialized-byte field is graph readback size rather than memory.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1

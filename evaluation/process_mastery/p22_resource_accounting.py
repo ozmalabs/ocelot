@@ -18,6 +18,12 @@ _RESOURCE_KINDS = {
     "ProcessCurriculumTask": "curriculum_tasks",
     "ThinkingBudgetDenial": "budget_denials",
 }
+def _finite_nonnegative(attrs: dict, key: str, *, kind: str, node_id) -> float:
+    value = attrs.get(key, 0.0)
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not math.isfinite(value) or value < 0):
+        raise ValueError(f"{kind} {node_id} has invalid {key}")
+    return float(value)
 
 
 def snapshot_native_resources(agent) -> dict:
@@ -51,6 +57,7 @@ def snapshot_native_resources(agent) -> dict:
     node_counts = Counter()
     status_counts = Counter()
     selected_counts = Counter()
+    cumulative = Counter()
     status_rows = []
     serialized_bytes = 0
     for node_id in store.nodes():
@@ -67,6 +74,27 @@ def snapshot_native_resources(agent) -> dict:
                                 "status": str(status)})
         if kind in _RESOURCE_KINDS:
             selected_counts[_RESOURCE_KINDS[kind]] += 1
+        if kind == "ProcessCurriculumEvidence" and attrs.get("split") == "training":
+            cumulative["training_evidence_exposures"] += 1
+        if kind == "ProcessCurriculumOutcome" and attrs.get("split") == "training":
+            cumulative["training_outcomes"] += 1
+        if kind == "ThinkingBudgetRequest":
+            cumulative["budget_requested"] += _finite_nonnegative(
+                attrs, "cost", kind=kind, node_id=node_id)
+            if attrs.get("status") == "approved":
+                cumulative["budget_approved"] += _finite_nonnegative(
+                    attrs, "cost", kind=kind, node_id=node_id)
+            if attrs.get("status") == "denied":
+                cumulative["budget_denied_cost"] += _finite_nonnegative(
+                    attrs, "cost", kind=kind, node_id=node_id)
+        if kind == "SolveTask":
+            cumulative["native_solver_steps"] += _finite_nonnegative(
+                attrs, "steps", kind=kind, node_id=node_id)
+            cumulative["native_solver_primitive_work"] += _finite_nonnegative(
+                attrs, "moves", kind=kind, node_id=node_id)
+        if kind == "OpenProcessSearchAttempt":
+            cumulative["search_declared_primitive_work"] += _finite_nonnegative(
+                attrs, "work_cost", kind=kind, node_id=node_id)
         encoded = json.dumps({"id": str(node_id), "node": record}, sort_keys=True,
                              separators=(",", ":"), default=str).encode("utf-8")
         serialized_bytes += len(encoded)
@@ -83,6 +111,8 @@ def snapshot_native_resources(agent) -> dict:
                                   key=lambda row: (row["type"], row["node_id"])),
         "resource_counts": {name: selected_counts.get(name, 0)
                             for name in sorted(set(_RESOURCE_KINDS.values()))},
+        "cumulative_resources": {name: float(value) for name, value
+                                  in sorted(cumulative.items())},
         "thinking_budget_capacity": float(capacity),
         "thinking_budget_remaining": float(remaining),
         "thinking_budget_spent": float(capacity - remaining),
@@ -100,6 +130,10 @@ def compare_resource_snapshots(snapshots: dict[str, dict]) -> dict:
     required = ("search_attempts", "improvement_proposals", "qualifications",
                 "candidate_approval_events", "world_receipts", "solve_tasks",
                 "curriculum_tasks", "budget_denials")
+    cumulative_dimensions = (
+        "training_evidence_exposures", "training_outcomes", "budget_requested",
+        "budget_approved", "budget_denied_cost", "native_solver_steps",
+        "native_solver_primitive_work", "search_declared_primitive_work")
     vectors = {}
     for arm, snapshot in snapshots.items():
         if snapshot.get("schema") != "p22_native_resource_snapshot_v1":
@@ -111,6 +145,8 @@ def compare_resource_snapshots(snapshots: dict[str, dict]) -> dict:
             **{key: counts.get(key, 0) for key in required},
             "thinking_budget_spent": snapshot["thinking_budget_spent"],
             "serialized_graph_bytes": snapshot["serialized_graph_bytes"],
+            **{key: snapshot.get("cumulative_resources", {}).get(key, 0.0)
+               for key in cumulative_dimensions},
         }
     common = set.intersection(*(set(vector) for vector in vectors.values()))
     matched = {key: len({vector[key] for vector in vectors.values()}) == 1
