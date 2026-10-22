@@ -21,6 +21,7 @@ def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_ty
 def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
 def Count(src): return {"type": "Count", "source": src}
 def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
+def In(member, container): return {"type": "In", "member": member, "container": container}
 def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
 
 
@@ -88,7 +89,7 @@ def build_seed():
         "where": And(Eq(A("pol", "enabled"), L(1.0)),
                       Eq(A("input", "parse_status"), L("parsed")),
                       Eq(A("input", "semantic_event"), A("primitive", "semantic_event")),
-                      Eq(A("input", "primitive_id"), A("primitive", "primitive_id")),
+                      In(A("primitive", "public_token"), A("input", "supported_vocabulary")),
                       Eq(A("request", "explanation_id"), A("input", "explanation_id")),
                       Eq(A("request", "status"), L("requested")),
                       Eq(A("funding", "requester_kind"), L("process_explanation_rebuild")),

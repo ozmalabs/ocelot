@@ -73,6 +73,7 @@ def _receiver(packet, *, parse_status="parsed"):
     # installed in the receiver graph.
     primitive = s.add_node("ProcessPrimitiveVocabulary", {
         "primitive_id": "primitive-love", "semantic_event": "love",
+        "public_token": "primitive-love",
         "native_effect": ["seq", ["add", [1]]], "vocabulary_status": "shared",
         "model_epoch": 8, "frame_epoch": 3})
     s.add_edge(ag, "has_process_primitive_vocabulary", primitive, {})
@@ -80,7 +81,8 @@ def _receiver(packet, *, parse_status="parsed"):
     explanation_input = s.add_node("ProcessExplanationInput", {
         "explanation_id": packet["explanation_id"], "text": packet["text"],
         "language": packet["language"], "parse_status": parse_status,
-        "semantic_event": semantic.get("event"), "primitive_id": "primitive-love",
+        "semantic_event": semantic.get("event"),
+        "supported_vocabulary": packet["vocabulary"],
         "model_epoch": 8, "frame_epoch": 3})
     s.add_edge(ag, "has_process_explanation_input", explanation_input, {})
     request = s.add_node("ProcessExplanationRequest", {
