@@ -111,6 +111,22 @@ def test_unseen_operator_expression_generated():
                and attrs["params"] == inverse for attrs in candidates)
 
 
+def test_both_subgoal_orders_are_evaluated_within_budget():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
+    agent, _ = _agent(held=held)
+    initial = [0, 1, 2, 3]
+    reverse = _compose(agent, held["q"], held["p"])
+    goal = _apply(agent, reverse, initial)
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    attempts = [agent.attrs(n) for n in agent.nodes("OpenProcessSearchAttempt")]
+    assert any(attempt["expression_key"] == "compose:q:p"
+               and attempt["status"] == "verified" for attempt in attempts)
+    candidates = [agent.attrs(n) for n in agent.nodes("OpenProcessCandidate")]
+    assert any(candidate["params"] == reverse for candidate in candidates)
+
+
 def test_changed_goal_changes_proposal():
     agent, _ = _agent()
     task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])

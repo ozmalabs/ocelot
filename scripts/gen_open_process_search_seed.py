@@ -24,7 +24,7 @@ def _tree(name):
     return IfThenElse(is_none(A(name, "expr_tree")), A(name, "name"), A(name, "expr_tree"))
 
 
-def _expression_rule(operator, order):
+def _expression_rule(operator, order, *, reverse=False):
     if operator == "compose":
         params = PCompose(A("a", "params"), A("b", "params"))
         inner = Vec(L("compose"), _tree("a"), _tree("b"))
@@ -34,7 +34,8 @@ def _expression_rule(operator, order):
         parents = [["d", "has_held_process", "a"], ["d", "has_held_process", "b"]]
         # Composition is non-commutative. Use source-content identity for the
         # first bounded frontier; human-readable labels never choose a recipe.
-        pair_guard = Lt(A("a", "source_digest"), A("b", "source_digest"))
+        pair_guard = (Gt(A("a", "source_digest"), A("b", "source_digest"))
+                      if reverse else Lt(A("a", "source_digest"), A("b", "source_digest")))
         expr_key = {"type": "StringConcat", "parts": [
             L("compose:"), A("a", "name"), L(":"), A("b", "name")]}
         work = Plus(A("a", "cost"), A("b", "cost"))
@@ -61,7 +62,7 @@ def _expression_rule(operator, order):
         ["agent", "has_open_process_search_request", "request"],
         ["request", "searches_task", "task"], ["task", "about_domain", "d"]] + parents
     attempt = rule(
-        f"ops_record_{operator}_attempt", ONLINE_AREA, 20 + order,
+        f"ops_record_{operator}{'_reverse' if reverse else ''}_attempt", ONLINE_AREA, 20 + order,
         "Count every bounded grammar expression attempt, including unsupported effects; recipe selection never reads a candidate name.",
         attempt_match,
         And(policy_on(), Eq(A("request", "status"), L("funded")),
@@ -130,7 +131,7 @@ def _expression_rule(operator, order):
          ["add_edge", "agent", "has_open_process_candidate", "candidate", {}],
          ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]],
         batch=False)
-    return [attempt, mint]
+    return [attempt] if reverse else [attempt, mint]
 
 
 def build():
@@ -183,7 +184,9 @@ def build():
             Eq(A("budget_request", "status"), L("approved"))),
         [["set_attr", "request", "status", "funded"]])
     rules = [request, funded]
-    for index, operator in enumerate(("compose", "inverse", "power2", "power3")):
+    rules.extend(_expression_rule("compose", 0))
+    rules.extend(_expression_rule("compose", 1, reverse=True))
+    for index, operator in enumerate(("inverse", "power2", "power3"), start=2):
         rules.extend(_expression_rule(operator, index))
     return {"id": SEED_ID, "version": "1.0.0",
         "depends_on": ["process_solving", "thinking_budget"],
