@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03–P10.05 implemented with focused acceptance passed.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03–P10.05 implemented, P10.E1 integrated.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -697,6 +697,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_goal_invention.py tests/test_process_lifting.py tests/test_strategy_discovery.py tests/test_cognition_profile_integration.py tests/test_pmb_puzzle_worlds.py -q -p no:cacheprovider`.
 - **Non-goals:** activating experimental processes in CORE; freezing evaluation before runtime integration.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P10.E1 integration record (2026-10-22):** Added `process_lifting`, `goal_invention`, and `strategy_discovery` to the cognition-on closure only; all three policies remain disabled at boot. Added profile-chain, default/conversation isolation, and shared-budget checks. A measured boot took 0.1578 s and produced 980 graph nodes and 575 rules; two ThinkingBudget nodes are attached, exactly one enabled for shared requesters. The five-suite P10 bundle passed 50 tests. Native task simulation and graph traces are verified; external physical-action receipts and allocator memory bytes are unavailable and are not claimed.
 
 ### P10.E2 — Freeze a runnable preregistered evaluation
 

@@ -812,6 +812,11 @@ COGNITION_ON_SEEDS = (
     "invention_round",
     "invariant_miner",
     "process_solving",
+    # P10 goal-directed invention and exact-context strategy replay remain
+    # policy-disabled until an explicit cognition-on evaluation enables them.
+    "process_lifting",
+    "goal_invention",
+    "strategy_discovery",
 )
 
 

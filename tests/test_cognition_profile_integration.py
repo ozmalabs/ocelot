@@ -266,6 +266,46 @@ def test_p6_shared_budget():
     agent.close()
 
 
+def test_p10_profile_chain():
+    p10 = {"process_lifting", "goal_invention", "strategy_discovery"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p10:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("ProcessLiftingPolicy", "GoalInventionPolicy", "StrategyDiscoveryPolicy"):
+        for node in _nodes(agent, node_type):
+            assert agent.s.node(node)["attrs"].get("enabled") == 0.0
+    agent.close()
+
+
+def test_p10_default_isolation():
+    p10 = {"process_lifting", "goal_invention", "strategy_discovery"}
+    p10_rule_names = {item["name"] for sid in p10
+                      for item in manifest_for(sid).get("rules", ())
+                      if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    default_rules = {r["name"] for r in default.inner.export_rules()}
+    conversation_rules = {r["name"] for r in conversation.inner.export_rules()}
+    assert p10_rule_names.isdisjoint(default_rules)
+    assert p10_rule_names.isdisjoint(conversation_rules)
+    default.close()
+    conversation.close()
+
+
+def test_p10_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
 def test_p9_profile_chain():
     p9 = {"invention_round", "invariant_miner"}
     agent = boot_cognition_on()
