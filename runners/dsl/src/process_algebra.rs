@@ -513,7 +513,7 @@ pub fn finite_distribution(outcomes: &[(Value, f64)]) -> Option<(Vec<(Value, f64
         }
         total += probability;
     }
-    if total > 1.0 + f64::EPSILON * (outcomes.len().max(1) as f64) { return None; }
+    if total > 1.0 { return None; }
     Some((outcomes.to_vec(), (1.0 - total).max(0.0)))
 }
 
@@ -709,6 +709,7 @@ mod tests {
         assert_eq!(kept.len(), 2);
         assert!((unknown - 0.25).abs() < 1e-12);
         assert!(finite_distribution(&[(ints(&[0]), 0.7), (ints(&[1]), 0.4)]).is_none());
+        assert!(finite_distribution(&[(ints(&[0]), 1.0), (ints(&[1]), f64::EPSILON)]).is_none());
         assert!(finite_distribution(&[(ints(&[0]), 0.5), (ints(&[0]), 0.5)]).is_none());
     }
 }
