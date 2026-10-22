@@ -218,9 +218,9 @@ def run(split="development", n=200, self_check=False):
             seed = offset + i
             for arm in ("operators_on", "operators_off", "held_only"):
                 rows.append(exact_trial(seed, arm))
-                rows.append(irreversible_trial(9_000_200 + i, arm))
+                rows.append(irreversible_trial(offset + 200 + i, arm))
         for i in range(100):
-            seed = 9_000_400 + i
+            seed = offset + 400 + i
             for arm in ("operators_on", "operators_off", "held_only"):
                 rows.append(control_trial(seed, arm))
     return {"schema": "pmb-scorecard-v1", "metadata": {
