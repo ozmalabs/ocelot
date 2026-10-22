@@ -17,6 +17,7 @@ def T(v): return {"__term__": v}
 def Eq(a, b): return {"type": "Eq", "a": a, "b": b}
 def And(*xs): return {"type": "And", "items": list(xs)}
 def Not(x): return {"type": "Not", "arg": x}
+def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
 def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
 def Exists(source, name, predicate):
     return {"type": "Exists", "source": source, "var_name": name, "predicate": predicate}
@@ -26,6 +27,11 @@ def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
 def build_seed():
     relations = [
         ("Agent", "has_target_learning_policy", "TargetLearningPolicy"),
+        ("Agent", "has_target_map_observation", "TargetMapObservation"),
+        ("TargetMapObservation", "funded_by", "ThinkingBudgetRequest"),
+        ("Agent", "has_target_map_candidate", "RepresentationMap"),
+        ("RepresentationMap", "derived_from_source_pair", "TargetMapObservation"),
+        ("RepresentationMap", "derived_from_target_pair", "TargetMapObservation"),
         ("Agent", "has_target_source_prior", "TargetProcessPrior"),
         ("TargetProcessPrior", "has_source_target_map", "RepresentationMap"),
         ("TargetProcessPrior", "has_source_prior_receipt", "TargetSourcePriorReceipt"),
@@ -108,6 +114,83 @@ def build_seed():
             ["add_edge", "receipt", "verifies_target_transition", "obs", {}],
         ],
     }
+    map_rule = {
+        "name": "tl_induce_categorical_map_from_two_paired_receipt_pairs",
+        "area": AREA, "order": 1, "latency_class": "background", "batch": False,
+        "match": [
+            ["ag", "has_target_learning_policy", "pol"],
+            ["ag", "has_target_map_observation", "first"],
+            ["ag", "has_target_map_observation", "second"],
+            ["first", "funded_by", "first_funding"],
+            ["first_funding", "draws_on_thinking_budget", "budget"],
+            ["second", "funded_by", "second_funding"],
+            ["second_funding", "draws_on_thinking_budget", "budget"],
+        ],
+        "where": And(
+            Eq(A("pol", "enabled"), L(1.0)),
+            Eq(A("first", "status"), L("observed_pair")),
+            Eq(A("second", "status"), L("observed_pair")),
+            Eq(A("first_funding", "requester_kind"), L("target_map_observation")),
+            Eq(A("second_funding", "requester_kind"), L("target_map_observation")),
+            Eq(A("first_funding", "source_key"), A("first", "pair_id")),
+            Eq(A("second_funding", "source_key"), A("second", "pair_id")),
+            Eq(A("first_funding", "status"), L("approved")),
+            Eq(A("second_funding", "status"), L("approved")),
+            Not(Eq(A("first_funding", "debited_epoch"), L(None))),
+            Not(Eq(A("second_funding", "debited_epoch"), L(None))),
+            Eq(A("first", "source_action"), A("second", "source_action")),
+            Eq(A("first", "target_action"), A("second", "target_action")),
+            Eq(A("first", "source_object_type"), A("second", "source_object_type")),
+            Eq(A("first", "target_object_type"), A("second", "target_object_type")),
+            Eq(A("first", "source_feature"), A("second", "source_feature")),
+            Eq(A("first", "target_feature"), A("second", "target_feature")),
+            Eq(A("first", "source_before"), A("second", "source_before")),
+            Eq(A("first", "target_before"), A("second", "target_before")),
+            Eq(A("first", "source_after"), A("second", "source_after")),
+            Eq(A("first", "target_after"), A("second", "target_after")),
+            Eq(A("first", "source_epoch"), A("second", "source_epoch")),
+            Eq(A("first", "target_frame_epoch"), A("second", "target_frame_epoch")),
+            Not(Eq(A("first", "source_object_id"), A("second", "source_object_id"))),
+            Not(Eq(A("first", "target_object_id"), A("second", "target_object_id"))),
+            Not(Eq(A("first", "pair_id"), A("second", "pair_id"))),
+            Lt(A("first", "pair_id"), A("second", "pair_id")),
+            Not(Exists(N("ag", "has_target_map_candidate"), "old",
+                       Eq(A("old", "map_id"),
+                          Concat(L("induced-map:"), A("first", "source_action"),
+                                 L("->"), A("first", "target_action"),
+                                 L(":"), A("first", "source_feature"),
+                                 L("->"), A("first", "target_feature"),
+                                 L(":"), A("first", "source_epoch"),
+                                 L(":"), A("first", "target_frame_epoch"))))),
+        ),
+        "effects": [
+            ["add_node", "map", "RepresentationMap", {
+                "map_id": T(Concat(L("induced-map:"), A("first", "source_action"),
+                                   L("->"), A("first", "target_action"),
+                                   L(":"), A("first", "source_feature"),
+                                   L("->"), A("first", "target_feature"),
+                                   L(":"), A("first", "source_epoch"),
+                                   L(":"), A("first", "target_frame_epoch"))),
+                "mapping_kind": "induced_categorical_effect",
+                "status": "candidate", "witness_count": 2.0,
+                "source_action": T(A("first", "source_action")),
+                "target_action": T(A("first", "target_action")),
+                "source_object_type": T(A("first", "source_object_type")),
+                "target_object_type": T(A("first", "target_object_type")),
+                "source_feature": T(A("first", "source_feature")),
+                "target_feature": T(A("first", "target_feature")),
+                "source_before": T(A("first", "source_before")),
+                "target_before": T(A("first", "target_before")),
+                "source_after": T(A("first", "source_after")),
+                "target_after": T(A("first", "target_after")),
+                "source_epoch": T(A("first", "source_epoch")),
+                "target_frame_epoch": T(A("first", "target_frame_epoch")),
+            }],
+            ["add_edge", "ag", "has_target_map_candidate", "map", {}],
+            ["add_edge", "map", "derived_from_source_pair", "first", {}],
+            ["add_edge", "map", "derived_from_target_pair", "second", {}],
+        ],
+    }
     return {
         "id": "target_learning", "version": "1.0.0",
         "depends_on": ["process_induction"], "self_load_only": True,
@@ -125,7 +208,7 @@ def build_seed():
                          "src": {"type": src, "var": "src"},
                          "edge_type": edge, "tgt": {"type": tgt, "var": "tgt"}}
                         for src, edge, tgt in relations],
-        "rules": [rule],
+        "rules": [map_rule, rule],
     }
 
 

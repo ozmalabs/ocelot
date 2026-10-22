@@ -219,6 +219,78 @@ def verify_categorical_effect_map(*, source_receipts, target_receipts, map_id,
     return payload
 
 
+def induce_categorical_effect_map(*, source_receipts, target_receipts,
+                                  object_pairs, map_id, target_frame_epoch):
+    """Propose a categorical source→target map from paired interaction traces.
+
+    Object correspondence is the experiment's paired-task identity; action,
+    type, feature and value correspondences are inferred from observed legal
+    transitions. Conflicting or many-to-one mappings are rejected before an
+    independent verifier evaluates the proposal.
+    """
+    source_receipts, target_receipts = list(source_receipts), list(target_receipts)
+    target_by_object = {}
+    for receipt in target_receipts:
+        target_by_object.setdefault(receipt.object_id, []).append(receipt)
+    maps = {key: {} for key in ("action_map", "object_type_map", "feature_map", "value_map")}
+    reverse = {key: {} for key in maps}
+    errors = []
+
+    def record(kind, source, target):
+        prior, reverse_prior = maps[kind].get(source), reverse[kind].get(target)
+        if prior is not None and prior != target:
+            errors.append(f"conflicting_{kind}:{source}")
+        if reverse_prior is not None and reverse_prior != source:
+            errors.append(f"noninjective_{kind}:{target}")
+        maps[kind][source], reverse[kind][target] = target, source
+
+    for source_id, target_id in object_pairs.items():
+        source_group = [row for row in source_receipts if row.object_id == source_id]
+        target_group = target_by_object.get(target_id, [])
+        if len(source_group) != len(target_group) or not source_group:
+            errors.append(f"unpaired_interactions:{source_id}")
+            continue
+        for source, target in zip(source_group, target_group):
+            if (source.status != "observed" or target.status != "observed"
+                    or not source.action_authorized or not target.action_authorized):
+                errors.append(f"unreceipted_pair:{source.event_id}")
+                continue
+            record("action_map", source.action_kind, target.action_kind)
+            record("object_type_map", source.object_type, target.object_type)
+            record("feature_map", source.feature_key, target.feature_key)
+            record("value_map", source.before_value, target.before_value)
+            record("value_map", source.after_value, target.after_value)
+
+    return {
+        "map_id": map_id, "status": "candidate" if not errors else "rejected",
+        "mapping_kind": "induced_categorical_effect", "object_map": dict(object_pairs),
+        **maps, "target_frame_epoch": int(target_frame_epoch),
+        "paired_transition_count": sum(1 for row in source_receipts
+                                        if row.object_id in object_pairs),
+        "errors": errors,
+    }
+
+
+def verify_induced_map_candidate(*, candidate, source_receipts, target_receipts,
+                                 object_pairs):
+    """Independently check a native RepresentationMap candidate."""
+    attrs = candidate.get("attrs", candidate)
+    if attrs.get("status") != "candidate" or attrs.get("mapping_kind") != "induced_categorical_effect":
+        return {"status": "rejected", "mismatches": ["not_native_map_candidate"]}
+    values = {attrs.get("source_before"): attrs.get("target_before"),
+              attrs.get("source_after"): attrs.get("target_after")}
+    if None in values:
+        return {"status": "rejected", "mismatches": ["incomplete_native_candidate"]}
+    return verify_categorical_effect_map(
+        source_receipts=source_receipts, target_receipts=target_receipts,
+        map_id=attrs.get("map_id"),
+        action_map={attrs.get("source_action"): attrs.get("target_action")},
+        object_type_map={attrs.get("source_object_type"): attrs.get("target_object_type")},
+        feature_map={attrs.get("source_feature"): attrs.get("target_feature")},
+        value_map=values, object_map=object_pairs,
+        target_frame_epoch=attrs.get("target_frame_epoch"))
+
+
 def verify_source_prior_target_effect(*, prior_id, source_hypothesis, map_record,
                                       target_receipt):
     """Issue a candidate-specific receipt only for a mapped live target effect."""

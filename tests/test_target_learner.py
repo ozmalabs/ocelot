@@ -7,7 +7,8 @@ from scripts.gen_process_induction_seed import build_seed
 from evaluation.process_mastery.target_learner import NativeTargetLearner, build_target_learner
 from evaluation.process_mastery.target_learning_worlds import (
     HeatSourceWorld, LatchWorld, LeverSourceWorld, ThermalWorld, WorldReceipt,
-    verify_categorical_effect_map, verify_source_prior_target_effect,
+    induce_categorical_effect_map, verify_categorical_effect_map,
+    verify_induced_map_candidate, verify_source_prior_target_effect,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +60,16 @@ def _run(s):
         if not s.run_rules(2000):
             return
     raise AssertionError("target learner did not reach fixpoint")
+
+
+def _fund_map_observation(s, ag, pair, pair_id):
+    request = s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "target_map_observation", "source_key": pair_id,
+        "source_epoch": 3, "requested_epoch": 10.0,
+        "operation_id": f"target-map:{pair_id}", "status": "pending", "cost": 1.0})
+    s.add_edge(ag, "has_thinking_budget_request", request)
+    s.add_edge(request, "draws_on_thinking_budget", s.neighbours(ag, "has_thinking_budget")[0])
+    s.add_edge(pair, "funded_by", request)
 
 
 def test_fresh_has_real_learning_path():
@@ -302,6 +313,21 @@ def test_source_target_maps_are_verified_on_two_independent_domain_pairs():
             object_map=objects, target_frame_epoch=5)
         assert record["status"] == "verified"
         assert record["witness_count"] == 2
+        proposal = induce_categorical_effect_map(
+            source_receipts=source_receipts, target_receipts=target_receipts,
+            object_pairs=objects, map_id=f"induced:{source_world.__class__.__name__}",
+            target_frame_epoch=5)
+        assert proposal["status"] == "candidate"
+        assert proposal["action_map"] == actions
+        assert proposal["object_type_map"] == types
+        assert proposal["feature_map"] == features
+        assert proposal["value_map"] == values
+        assert verify_categorical_effect_map(
+            source_receipts=source_receipts, target_receipts=target_receipts,
+            map_id=proposal["map_id"], action_map=proposal["action_map"],
+            object_type_map=proposal["object_type_map"],
+            feature_map=proposal["feature_map"], value_map=proposal["value_map"],
+            object_map=proposal["object_map"], target_frame_epoch=5)["status"] == "verified"
         wrong = verify_categorical_effect_map(
             source_receipts=source_receipts, target_receipts=target_receipts,
             map_id="wrong", action_map=actions, object_type_map=types,
@@ -314,6 +340,140 @@ def test_source_target_maps_are_verified_on_two_independent_domain_pairs():
             feature_map=features, value_map=values, object_map={"s1": "t1"},
             target_frame_epoch=5)
         assert insufficient["status"] == "rejected"
+
+
+def test_categorical_map_is_induced_from_paired_interaction_receipts():
+    source = HeatSourceWorld(sample_ids=("source-a", "source-b"))
+    target = ThermalWorld(object_ids=("target-a", "target-b"))
+    source_receipts = [source.apply_heat(key, "apply_heat")
+                       for key in ("source-a", "source-b")]
+    target_receipts = [target.apply(key, "warm") for key in ("target-a", "target-b")]
+    object_pairs = {"source-a": "target-a", "source-b": "target-b"}
+    proposal = induce_categorical_effect_map(
+        source_receipts=source_receipts, target_receipts=target_receipts,
+        object_pairs=object_pairs, map_id="induced:heat-to-thermal",
+        target_frame_epoch=5)
+    assert proposal["status"] == "candidate"
+    assert proposal["action_map"] == {"apply_heat": "warm"}
+    assert proposal["object_type_map"] == {"MetalSample": "ThermalSample"}
+    assert proposal["feature_map"] == {"heat_level": "temperature"}
+    assert proposal["value_map"] == {"chilled": "cold", "tempered": "warm"}
+    verified = verify_categorical_effect_map(
+        source_receipts=source_receipts, target_receipts=target_receipts,
+        map_id=proposal["map_id"], action_map=proposal["action_map"],
+        object_type_map=proposal["object_type_map"], feature_map=proposal["feature_map"],
+        value_map=proposal["value_map"], object_map=proposal["object_map"],
+        target_frame_epoch=proposal["target_frame_epoch"])
+    assert verified["status"] == "verified"
+
+
+def test_categorical_map_induction_rejects_conflicting_pairs():
+    from dataclasses import replace
+
+    source = HeatSourceWorld(sample_ids=("source-a", "source-b"))
+    target = ThermalWorld(object_ids=("target-a", "target-b"))
+    source_receipts = [source.apply_heat(key, "apply_heat")
+                       for key in ("source-a", "source-b")]
+    target_receipts = [target.apply(key, "warm") for key in ("target-a", "target-b")]
+    conflicting = [target_receipts[0], replace(target_receipts[1], after_value="hot")]
+    proposal = induce_categorical_effect_map(
+        source_receipts=source_receipts, target_receipts=conflicting,
+        object_pairs={"source-a": "target-a", "source-b": "target-b"},
+        map_id="conflicting-map", target_frame_epoch=5)
+    assert proposal["status"] == "rejected"
+    assert any("conflicting_value_map" in error for error in proposal["errors"])
+
+
+def test_native_graph_induces_map_candidate_from_distinct_paired_receipts():
+    s, ag = _boot(enabled=True)
+    result = s.load_seed_manifest(json.loads((ROOT / "seeds" / "target_learning.json").read_text()), ag)
+    assert result["rules_skipped"] == [], result
+    policy = s.nodes("TargetLearningPolicy")[0]
+    s.set_attr(policy, "enabled", 1.0)
+    for ix, source_id, target_id in ((1, "source-a", "target-a"),
+                                     (2, "source-b", "target-b")):
+        pair = s.add_node("TargetMapObservation", {
+            "pair_id": f"map-pair-{ix}", "source_object_id": source_id,
+            "target_object_id": target_id, "source_action": "apply_heat",
+            "target_action": "warm", "source_object_type": "MetalSample",
+            "target_object_type": "ThermalSample", "source_feature": "heat_level",
+            "target_feature": "temperature", "source_before": "chilled",
+            "target_before": "cold", "source_after": "tempered",
+            "target_after": "warm", "source_epoch": 3,
+            "target_frame_epoch": 5, "status": "observed_pair"})
+        s.add_edge(ag, "has_target_map_observation", pair)
+        _fund_map_observation(s, ag, pair, f"map-pair-{ix}")
+    _run(s)
+    proposals = [s.node(node)["attrs"] for node in s.neighbours(ag, "has_target_map_candidate")]
+    assert len(proposals) == 1
+    proposal = proposals[0]
+    assert proposal["status"] == "candidate"
+    assert proposal["mapping_kind"] == "induced_categorical_effect"
+    assert proposal["witness_count"] == 2.0
+    assert proposal["source_action"] == "apply_heat"
+    assert proposal["target_action"] == "warm"
+    assert proposal["source_before"] == "chilled"
+    assert proposal["target_before"] == "cold"
+
+
+def test_native_graph_does_not_induce_map_from_conflicting_pairs():
+    s, ag = _boot(enabled=True)
+    result = s.load_seed_manifest(json.loads((ROOT / "seeds" / "target_learning.json").read_text()), ag)
+    assert result["rules_skipped"] == [], result
+    s.set_attr(s.nodes("TargetLearningPolicy")[0], "enabled", 1.0)
+    for ix, target_action in ((1, "warm"), (2, "cool")):
+        pair = s.add_node("TargetMapObservation", {
+            "pair_id": f"map-pair-{ix}", "source_object_id": f"source-{ix}",
+            "target_object_id": f"target-{ix}", "source_action": "apply_heat",
+            "target_action": target_action, "source_object_type": "MetalSample",
+            "target_object_type": "ThermalSample", "source_feature": "heat_level",
+            "target_feature": "temperature", "source_before": "chilled",
+            "target_before": "cold", "source_after": "tempered",
+            "target_after": "warm", "source_epoch": 3,
+            "target_frame_epoch": 5, "status": "observed_pair"})
+        s.add_edge(ag, "has_target_map_observation", pair)
+        _fund_map_observation(s, ag, pair, f"map-pair-{ix}")
+    _run(s)
+    assert not s.neighbours(ag, "has_target_map_candidate")
+
+
+def test_actual_world_map_pairs_flow_through_native_candidate_and_verifier():
+    from evaluation.process_mastery.target_learner import NativeTargetLearner
+
+    learner = NativeTargetLearner(transfer_enabled=True)
+    learner.s.set_attr(learner.s.nodes("TargetLearningPolicy")[0], "enabled", 1.0)
+    budget = learner.s.nodes("ThinkingBudget")[0]
+    starting_budget = learner.s.node(budget)["attrs"]["remaining"]
+    source = HeatSourceWorld(sample_ids=("source-a", "source-b"))
+    target = ThermalWorld(object_ids=("target-a", "target-b"))
+    source_receipts, target_receipts = [], []
+    for ix, (source_id, target_id) in enumerate(
+            (("source-a", "target-a"), ("source-b", "target-b")), 1):
+        source_receipt = source.apply_heat(source_id, "apply_heat")
+        target_receipt = target.apply(target_id, "warm")
+        source_receipts.append(source_receipt)
+        target_receipts.append(target_receipt)
+        learner.observe_map_pair(pair_id=f"pair-{ix}", source=source_receipt,
+                                 target=target_receipt)
+    learner.settle()
+    assert learner.s.node(budget)["attrs"]["remaining"] == starting_budget - 2.0
+    assert all(learner.s.node(request)["attrs"]["status"] == "approved"
+               and learner.s.node(request)["attrs"]["debited_epoch"] is not None
+               for request in learner.s.nodes("ThinkingBudgetRequest")
+               if learner.s.node(request)["attrs"].get("requester_kind") == "target_map_observation")
+    candidates = learner.s.nodes("RepresentationMap")
+    candidate_nodes = [node for node in candidates
+                       if learner.s.node(node)["attrs"].get("mapping_kind") == "induced_categorical_effect"]
+    assert len(candidate_nodes) == 1
+    candidate = learner.s.node(candidate_nodes[0])
+    verification = verify_induced_map_candidate(
+        candidate=candidate, source_receipts=source_receipts,
+        target_receipts=target_receipts,
+        object_pairs={"source-a": "target-a", "source-b": "target-b"})
+    assert verification["status"] == "verified"
+    assert learner.accounting.source_map_observations == 2
+    assert learner.accounting.target_map_interactions == 2
+    assert learner.accounting.target_actions == 2
 
 
 def test_native_source_prior_transfers_through_map_and_fresh_target_receipt():

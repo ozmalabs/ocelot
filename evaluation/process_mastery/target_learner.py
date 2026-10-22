@@ -53,6 +53,7 @@ class NativeTargetLearner:
         self.s._inner.load_seed_manifest(TARGET_EXPOSURE_MANIFEST, self.ag)
         self.accounting = LearningAccounting()
         self._ingested_world_receipts: set[str] = set()
+        self._ingested_map_pairs: set[str] = set()
         self._pending_learning_records: list[dict] = []
         self.learning_records: list[dict] = []
         for node in self.s.nodes("NetworkModeState"):
@@ -158,6 +159,47 @@ class NativeTargetLearner:
             after_value=receipt.after_value, source_epoch=source_epoch,
             model_epoch=model_epoch, frame_epoch=frame_epoch,
             visible=True, action_occurred=True)
+
+    def observe_map_pair(self, *, pair_id: str, source: WorldReceipt,
+                         target: WorldReceipt, source_epoch=3, target_frame_epoch=5):
+        """Expose one paired source/target interaction to native map induction."""
+        if not isinstance(source, WorldReceipt) or not isinstance(target, WorldReceipt):
+            raise TypeError("map induction requires typed source and target world receipts")
+        if pair_id in self._ingested_map_pairs:
+            raise ValueError("paired map evidence already ingested")
+        if (source.status != "observed" or target.status != "observed"
+                or not source.action_authorized or not target.action_authorized):
+            raise ValueError("map induction requires authorized observed receipt pairs")
+        self._ingested_map_pairs.add(pair_id)
+        observation = self.s.add_node("TargetMapObservation", {
+            "pair_id": str(pair_id), "source_event_id": source.event_id,
+            "target_event_id": target.event_id,
+            "source_object_id": source.object_id, "target_object_id": target.object_id,
+            "source_action": source.action_kind, "target_action": target.action_kind,
+            "source_object_type": source.object_type,
+            "target_object_type": target.object_type,
+            "source_feature": source.feature_key, "target_feature": target.feature_key,
+            "source_before": source.before_value, "target_before": target.before_value,
+            "source_after": source.after_value, "target_after": target.after_value,
+            "source_epoch": int(source_epoch),
+            "target_frame_epoch": int(target_frame_epoch),
+            "status": "observed_pair"})
+        self.s.add_edge(self.ag, "has_target_map_observation", observation, {})
+        funding = self.s.add_node("ThinkingBudgetRequest", {
+            "requester_kind": "target_map_observation", "source_key": str(pair_id),
+            "source_epoch": int(source_epoch), "requested_epoch": 10.0,
+            "operation_id": f"target-map:{pair_id}", "status": "pending", "cost": 1.0})
+        self.s.add_edge(self.ag, "has_thinking_budget_request", funding, {})
+        budget_nodes = self.s.neighbours(self.ag, "has_thinking_budget")
+        if len(budget_nodes) != 1:
+            raise RuntimeError("target map induction requires one shared thinking budget")
+        self.s.add_edge(funding, "draws_on_thinking_budget", budget_nodes[0], {})
+        self.s.add_edge(observation, "funded_by", funding, {})
+        self.accounting.source_map_observations += 1
+        self.accounting.target_map_interactions += 1
+        self.accounting.source_information_units += 1.0
+        self.accounting.target_actions += 1
+        return observation
 
     def settle(self, *, max_rounds=40, steps_per_round=2000):
         steps = 0

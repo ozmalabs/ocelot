@@ -27,7 +27,9 @@ from evaluation.process_mastery.observed_sequence_execution import (
     execute_verified_observed_sequence, verify_observed_sequence_candidate,
 )
 from evaluation.process_mastery.explanation_rebuild import verify_rebuilt_composition
-from evaluation.process_mastery.target_learning_worlds import RequestRepairWorld
+from evaluation.process_mastery.target_learning_worlds import (
+    HeatSourceWorld, RequestRepairWorld, ThermalWorld, verify_induced_map_candidate,
+)
 from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
 
 
@@ -1081,6 +1083,58 @@ def test_p20_native_causal_chain():
     assert len(agent.s.nodes("ProcessInductionHypothesis")) == 1
     assert len(predictions) == 1
     assert predictions[0]["expected_after_value"] == "warm"
+    agent.close()
+
+
+def test_p20_native_map_induction_through_cognition_profile():
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "TargetLearningPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    source = HeatSourceWorld(sample_ids=("profile-source-a", "profile-source-b"))
+    target = ThermalWorld(object_ids=("profile-target-a", "profile-target-b"))
+    source_receipts, target_receipts, observations = [], [], []
+    budget = agent.inner.neighbours(agent.agent, "has_thinking_budget")[0]
+    for ix, (source_id, target_id) in enumerate(
+            (("profile-source-a", "profile-target-a"),
+             ("profile-source-b", "profile-target-b")), 1):
+        src = source.apply_heat(source_id, "apply_heat")
+        tgt = target.apply(target_id, "warm")
+        source_receipts.append(src)
+        target_receipts.append(tgt)
+        pair_id = f"profile-map-pair-{ix}"
+        pair = agent.s.add_node("TargetMapObservation", {
+            "pair_id": pair_id, "source_event_id": src.event_id,
+            "target_event_id": tgt.event_id, "source_object_id": src.object_id,
+            "target_object_id": tgt.object_id, "source_action": src.action_kind,
+            "target_action": tgt.action_kind, "source_object_type": src.object_type,
+            "target_object_type": tgt.object_type, "source_feature": src.feature_key,
+            "target_feature": tgt.feature_key, "source_before": src.before_value,
+            "target_before": tgt.before_value, "source_after": src.after_value,
+            "target_after": tgt.after_value, "source_epoch": 3,
+            "target_frame_epoch": 5, "status": "observed_pair"})
+        agent.s.add_edge(agent.agent, "has_target_map_observation", pair, {})
+        observations.append(pair)
+        funding = agent.s.add_node("ThinkingBudgetRequest", {
+            "requester_kind": "target_map_observation", "source_key": pair_id,
+            "source_epoch": 3, "requested_epoch": 0.0,
+            "operation_id": f"profile-target-map:{ix}", "status": "pending", "cost": 1.0})
+        agent.s.add_edge(agent.agent, "has_thinking_budget_request", funding, {})
+        agent.s.add_edge(funding, "draws_on_thinking_budget", budget, {})
+        agent.s.add_edge(pair, "funded_by", funding, {})
+    for _ in range(30):
+        if not agent.inner.run_rules(2000):
+            break
+    candidates = [n for n in _nodes(agent, "RepresentationMap")
+                  if agent.s.node(n)["attrs"].get("mapping_kind") == "induced_categorical_effect"]
+    assert len(candidates) == 1
+    proposal = verify_induced_map_candidate(
+        candidate=agent.s.node(candidates[0]), source_receipts=source_receipts,
+        target_receipts=target_receipts,
+        object_pairs={source_receipts[0].object_id: target_receipts[0].object_id,
+                      source_receipts[1].object_id: target_receipts[1].object_id})
+    assert proposal["status"] == "verified"
+    assert all(agent.s.node(agent.inner.neighbours(pair, "funded_by")[0])["attrs"]["status"] == "approved"
+               for pair in observations)
     agent.close()
 
 
