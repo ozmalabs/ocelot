@@ -101,6 +101,18 @@
       }
     },
     {
+      "provenance": "seed:representation_search:has_heldout_validation:RepresentationProposal:RepresentationHeldoutValidation",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "has_heldout_validation",
+      "tgt": {
+        "type": "RepresentationHeldoutValidation",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:representation_search:has_representation_proposal:Agent:RepresentationProposal",
       "src": {
         "type": "Agent",
@@ -887,7 +899,7 @@
       ]
     },
     {
-      "name": "rs_adopt_verified_lower_training_description",
+      "name": "rs_select_training_minimum_for_heldout_check",
       "area": "representation_search",
       "order": 2,
       "latency_class": "hard_realtime",
@@ -1123,23 +1135,23 @@
                   "type": "Lit",
                   "value": true
                 }
-              },
-              {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "proposal"
-                  },
-                  "key": "target_effect_verified"
-                },
-                "b": {
-                  "type": "Lit",
-                  "value": true
-                }
               }
             ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
           },
           {
             "type": "Eq",
@@ -1216,9 +1228,9 @@
               "name": "proposal"
             },
             "b": {
-              "type": "IndexAt",
-              "seq": {
-                "type": "SortBy",
+              "type": "ArgminUnique",
+              "source": {
+                "type": "Filter",
                 "source": {
                   "type": "Neighbours",
                   "node": {
@@ -1229,19 +1241,536 @@
                   "any_type": false
                 },
                 "var_name": "other",
-                "key": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "other"
-                  },
-                  "key": "training_total_bits"
+                "predicate": {
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "other"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "verified_candidate"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "other"
+                        },
+                        "key": "owner_id"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "owner_id"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "other"
+                        },
+                        "key": "source_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "source_epoch"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "other"
+                        },
+                        "key": "model_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "model_epoch"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "other"
+                        },
+                        "key": "frame_epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "frame_epoch"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "other"
+                        },
+                        "key": "training_split_id"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "training_split_id"
+                      }
+                    }
+                  ]
                 }
               },
-              "index": {
-                "type": "Lit",
-                "value": -1
-              }
+              "var_name": "other",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "other"
+                },
+                "key": "training_total_bits"
+              },
+              "default": null
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "proposal",
+          "status",
+          "selected_for_heldout_validation"
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "holdout_pending"
+        ]
+      ]
+    },
+    {
+      "name": "rs_adopt_only_after_frozen_heldout_validation",
+      "area": "representation_search",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_representation_search_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_representation_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_candidate_proposal",
+          "proposal"
+        ],
+        [
+          "proposal",
+          "has_heldout_validation",
+          "validation"
+        ],
+        [
+          "request",
+          "funded_by_request",
+          "fund"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "selected_for_heldout_validation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "holdout_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "scored_frozen_heldout"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "training_model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "heldout_used_for_selection"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "refit_on_heldout"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "exceptions_added"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "target_effect_verified"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "wrong_frame_acceptance"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "solve_loss_pp"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "candidate_total_bits"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "validation"
+              },
+              "key": "baseline_total_bits"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "representation_search"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "search_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fund"
+              },
+              "key": "operation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "operation_id"
             }
           }
         ]

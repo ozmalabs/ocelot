@@ -20,10 +20,10 @@ def Not(x): return {"type": "Not", "arg": x}
 def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
 def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
 def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
-def SortBy(src, var, key): return {"type": "SortBy", "source": src, "var_name": var, "key": key}
-def IndexAt(seq, index): return {"type": "IndexAt", "seq": seq, "index": L(index)}
 def Count(src): return {"type": "Count", "source": src}
 def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
+def Lte(a, b): return {"type": "Lte", "a": a, "b": b}
+def Filter(src, var, pred): return {"type": "Filter", "source": src, "var_name": var, "predicate": pred}
 
 
 def build_seed():
@@ -40,16 +40,23 @@ def build_seed():
                    Eq(A("proposal", "package_cost_complete"), L(True)),
                    Eq(A("proposal", "heldout_used_for_selection"), L(False)),
                    Eq(A("proposal", "forced_frame_preserved"), L(True)),
-                   Eq(A("proposal", "discriminating_evidence"), L(True)),
-                   Eq(A("proposal", "target_effect_verified"), L(True)))
-    best = IndexAt(SortBy(N("request", "has_candidate_proposal"), "other",
-                          A("other", "training_total_bits")), -1)
+                   Eq(A("proposal", "discriminating_evidence"), L(True)))
+    candidates = Filter(N("request", "has_candidate_proposal"), "other",
+                        And(Eq(A("other", "status"), L("verified_candidate")),
+                            Eq(A("other", "owner_id"), A("request", "owner_id")),
+                            Eq(A("other", "source_epoch"), A("request", "source_epoch")),
+                            Eq(A("other", "model_epoch"), A("request", "model_epoch")),
+                            Eq(A("other", "frame_epoch"), A("request", "frame_epoch")),
+                            Eq(A("other", "training_split_id"), A("request", "training_split_id"))))
+    best = {"type": "ArgminUnique", "source": candidates, "var_name": "other",
+            "value": A("other", "training_total_bits"), "default": None}
     relations = [
         ("Agent", "has_representation_search_policy", "RepresentationSearchPolicy"),
         ("Agent", "has_representation_search_request", "RepresentationSearchRequest"),
         ("RepresentationSearchRequest", "funded_by_request", "ThinkingBudgetRequest"),
         ("RepresentationSearchRequest", "has_candidate_proposal", "RepresentationProposal"),
         ("RepresentationSearchRequest", "has_transform_evidence", "RepresentationTransformEvidence"),
+        ("RepresentationProposal", "has_heldout_validation", "RepresentationHeldoutValidation"),
         ("Agent", "has_representation_proposal", "RepresentationProposal"),
         ("Agent", "has_thinking_budget_request", "ThinkingBudgetRequest"),
         ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
@@ -58,18 +65,50 @@ def build_seed():
         ("RepresentationProposal", "invalidates_recall", "RecallRecord"),
         ("RepresentationProposal", "invalidates_transfer", "ProcessTransferCandidate"),
     ]
-    rule = {"name": "rs_adopt_verified_lower_training_description", "area": AREA,
+    select_rule = {"name": "rs_select_training_minimum_for_heldout_check", "area": AREA,
             "order": 2, "latency_class": "hard_realtime", "batch": False,
             "match": [["ag", "has_representation_search_policy", "pol"],
                       ["ag", "has_representation_search_request", "request"],
                       ["request", "has_candidate_proposal", "proposal"],
                       ["request", "funded_by_request", "fund"]],
             "where": And(eligible,
+                         Eq(A("request", "status"), L("funding_pending")),
                          Eq(A("fund", "requester_kind"), L("representation_search")),
                          Eq(A("fund", "status"), L("approved")),
                          Eq(A("fund", "debited_epoch"), A("request", "search_epoch")),
                          Eq(A("fund", "operation_id"), A("request", "operation_id")),
                          Eq(V("proposal"), best)),
+            "effects": [["set_attr", "proposal", "status", "selected_for_heldout_validation"],
+                        ["set_attr", "request", "status", "holdout_pending"]]}
+    adopt_rule = {"name": "rs_adopt_only_after_frozen_heldout_validation", "area": AREA,
+            "order": 3, "latency_class": "hard_realtime", "batch": False,
+            "match": [["ag", "has_representation_search_policy", "pol"],
+                      ["ag", "has_representation_search_request", "request"],
+                      ["request", "has_candidate_proposal", "proposal"],
+                      ["proposal", "has_heldout_validation", "validation"],
+                      ["request", "funded_by_request", "fund"]],
+            "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                         Eq(A("proposal", "status"), L("selected_for_heldout_validation")),
+                         Eq(A("request", "status"), L("holdout_pending")),
+                         Eq(A("proposal", "owner_id"), A("request", "owner_id")),
+                         Eq(A("proposal", "source_epoch"), A("request", "source_epoch")),
+                         Eq(A("proposal", "model_epoch"), A("request", "model_epoch")),
+                         Eq(A("proposal", "frame_epoch"), A("request", "frame_epoch")),
+                         Eq(A("validation", "candidate_id"), A("proposal", "candidate_id")),
+                         Eq(A("validation", "status"), L("scored_frozen_heldout")),
+                         Eq(A("validation", "training_model_epoch"), A("proposal", "model_epoch")),
+                         Eq(A("validation", "heldout_used_for_selection"), L(False)),
+                         Eq(A("validation", "refit_on_heldout"), L(False)),
+                         Eq(A("validation", "exceptions_added"), L(False)),
+                         Eq(A("validation", "target_effect_verified"), L(True)),
+                         Eq(A("validation", "wrong_frame_acceptance"), L(False)),
+                         Lte(A("validation", "solve_loss_pp"), L(2.0)),
+                         {"type": "Lt", "a": A("validation", "candidate_total_bits"),
+                          "b": A("validation", "baseline_total_bits")},
+                         Eq(A("fund", "requester_kind"), L("representation_search")),
+                         Eq(A("fund", "status"), L("approved")),
+                         Eq(A("fund", "debited_epoch"), A("request", "search_epoch")),
+                         Eq(A("fund", "operation_id"), A("request", "operation_id"))),
             "effects": [["set_attr", "proposal", "status", "adopted"],
                         ["set_attr", "proposal", "adopted_frame_epoch", T(A("proposal", "next_frame_epoch"))],
                         ["set_attr", "proposal", "transition_from_frame", T(A("proposal", "source_frame_id"))],
@@ -156,7 +195,7 @@ def build_seed():
                        "tgt": {"local": 0}, "attrs": {}}],
             "productions": [{"provenance": f"seed:{AREA}:{e}:{s}:{t}", "src": {"type": s, "var": "src"},
                              "edge_type": e, "tgt": {"type": t, "var": "tgt"}} for s,e,t in relations],
-            "rules": [request_rule, proposal_rule, rule]}
+            "rules": [request_rule, proposal_rule, select_rule, adopt_rule]}
 
 
 def main():

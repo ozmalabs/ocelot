@@ -147,7 +147,7 @@ def test_graph_rule_adopts_only_lowest_verified_training_package():
     req = s.add_node("RepresentationSearchRequest", {
         "owner_id": "owner-a", "source_epoch": 1, "model_epoch": 2,
         "frame_epoch": 3, "training_split_id": "dev-a", "candidate_cap": 4,
-        "operation_id": "op-1", "search_epoch": 1,
+        "operation_id": "op-1", "search_epoch": 1, "status": "funding_pending",
     })
     s.add_edge(ag, "has_representation_search_request", req, {})
     fund = s.add_node("ThinkingBudgetRequest", {
@@ -162,10 +162,18 @@ def test_graph_rule_adopts_only_lowest_verified_training_package():
             "training_split_id": "dev-a", "candidate_cap": 4,
             "package_cost_complete": True, "heldout_used_for_selection": False,
             "forced_frame_preserved": True, "discriminating_evidence": True,
-            "target_effect_verified": True, "training_total_bits": bits,
+            "training_total_bits": bits, "candidate_id": name,
             "next_frame_epoch": 4, "source_frame_id": "f3", "target_frame_id": "f4"})
         s.add_edge(req, "has_candidate_proposal", p, {})
         s.add_edge(ag, "has_representation_proposal", p, {})
+        validation = s.add_node("RepresentationHeldoutValidation", {
+            "candidate_id": name, "status": "scored_frozen_heldout",
+            "training_model_epoch": 2, "heldout_used_for_selection": False,
+            "refit_on_heldout": False, "exceptions_added": False,
+            "target_effect_verified": True, "wrong_frame_acceptance": False,
+            "solve_loss_pp": 0.0, "candidate_total_bits": 80,
+            "baseline_total_bits": 120})
+        s.add_edge(p, "has_heldout_validation", validation, {})
         proposals.append(p)
     for _ in range(6):
         s.tick(1000)
@@ -200,6 +208,48 @@ def test_graph_rule_funds_one_bounded_representation_search():
     assert attrs["requester_kind"] == "representation_search"
     assert attrs["source_key"] == "search-b"
     assert s.node(req)["attrs"]["status"] == "funding_pending"
+
+
+def test_heldout_can_reject_training_choice_but_cannot_replace_it():
+    agent = Agent(extra_seeds=("representation_search",),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}})
+    s, ag = agent.s, agent.ag
+    req = s.add_node("RepresentationSearchRequest", {
+        "owner_id": "owner-h", "source_epoch": 1, "model_epoch": 2,
+        "frame_epoch": 3, "training_split_id": "dev-h", "candidate_cap": 4,
+        "operation_id": "op-h", "search_epoch": 6, "status": "funding_pending"})
+    s.add_edge(ag, "has_representation_search_request", req, {})
+    fund = s.add_node("ThinkingBudgetRequest", {"requester_kind": "representation_search",
+                                                 "status": "approved", "debited_epoch": 6,
+                                                 "operation_id": "op-h"})
+    s.add_edge(req, "funded_by_request", fund, {})
+    nodes = []
+    for name, train_bits, held_bits in (("train-winner", 100, 300),
+                                        ("heldout-favorite", 200, 50)):
+        p = s.add_node("RepresentationProposal", {
+            "candidate_id": name, "status": "verified_candidate", "owner_id": "owner-h",
+            "source_epoch": 1, "model_epoch": 2, "frame_epoch": 3,
+            "training_split_id": "dev-h", "candidate_cap": 4,
+            "package_cost_complete": True, "heldout_used_for_selection": False,
+            "forced_frame_preserved": True, "discriminating_evidence": True,
+            "training_total_bits": train_bits})
+        validation = s.add_node("RepresentationHeldoutValidation", {
+            "candidate_id": name, "status": "scored_frozen_heldout",
+            "training_model_epoch": 2, "heldout_used_for_selection": False,
+            "refit_on_heldout": False, "exceptions_added": False,
+            "target_effect_verified": True, "wrong_frame_acceptance": False,
+            "solve_loss_pp": 0.0, "candidate_total_bits": held_bits,
+            "baseline_total_bits": 150})
+        s.add_edge(req, "has_candidate_proposal", p, {})
+        s.add_edge(ag, "has_representation_proposal", p, {})
+        s.add_edge(p, "has_heldout_validation", validation, {})
+        nodes.append(p)
+    for _ in range(5):
+        s.tick(1000)
+    states = [s.node(p)["attrs"]["status"] for p in nodes]
+    assert states == ["selected_for_heldout_validation", "verified_candidate"]
+    assert not any(x == "adopted" for x in states)
+    assert s.node(req)["attrs"]["status"] == "holdout_pending"
 
 
 def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
