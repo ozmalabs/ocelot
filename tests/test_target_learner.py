@@ -4,6 +4,7 @@ from pathlib import Path
 
 from substrate_rs import _native
 from scripts.gen_process_induction_seed import build_seed
+from evaluation.process_mastery.target_learner import NativeTargetLearner
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -119,3 +120,38 @@ def test_counterevidence_disputes_target_effect():
     _observe(s, ag, 3, after="cold")
     _run(s)
     assert s.node(hypothesis)["attrs"]["status"] == "disputed"
+
+
+def test_target_adapter_learns_from_two_world_observations_and_predicts_new_binding():
+    learner = NativeTargetLearner()
+    for i in (1, 2):
+        learner.observe_opportunity(event_id=f"observed-{i}", action_kind="warm",
+                                    object_id=f"obj-{i}", object_type="Widget",
+                                    feature_key="temperature", before_value="cold",
+                                    after_value="warm")
+    learner.settle()
+    assert len(learner.hypotheses()) == 1
+    prediction = learner.predict(query_id="new-target", action_kind="warm",
+                                 object_type="Widget", feature_key="temperature",
+                                 before_value="cold", object_id="obj-new")
+    assert prediction["expected_after_value"] == "warm"
+    assert prediction["evidence_status"] == "predicted"
+    assert learner.accounting.target_actions == 2
+
+
+def test_source_exposure_is_charged_but_cannot_create_target_hypothesis():
+    learner = NativeTargetLearner()
+    learner.expose_source(source_id="matched-source-1", relation="matched", units=2.5)
+    learner.settle()
+    assert learner.accounting.source_information_units == 2.5
+    assert learner.accounting.visible_observations == 0
+    assert learner.hypotheses() == []
+
+
+def test_missing_opportunity_is_counted_without_inventing_a_transition():
+    learner = NativeTargetLearner()
+    assert learner.observe_opportunity(event_id="occluded-1", visible=False) is None
+    assert learner.accounting.evidence_opportunities == 1
+    assert learner.accounting.missing_observations == 1
+    assert learner.accounting.target_actions == 0
+    assert learner.hypotheses() == []
