@@ -466,7 +466,7 @@ Complete I4.1–I4.3 using observed state/action/consequence traces. A simple ex
 
 ## Phase 9 — Verified invention and invariant walls
 
-**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** in progress; P9.01 frozen, P9.02 complete.
+**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** in progress; P9.01 frozen, P9.02 and P9.03 complete, P9.04 partial (graph/DSL integration outstanding).
 
 Finish committed I2 seed behavior with honest effect semantics. Exact inverses, repair-to-equivalence, and distributional outcomes are different contracts. Invention and wall explanations can be tested here without claiming the no-hand-written-strategy solve gate; that gate follows Phase 10.
 
@@ -535,6 +535,8 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_repair.py tests/test_process_invention.py tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** pretending noisy effects have an exact fingerprint; unrestricted probabilistic program inference.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P9.04 partial record (2026-10-22):** `process_algebra.rs` now has native pure helpers that verify a declared exact goal criterion across nonempty fresh states and validate finite distributions while retaining unknown mass; Rust unit tests cover passing/failing repairs, duplicate outcomes, excessive mass and unknown support. The helper tests pass, and the extension was rebuilt through `scripts/engine_build.sh --lib-only`. The current DSL has no term dispatch for these helpers, and no graph lifecycle re-verifies repair candidates or invalidates them on model-epoch change. Therefore `test_repair_candidate_reverified`, `test_distribution_support_retained` and `test_model_epoch_invalidates_repair` are NOT_ESTABLISHED end-to-end; stochastic and repair adoption remain unsupported. `tests/test_process_repair.py` records those boundary limits. Phase 9 remains open and does not authorize Phase 10 yet.
 
 ### P9.E1 — Integrate the phase and validate the evidence adapter
 

@@ -487,6 +487,36 @@ pub fn apply(p: &Value, state: &Value, interner: &Interner) -> Value {
         .unwrap_or(Value::None)
 }
 
+/// Verify a goal-equivalent repair on every supplied fresh state. This is a
+/// separate predicate from `inverse`: many-to-one processes may repair a
+/// declared set of states while having no exact inverse.
+pub fn verify_repair(p: &Value, fresh_states: &[Value], goals: &[Value], interner: &Interner) -> bool {
+    !fresh_states.is_empty()
+        && fresh_states.len() == goals.len()
+        && fresh_states.iter().zip(goals).all(|(state, goal)| {
+            let result = apply(p, state, interner);
+            result != Value::None && cmp_value(&result, goal) == std::cmp::Ordering::Equal
+        })
+}
+
+/// Validate an explicitly finite outcome distribution and preserve its
+/// omitted probability as unknown mass. Duplicate outcomes, invalid weights,
+/// and total mass above one are unsupported rather than normalized away.
+pub fn finite_distribution(outcomes: &[(Value, f64)]) -> Option<(Vec<(Value, f64)>, f64)> {
+    let mut total = 0.0;
+    for (i, (outcome, probability)) in outcomes.iter().enumerate() {
+        if *outcome == Value::None || !probability.is_finite() || *probability < 0.0 || *probability > 1.0 {
+            return None;
+        }
+        if outcomes[..i].iter().any(|(prior, _)| cmp_value(prior, outcome) == std::cmp::Ordering::Equal) {
+            return None;
+        }
+        total += probability;
+    }
+    if total > 1.0 + f64::EPSILON * (outcomes.len().max(1) as f64) { return None; }
+    Some((outcomes.to_vec(), (1.0 - total).max(0.0)))
+}
+
 /// `EffectSupport{p}` — how much of the world the process touches: moved
 /// points for a permutation, non-identity entries for a matrix, non-zero
 /// components for a delta. `None` for kinds whose support is only defined
@@ -657,5 +687,28 @@ mod tests {
         assert_eq!(support(&bad, &ir), Value::None);
         assert_eq!(fingerprint(&bad, &Value::Tuple(Arc::new(smallvec![ints(&[1, 2, 3])])), &ir), Value::None);
         assert_eq!(parity(&bad), Value::None);
+    }
+
+    #[test]
+    fn repair_is_fresh_goal_verification_not_inverse() {
+        let ir = Interner::new();
+        let add = Value::Tuple(Arc::new(smallvec![
+            Value::Surface(SurfaceKind::Text, Arc::from(&b"add"[..])), ints(&[1])
+        ]));
+        let starts = [ints(&[0]), ints(&[4])];
+        let goals = [ints(&[1]), ints(&[5])];
+        assert!(verify_repair(&add, &starts, &goals, &ir));
+        assert!(!verify_repair(&add, &starts, &[ints(&[1]), ints(&[4])], &ir));
+        assert!(!verify_repair(&Value::None, &starts, &goals, &ir));
+    }
+
+    #[test]
+    fn finite_distribution_retains_support_and_unknown_mass() {
+        let support = vec![(ints(&[0]), 0.25), (ints(&[1]), 0.5)];
+        let (kept, unknown) = finite_distribution(&support).unwrap();
+        assert_eq!(kept.len(), 2);
+        assert!((unknown - 0.25).abs() < 1e-12);
+        assert!(finite_distribution(&[(ints(&[0]), 0.7), (ints(&[1]), 0.4)]).is_none());
+        assert!(finite_distribution(&[(ints(&[0]), 0.5), (ints(&[0]), 0.5)]).is_none());
     }
 }
