@@ -231,7 +231,9 @@ def run(*, split: str, n: int = 200, self_check=False):
     if n != 200 and not self_check:
         raise ValueError("registered P10 panels fix n=200")
     count = 1 if self_check else n
-    offset = 0 if split == "development" else 2_000_000
+    # Both V2 allocations are disjoint from V1; development is also kept in
+    # its own block so the corrected mechanics see fresh instances.
+    offset = 2_000_000 if split == "development" else 3_000_000
     families = ("loopover3", "loopover4", "tool_goal", "cube", "sliding")
     rows = []
     for family in families:
