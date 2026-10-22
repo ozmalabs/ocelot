@@ -13,9 +13,9 @@ def _children(agent, nid):
     return sorted(children, key=lambda child: (agent.native.edge_attrs(nid, "expr_child", child) or {}).get("slot", 0))
 
 
-def _compile(agent, nid, budget):
+def _compile(agent, nid, budget, max_nodes):
     budget["expression_visits"] += 1
-    if budget["expression_visits"] > 64:
+    if budget["expression_visits"] > min(64, max_nodes):
         raise RuntimeError("expression traversal budget exceeded")
     attrs = _attrs(agent, nid)
     kind = attrs.get("kind")
@@ -27,10 +27,10 @@ def _compile(agent, nid, budget):
     children = _children(agent, nid)
     if operator == "compose" and len(children) == 2:
         budget["compositions"] += 1
-        return {"type": "ProcessCompose", "a": _compile(agent, children[0], budget),
-                "b": _compile(agent, children[1], budget)}
+        return {"type": "ProcessCompose", "a": _compile(agent, children[0], budget, max_nodes),
+                "b": _compile(agent, children[1], budget, max_nodes)}
     if operator == "commutator" and len(children) == 2:
-        a, b = (_compile(agent, child, budget) for child in children)
+        a, b = (_compile(agent, child, budget, max_nodes) for child in children)
         inv_a = {"type": "ProcessInverse", "a": a}
         inv_b = {"type": "ProcessInverse", "a": b}
         budget["compositions"] += 3
@@ -70,7 +70,10 @@ def execute_selected(agent, request, *, a, b, state, authorize: Callable[[dict],
         return {"status": "ABSTAIN", "reason": "stale_or_unversioned_expression"}
     meter = {"expression_visits": 0, "compositions": 0, "applications": 0, "failed_proposals": 0}
     try:
-        expression = _compile(agent, roots[0], meter)
+        expression_cap = candidate_attrs.get("expression_node_cap")
+        if not isinstance(expression_cap, (int, float)) or expression_cap < 1:
+            raise RuntimeError("missing expression node cap")
+        expression = _compile(agent, roots[0], meter, int(expression_cap))
         # The expression owns the operation graph; source schema values are
         # resolved from the two graph-owned input nodes before native eval.
         process = agent.native.evaluate(expression, {"a": _attrs(agent, a).get("params"),

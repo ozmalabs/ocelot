@@ -50,7 +50,7 @@ def build():
          ["add_edge", "request", "for_solve_task", "task", {}],
          ["add_node", "budget_request", "ThinkingBudgetRequest", {
             "requester_kind": "native_process_expression", "status": "pending",
-            "cost": 8.0, "deadline_epoch": None}],
+            "cost": 24.0, "deadline_epoch": None}],
          ["add_edge", "request", "has_execution_budget_request", "budget_request", {}],
          ["add_edge", "budget_request", "draws_on_thinking_budget", "budget", {}]], batch=True)
     return {

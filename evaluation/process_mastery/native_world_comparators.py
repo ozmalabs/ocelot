@@ -59,7 +59,7 @@ class NativeWorldAdapter:
                 "before_state": state, "action": action, "observed_state": tuple(after)}
 
     def verify_receipt(self, receipt: dict[str, Any]) -> bool:
-        if receipt.get("world_id") != self.world_id:
+        if receipt.get("world_id") != self.world_id or receipt.get("world_epoch") != self.epoch:
             return False
         try:
             expected = self._apply(tuple(receipt["before_state"]), receipt["action"])

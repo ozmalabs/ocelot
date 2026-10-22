@@ -37,7 +37,7 @@ def attest(*, package: Any, native_module: Any | None = None,
         "wrapper_sha256": None, "loaded_extension_path": str(native_path) if native_path else None,
         "loaded_extension_sha256": None, "build_receipt_path": str(receipt_path) if receipt_path else None,
         "build_receipt_sha256": None, "build_source_fingerprint": None,
-        "native_symbols_bound": False, "issues": [],
+        "native_symbols_bound": False, "build_sources_match": None, "issues": [],
     }
     if wrapper_path.is_file():
         result["wrapper_sha256"] = _sha256(wrapper_path)
@@ -63,6 +63,19 @@ def attest(*, package: Any, native_module: Any | None = None,
             result["build_source_fingerprint"] = receipt.get("source_fingerprint")
             if receipt.get("engine_sha256") and receipt["engine_sha256"] != result["loaded_extension_sha256"]:
                 result["issues"].append("build_extension_mismatch")
+            files = receipt.get("files")
+            if isinstance(files, dict) and files:
+                try:
+                    repo = Path(subprocess.check_output(
+                        ["git", "rev-parse", "--show-toplevel"],
+                        cwd=Path(__file__).resolve().parents[2], text=True).strip())
+                    result["build_sources_match"] = all(
+                        (repo / rel).is_file() and _sha256(repo / rel) == digest
+                        for rel, digest in files.items())
+                    if not result["build_sources_match"]:
+                        result["issues"].append("build_source_mismatch")
+                except (OSError, subprocess.CalledProcessError):
+                    result["issues"].append("build_sources_unknown")
         except (OSError, json.JSONDecodeError):
             result["issues"].append("build_receipt_invalid")
     else:
@@ -72,12 +85,12 @@ def attest(*, package: Any, native_module: Any | None = None,
             if result.get(key) != value:
                 result["issues"].append(f"freeze_mismatch:{key}")
     if require_clean:
-        if not result["build_source_fingerprint"]:
+        if not result["build_source_fingerprint"] or result["build_sources_match"] is not True:
             result["issues"].append("clean_build_not_proven")
         if receipt_path:
             try:
                 repo = subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
-                                               cwd=receipt_path.parent, text=True).strip()
+                                               cwd=Path(__file__).resolve().parents[2], text=True).strip()
                 paths = [wrapper_path, native_path, receipt_path]
                 relpaths = [str(p.relative_to(repo)) for p in paths if p]
                 try:

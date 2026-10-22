@@ -50,7 +50,7 @@ def _setup():
     budget_request = agent.native.neighbours(execution, "has_execution_budget_request")[0]
     assert agent.s.node(budget_request)["attrs"]["status"] == "approved"
     assert agent.native.neighbours(budget_request, "draws_on_thinking_budget") == budgets
-    assert agent.s.node(budgets[0])["attrs"]["remaining"] == 92.0
+    assert agent.s.node(budgets[0])["attrs"]["remaining"] == 76.0
     return agent, candidate, task, execution
 
 

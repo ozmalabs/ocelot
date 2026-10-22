@@ -55,3 +55,12 @@ def test_missing_build_receipt_unknown(tmp_path):
     assert result["status"] == "UNKNOWN"
     assert result["build_receipt_sha256"] is None
     assert "build_receipt_unknown" in result["issues"]
+
+
+def test_source_receipt_mismatch_rejected(tmp_path):
+    package, build = _fixture(tmp_path)
+    build.write_text(json.dumps({"source_fingerprint": "source-abc",
+                                 "files": {"missing/source.rs": "bad"}}))
+    result = attest(package=package, build_receipt=build)
+    assert result["build_sources_match"] is False
+    assert "build_source_mismatch" in result["issues"]
