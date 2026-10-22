@@ -1373,6 +1373,7 @@ def test_p22_native_causal_chain_and_shared_budget():
     agent = boot_cognition_on()
     try:
         for kind, enabled in (("OpenProcessSearchPolicy", 1.0),
+                              ("OpenProcessAdoptionPolicy", 1.0),
                               ("IndependentImprovementPolicy", 1.0),
                               ("SolverPolicy", 0.0)):
             for policy in _nodes(agent, kind):
@@ -1419,6 +1420,51 @@ def test_p22_native_causal_chain_and_shared_budget():
                     if agent.s.node(n)["attrs"].get("status") == "verified"]
         assert verified
         assert agent.s.node(proposals[0])["attrs"]["actionable"] is False
+        # Exercise the real adoption/receipt boundary with an exact approval
+        # fixture. This is a test authorization for this expression only; it
+        # does not authorize any live candidate or later generation.
+        candidate = next(c for c in candidates
+                         if agent.s.node(c)["attrs"].get("params") == params)
+        digest = agent.s.node(candidate)["attrs"].get("expression_digest")
+        assert digest
+        attrs = agent.s.node(candidate)["attrs"]
+        approval = agent.s.add_node("OpenProcessAdoptionApproval", {
+            "status": "approved", "approval_kind": "human",
+            "expression_digest": digest, "expression_key": attrs["expression_key"],
+            "expression_tree": attrs["expression_tree"], "effect_digest": attrs["effect_digest"],
+            "params": attrs["params"], "guard_state": attrs["guard_state"],
+            "domain": attrs["domain"], "source_epoch": attrs["source_epoch"],
+            "model_epoch": attrs["model_epoch"], "frame_epoch": attrs["frame_epoch"],
+        })
+        agent.s.add_edge(agent.agent, "has_open_process_adoption_approval", approval, {})
+        agent.s.add_edge(approval, "approves_open_process_candidate", candidate, {})
+        for _ in range(4):
+            agent.inner.run_rules(4000)
+        assert agent.s.node(candidate)["attrs"].get("status") == "adopted_candidate"
+        world_state = [0, 1, 2, 3]
+
+        def transition(action):
+            observed = [None] * len(world_state)
+            for source, destination in enumerate(action):
+                observed[destination] = world_state[source]
+            world_state[:] = observed
+            return {"observed_state": list(world_state)}
+
+        executed = execute_open_process_candidate(agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: proposal["expression_digest"] == digest,
+            world_transition=transition)
+        assert executed["status"] == "COMPLETED"
+        assert executed["receipt"]["observed_state"] == goal
+        receipts = list(agent.inner.neighbours(candidate, "has_world_execution_receipt"))
+        assert len(receipts) == 1
+        assert agent.s.node(receipts[0])["attrs"]["status"] == "verified"
+        # A different input state must be rejected by the adopted expression's
+        # exact guard, without reaching the world transition again.
+        perturbed = execute_open_process_candidate(agent, candidate, state=[1, 0, 2, 3],
+            authorize=lambda proposal: True,
+            world_transition=lambda action: pytest.fail("guarded action reached world"))
+        assert perturbed["status"] == "ABSTAIN"
+        assert perturbed["reason"] == "candidate_guard_not_satisfied"
         budgets = [n for n in _nodes(agent, "ThinkingBudget")
                    if agent.s.node(n)["attrs"].get("enabled") == 1.0]
         assert len(budgets) == 1
