@@ -1,5 +1,8 @@
 """P19 lifted ordered strategies retain native preconditions and provenance."""
 from evaluation.process_mastery.harness import Agent
+from tests.test_open_process_search import _agent as _open_agent
+from tests.test_open_process_search import _apply as _apply_native
+from tests.test_open_process_search import _compose
 
 
 def _agent():
@@ -52,3 +55,24 @@ def test_lift_rejects_different_object_count_and_stale_constraints():
     _tick(agent)
     assert "strategy_started" not in agent.attrs(larger)
     assert "strategy_started" not in agent.attrs(stale)
+
+
+def test_temporary_regression_allowed():
+    agent, _ = _open_agent(held={"p": [3, 2, 0, 1], "q": [0, 3, 1, 2]})
+    initial = [2, 0, 3, 1]
+    intermediate = _apply_native(agent, [3, 2, 0, 1], initial)
+    goal = _apply_native(agent, [0, 3, 1, 2], intermediate)
+    distance = lambda left, right: sum(a != b for a, b in zip(left, right))
+    assert distance(intermediate, goal) > distance(initial, goal)
+
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = [candidate for candidate in agent.nodes("OpenProcessCandidate")
+                  if agent.attrs(candidate)["expression_tree"][2][2][0] == "compose"]
+    assert len(candidates) == 1
+    attrs = agent.attrs(candidates[0])
+    assert attrs["status"] == "unapproved_candidate"
+    assert attrs["subgoal_state"] == intermediate
+    assert attrs["params"] == _compose(agent, [3, 2, 0, 1], [0, 3, 1, 2])
+    assert _apply_native(agent, attrs["params"], initial) == goal
