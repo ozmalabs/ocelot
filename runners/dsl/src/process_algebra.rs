@@ -116,6 +116,28 @@ fn as_int(v: &Value) -> Option<i64> {
 
 fn parse(v: &Value, interner: &Interner) -> Option<Proc> {
     let items = seq_items(v)?;
+    // Graph rules build an ordered collection of process terms with MapList.
+    // Its result is a list nested inside the explicit `seq` constructor. Accept
+    // that shape only when every member is itself explicitly tagged `seq`;
+    // this keeps matrices and ordinary lists unambiguous.
+    if !items.is_empty() {
+        let tagged_sequences = items.iter().all(|item| {
+            seq_items(item)
+                .and_then(|parts| parts.first().cloned())
+                .and_then(|tag| text_of(&tag, interner))
+                .as_deref() == Some("seq")
+        });
+        if tagged_sequences {
+            let mut steps = Vec::new();
+            for item in items.iter() {
+                match parse(item, interner)? {
+                    Proc::Seq(inner) => steps.extend(inner),
+                    process => steps.push(process),
+                }
+            }
+            return Some(Proc::Seq(steps));
+        }
+    }
     if let Some(first) = items.first() {
         if let Some(tag) = text_of(first, interner) {
             return match tag.as_str() {
@@ -807,6 +829,26 @@ mod tests {
         // apply moves content at i to p[i].
         let s = ints(&[10, 11, 12]);
         assert_eq!(apply(&ints(&[1, 2, 0]), &s, &ir), ints(&[12, 10, 11]));
+    }
+
+    #[test]
+    fn graph_mapped_nested_sequence_applies_in_order() {
+        let ir = Interner::new();
+        let mut nested = Vec::new();
+        for i in 0..5 {
+            let mut p: Vec<i64> = (0..6).collect();
+            p.swap(i, 5);
+            nested.push(Value::Tuple(Arc::new(smallvec![
+                Value::Surface(SurfaceKind::Text, Arc::from(&b"seq"[..])),
+                ints(&p),
+            ])));
+        }
+        let mapped = Value::List(Arc::new(nested.into_iter().collect()));
+        let sequence = Value::Tuple(Arc::new(smallvec![
+            Value::Surface(SurfaceKind::Text, Arc::from(&b"seq"[..])),
+            mapped,
+        ]));
+        assert_eq!(apply(&sequence, &ints(&[1, 2, 3, 4, 5, 0]), &ir), ints(&[0, 1, 2, 3, 4, 5]));
     }
 
     #[test]

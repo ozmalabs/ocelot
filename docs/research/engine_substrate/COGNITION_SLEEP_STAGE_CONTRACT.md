@@ -94,9 +94,14 @@ tune a frozen holdout.
 
 P13.02 adds the graph-resident cursor, atomic stage receipts, foreground
 gating, shared-budget stage debits, checkpoint-resumable state, a derived
-episodic-support freshness adapter, and advisory recombination. The library
-stage currently records a deferred receipt for P13.03 to consume; it does not
-claim library learning. Strategy-yield storage and retrieval remain P13.04
+episodic-support freshness adapter, and advisory recombination. P13.03 now
+consumes the deferred library receipt only when its disabled-by-default policy
+is enabled. Its mechanism fixture learns an exact repeated `SolveTask.trace`
+sequence, checks the native composition against both solved source tasks,
+records a compressed alternate trace with a witness, and includes definition,
+reference, decoder, exception, dispatch, retrieval and validation units in the
+cost comparison. No claim is made for other trace sources or held-out benefit;
+P13.E2/E3 own those gates. Strategy-yield storage and retrieval remain P13.04
 requirements. Human comparison is unavailable unless a matched protocol is
 separately preregistered.
 

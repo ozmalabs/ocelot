@@ -979,7 +979,7 @@ Integrate former P6.F3 and I6 rather than duplicating demonstration pipelines. O
 
 ## Phase 13 — Staged sleep reusable libraries and strategy recall
 
-**Entry:** Phase 12 verified episodes/processes, P1 replay scheduler and Phase 10 traces. **Status:** in progress; P13.01–P13.02 complete, P13.03–P13.E3 open. Use only verified P12 episodes/processes and existing replay/trace interfaces. P12's social-acquisition advantage failed at 0 points; this does not block mechanism work, but no social benefit may be assumed.
+**Entry:** Phase 12 verified episodes/processes, P1 replay scheduler and Phase 10 traces. **Status:** in progress; P13.01–P13.03 mechanisms complete, P13.04–P13.E3 open. Use only verified P12 episodes/processes and existing replay/trace interfaces. P12's social-acquisition advantage failed at 0 points; this does not block mechanism work, but no social benefit may be assumed.
 
 Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle producer; one owner delegates existing replay rather than running it twice. Learning is measured by later verified behavior, not support_count or number of stored schemas. Strategy-yield records supplement discovered processes without changing their verification contract.
 
@@ -1025,7 +1025,7 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 - **Tier:** T2
 - **Goal:** Learn reusable sub-process libraries by verified compression.
 - **Read first:** `docs/research/engine_substrate/COGNITION_SLEEP_STAGE_CONTRACT.md`; `seeds/process_lifting.json`; `seeds/process_schema.json`; `seeds/sleep_regime.json`.
-- **Touch:** new `scripts/gen_library_learning_seed.py` + `seeds/library_learning.json`; new `tests/test_library_learning.py`.
+- **Touch:** (1) new `scripts/gen_library_learning_seed.py` + generated `seeds/library_learning.json`; (2) `runners/dsl/src/process_algebra.rs` tagged nested-sequence parsing and unit test; (3) new `tests/test_library_learning.py`.
 - **Pattern to copy:** P10 structural lifting and P7 re-decode after verified growth.
 - **Steps:** 1. Extract shared sub-processes from successful programs, capability traces and plans. 2. Include definition/reference/decoder/exception cost and adopt only verified reductions. 3. Rewrite stored traces with equivalence witnesses and revalidate on new states; schedule as a bounded sleep stage.
 - **Guard:** LibraryLearningPolicy disabled.
@@ -1033,6 +1033,8 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_library_learning.py tests/test_process_lifting.py tests/test_sleep_regime_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** compression through deleting failed experiences or ignoring definition cost.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P13.03 mechanism record (2026-10-22):** `LibraryLearningPolicy` is disabled by default and its graph rules consume only a deferred P13.02 `SleepStageReceipt` for stage `library`. The bounded learner considers at most 8 SolveTasks and traces of 8–32 steps. A repeated exact `SolveTask.trace` is eligible only when both tasks are solved, have the same domain and trace, and the Rust-native `ProcessRepairVerify` validates the composed process on both source initial/goal pairs. The new `ProcessSchema` stores the nested native process sequence; its cost comparison is explicit: inline `2n` references versus definition `n` + two references + decoder + exception + dispatch + retrieval + validation (`n+7`). At `n=8`, the fixture saves one declared unit. The original traces remain intact; each task also stores a one-schema `compressed_trace` and a node-valued equivalence witness. A later unseen task is solved in one step using the learned schema. Failed tasks are not rewritten or removed. An empty eligible trace set closes the deferred stage with an explicit bounded no-compression reason; a disabled policy leaves it deferred. `process_algebra.rs` accepts only an explicitly tagged nested `seq` list for the graph `MapList` output; the targeted Rust test passes. Verification: `tests/test_library_learning.py` — 5 passed; the prescribed P13.03 bundle — 24 passed. This is a mechanism pass on solver traces, not evidence of general program/capability-trace extraction or held-out library benefit; those claims remain unestablished for P13.E2/E3.
 
 ### P13.04 — Recall strategies by problem structure and observed yield
 
