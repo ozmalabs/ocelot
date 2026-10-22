@@ -157,6 +157,30 @@
       }
     },
     {
+      "provenance": "seed:strategy_discovery:has_strategy_failure_constraint:DiscoveredStrategy:StrategyFailureConstraint",
+      "src": {
+        "type": "DiscoveredStrategy",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_failure_constraint",
+      "tgt": {
+        "type": "StrategyFailureConstraint",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_discovery:recorded_strategy_failure:SolveTask:StrategyFailureConstraint",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "recorded_strategy_failure",
+      "tgt": {
+        "type": "StrategyFailureConstraint",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:strategy_discovery:executes_discovered_strategy:SolveTask:DiscoveredStrategy",
       "src": {
         "type": "SolveTask",
@@ -400,6 +424,179 @@
                 "name": "s"
               },
               "key": "probe_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "edge_type": "has_strategy_failure_constraint",
+                "any_type": false
+              },
+              "var_name": "failure",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "initial_state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "initial_state"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "goal_state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "object_count"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "object_count"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "kind"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "frame_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "probe_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "probe_epoch"
+                    }
+                  }
+                ]
+              }
             }
           },
           {
@@ -687,6 +884,179 @@
           {
             "type": "Not",
             "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "edge_type": "has_strategy_failure_constraint",
+                "any_type": false
+              },
+              "var_name": "failure",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "initial_state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "initial_state"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "goal_state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "object_count"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "object_count"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "kind"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "frame_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "probe_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "probe_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
               "type": "Eq",
               "a": {
                 "type": "Attr",
@@ -963,12 +1333,38 @@
           "state",
           {
             "__term__": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "t"
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "strategy_next_state"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
               },
-              "key": "strategy_next_state"
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_next_state"
+              }
             }
           }
         ],
@@ -1141,6 +1537,258 @@
           "t",
           "strategy_next_state",
           null
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "sd_record_failed_strategy_binding",
+      "area": "process_solving",
+      "order": 25,
+      "latency_class": "background",
+      "comment": "Retain a replay failure as a binding-specific constraint so the same strategy is not retried blindly.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_discovery_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "t",
+          "executes_discovered_strategy",
+          "s"
+        ],
+        [
+          "s",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "strategy_failed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_failure_recorded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "edge_type": "has_strategy_failure_constraint",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_records"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "failure",
+          "StrategyFailureConstraint",
+          {
+            "initial_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "initial_state"
+              }
+            },
+            "goal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "goal"
+              }
+            },
+            "failed_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              }
+            },
+            "object_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "object_count"
+              }
+            },
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probe_epoch"
+              }
+            },
+            "attempted_step_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_index"
+              }
+            },
+            "source": "native_strategy_replay",
+            "status": "verified_failure"
+          }
+        ],
+        [
+          "add_edge",
+          "s",
+          "has_strategy_failure_constraint",
+          "failure",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "recorded_strategy_failure",
+          "failure",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_failure_recorded",
+          1
         ]
       ],
       "batch": false

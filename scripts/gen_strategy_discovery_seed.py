@@ -11,8 +11,8 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (
-    A, And, Append, Count, Eq, IfThenElse, IndexAt, L, Lt, N, Not, ONLINE_AREA,
-    Plus, PApply, T, V, policy_on, productions, rule,
+    A, And, Append, Count, Eq, Exists, IfThenElse, IndexAt, L, Lt, N, Not, ONLINE_AREA,
+    Plus, PApply, T, V, is_none, policy_on, productions, rule,
 )
 
 SEED_ID = "strategy_discovery"
@@ -31,6 +31,8 @@ def build():
         ("SolveTask", "uses_approved_open_process_candidate", "OpenProcessCandidate"),
         ("DiscoveredStrategy", "witnessed_by_world_receipt", "OpenProcessWorldReceipt"),
         ("DiscoveredStrategy", "learned_from_open_process_candidate", "OpenProcessCandidate"),
+        ("DiscoveredStrategy", "has_strategy_failure_constraint", "StrategyFailureConstraint"),
+        ("SolveTask", "recorded_strategy_failure", "StrategyFailureConstraint"),
         ("SolveTask", "executes_discovered_strategy", "DiscoveredStrategy"),
     ]
     record = rule(
@@ -57,6 +59,15 @@ def build():
          ["add_edge", "s", "witnessed_by_task", "t", {}],
          ["set_attr", "t", "strategy_recorded", 1]],
     )
+    failure_binding_match = Not(Exists(N("s", "has_strategy_failure_constraint"), "failure",
+        And(Eq(A("failure", "initial_state"), A("t", "initial_state")),
+            Eq(A("failure", "goal_state"), A("t", "goal")),
+            Eq(A("failure", "object_count"), A("t", "object_count")),
+            Eq(A("failure", "kind"), A("d", "kind")),
+            Eq(A("failure", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("failure", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("failure", "frame_epoch"), A("d", "frame_epoch")),
+            Eq(A("failure", "probe_epoch"), A("d", "probe_epoch")))))
     start = rule(
         "sd_start_matching_strategy", ONLINE_AREA, 9,
         "Replay a verified graph trace only for a new task with the same domain, initial state, goal and epochs.",
@@ -71,6 +82,7 @@ def build():
             Eq(A("d", "model_epoch"), A("s", "model_epoch")),
             Eq(A("d", "frame_epoch"), A("s", "frame_epoch")),
             Eq(A("d", "probe_epoch"), A("s", "probe_epoch")),
+            failure_binding_match,
             Not(Eq(A("t", "strategy_started"), L(1)))),
         [["add_edge", "t", "executes_discovered_strategy", "s", {}],
          ["set_attr", "t", "strategy_started", 1], ["set_attr", "t", "strategy_index", 0],
@@ -92,7 +104,9 @@ def build():
             Eq(A("d", "frame_epoch"), A("s", "frame_epoch")),
             Eq(A("d", "probe_epoch"), A("s", "probe_epoch"))),
         [["set_attr", "t", "strategy_next_state", T(PApply(A("p", "params"), A("t", "state")))],
-         ["set_attr", "t", "state", T(A("t", "strategy_next_state"))],
+         ["set_attr", "t", "state", T(IfThenElse(is_none(A("t", "strategy_next_state")),
+                                                      A("t", "state"),
+                                                      A("t", "strategy_next_state")))],
          ["set_attr", "t", "trace", T(Append(A("t", "trace"), V("p")))],
          ["set_attr", "t", "steps", T(Plus(A("t", "steps"), L(1)))],
          ["set_attr", "t", "moves", T(Plus(A("t", "moves"), A("p", "cost")))],
@@ -104,6 +118,29 @@ def build():
          ["set_attr", "t", "strategy_next_state", None]],
         batch=False,
     )
+    record_failure = rule(
+        "sd_record_failed_strategy_binding", ONLINE_AREA, 25,
+        "Retain a replay failure as a binding-specific constraint so the same strategy is not retried blindly.",
+        [["agent", "has_strategy_discovery_policy", "pol"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"],
+         ["t", "executes_discovered_strategy", "s"], ["s", "about_domain", "d"]],
+        And(policy_on(), Eq(A("t", "status"), L("strategy_failed")),
+            Not(Eq(A("t", "strategy_failure_recorded"), L(1))),
+            Lt(Count(N("s", "has_strategy_failure_constraint")), A("pol", "max_records"))),
+        [["add_node", "failure", "StrategyFailureConstraint", {
+            "initial_state": T(A("t", "initial_state")),
+            "goal_state": T(A("t", "goal")), "failed_state": T(A("t", "state")),
+            "object_count": T(A("t", "object_count")),
+            "kind": T(A("d", "kind")), "domain": T(A("d", "name")),
+            "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")),
+            "frame_epoch": T(A("d", "frame_epoch")),
+            "probe_epoch": T(A("d", "probe_epoch")),
+            "attempted_step_count": T(A("t", "strategy_index")),
+            "source": "native_strategy_replay", "status": "verified_failure"}],
+         ["add_edge", "s", "has_strategy_failure_constraint", "failure", {}],
+         ["add_edge", "t", "recorded_strategy_failure", "failure", {}],
+         ["set_attr", "t", "strategy_failure_recorded", 1]], batch=False)
     lift = rule(
         "sd_start_lifted_strategy", ONLINE_AREA, 8,
         "Reuse a verified ordered strategy under a different state binding; each process is still applied and checked by the native step rule.",
@@ -119,6 +156,7 @@ def build():
             Eq(A("d", "model_epoch"), A("s", "model_epoch")),
             Eq(A("d", "frame_epoch"), A("s", "frame_epoch")),
             Eq(A("d", "probe_epoch"), A("s", "probe_epoch")),
+            failure_binding_match,
             Not(Eq(A("t", "strategy_started"), L(1)))),
         [["add_edge", "t", "executes_discovered_strategy", "s", {}],
          ["set_attr", "t", "strategy_started", 1], ["set_attr", "t", "strategy_index", 0],
@@ -175,7 +213,7 @@ def build():
         "edges": [{"src": {"role": "agent_root"}, "type": "has_strategy_discovery_policy",
                    "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(SEED_ID, specs),
-        "rules": [lift, start, step, record_receipt, record],
+        "rules": [lift, start, step, record_failure, record_receipt, record],
     }
 
 

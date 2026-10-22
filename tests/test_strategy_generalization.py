@@ -57,6 +57,27 @@ def test_failed_constraint_not_replayed():
     for policy in agent.nodes("SolverPolicy"):
         agent.s.set_attr(policy, "enabled", 0.0)
 
+    failed_initial = [2, 1, 0]
+    failed = agent.add_solve_task("lift", failed_initial, failed_initial)
+    _tick(agent)
+    assert agent.attrs(failed)["status"] == "strategy_failed"
+    strategy = agent.nodes("DiscoveredStrategy")[0]
+    failures = agent.native.neighbours(strategy, "has_strategy_failure_constraint")
+    assert len(failures) == 1
+    assert agent.attrs(failures[0])["source"] == "native_strategy_replay"
+
+    retry = agent.add_solve_task("lift", failed_initial, failed_initial)
+    _tick(agent)
+    assert "strategy_started" not in agent.attrs(retry)
+
+    process = agent.attrs(strategy)["trace"][0]
+    process_params = agent.attrs(process)["params"]
+    transferable_initial = [2, 0, 1]
+    transferable_goal = _apply_native(agent, process_params, transferable_initial)
+    transfer = agent.add_solve_task("lift", transferable_initial, transferable_goal)
+    _tick(agent)
+    assert agent.attrs(transfer)["status"] == "solved"
+
     larger = agent.add_solve_task("lift", [0, 1, 2, 3], [1, 2, 0, 3])
     agent.s.set_attr(domain, "frame_epoch", 1.0)
     stale = agent.add_solve_task("lift", [2, 0, 1], [0, 1, 2])
