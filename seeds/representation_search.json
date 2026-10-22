@@ -101,6 +101,42 @@
       }
     },
     {
+      "provenance": "seed:representation_search:has_transfer_map:RepresentationTransformEvidence:RepresentationMap",
+      "src": {
+        "type": "RepresentationTransformEvidence",
+        "var": "src"
+      },
+      "edge_type": "has_transfer_map",
+      "tgt": {
+        "type": "RepresentationMap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_source_process:RepresentationTransformEvidence:ProcessSchema",
+      "src": {
+        "type": "RepresentationTransformEvidence",
+        "var": "src"
+      },
+      "edge_type": "has_source_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:has_target_domain:RepresentationTransformEvidence:ProcessDomain",
+      "src": {
+        "type": "RepresentationTransformEvidence",
+        "var": "src"
+      },
+      "edge_type": "has_target_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:representation_search:has_heldout_validation:RepresentationProposal:RepresentationHeldoutValidation",
       "src": {
         "type": "RepresentationProposal",
@@ -121,6 +157,42 @@
       "edge_type": "has_development_validation",
       "tgt": {
         "type": "RepresentationDevelopmentValidation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:uses_transfer_map:RepresentationProposal:RepresentationMap",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "uses_transfer_map",
+      "tgt": {
+        "type": "RepresentationMap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:transfers_source_schema:RepresentationProposal:ProcessSchema",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "transfers_source_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:representation_search:transfers_to_domain:RepresentationProposal:ProcessDomain",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "transfers_to_domain",
+      "tgt": {
+        "type": "ProcessDomain",
         "var": "tgt"
       }
     },
@@ -478,6 +550,21 @@
           "request",
           "has_transform_evidence",
           "evidence"
+        ],
+        [
+          "evidence",
+          "has_transfer_map",
+          "map"
+        ],
+        [
+          "evidence",
+          "has_source_process",
+          "source"
+        ],
+        [
+          "evidence",
+          "has_target_domain",
+          "target"
         ],
         [
           "request",
@@ -906,6 +993,27 @@
           "ag",
           "has_representation_proposal",
           "proposal",
+          {}
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "uses_transfer_map",
+          "map",
+          {}
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "transfers_source_schema",
+          "source",
+          {}
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "transfers_to_domain",
+          "target",
           {}
         ]
       ]

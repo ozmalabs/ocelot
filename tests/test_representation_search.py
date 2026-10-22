@@ -187,8 +187,9 @@ def test_graph_rule_adopts_only_lowest_verified_training_package():
 
 
 def test_graph_rule_funds_one_bounded_representation_search():
-    agent = Agent(extra_seeds=("representation_search",),
-                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}},
+    agent = Agent(extra_seeds=("representation_search", "process_transfer"),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0},
+                                    "ProcessTransferPolicy": {"enabled": 1.0}},
                   budget={"enabled": 1.0, "remaining": 3.0,
                           "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
     s, ag = agent.s, agent.ag
@@ -333,8 +334,9 @@ def test_graph_owned_training_select_then_heldout_adoption_chain():
 
 
 def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
-    agent = Agent(extra_seeds=("representation_search",),
-                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}},
+    agent = Agent(extra_seeds=("representation_search", "process_transfer"),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0},
+                                    "ProcessTransferPolicy": {"enabled": 1.0}},
                   budget={"enabled": 1.0, "remaining": 3.0,
                           "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
     s, ag = agent.s, agent.ag
@@ -345,6 +347,15 @@ def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
         "frame_epoch": 5, "training_split_id": "dev-c", "candidate_cap": 16,
         "operation_id": "search-c", "search_epoch": epoch,
         "training_only": True, "status": "requested"})
+    source = s.add_node("ProcessSchema", {"name": "source-process", "kind": "permutation",
+                                          "operator": "swap", "params": [1, 0], "source_epoch": 7,
+                                          "model_epoch": 2, "frame_epoch": 5})
+    target = s.add_node("ProcessDomain", {"name": "target-domain", "kind": "permutation",
+                                         "probe_epoch": 3})
+    fmap = s.add_node("RepresentationMap", {"forward_map": [1, 0], "inverse_map": [1, 0],
+                                             "is_bijection": True, "inverse_verified": True,
+                                             "complete_separating_set": True,
+                                             "source_epoch": 7, "target_frame_epoch": 5})
     evidence = s.add_node("RepresentationTransformEvidence", {
         "candidate_id": "candidate-c", "status": "acquired_transform",
         "owner_id": "owner-c", "source_epoch": 7, "model_epoch": 2,
@@ -355,6 +366,14 @@ def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
         "forced_frame_preserved": True, "discriminating_evidence": True})
     s.add_edge(ag, "has_representation_search_request", req, {})
     s.add_edge(req, "has_transform_evidence", evidence, {})
+    s.add_edge(evidence, "has_transfer_map", fmap, {})
+    s.add_edge(evidence, "has_source_process", source, {})
+    s.add_edge(evidence, "has_target_domain", target, {})
+    transfer_fund = s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "process_transfer", "status": "approved",
+        "debited_epoch": 3, "terminal_status": "completed"})
+    s.add_edge(ag, "has_thinking_budget_request", transfer_fund, {})
+    s.add_edge(transfer_fund, "draws_on_thinking_budget", s.nodes("ThinkingBudget")[0], {})
     for _ in range(12):
         s.tick(1000)
     proposals = list(s.neighbours(req, "has_candidate_proposal"))
@@ -371,6 +390,47 @@ def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
     assert attrs["training_total_bits"] == 336
     assert attrs["status"] == "candidate"
     assert attrs["heldout_used_for_selection"] is False
+    assert list(s.neighbours(proposals[0], "uses_transfer_map")) == [fmap]
+    assert list(s.neighbours(proposals[0], "transfers_source_schema")) == [source]
+    assert list(s.neighbours(proposals[0], "transfers_to_domain")) == [target]
+    proposal = proposals[0]
+    development = s.add_node("RepresentationDevelopmentValidation", {
+        "candidate_id": "candidate-c", "status": "scored_frozen_training",
+        "training_split_id": "dev-c", "training_model_epoch": 2,
+        "package_bits": 320, "residual_bits": 16, "total_bits": 336,
+        "discriminating_rows": 4, "heldout_used": False})
+    heldout = s.add_node("RepresentationHeldoutValidation", {
+        "candidate_id": "candidate-c", "status": "scored_frozen_heldout",
+        "training_model_epoch": 2, "heldout_used_for_selection": False,
+        "refit_on_heldout": False, "exceptions_added": False,
+        "target_effect_verified": True, "wrong_frame_acceptance": False,
+        "solve_loss_pp": 0.0, "candidate_total_bits": 340,
+        "baseline_total_bits": 400})
+    s.add_edge(proposal, "has_development_validation", development, {})
+    s.add_edge(proposal, "has_heldout_validation", heldout, {})
+    for _ in range(6):
+        s.tick(1000)
+    assert s.node(proposal)["attrs"]["status"] == "adopted"
+    transfer_candidates = list(s.neighbours(ag, "has_process_transfer_candidate"))
+    assert len(transfer_candidates) == 1
+    candidate = transfer_candidates[0]
+    candidate_attrs = s.node(candidate)["attrs"]
+    assert candidate_attrs["composed_target_program"] == [1, 0]
+    observed = agent.native.evaluate(
+        {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+         "state": {"type": "Var", "name": "state"}},
+        {"p": candidate_attrs["composed_target_program"], "state": [0, 1]})
+    assert observed == [1, 0]
+    receipt = s.add_node("ProcessTransferVerification", {
+        "status": "verified", "verification_kind": "fresh_native_target_effect",
+        "candidate_id": "candidate-c->target-domain", "source_epoch": 7,
+        "target_probe_epoch": 3, "composition_order": "f_after_g_after_f_inv",
+        "receipt_id": "native-effect-c"})
+    s.add_edge(candidate, "has_target_verification", receipt, {})
+    for _ in range(4):
+        s.tick(1000)
+    assert len([n for n in s.nodes("ProcessSchema")
+                if s.node(n)["attrs"].get("provenance") == "verified_process_transfer"]) == 1
 
 
 def test_canonical_cost_counts_mapping_decoder_and_residuals():
