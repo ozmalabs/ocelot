@@ -173,6 +173,16 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
         assert "attested" in str(exc)
     else:
         raise AssertionError("tampered checkpoint passed strict scoring")
+    forged_parent = CheckpointExpression(parent.checkpoint_id, parent.parent_digest,
+        parent.expression_digest, parent.params, parent.declared_primitive_work,
+        parent.generation, "forged-digest")
+    try:
+        capture_adopted_checkpoint(agent, candidate, checkpoint_id="forged-child",
+            parent=forged_parent, generation=1, declared_primitive_work=2)
+    except ValueError as exc:
+        assert "immediate parent" in str(exc)
+    else:
+        raise AssertionError("child checkpoint accepted an unattested parent")
     try:
         capture_adopted_checkpoint(agent, candidate, checkpoint_id="generation-1b",
             parent=checkpoint, generation=2,

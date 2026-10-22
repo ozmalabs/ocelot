@@ -23,6 +23,30 @@ class CheckpointExpression:
     receipt_id: str | None = None
 
 
+def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
+    if checkpoint.generation == 0:
+        payload = {"schema": "p22_native_checkpoint_v1",
+            "checkpoint_id": checkpoint.checkpoint_id, "generation": 0,
+            "source_digest": checkpoint.expression_digest,
+            "params": list(checkpoint.params),
+            "primitive_work": checkpoint.declared_primitive_work}
+    elif checkpoint.generation > 0 and checkpoint.approval_id and checkpoint.receipt_id:
+        payload = {"schema": "p22_native_checkpoint_v1",
+            "checkpoint_id": checkpoint.checkpoint_id,
+            "parent_digest": checkpoint.parent_digest,
+            "generation": checkpoint.generation,
+            "expression_digest": checkpoint.expression_digest,
+            "params": list(checkpoint.params),
+            "primitive_work": checkpoint.declared_primitive_work,
+            "approval_id": checkpoint.approval_id,
+            "receipt_id": checkpoint.receipt_id}
+    else:
+        return False
+    expected = hashlib.sha256(json.dumps(payload, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    return checkpoint.checkpoint_digest == expected
+
+
 def capture_held_process_checkpoint(agent, process_schema: int, *,
                                     checkpoint_id: str,
                                     declared_primitive_work: int = 0) -> CheckpointExpression:
@@ -59,7 +83,7 @@ def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
     This captures graph-authored expression provenance into an immutable value;
     it does not create approval or turn a proposal into an actionable candidate.
     """
-    if (not checkpoint_id or not parent.checkpoint_digest or generation < 1
+    if (not checkpoint_id or not _checkpoint_digest_valid(parent) or generation < 1
             or generation != parent.generation + 1):
         raise ValueError("checkpoint must extend a frozen immediate parent by one generation")
     native = getattr(agent, "inner", None) or getattr(agent, "native", None)
@@ -118,27 +142,7 @@ class CheckpointWorldAdapter:
 
     @staticmethod
     def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
-        if checkpoint.generation == 0:
-            payload = {"schema": "p22_native_checkpoint_v1",
-                "checkpoint_id": checkpoint.checkpoint_id, "generation": 0,
-                "source_digest": checkpoint.expression_digest,
-                "params": list(checkpoint.params),
-                "primitive_work": checkpoint.declared_primitive_work}
-        elif checkpoint.generation > 0 and checkpoint.approval_id and checkpoint.receipt_id:
-            payload = {"schema": "p22_native_checkpoint_v1",
-                "checkpoint_id": checkpoint.checkpoint_id,
-                "parent_digest": checkpoint.parent_digest,
-                "generation": checkpoint.generation,
-                "expression_digest": checkpoint.expression_digest,
-                "params": list(checkpoint.params),
-                "primitive_work": checkpoint.declared_primitive_work,
-                "approval_id": checkpoint.approval_id,
-                "receipt_id": checkpoint.receipt_id}
-        else:
-            return False
-        expected = hashlib.sha256(json.dumps(payload, sort_keys=True,
-            separators=(",", ":")).encode()).hexdigest()
-        return checkpoint.checkpoint_digest == expected
+        return _checkpoint_digest_valid(checkpoint)
 
     def score(self, checkpoint: CheckpointExpression, *, world_id: str,
               initial_state: list[int], goal_state: list[int]) -> dict:
