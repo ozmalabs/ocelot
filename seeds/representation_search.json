@@ -735,152 +735,37 @@
             }
           },
           {
-            "type": "Not",
-            "arg": {
-              "type": "Exists",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "ag"
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "proposal"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "SortBy",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_candidate_proposal",
+                  "any_type": false
                 },
-                "edge_type": "has_representation_proposal",
-                "any_type": false
+                "var_name": "other",
+                "key": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "other"
+                  },
+                  "key": "training_total_bits"
+                }
               },
-              "var_name": "other",
-              "predicate": {
-                "type": "And",
-                "items": [
-                  {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "owner_id"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "proposal"
-                      },
-                      "key": "owner_id"
-                    }
-                  },
-                  {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "status"
-                    },
-                    "b": {
-                      "type": "Lit",
-                      "value": "verified_candidate"
-                    }
-                  },
-                  {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "training_split_id"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "proposal"
-                      },
-                      "key": "training_split_id"
-                    }
-                  },
-                  {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "source_epoch"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "proposal"
-                      },
-                      "key": "source_epoch"
-                    }
-                  },
-                  {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "model_epoch"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "proposal"
-                      },
-                      "key": "model_epoch"
-                    }
-                  },
-                  {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "frame_epoch"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "proposal"
-                      },
-                      "key": "frame_epoch"
-                    }
-                  },
-                  {
-                    "type": "Lt",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "other"
-                      },
-                      "key": "training_total_bits"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "proposal"
-                      },
-                      "key": "training_total_bits"
-                    }
-                  }
-                ]
+              "index": {
+                "type": "Lit",
+                "value": -1
               }
             }
           }

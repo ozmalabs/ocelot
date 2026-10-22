@@ -20,6 +20,8 @@ def Not(x): return {"type": "Not", "arg": x}
 def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
 def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
 def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
+def SortBy(src, var, key): return {"type": "SortBy", "source": src, "var_name": var, "key": key}
+def IndexAt(seq, index): return {"type": "IndexAt", "seq": seq, "index": L(index)}
 
 
 def build_seed():
@@ -38,17 +40,8 @@ def build_seed():
                    Eq(A("proposal", "forced_frame_preserved"), L(True)),
                    Eq(A("proposal", "discriminating_evidence"), L(True)),
                    Eq(A("proposal", "target_effect_verified"), L(True)))
-    cheaper = Exists(N("ag", "has_representation_proposal"), "other",
-                     And(Eq(A("other", "owner_id"), A("proposal", "owner_id")),
-                         Eq(A("other", "status"), L("verified_candidate")),
-                         Eq(A("other", "training_split_id"), A("proposal", "training_split_id")),
-                         Eq(A("other", "source_epoch"), A("proposal", "source_epoch")),
-                         Eq(A("other", "model_epoch"), A("proposal", "model_epoch")),
-                         Eq(A("other", "frame_epoch"), A("proposal", "frame_epoch")),
-                         # Strictly lower total development code length wins; ties
-                         # remain unadopted and auditable.
-                         {"type": "Lt", "a": A("other", "training_total_bits"),
-                          "b": A("proposal", "training_total_bits")}))
+    best = IndexAt(SortBy(N("request", "has_candidate_proposal"), "other",
+                          A("other", "training_total_bits")), -1)
     relations = [
         ("Agent", "has_representation_search_policy", "RepresentationSearchPolicy"),
         ("Agent", "has_representation_search_request", "RepresentationSearchRequest"),
@@ -73,7 +66,7 @@ def build_seed():
                          Eq(A("fund", "status"), L("approved")),
                          Eq(A("fund", "debited_epoch"), A("request", "search_epoch")),
                          Eq(A("fund", "operation_id"), A("request", "operation_id")),
-                         Not(cheaper)),
+                         Eq(V("proposal"), best)),
             "effects": [["set_attr", "proposal", "status", "adopted"],
                         ["set_attr", "proposal", "adopted_frame_epoch", T(A("proposal", "next_frame_epoch"))],
                         ["set_attr", "proposal", "transition_from_frame", T(A("proposal", "source_frame_id"))],

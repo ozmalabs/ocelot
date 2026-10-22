@@ -1,6 +1,8 @@
 """P11.01 semantic-freeze tests for frame and description invariants."""
 import json
 
+from evaluation.process_mastery.harness import Agent
+
 
 def _package_bits(package):
     encoded = json.dumps(package, sort_keys=True, separators=(",", ":"),
@@ -132,3 +134,64 @@ def test_forced_frame_search_rejects_alternative_frame():
                  "package_cost_complete": True, "heldout_used_for_selection": False,
                  "frame_id": "alternate", "package_bits": 1, "train_residual_bits": 0}
     assert _search_result([alternate], current_epochs=epochs, forced_frame=True) is None
+
+
+def test_graph_rule_adopts_only_lowest_verified_training_package():
+    agent = Agent(extra_seeds=("representation_search",),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0},
+                                    "InventionPolicy": {"enabled": 0.0}})
+    s, ag = agent.s, agent.ag
+    req = s.add_node("RepresentationSearchRequest", {
+        "owner_id": "owner-a", "source_epoch": 1, "model_epoch": 2,
+        "frame_epoch": 3, "training_split_id": "dev-a", "candidate_cap": 4,
+        "operation_id": "op-1", "search_epoch": 1,
+    })
+    s.add_edge(ag, "has_representation_search_request", req, {})
+    fund = s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "representation_search", "status": "approved",
+        "debited_epoch": 1, "operation_id": "op-1"})
+    s.add_edge(req, "funded_by_request", fund, {})
+    proposals = []
+    for name, bits in (("large", 1000), ("small", 100)):
+        p = s.add_node("RepresentationProposal", {
+            "name": name, "status": "verified_candidate", "owner_id": "owner-a",
+            "source_epoch": 1, "model_epoch": 2, "frame_epoch": 3,
+            "training_split_id": "dev-a", "candidate_cap": 4,
+            "package_cost_complete": True, "heldout_used_for_selection": False,
+            "forced_frame_preserved": True, "discriminating_evidence": True,
+            "target_effect_verified": True, "training_total_bits": bits,
+            "next_frame_epoch": 4, "source_frame_id": "f3", "target_frame_id": "f4"})
+        s.add_edge(req, "has_candidate_proposal", p, {})
+        s.add_edge(ag, "has_representation_proposal", p, {})
+        proposals.append(p)
+    for _ in range(6):
+        s.tick(1000)
+    attrs = [s.node(p)["attrs"] for p in proposals]
+    assert [a["status"] for a in attrs].count("adopted") == 1
+    chosen = next(a for a in attrs if a["status"] == "adopted")
+    assert chosen["name"] == "small"
+    assert chosen["transition_from_frame"] == "f3"
+    assert chosen["transition_to_frame"] == "f4"
+    assert chosen["recall_invalidated"] and chosen["transfer_invalidated"]
+
+
+def test_graph_rule_funds_one_bounded_representation_search():
+    agent = Agent(extra_seeds=("representation_search",),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}},
+                  budget={"enabled": 1.0, "remaining": 3.0,
+                          "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
+    s, ag = agent.s, agent.ag
+    req = s.add_node("RepresentationSearchRequest", {
+        "owner_id": "owner-b", "source_epoch": 7, "model_epoch": 2,
+        "frame_epoch": 5, "training_split_id": "dev-b", "candidate_cap": 16,
+        "operation_id": "search-b", "search_epoch": 0,
+        "training_only": True, "status": "requested"})
+    s.add_edge(ag, "has_representation_search_request", req, {})
+    for _ in range(6):
+        s.tick(1000)
+    funded = list(s.neighbours(req, "funded_by_request"))
+    assert len(funded) == 1
+    attrs = s.node(funded[0])["attrs"]
+    assert attrs["requester_kind"] == "representation_search"
+    assert attrs["source_key"] == "search-b"
+    assert s.node(req)["attrs"]["status"] == "funding_pending"

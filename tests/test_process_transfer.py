@@ -1,4 +1,5 @@
 """P11 exact transfer gates; unknown and lossy maps abstain."""
+from evaluation.process_mastery.harness import Agent
 def _inverse(p):
     result = [0] * len(p)
     for i, x in enumerate(p):
@@ -69,3 +70,77 @@ def test_transferred_effect_reverified():
 
 def test_one_way_map_is_not_exact_conjugation():
     assert not _verify({"forward": [0, 0], "inverse": [0]}, [0, 1], [0, 1], {})
+
+
+def test_graph_rule_requires_fresh_verified_target_effect():
+    agent = Agent(extra_seeds=("process_transfer",),
+                  policy_overrides={"ProcessTransferPolicy": {"enabled": 1.0},
+                                    "InventionPolicy": {"enabled": 0.0}})
+    s, ag = agent.s, agent.ag
+    source = s.add_node("ProcessSchema", {"name": "rotate", "kind": "permutation",
+                                          "operator": "rotate", "params": [1, 2, 0],
+                                          "source_epoch": 2})
+    target = s.add_node("ProcessDomain", {"name": "target", "kind": "permutation",
+                                         "probe_epoch": 4})
+    fmap = s.add_node("RepresentationMap", {"is_bijection": True, "inverse_verified": True,
+                                             "source_epoch": 2, "target_frame_epoch": 3})
+    candidate = s.add_node("ProcessTransferCandidate", {
+        "candidate_id": "pt-1", "status": "candidate", "map_direction": "source_to_target",
+        "source_epoch": 2, "model_epoch": 1, "target_frame_epoch": 3,
+        "target_probe_epoch": 4, "search_epoch": 5, "nonconjugate": False,
+        "wrong_frame": False, "complete_separating_set": True,
+        "target_process_name": "transferred-rotate", "composed_target_program": [2, 0, 1]})
+    request = s.add_node("ThinkingBudgetRequest", {"requester_kind": "process_transfer",
+                                                    "status": "approved", "debited_epoch": 5,
+                                                    "terminal_status": "completed"})
+    verification = s.add_node("ProcessTransferVerification", {
+        "status": "verified", "verification_kind": "fresh_native_target_effect",
+        "candidate_id": "pt-1", "source_epoch": 2, "target_probe_epoch": 4,
+        "composition_order": "f_after_g_after_f_inv", "receipt_id": "receipt-1"})
+    for node, edge in ((source, "maps_source_schema"), (target, "targets_domain"),
+                       (fmap, "uses_frame_map"), (verification, "has_target_verification"),
+                       (request, "funded_by_request")):
+        s.add_edge(candidate, edge, node, {})
+    s.add_edge(request, "draws_on_thinking_budget", s.nodes("ThinkingBudget")[0], {})
+    s.add_edge(ag, "has_process_transfer_candidate", candidate, {})
+    for _ in range(5):
+        s.tick(1000)
+    transferred = [n for n in s.nodes("ProcessSchema")
+                   if s.node(n)["attrs"].get("provenance") == "verified_process_transfer"]
+    assert len(transferred) == 1
+    assert s.node(transferred[0])["attrs"]["verification_receipt"] == "receipt-1"
+
+
+def test_graph_rule_rejects_wrong_frame_even_with_receipt():
+    agent = Agent(extra_seeds=("process_transfer",),
+                  policy_overrides={"ProcessTransferPolicy": {"enabled": 1.0}})
+    s, ag = agent.s, agent.ag
+    source = s.add_node("ProcessSchema", {"name": "src", "operator": "op",
+                                          "source_epoch": 1})
+    target = s.add_node("ProcessDomain", {"name": "dst", "kind": "permutation",
+                                         "probe_epoch": 2})
+    fmap = s.add_node("RepresentationMap", {"is_bijection": True, "inverse_verified": True,
+                                             "source_epoch": 1, "target_frame_epoch": 1})
+    candidate = s.add_node("ProcessTransferCandidate", {
+        "candidate_id": "bad", "status": "candidate", "map_direction": "source_to_target",
+        "source_epoch": 1, "model_epoch": 0, "target_frame_epoch": 1,
+        "target_probe_epoch": 2, "search_epoch": 3, "nonconjugate": False,
+        "wrong_frame": True, "complete_separating_set": True,
+        "target_process_name": "bad", "composed_target_program": [0]})
+    request = s.add_node("ThinkingBudgetRequest", {"requester_kind": "process_transfer",
+                                                    "status": "approved", "debited_epoch": 3,
+                                                    "terminal_status": "completed"})
+    verification = s.add_node("ProcessTransferVerification", {
+        "status": "verified", "verification_kind": "fresh_native_target_effect",
+        "candidate_id": "bad", "source_epoch": 1, "target_probe_epoch": 2,
+        "composition_order": "f_after_g_after_f_inv", "receipt_id": "receipt-bad"})
+    for node, edge in ((source, "maps_source_schema"), (target, "targets_domain"),
+                       (fmap, "uses_frame_map"), (verification, "has_target_verification"),
+                       (request, "funded_by_request")):
+        s.add_edge(candidate, edge, node, {})
+    s.add_edge(request, "draws_on_thinking_budget", s.nodes("ThinkingBudget")[0], {})
+    s.add_edge(ag, "has_process_transfer_candidate", candidate, {})
+    for _ in range(4):
+        s.tick(1000)
+    assert not [n for n in s.nodes("ProcessSchema")
+                if s.node(n)["attrs"].get("provenance") == "verified_process_transfer"]
