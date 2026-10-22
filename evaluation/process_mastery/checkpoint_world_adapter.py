@@ -8,10 +8,104 @@ import json
 from evaluation.process_mastery.native_process_execution import (
     open_process_candidate_digest, params_digest,
 )
+from evaluation.process_mastery.independent_worlds import (
+    agent_view, generate_d4_world, generate_d4_world_v2,
+    generate_loopover_world, generate_loopover_world_v2,
+)
 from evaluation.process_mastery.p22_resource_accounting import (
     compare_resource_snapshots, resource_snapshot_digest_valid,
     snapshot_native_resources,
 )
+
+
+def score_unapproved_candidate_on_validation(agent, candidate: int,
+                                             world: dict) -> dict:
+    """Score one training-derived proposal on a fresh validation world.
+
+    This is a read-only algebra check. It deliberately rejects held-out worlds,
+    candidates without a verified digest receipt, and anything already on an
+    approval or world-action path.
+    """
+    native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+    store = getattr(agent, "s", None)
+    if native is None or store is None:
+        raise TypeError("agent must expose native substrate and graph store")
+    if not isinstance(world, dict) or world.get("split") != "validation":
+        raise ValueError("unapproved candidates may be scored only on validation worlds")
+    family_generators = {
+        "pmb_generated_loopover_v1": generate_loopover_world,
+        "pmb_generated_d4_corner_v1": generate_d4_world,
+        "pmb_generated_loopover_v2": generate_loopover_world_v2,
+        "pmb_generated_d4_corner_v2": generate_d4_world_v2,
+    }
+    generator = family_generators.get(world.get("family"))
+    if generator is None:
+        raise ValueError("validation world family is unsupported")
+    expected_world = agent_view(generator(split="validation", draw=world.get("draw")))
+    if world != expected_world:
+        raise ValueError("validation world must match the registered answer-free generator view")
+    required_world = ("world_id", "initial_state", "goal_state")
+    if any(key not in world for key in required_world) or not world["world_id"]:
+        raise ValueError("validation world identity and task states are required")
+
+    attrs = store.node(candidate)["attrs"]
+    if attrs.get("status") != "unapproved_candidate" or attrs.get("approval_required") != 1.0:
+        raise ValueError("candidate is not an unapproved non-actionable proposal")
+    if native.neighbours(candidate, "approved_by_open_process_adoption"):
+        raise ValueError("candidate already has an approval event")
+    if native.neighbours(candidate, "has_world_execution_receipt"):
+        raise ValueError("candidate already has a world execution receipt")
+    digest_receipts = native.neighbours(candidate, "has_expression_digest_receipt")
+    if len(digest_receipts) != 1:
+        raise ValueError("candidate requires one verified expression digest receipt")
+    digest = open_process_candidate_digest(agent, candidate)
+    receipt = store.node(digest_receipts[0])["attrs"]
+    if (attrs.get("expression_digest_status") != "verified"
+            or attrs.get("expression_digest") != digest
+            or receipt.get("status") != "verified"
+            or receipt.get("expression_digest") != digest):
+        raise ValueError("candidate expression digest receipt does not verify")
+
+    attempts = native.neighbours(candidate, "derived_from_attempt")
+    if len(attempts) != 1:
+        raise ValueError("candidate must have one native source attempt")
+    attempt = store.node(attempts[0])["attrs"]
+    tasks = native.neighbours(attempts[0], "about_task")
+    if len(tasks) != 1:
+        raise ValueError("candidate source attempt must identify one training task")
+    task = store.node(tasks[0])["attrs"]
+    if (attempt.get("status") != "verified" or task.get("split") != "training"
+            or attempt.get("split", "training") != "training"):
+        raise ValueError("candidate source must be a native-verified training task")
+    params = attrs.get("params")
+    initial = world["initial_state"]
+    goal = world["goal_state"]
+    if (not isinstance(params, list) or len(params) < 2
+            or any(isinstance(value, bool) or not isinstance(value, int) for value in params)
+            or sorted(params) != list(range(len(params)))):
+        raise ValueError("candidate parameters must be a finite permutation")
+    if attrs.get("guard_state") != initial:
+        raise ValueError("validation initial state does not match the candidate guard")
+    for label, state in (("initial", initial), ("goal", goal)):
+        if (not isinstance(state, list) or len(state) != len(params)
+                or any(isinstance(value, bool) or not isinstance(value, int) for value in state)
+                or sorted(state) != list(range(len(params)))):
+            raise ValueError(f"validation {label} state must match candidate domain")
+    if (attrs.get("domain") != attempt.get("domain")
+            or task.get("domain") != attrs.get("domain")):
+        raise ValueError("candidate domain differs from its verified source attempt")
+
+    result = native.evaluate(
+        {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+         "state": {"type": "Var", "name": "state"}},
+        {"p": list(params), "state": list(initial)})
+    return {"status": "nonactionable_candidate_scored",
+            "actionable": False, "approval_created": False,
+            "world_receipt_created": False, "candidate_id": str(candidate),
+            "expression_digest": digest, "world_id": world["world_id"],
+            "split": "validation", "score": int(result == goal),
+            "initial_state": list(initial), "goal_state": list(goal),
+            "result_state": result}
 
 
 @dataclass(frozen=True)

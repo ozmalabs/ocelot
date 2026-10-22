@@ -7,10 +7,11 @@ from evaluation.process_mastery.native_process_execution import execute_open_pro
 from evaluation.process_mastery.native_process_execution import params_digest
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointWorldAdapter, capture_adopted_checkpoint,
-    capture_held_process_checkpoint,
+    capture_held_process_checkpoint, score_unapproved_candidate_on_validation,
 )
 from evaluation.process_mastery.independent_worlds import (
-    generate_d4_world, generate_loopover_world,
+    agent_view, generate_d4_world, generate_d4_world_v2,
+    generate_loopover_world,
 )
 from substrate.seed_loader import manifest_for
 from substrate.boot_profiles import boot_cognition_on
@@ -292,6 +293,48 @@ def test_no_holdout_in_proposal():
     for _ in range(8):
         agent.s.tick(4000)
     assert not agent.nodes("IndependentImprovementProposal")
+
+
+def test_unapproved_training_candidate_scores_only_on_answer_free_validation_view():
+    agent = _agent()
+    candidate = _candidate(agent)
+    attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    task = agent.native.neighbours(attempt, "about_task")[0]
+    agent.s.set_attr(task, "split", "training")
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    attest_open_process_candidate(agent, candidate)
+    validation = generate_d4_world_v2(split="validation", draw=7)
+    validation_view = agent_view(validation)
+    result = score_unapproved_candidate_on_validation(agent, candidate, validation_view)
+    assert result["status"] == "nonactionable_candidate_scored"
+    assert result["actionable"] is False
+    assert result["approval_created"] is False
+    assert result["world_receipt_created"] is False
+    assert result["split"] == "validation"
+    assert agent.native.neighbours(candidate, "approved_by_open_process_adoption") == []
+    assert agent.native.neighbours(candidate, "has_world_execution_receipt") == []
+    try:
+        score_unapproved_candidate_on_validation(agent, candidate, validation)
+    except ValueError as exc:
+        assert "answer-free generator view" in str(exc)
+    else:
+        raise AssertionError("validation scorer accepted hidden evaluator fields")
+    try:
+        score_unapproved_candidate_on_validation(
+            agent, candidate, agent_view(generate_d4_world_v2(split="heldout", draw=7)))
+    except ValueError as exc:
+        assert "validation worlds" in str(exc)
+    else:
+        raise AssertionError("unapproved candidate scorer accepted held-out data")
+    changed = list(agent.attrs(candidate)["params"])
+    changed[0], changed[1] = changed[1], changed[0]
+    agent.s.set_attr(candidate, "params", changed)
+    try:
+        score_unapproved_candidate_on_validation(agent, candidate, validation_view)
+    except ValueError as exc:
+        assert "digest" in str(exc)
+    else:
+        raise AssertionError("validation scorer accepted a mutated candidate")
 
 
 def test_native_curriculum_releases_training_task_to_same_process_search_graph():

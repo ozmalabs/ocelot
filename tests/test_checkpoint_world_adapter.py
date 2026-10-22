@@ -6,7 +6,8 @@ from evaluation.process_mastery.native_process_execution import (
     attest_open_process_candidate, execute_open_process_candidate,
 )
 from evaluation.process_mastery.independent_worlds import (
-    agent_view, generate_d4_world, generate_loopover_world, p22_seed,
+    agent_view, generate_d4_world, generate_d4_world_v2,
+    generate_loopover_world, generate_loopover_world_v2, p22_seed,
 )
 from evaluation.process_mastery.harness import Agent
 from tests.test_open_process_search import _compose
@@ -188,8 +189,8 @@ def test_development_world_panels_are_not_at_common_solver_ceiling():
     from evaluation.process_mastery.harness import Agent
 
     observed = {}
-    for family, generator in (("d4", generate_d4_world),
-                              ("loopover", generate_loopover_world)):
+    for family, generator in (("d4", generate_d4_world_v2),
+                              ("loopover", generate_loopover_world_v2)):
         agent = Agent(track_i=False, extra_seeds=("process_solving",))
         try:
             for policy in agent.nodes("SolverPolicy"):
@@ -213,7 +214,47 @@ def test_development_world_panels_are_not_at_common_solver_ceiling():
             observed[family] = sum(status == "solved" for status in statuses)
         finally:
             del agent
-    assert observed == {"d4": 0, "loopover": 11}
+    assert observed == {"d4": 14, "loopover": 6}
+
+
+def test_v2_world_generators_have_disjoint_splits_and_varied_independent_goals():
+    for family, generator, expected_unique in (
+            ("d4", generate_d4_world_v2, (8, 8)),
+            ("loopover", generate_loopover_world_v2, (190, 195))):
+        train = [generator(split="train", draw=i) for i in range(200)]
+        validation = [generator(split="validation", draw=i) for i in range(200)]
+        train_ids = {world["world_id"] for world in train}
+        validation_ids = {world["world_id"] for world in validation}
+        train_seeds = {world["seed"] for world in train}
+        validation_seeds = {world["seed"] for world in validation}
+        train_goals = {tuple(world["goal_state"]) for world in train}
+        validation_goals = {tuple(world["goal_state"]) for world in validation}
+        assert len(train_ids) == len(validation_ids) == 200
+        assert train_ids.isdisjoint(validation_ids)
+        assert train_seeds.isdisjoint(validation_seeds)
+        assert (len(train_goals), len(validation_goals)) == expected_unique
+        assert all("hidden_target_params" not in agent_view(world)
+                   and "hidden_transform_order" not in agent_view(world)
+                   for world in train + validation)
+
+
+def test_v2_generated_goals_match_native_composition_without_exposing_order():
+    agent, adapter = _adapter()
+    for generator in (generate_d4_world_v2, generate_loopover_world_v2):
+        world = generator(split="train", draw=19)
+        composed = list(range(len(world["initial_state"])))
+        for name in world["hidden_transform_order"]:
+            composed = agent.native.evaluate(
+                {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+                 "b": {"type": "Var", "name": "b"}},
+                {"a": composed, "b": world["held_processes"][name]})
+        scored = adapter.score(CheckpointExpression("v2-world-control", "ancestor",
+            "v2-composition", tuple(composed), 1), world_id=world["world_id"],
+            initial_state=world["initial_state"], goal_state=world["goal_state"])
+        assert scored["score"] == 1
+        visible = agent_view(world)
+        assert "hidden_transform_order" not in visible
+        assert "hidden_target_params" not in visible
 
 
 def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():

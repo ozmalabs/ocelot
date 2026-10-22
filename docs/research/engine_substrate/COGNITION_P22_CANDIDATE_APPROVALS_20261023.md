@@ -2,6 +2,8 @@
 
 These two candidates were generated from the registered **training** worlds and each qualified after a second distinct training trial with a native-verified attempt. Their effect fingerprints were verified against family-sized probe batteries. Each fresh-process reconstruction reproduced the candidate ID, digest, expression key, effect fingerprint and parameters. Both remain `unapproved_candidate`; no approval node, action receipt, checkpoint, or held-out access has been created.
 
+Subsequent generator auditing found that the v1 family seeds used for these cards yield only two distinct goals across 200 validation draws in each family. The cards preserve exact mechanism provenance but do not establish independent-goal generalization. The versioned v2 generators use disjoint family seed codes and a more varied goal distribution; any P22 efficacy claim must use its preregistered panel and working matched arms, not these v1 probe results.
+
 An approval authorizes only adoption of the named expression in its stated finite domain, followed by the existing guarded simulated-world execution check. It does not authorize another candidate, physical-world action, a held-out run, or an efficacy claim.
 
 | Family | Training world | Candidate | Proposal / qualification | Qualified trials |

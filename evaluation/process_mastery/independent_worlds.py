@@ -51,6 +51,13 @@ def _apply_params(initial: list[int], params: tuple[int, ...]) -> list[int]:
     return result
 
 
+def _compose_sequence(held: dict[str, tuple[int, ...]], order: tuple[str, ...]) -> tuple[int, ...]:
+    composed = tuple(range(len(next(iter(held.values())))))
+    for name in order:
+        composed = _compose_params(composed, held[name])
+    return composed
+
+
 def generate_loopover_world(*, split: str, draw: int) -> dict:
     """Create a Loopover task from two visible row/column shift primitives."""
     seed = p22_seed(family_code=1, split=split, draw=draw)
@@ -95,6 +102,62 @@ def generate_d4_world(*, split: str, draw: int) -> dict:
         "hidden_target_params": list(target),
         "target_solution_exposed": False,
     }
+
+
+def generate_loopover_world_v2(*, split: str, draw: int) -> dict:
+    """Create a varied 3x3 Loopover goal from a seeded sequence of visible moves.
+
+    This version preserves the original v1 generator used by the candidate
+    approval packet. Its task targets vary across independent draw seeds.
+    """
+    seed = p22_seed(family_code=3, split=split, draw=draw)
+    rng = random.Random(seed)
+    moves = loopover_moves(3)
+    held = {name: tuple(params) for name, params in sorted(moves.items())}
+    names = tuple(held)
+    length = rng.randint(3, 6)
+    order = []
+    for _ in range(length):
+        available = [name for name in names
+                     if not order or not (name.endswith("'")
+                         and name[:-1] == order[-1])
+                     and not (order[-1].endswith("'")
+                         and order[-1][:-1] == name)]
+        order.append(rng.choice(available))
+    order = tuple(order)
+    target = _compose_sequence(held, order)
+    initial = list(range(9))
+    return {"family": "pmb_generated_loopover_v2", "split": split,
+            "seed": seed, "draw": draw,
+            "world_id": f"p22:loopover-v2:{split}:{draw:04d}",
+            "initial_state": initial, "goal_state": _apply_params(initial, target),
+            "held_processes": {name: list(params) for name, params in held.items()},
+            "hidden_transform_order": list(order),
+            "hidden_target_params": list(target), "target_solution_exposed": False}
+
+
+def generate_d4_world_v2(*, split: str, draw: int) -> dict:
+    """Create varied D4 corner goals from seeded words over two visible moves.
+
+    This version keeps the original v1 generator intact for provenance of its
+    existing candidate packet while sampling a varied goal distribution.
+    """
+    seed = p22_seed(family_code=4, split=split, draw=draw)
+    rng = random.Random(seed)
+    held = {"rot90": _coordinate_map("rot90", 2),
+            "flip_r": _coordinate_map("flip_r", 2)}
+    names = tuple(held)
+    length = rng.randint(1, 7)
+    order = tuple(rng.choice(names) for _ in range(length))
+    target = _compose_sequence(held, order)
+    initial = [0, 1, 2, 3]
+    return {"family": "pmb_generated_d4_corner_v2", "split": split,
+            "seed": seed, "draw": draw,
+            "world_id": f"p22:d4-v2:{split}:{draw:04d}",
+            "initial_state": initial, "goal_state": _apply_params(initial, target),
+            "held_processes": {name: list(params) for name, params in held.items()},
+            "hidden_transform_order": list(order),
+            "hidden_target_params": list(target), "target_solution_exposed": False}
 
 
 def agent_view(world: dict) -> dict:
