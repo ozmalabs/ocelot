@@ -153,3 +153,48 @@ def test_missing_opportunity_is_counted_without_inventing_a_transition():
     assert learner.accounting.missing_observations == 1
     assert learner.accounting.target_actions == 0
     assert learner.hypotheses() == []
+
+
+def _source_prior(learner, *, map_status="verified", target_event="target-transfer-1",
+                  exact=True):
+    learner.import_source_prior(
+        prior_id="source-prior-1", source_id="source-model-1",
+        action_kind="warm", object_type="Widget", feature_key="temperature",
+        before_value="cold", after_value="warm", source_epoch=3, model_epoch=2,
+        frame_epoch=5,
+        map_evidence={"map_id": "map-1", "status": map_status,
+                      "mapping_kind": "exact_categorical_effect",
+                      "target_frame_epoch": 5},
+        target_receipt={"receipt_id": "target-verify-1", "source_prior_id": "source-prior-1",
+                        "target_event_id": target_event, "status": "verified",
+                        "exact_effect_match": exact})
+
+
+def test_source_uses_same_target_verifier_and_new_binding_predictor():
+    learner = NativeTargetLearner(transfer_enabled=True)
+    _source_prior(learner)
+    learner.expose_source(source_id="source-model-1", relation="matched", units=3.0)
+    learner.observe_opportunity(event_id="target-transfer-1", action_kind="warm",
+                                object_id="target-object-1", object_type="Widget",
+                                feature_key="temperature", before_value="cold",
+                                after_value="warm")
+    learner.settle()
+    assert len(learner.hypotheses()) == 1
+    assert learner.hypotheses()[0]["effect_evaluation"] == "exact_source_map_and_target_receipt"
+    prediction = learner.predict(query_id="transferred-binding", action_kind="warm",
+                                 object_type="Widget", feature_key="temperature",
+                                 before_value="cold", object_id="target-object-2")
+    assert prediction["expected_after_value"] == "warm"
+
+
+def test_wrong_map_or_wrong_target_receipt_is_rejected():
+    for map_status, event_id in (("stale", "target-transfer-1"),
+                                 ("verified", "different-target-event")):
+        learner = NativeTargetLearner(transfer_enabled=True)
+        _source_prior(learner, map_status=map_status, target_event=event_id)
+        learner.observe_opportunity(event_id="target-transfer-1", action_kind="warm",
+                                    object_id="target-object-1", object_type="Widget",
+                                    feature_key="temperature", before_value="cold",
+                                    after_value="warm")
+        learner.settle()
+        assert learner.hypotheses() == []

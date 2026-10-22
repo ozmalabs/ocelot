@@ -798,6 +798,9 @@ COGNITION_ON_SEEDS = (
     "numerosity",
     # P8 learned episode models and funded experiment design remain disabled.
     "process_induction",
+    # P20 source priors remain proposals until an exact mapped effect and
+    # independently receipted target transition agree.
+    "target_learning",
     "latent_process",
     "experiment_design",
     "similarity_recall",

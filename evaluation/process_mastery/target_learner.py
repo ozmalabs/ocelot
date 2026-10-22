@@ -34,11 +34,13 @@ class LearningAccounting:
 class NativeTargetLearner:
     """Fresh empty graph plus the P8 receipt-bound effect learner."""
 
-    def __init__(self, *, owner_id="target-owner", budget=100.0, enabled=True):
+    def __init__(self, *, owner_id="target-owner", budget=100.0, enabled=True,
+                 transfer_enabled=False):
         self.owner_id = owner_id
         self.agent = Agent(
-            extra_seeds=("process_induction",), track_i=False,
-            policy_overrides={"ModelLearningPolicy": {"enabled": float(enabled)}},
+            extra_seeds=("process_induction", "target_learning"), track_i=False,
+            policy_overrides={"ModelLearningPolicy": {"enabled": float(enabled)},
+                              "TargetLearningPolicy": {"enabled": float(transfer_enabled)}},
             budget={"enabled": 1.0, "remaining": float(budget),
                     "refill_per_epoch": 0.0, "last_refill_epoch": 10.0},
             profile="p20-native-target-learner")
@@ -59,6 +61,33 @@ class NativeTargetLearner:
         self.s.add_edge(self.ag, "has_target_source_exposure", exposure, {})
         self.accounting.source_information_units += float(units)
         return exposure
+
+    def import_source_prior(self, *, prior_id: str, source_id: str,
+                            action_kind: str, object_type: str, feature_key: str,
+                            before_value, after_value, source_epoch=3, model_epoch=2,
+                            frame_epoch=5, map_evidence: dict,
+                            target_receipt: dict):
+        """Translate external verifier records; this method does not verify them."""
+        if not map_evidence or not target_receipt:
+            raise ValueError("source prior requires independent map and target receipts")
+        prior = self.s.add_node("TargetProcessPrior", {
+            "prior_id": prior_id, "source_id": source_id, "owner_id": self.owner_id,
+            "action_kind": action_kind, "object_type": object_type,
+            "feature_key": feature_key, "before_value": before_value,
+            "after_value": after_value, "source_epoch": int(source_epoch),
+            "model_epoch": int(model_epoch), "frame_epoch": int(frame_epoch),
+            "status": "candidate"})
+        frame_map = self.s.add_node("RepresentationMap", dict(map_evidence))
+        map_receipt = self.s.add_node("TargetSourcePriorReceipt", {
+            "receipt_id": f"map:{prior_id}", "receipt_kind": "source_target_map",
+            "map_id": map_evidence.get("map_id"), "status": map_evidence.get("status")})
+        effect_receipt = self.s.add_node("TargetSourcePriorReceipt", {
+            **target_receipt, "receipt_kind": "target_prior_effect"})
+        self.s.add_edge(self.ag, "has_target_source_prior", prior, {})
+        self.s.add_edge(prior, "has_source_target_map", frame_map, {})
+        self.s.add_edge(prior, "has_source_prior_receipt", map_receipt, {})
+        self.s.add_edge(prior, "has_source_prior_receipt", effect_receipt, {})
+        return prior
 
     def observe_opportunity(self, *, event_id: str, owner_id: str | None = None,
                             episode_id: str | None = None, action_kind: str | None = None,

@@ -1079,6 +1079,42 @@ def test_p20_native_causal_chain():
     agent.close()
 
 
+def test_p20_mapped_source_prior_requires_target_receipt():
+    agent = boot_cognition_on()
+    for node_type in ("ModelLearningPolicy", "TargetLearningPolicy"):
+        for policy in _nodes(agent, node_type):
+            agent.s.set_attr(policy, "enabled", 1.0)
+    prior = agent.s.add_node("TargetProcessPrior", {
+        "prior_id": "profile-prior", "source_id": "profile-source", "owner_id": "p20-owner",
+        "action_kind": "warm", "object_type": "Widget", "feature_key": "temperature",
+        "before_value": "cold", "after_value": "warm", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5, "status": "candidate"})
+    frame_map = agent.s.add_node("RepresentationMap", {
+        "map_id": "profile-map", "status": "verified",
+        "mapping_kind": "exact_categorical_effect", "target_frame_epoch": 5})
+    map_receipt = agent.s.add_node("TargetSourcePriorReceipt", {
+        "receipt_id": "profile-map-receipt", "receipt_kind": "source_target_map",
+        "map_id": "profile-map", "status": "verified"})
+    target_receipt = agent.s.add_node("TargetSourcePriorReceipt", {
+        "receipt_id": "profile-target-receipt", "receipt_kind": "target_prior_effect",
+        "source_prior_id": "profile-prior", "target_event_id": "p20-event-1",
+        "status": "verified", "exact_effect_match": True})
+    for edge, node in (("has_source_target_map", frame_map),
+                       ("has_source_prior_receipt", map_receipt),
+                       ("has_source_prior_receipt", target_receipt)):
+        agent.s.add_edge(prior, edge, node, {})
+    agent.s.add_edge(agent.agent, "has_target_source_prior", prior, {})
+    _p20_add_target_transition(agent, 1, "warm")
+    for _ in range(40):
+        if not agent.inner.run_rules(2000):
+            break
+    hypotheses = [agent.s.node(n)["attrs"] for n in agent.s.nodes("ProcessInductionHypothesis")]
+    assert len(hypotheses) == 1
+    assert hypotheses[0]["law_kind"] == "mapped_source_prior_confirmed"
+    assert hypotheses[0]["target_support_count"] == 1.0
+    agent.close()
+
+
 def test_p20_state_perturbation_changes_execution():
     warm_agent, warm = _p20_learned_profile("warm")
     hot_agent, hot = _p20_learned_profile("hot")
@@ -1094,6 +1130,8 @@ def test_p20_default_isolation():
                for n in _nodes(agent, "ModelLearningPolicy"))
     assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
                for n in _nodes(agent, "SocialProcessPolicy"))
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "TargetLearningPolicy"))
     agent.close()
 
 
