@@ -20,6 +20,7 @@
         "name": "open_process_search_policy",
         "enabled": 0.0,
         "max_attempts": 64.0,
+        "max_attempts_per_request": 256.0,
         "max_candidates": 16.0,
         "search_cost": 2.0,
         "max_depth": 4.0
@@ -132,6 +133,18 @@
       "edge_type": "extends_search_attempt",
       "tgt": {
         "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_search:has_candidate:OpenProcessSearchRequest:OpenProcessCandidate",
+      "src": {
+        "type": "OpenProcessSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "has_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
         "var": "tgt"
       }
     },
@@ -773,6 +786,16 @@
                 "key": "name"
               }
             },
+            "max_attempts": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "max_attempts_per_request"
+              }
+            },
             "source_epoch": {
               "__term__": {
                 "type": "Attr",
@@ -1123,6 +1146,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -2261,13 +2307,52 @@
             "b": {
               "type": "Argmin",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
+                "var_name": "eligible",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_open_process_candidate",
+                      "any_type": false
+                    },
+                    "var_name": "old",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "old"
+                        },
+                        "key": "expression_key"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "eligible"
+                        },
+                        "key": "expression_key"
+                      }
+                    }
+                  }
+                }
               },
               "var_name": "best",
               "value": {
@@ -2311,30 +2396,15 @@
                 "type": "Neighbours",
                 "node": {
                   "type": "Var",
-                  "name": "agent"
+                  "name": "request"
                 },
-                "edge_type": "has_open_process_candidate",
+                "edge_type": "has_candidate",
                 "any_type": false
               },
               "var_name": "old",
               "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "old"
-                  },
-                  "key": "expression_key"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "attempt"
-                  },
-                  "key": "expression_key"
-                }
+                "type": "Lit",
+                "value": true
               }
             }
           }
@@ -2491,6 +2561,13 @@
         ],
         [
           "add_edge",
+          "request",
+          "has_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
           "candidate",
           "derived_from_attempt",
           "attempt",
@@ -2623,6 +2700,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -3699,6 +3799,29 @@
             }
           },
           {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
             "type": "Not",
             "arg": {
               "type": "Exists",
@@ -4544,13 +4667,52 @@
             "b": {
               "type": "Argmin",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
+                "var_name": "eligible",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_open_process_candidate",
+                      "any_type": false
+                    },
+                    "var_name": "old",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "old"
+                        },
+                        "key": "expression_key"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "eligible"
+                        },
+                        "key": "expression_key"
+                      }
+                    }
+                  }
+                }
               },
               "var_name": "best",
               "value": {
@@ -4594,30 +4756,15 @@
                 "type": "Neighbours",
                 "node": {
                   "type": "Var",
-                  "name": "agent"
+                  "name": "request"
                 },
-                "edge_type": "has_open_process_candidate",
+                "edge_type": "has_candidate",
                 "any_type": false
               },
               "var_name": "old",
               "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "old"
-                  },
-                  "key": "expression_key"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "attempt"
-                  },
-                  "key": "expression_key"
-                }
+                "type": "Lit",
+                "value": true
               }
             }
           }
@@ -4774,6 +4921,13 @@
         ],
         [
           "add_edge",
+          "request",
+          "has_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
           "candidate",
           "derived_from_attempt",
           "attempt",
@@ -4886,6 +5040,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -5866,13 +6043,52 @@
             "b": {
               "type": "Argmin",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
+                "var_name": "eligible",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_open_process_candidate",
+                      "any_type": false
+                    },
+                    "var_name": "old",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "old"
+                        },
+                        "key": "expression_key"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "eligible"
+                        },
+                        "key": "expression_key"
+                      }
+                    }
+                  }
+                }
               },
               "var_name": "best",
               "value": {
@@ -5916,30 +6132,15 @@
                 "type": "Neighbours",
                 "node": {
                   "type": "Var",
-                  "name": "agent"
+                  "name": "request"
                 },
-                "edge_type": "has_open_process_candidate",
+                "edge_type": "has_candidate",
                 "any_type": false
               },
               "var_name": "old",
               "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "old"
-                  },
-                  "key": "expression_key"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "attempt"
-                  },
-                  "key": "expression_key"
-                }
+                "type": "Lit",
+                "value": true
               }
             }
           }
@@ -6096,6 +6297,13 @@
         ],
         [
           "add_edge",
+          "request",
+          "has_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
           "candidate",
           "derived_from_attempt",
           "attempt",
@@ -6208,6 +6416,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -7287,13 +7518,52 @@
             "b": {
               "type": "Argmin",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
+                "var_name": "eligible",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_open_process_candidate",
+                      "any_type": false
+                    },
+                    "var_name": "old",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "old"
+                        },
+                        "key": "expression_key"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "eligible"
+                        },
+                        "key": "expression_key"
+                      }
+                    }
+                  }
+                }
               },
               "var_name": "best",
               "value": {
@@ -7337,30 +7607,15 @@
                 "type": "Neighbours",
                 "node": {
                   "type": "Var",
-                  "name": "agent"
+                  "name": "request"
                 },
-                "edge_type": "has_open_process_candidate",
+                "edge_type": "has_candidate",
                 "any_type": false
               },
               "var_name": "old",
               "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "old"
-                  },
-                  "key": "expression_key"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "attempt"
-                  },
-                  "key": "expression_key"
-                }
+                "type": "Lit",
+                "value": true
               }
             }
           }
@@ -7512,6 +7767,13 @@
           "add_edge",
           "agent",
           "has_open_process_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_candidate",
           "candidate",
           {}
         ],
@@ -7669,6 +7931,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -8825,6 +9110,29 @@
             }
           },
           {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
             "type": "Not",
             "arg": {
               "type": "Eq",
@@ -9971,6 +10279,29 @@
             }
           },
           {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
             "type": "Not",
             "arg": {
               "type": "Exists",
@@ -10823,6 +11154,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -11870,6 +12224,29 @@
               "node": {
                 "type": "Var",
                 "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
               },
               "key": "max_attempts"
             }
@@ -13048,13 +13425,52 @@
             "b": {
               "type": "Argmin",
               "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+                "type": "Filter",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
+                "var_name": "eligible",
+                "predicate": {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_open_process_candidate",
+                      "any_type": false
+                    },
+                    "var_name": "old",
+                    "predicate": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "old"
+                        },
+                        "key": "expression_key"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "eligible"
+                        },
+                        "key": "expression_key"
+                      }
+                    }
+                  }
+                }
               },
               "var_name": "best",
               "value": {
@@ -13098,30 +13514,15 @@
                 "type": "Neighbours",
                 "node": {
                   "type": "Var",
-                  "name": "agent"
+                  "name": "request"
                 },
-                "edge_type": "has_open_process_candidate",
+                "edge_type": "has_candidate",
                 "any_type": false
               },
               "var_name": "old",
               "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "old"
-                  },
-                  "key": "expression_key"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "attempt"
-                  },
-                  "key": "expression_key"
-                }
+                "type": "Lit",
+                "value": true
               }
             }
           }
@@ -13273,6 +13674,13 @@
           "add_edge",
           "agent",
           "has_open_process_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_candidate",
           "candidate",
           {}
         ],

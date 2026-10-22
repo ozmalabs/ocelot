@@ -11,7 +11,7 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (  # noqa: E402
-    A, And, Append, Argmin, Count, Eq, Exists, Gt, IfThenElse, In, L, Lt, N, Not, OFFLINE_AREA,
+    A, And, Append, Argmin, Count, Eq, Exists, Filter, Gt, IfThenElse, In, L, Lt, N, Not, OFFLINE_AREA,
     ONLINE_AREA, PApply, PCompose, PFingerprint, PInverse, PPower, Plus, T, Times,
     StringConcat, V, Vec, is_none, not_none, policy_on, productions, rule,
 )
@@ -33,6 +33,12 @@ def _task_identity():
 def _known_failed_subgoal(task, domain, subgoal):
     known = A(task, "known_failed_subgoals")
     return IfThenElse(is_none(known), L(False), In(subgoal, known))
+
+
+def _unminted_attempts():
+    return Filter(N("request", "has_search_attempt"), "eligible",
+        Not(Exists(N("agent", "has_open_process_candidate"), "old",
+            Eq(A("old", "expression_key"), A("eligible", "expression_key")))))
 
 
 def _link_failure_evidence_rule():
@@ -120,6 +126,7 @@ def _expression_rule(operator, order, *, reverse=False):
         And(policy_on(), Eq(A("request", "status"), L("funded")),
             Eq(A("task", "status"), L("stuck")), pair_guard,
             Lt(Count(N("agent", "has_open_process_search_attempt")), A("pol", "max_attempts")),
+            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), expr_key)))),
         [["add_node", "attempt", "OpenProcessSearchAttempt", {
@@ -156,11 +163,10 @@ def _expression_rule(operator, order, *, reverse=False):
             Eq(A("attempt", "source_epoch"), A("d", "source_epoch")),
             Eq(A("attempt", "model_epoch"), A("d", "model_epoch")),
             Eq(A("attempt", "frame_epoch"), A("d", "frame_epoch")),
-            Eq(V("attempt"), Argmin(N("request", "has_search_attempt"),
+            Eq(V("attempt"), Argmin(_unminted_attempts(),
                                     "best", A("best", "rank_score"))),
             Lt(Count(N("agent", "has_open_process_candidate")), A("pol", "max_candidates")),
-            Not(Exists(N("agent", "has_open_process_candidate"), "old",
-                       Eq(A("old", "expression_key"), A("attempt", "expression_key"))))),
+            Not(Exists(N("request", "has_candidate"), "old", L(True)))),
         [["add_node", "candidate", "OpenProcessCandidate", {
             "expression_key": T(A("attempt", "expression_key")),
             "expression_digest": T(A("attempt", "expression_digest")),
@@ -178,6 +184,7 @@ def _expression_rule(operator, order, *, reverse=False):
             "verification": "native_process_apply_on_observed_source_state",
             "approval_required": 1.0, "status": "unapproved_candidate"}],
          ["add_edge", "agent", "has_open_process_candidate", "candidate", {}],
+         ["add_edge", "request", "has_candidate", "candidate", {}],
          ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]],
         batch=False)
     return [attempt] if reverse else [attempt, mint]
@@ -223,6 +230,7 @@ def _recursive_compose_rule(*, reverse=False):
             Lt(A("prior", "depth"), A("pol", "max_depth")),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
+            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
             Not(Eq(V("prior"), V("a"))),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
@@ -279,6 +287,7 @@ def _recursive_unary_rule(operator, power=None):
             Lt(A("prior", "depth"), A("pol", "max_depth")),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
+            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
         [["add_node", "attempt", "OpenProcessSearchAttempt", {
@@ -316,12 +325,11 @@ def _mint_recursive_unary_rule():
             Eq(A("attempt", "source_epoch"), A("d", "source_epoch")),
             Eq(A("attempt", "model_epoch"), A("d", "model_epoch")),
             Eq(A("attempt", "frame_epoch"), A("d", "frame_epoch")),
-            Eq(V("attempt"), Argmin(N("request", "has_search_attempt"),
+            Eq(V("attempt"), Argmin(_unminted_attempts(),
                                     "best", A("best", "rank_score"))),
             Lt(Count(N("agent", "has_open_process_candidate")),
                A("pol", "max_candidates")),
-            Not(Exists(N("agent", "has_open_process_candidate"), "old",
-                       Eq(A("old", "expression_key"), A("attempt", "expression_key"))))),
+            Not(Exists(N("request", "has_candidate"), "old", L(True)))),
         [["add_node", "candidate", "OpenProcessCandidate", {
             "expression_key": T(A("attempt", "expression_key")),
             "expression_digest": T(A("attempt", "expression_digest")),
@@ -339,6 +347,7 @@ def _mint_recursive_unary_rule():
             "verification": "native_process_apply_on_observed_source_state",
             "approval_required": 1.0, "status": "unapproved_candidate"}],
          ["add_edge", "agent", "has_open_process_candidate", "candidate", {}],
+         ["add_edge", "request", "has_candidate", "candidate", {}],
          ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]], batch=False)
 
 
@@ -352,6 +361,7 @@ def build():
         ("OpenProcessSearchAttempt", "about_task", "SolveTask"),
         ("OpenProcessSearchAttempt", "uses_parent_process", "ProcessSchema"),
         ("OpenProcessSearchAttempt", "extends_search_attempt", "OpenProcessSearchAttempt"),
+        ("OpenProcessSearchRequest", "has_candidate", "OpenProcessCandidate"),
         ("Agent", "has_discovered_strategy", "DiscoveredStrategy"),
         ("DiscoveredStrategy", "has_strategy_failure_constraint", "StrategyFailureConstraint"),
         ("SolveTask", "has_relevant_strategy_failure", "StrategyFailureConstraint"),
@@ -374,6 +384,7 @@ def build():
                        Eq(A("old", "task_key"), _task_identity())))),
         [["add_node", "request", "OpenProcessSearchRequest", {
             "task_key": T(_task_identity()), "domain": T(A("d", "name")),
+            "max_attempts": T(A("pol", "max_attempts_per_request")),
             "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "status": "awaiting_budget"}],
@@ -411,7 +422,8 @@ def build():
             "description": "Enumerate typed process expressions from residual task effects and held process evidence."},
         "nodes": [{"local_id": 0, "type": "OpenProcessSearchPolicy", "attrs": {
             "name": "open_process_search_policy", "enabled": 0.0,
-            "max_attempts": 64.0, "max_candidates": 16.0,
+            "max_attempts": 64.0, "max_attempts_per_request": 256.0,
+            "max_candidates": 16.0,
             "search_cost": 2.0, "max_depth": 4.0}}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_open_process_search_policy",
             "tgt": {"local": 0}, "attrs": {}}],

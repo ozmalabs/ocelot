@@ -228,3 +228,23 @@ def test_proposal_budget_includes_failures():
         if agent.attrs(n).get("requester_kind") == "open_process_search"]
     assert len(budget_requests) == 1
     assert agent.attrs(budget_requests[0])["status"] == "approved"
+
+
+def test_each_search_request_obeys_its_own_attempt_ceiling():
+    agent, _ = _agent(attempts=1000,
+        held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(policy, "max_attempts_per_request", 3.0)
+    for key, goal in (("trial-a", [2, 0, 1, 3]), ("trial-b", [0, 2, 1, 3])):
+        task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
+                                    training_trial_key=key)
+        agent.s.set_attr(task, "split", "training")
+        agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    requests = agent.nodes("OpenProcessSearchRequest")
+    assert len(requests) == 2
+    assert all(agent.attrs(request)["max_attempts"] == 3.0 for request in requests)
+    assert all(len(agent.native.neighbours(request, "has_search_attempt")) <= 3
+               for request in requests)
+    assert all(len(agent.native.neighbours(request, "has_candidate")) <= 1
+               for request in requests)
