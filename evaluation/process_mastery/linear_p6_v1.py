@@ -74,8 +74,7 @@ def _provenance() -> dict[str, Any]:
 
 
 def _loopover(seed: int, *, split: str) -> list[dict[str, Any]]:
-    world_seed = seed if seed < 1_000_000 else seed - 1_000_000
-    start = gen.loopover_scramble(2, world_seed, length=8)
+    start = gen.loopover_scramble(2, seed, length=8)
     records = []
     for track_i in (False, True):
         profile = "track-i" if track_i else "baseline"
@@ -104,9 +103,9 @@ def _loopover(seed: int, *, split: str) -> list[dict[str, Any]]:
     return records
 
 
-def _unsupported(family: str, seed: int, profile: str, reason: str,
-                 hidden: Any = None, *, split: str) -> dict[str, Any]:
-    record = Agent.trial_record("UNSUPPORTED", family=family, seed=seed,
+def _not_run(family: str, seed: int, profile: str, reason: str,
+             hidden: Any = None, *, split: str) -> dict[str, Any]:
+    record = Agent.trial_record("NOT_RUN", family=family, seed=seed,
                                 split=split, profile=profile, reason=reason)
     if hidden is not None:
         record["scorer_hidden_sha256"] = _hash(json.dumps(
@@ -118,18 +117,18 @@ def _family_rows(family: str, seed: int, *, split: str) -> list[dict[str, Any]]:
     if family == "loopover":
         return _loopover(seed, split=split)
     if family == "d4":
-        task = gen.d4_task(seed - (1_000_200 if seed >= 1_000_000 else 200))
+        task = gen.d4_task(seed)
         # The task world is constructed, but neither PMB arm has a grounded
         # D4 action adapter. Only a digest of the hidden transform is retained.
-        return [_unsupported("c", seed, profile,
-                            "no registered D4 action/effect adapter",
-                            task["transform"], split=split)
+        return [_not_run("c", seed, profile,
+                         "no registered D4 action/effect adapter",
+                         task["transform"], split=split)
                 for profile in ("baseline", "track-i")]
     if family == "mechanism":
-        task = gen.blicket_task(seed - (1_000_400 if seed >= 1_000_000 else 400))
-        return [_unsupported("b", seed, profile,
-                            "no registered intervention/observation adapter",
-                            task["truth"], split=split)
+        task = gen.blicket_task(seed)
+        return [_not_run("b", seed, profile,
+                         "no registered intervention/observation adapter",
+                         task["truth"], split=split)
                 for profile in ("baseline", "track-i")]
     raise ValueError(f"unknown family: {family}")
 
@@ -203,8 +202,8 @@ def run(*, split: str, n: int | None = None, self_check: bool = False) -> dict[s
     records: list[dict[str, Any]] = []
     if self_check:
         records.extend(_family_rows("loopover", 0, split="development"))
-        records.extend(_family_rows("d4", 1_000_200, split="development"))
-        records.extend(_family_rows("mechanism", 1_000_400, split="development"))
+        records.extend(_family_rows("d4", 200, split="development"))
+        records.extend(_family_rows("mechanism", 400, split="development"))
         validation = program_adapter.load_task(554, split="validation")
         if "unsupported_reason" not in validation["task"]:
             records.extend(_program_rows(split="validation", ids=[554]))

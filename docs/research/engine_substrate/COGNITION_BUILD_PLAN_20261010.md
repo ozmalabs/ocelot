@@ -69,9 +69,11 @@ All task `Verify cmd` entries below use the repository `.venv/bin/python`. They 
 
 **Entry:** P4/P5 reported results and partial foundation commit `53da7321`. **Status:** implementation and cognition-on integration are complete; preregistration/results remain. TransitionHypothesis execution and physical receipt-backed outcome observation remain explicitly unsupported, so no broad capability claim is authorized.
 
-Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views until their effect evaluation is supported. Baseline must omit Track I policies; the current `Agent` constructor does not. Keep the greedy solver as an explicitly named hand-written comparator.
+Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views until their effect evaluation is supported. The PMB baseline profile omits Track I seeds and policies; retain the greedy solver as an explicitly named hand-written comparator.
 
 **Registered evidence:** 200 paired tasks each for Loopover, D4 and finite mechanism worlds, 100 malformed/stale/view controls. Report baseline measurements even when weak; do not require a nonzero baseline. View conformance and pure evaluator equivalence must be 100% for declared supported inputs, with zero live mutation. A family with no executable baseline is NOT_RUN and blocks its comparative claim, not unrelated conformance.
+
+**P6.01–P6.05 implementation record (2026-10-22):** Commits `dcd897dd`, `39af9284`, `d473ad9d`, `68c81494` and `d6271e00` froze the contract, added explicit arms, implemented bounded Program views, retained unsupported opaque models, and bound views to owners/epochs with collision-safe probe deduplication. Focused process-view and Track-I tests pass. Current native support remains Program, supported DimensionGenerator effects, and explicitly opaque/unsupported TransitionHypothesis, CapabilityProgram, EmbodiedMotorProgram and FamilyProgram effects. P6.02's strengthened action test now observes native ProcessSchema selection/apply in Loopover; it does not establish an external sink receipt. The 42-test E1 bundle passed after profile integration.
 
 ### P6.01 — Freeze the committed foundation gap and PMB arm contracts
 
