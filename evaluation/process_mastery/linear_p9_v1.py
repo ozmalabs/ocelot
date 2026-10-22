@@ -126,6 +126,7 @@ def exact_trial(seed: int, arm: str):
         "status": "COMPLETED", "external_outcome": {"pass": bool(verified)},
         "target_in_agent_input": False, "target_node_count": 0,
         "invented_count": len(candidates), "verified_exact_count": len(verified),
+        "verification_failures": len(exact) - len(verified),
         "budget_remaining": budget_left, "actions": 0, "interactions": 0,
         "compute": {"seconds": round(time.perf_counter() - started, 6),
                     "graph_nodes": len(agent.s.nodes()),

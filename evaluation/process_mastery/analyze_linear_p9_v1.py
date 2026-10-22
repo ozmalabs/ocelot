@@ -36,6 +36,16 @@ def analyze(payload):
              for arm in ("operators_on", "operators_off", "held_only")}
     gain = (exact["operators_on"] - exact["operators_off"]
             if exact["operators_on"] is not None and exact["operators_off"] is not None else None)
+    by_seed = defaultdict(dict)
+    for row in records:
+        if row.get("family") == "novel_exact_effects":
+            by_seed[row["seed"]][row["profile"]] = bool(row.get("external_outcome", {}).get("pass"))
+    pairs = [arms for arms in by_seed.values()
+             if "operators_on" in arms and "operators_off" in arms]
+    on_wins = sum(arms["operators_on"] and not arms["operators_off"] for arms in pairs)
+    off_wins = sum(arms["operators_off"] and not arms["operators_on"] for arms in pairs)
+    verification_failures = sum(row.get("verification_failures", 0) for row in records
+                                if row.get("family") == "novel_exact_effects")
     return {
         "schema": "pmb-linear-p9-analysis-v1",
         "phase": payload.get("metadata", {}).get("phase"),
@@ -43,6 +53,11 @@ def analyze(payload):
         "n_records": len(records), "families": metrics,
         "primary": {"exact_verified_coverage": exact,
                     "operators_on_minus_off_pp": 100.0 * gain if gain is not None else None,
+                    "paired_exact": {"n": len(pairs), "on_only_wins": on_wins,
+                                     "off_only_wins": off_wins,
+                                     "net_percentage_points": (100.0 * (on_wins - off_wins) / len(pairs)
+                                                                if pairs else None)},
+                    "verification_failures": verification_failures,
                     "zero_answer_leaks": all(v["input_answer_leaks"] == 0
                                               for v in metrics.values())},
     }
@@ -56,9 +71,9 @@ def main():
     if args.self_check:
         sample = {"schema": "pmb-scorecard-v1", "metadata": {"phase": "linear-p9-v1"},
                   "records": [{"family": "novel_exact_effects", "profile": "operators_on",
-                               "status": "COMPLETED", "external_outcome": {"pass": True}},
+                               "seed": 1, "status": "COMPLETED", "external_outcome": {"pass": True}},
                               {"family": "novel_exact_effects", "profile": "operators_off",
-                               "status": "COMPLETED", "external_outcome": {"pass": False}}]}
+                               "seed": 1, "status": "COMPLETED", "external_outcome": {"pass": False}}]}
         result = analyze(sample)
         assert result["primary"]["operators_on_minus_off_pp"] == 100.0
         print("linear_p9 analyzer self-check: PASS")
