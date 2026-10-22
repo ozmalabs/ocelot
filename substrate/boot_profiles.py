@@ -853,6 +853,8 @@ COGNITION_ON_SEEDS = (
     "imitation",
     "social_process",
     "process_explanation",
+    # P20 incidental sequence candidates are evidence-only and policy-off.
+    "observed_sequence_learning",
 )
 
 

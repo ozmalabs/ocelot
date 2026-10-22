@@ -1115,6 +1115,46 @@ def test_p20_mapped_source_prior_requires_target_receipt():
     agent.close()
 
 
+def test_p20_observed_sequence_candidate_from_incidental_actions():
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "ObservedSequenceLearningPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    episode = agent.s.add_node("SocialEpisode", {
+        "episode_id": "p20-incidental-sequence", "status": "observed",
+        "source_kind": "witnessed_interaction", "observation_status": "complete",
+        "owner_id": "agent-root", "actor_id": "peer", "source_epoch": 4,
+        "model_epoch": 7, "frame_epoch": 9,
+        "action_sequence": ["seq", ["request", "repair"]]})
+    agent.s.add_edge(agent.agent, "has_social_episode", episode, {})
+    first, second = [], []
+    for name in ("request", "repair"):
+        process = agent.s.add_node("ProcessSchema", {
+            "name": f"p20-primitive-{name}", "operator": name,
+            "params": ["seq", ["add", [1]]], "status": "active",
+            "model_epoch": 7, "source_epoch": 4, "frame_epoch": 9})
+        agent.s.add_edge(agent.agent, "has_process_schema", process, {})
+        (first if name == "request" else second).append(process)
+    request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "observed_sequence_learning",
+        "episode_id": "p20-incidental-sequence", "source_epoch": 4,
+        "status": "approved", "debited_epoch": 10.0, "cost": 1.0})
+    agent.s.add_edge(agent.agent, "has_thinking_budget_request", request, {})
+    budget = agent.inner.neighbours(agent.agent, "has_thinking_budget")[0]
+    agent.s.add_edge(request, "draws_on_thinking_budget", budget, {})
+    for _ in range(20):
+        if not agent.inner.run_rules(2000):
+            break
+    candidates = _nodes(agent, "ObservedProcessSequenceCandidate")
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert agent.s.node(candidate)["attrs"]["action_sequence"] == ["seq", ["request", "repair"]]
+    assert agent.s.node(candidate)["attrs"]["status"] == "unverified_candidate"
+    assert agent.inner.neighbours(candidate, "uses_first_primitive") == first
+    assert agent.inner.neighbours(candidate, "uses_second_primitive") == second
+    assert not agent.s.nodes("OwnTrialReceipt")
+    agent.close()
+
+
 def test_p20_state_perturbation_changes_execution():
     warm_agent, warm = _p20_learned_profile("warm")
     hot_agent, hot = _p20_learned_profile("hot")
@@ -1132,7 +1172,21 @@ def test_p20_default_isolation():
                for n in _nodes(agent, "SocialProcessPolicy"))
     assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
                for n in _nodes(agent, "TargetLearningPolicy"))
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "ObservedSequenceLearningPolicy"))
+    p20_seeds = {"target_learning", "observed_sequence_learning"}
+    p20_rules = {item["name"] for sid in p20_seeds
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default, conversation = WorldAdapter(), WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p20_seeds.isdisjoint(installed_seeds(default.s))
+    assert p20_seeds.isdisjoint(installed_seeds(conversation.s))
+    assert p20_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p20_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
     agent.close()
+    default.close()
+    conversation.close()
 
 
 def test_p20_shared_budget():
