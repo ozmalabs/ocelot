@@ -269,4 +269,4 @@ The P22 checkpoint now binds a read-only cumulative graph-resource snapshot cont
 
 P22.01's arm contract was reconciled with P22.03 to specify unchanged, adaptive-only, invention-only and full conditions. The conditions separate curriculum, invention and their interaction, but no working four-arm learner adapter currently exists. P22.E2 remains open.
 
-Native arm-policy wiring now configures those four conditions on fresh cognition-on graphs with one shared budget at a common capacity. Five tests verify switch patterns and budget validation. The wiring test does not show that each arm executes the same training worlds or learns; those comparators remain open.
+Native arm-policy wiring now configures those four conditions on fresh cognition-on graphs with one shared budget at a common capacity while preserving the active ancestor process portfolio. Five tests verify switch patterns, portfolio preservation and budget validation. The wiring test does not show that each arm executes the same training worlds or learns; those comparators remain open.

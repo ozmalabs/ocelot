@@ -14,6 +14,11 @@ def test_p22_arm_switches_one_native_policy_closure_and_shared_budget(
         arm, curriculum, invention):
     agent = boot_cognition_on()
     try:
+        ancestor_portfolio_before = sorted(
+            (str(node), agent.s.node(node)["attrs"].get("source_digest"),
+             tuple(agent.s.node(node)["attrs"].get("params", ())))
+            for node in agent.s.nodes("ProcessSchema")
+            if agent.s.node(node)["attrs"].get("status") == "active")
         configured = configure_p22_arm(agent, arm, budget_capacity=32.0)
         assert configured["arm"] == arm
         assert configured["shared_budget_count"] == 1
@@ -28,6 +33,12 @@ def test_p22_arm_switches_one_native_policy_closure_and_shared_budget(
         assert {kind: state["enabled"]
                 for kind, state in configured["policy_state"].items()} == expected
         assert len(agent.inner.neighbours(agent.agent, "has_thinking_budget")) == 1
+        ancestor_portfolio_after = sorted(
+            (str(node), agent.s.node(node)["attrs"].get("source_digest"),
+             tuple(agent.s.node(node)["attrs"].get("params", ())))
+            for node in agent.s.nodes("ProcessSchema")
+            if agent.s.node(node)["attrs"].get("status") == "active")
+        assert ancestor_portfolio_after == ancestor_portfolio_before
     finally:
         agent.close()
 
