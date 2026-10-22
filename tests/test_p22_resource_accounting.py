@@ -55,7 +55,8 @@ def test_resource_snapshot_counts_training_exposure_and_native_work():
         evidence = agent.s.add_node("ProcessCurriculumEvidence", {"split": "training"})
         heldout = agent.s.add_node("ProcessCurriculumEvidence", {"split": "heldout"})
         outcome = agent.s.add_node("ProcessCurriculumOutcome", {"split": "training"})
-        task = agent.s.add_node("SolveTask", {"steps": 3, "moves": 5.5})
+        task = agent.s.add_node("SolveTask", {
+            "split": "training", "steps": 3, "moves": 5.5})
         attempt = agent.s.add_node("OpenProcessSearchAttempt", {"work_cost": 4.0})
         approved = agent.s.add_node("ThinkingBudgetRequest", {
             "status": "approved", "cost": 2.0})
@@ -65,6 +66,7 @@ def test_resource_snapshot_counts_training_exposure_and_native_work():
         resources = snapshot["cumulative_resources"]
         assert resources["training_evidence_exposures"] == 1
         assert resources["training_outcomes"] == 1
+        assert resources["training_task_exposures"] == 1
         assert resources["native_solver_steps"] == 3.0
         assert resources["native_solver_primitive_work"] == 5.5
         assert resources["search_declared_primitive_work"] == 4.0

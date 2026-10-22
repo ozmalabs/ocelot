@@ -546,7 +546,7 @@
       "order": 90,
       "latency_class": "background",
       "batch": false,
-      "comment": "Retain native solver outcomes in curriculum-enabled arms whose invention/search policy is disabled.",
+      "comment": "Retain native solver completions in all curriculum arms and record stuck outcomes when P19 search is disabled.",
       "match": [
         [
           "agent",
@@ -1756,6 +1756,56 @@
               "type": "Attr",
               "node": {
                 "type": "Var",
+                "name": "source_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposal_recorded"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "trial_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "funded"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "trial_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposal_recorded"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
                 "name": "source_task"
               },
               "key": "split"
@@ -1849,6 +1899,26 @@
             "b": {
               "type": "Lit",
               "value": "awaiting_native_qualification"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "edge_type": "has_native_qualification",
+                "any_type": false
+              },
+              "var_name": "prior_qualification",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
             }
           }
         ]

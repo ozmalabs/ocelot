@@ -88,6 +88,8 @@ def snapshot_native_resources(agent) -> dict:
                 cumulative["budget_denied_cost"] += _finite_nonnegative(
                     attrs, "cost", kind=kind, node_id=node_id)
         if kind == "SolveTask":
+            if attrs.get("split") == "training":
+                cumulative["training_task_exposures"] += 1
             cumulative["native_solver_steps"] += _finite_nonnegative(
                 attrs, "steps", kind=kind, node_id=node_id)
             cumulative["native_solver_primitive_work"] += _finite_nonnegative(
@@ -131,7 +133,8 @@ def compare_resource_snapshots(snapshots: dict[str, dict]) -> dict:
                 "candidate_approval_events", "world_receipts", "solve_tasks",
                 "curriculum_tasks", "budget_denials")
     cumulative_dimensions = (
-        "training_evidence_exposures", "training_outcomes", "budget_requested",
+        "training_evidence_exposures", "training_task_exposures",
+        "training_outcomes", "budget_requested",
         "budget_approved", "budget_denied_cost", "native_solver_steps",
         "native_solver_primitive_work", "search_declared_primitive_work")
     vectors = {}

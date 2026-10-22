@@ -88,6 +88,9 @@ def test_qualification_from_native_trials():
     assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
     supporting_attempts = agent.native.neighbours(qualification[0], "counts_native_trial")
     assert len(supporting_attempts) == 2
+    assert len({agent.native.neighbours(attempt, "about_task")[0]
+                for attempt in supporting_attempts}) == 2
+    assert len(agent.native.neighbours(proposal, "has_native_qualification")) == 1
     supporting_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
         if any(attempt in agent.native.neighbours(request, "has_search_attempt")
                for attempt in supporting_attempts)]

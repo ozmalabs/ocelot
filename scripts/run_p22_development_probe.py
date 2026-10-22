@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+"""Run a non-actionable P22 training proposal probe on v2 validation worlds."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from evaluation.process_mastery.p22_development import run_p22_training_proposal_probe
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--family", choices=("d4", "loopover"), required=True)
+    parser.add_argument("--training-draws", type=int, nargs=2, required=True)
+    parser.add_argument("--validation-start", type=int, required=True)
+    parser.add_argument("--validation-count", type=int, default=200)
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    if args.validation_count <= 0 or args.validation_start < 0 \
+            or args.validation_start + args.validation_count > 1000:
+        parser.error("validation draw range must be a nonempty slice of [0, 1000)")
+    result = run_p22_training_proposal_probe(
+        family=args.family,
+        training_draws=tuple(args.training_draws),
+        validation_draws=tuple(range(args.validation_start,
+                                     args.validation_start + args.validation_count)))
+    encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    if args.output:
+        args.output.write_text(encoded, encoding="utf-8")
+    else:
+        sys.stdout.write(encoded)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
