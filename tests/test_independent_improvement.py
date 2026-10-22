@@ -262,6 +262,10 @@ def test_three_generation_family_sized_development_lineages():
         assert [checkpoint.generation for checkpoint in checkpoints] == [0, 1, 2, 3]
         assert all(checkpoints[i].parent_digest == checkpoints[i - 1].checkpoint_digest
                    for i in range(1, len(checkpoints)))
+        assert checkpoints[0].cumulative_primitive_work == checkpoints[0].declared_primitive_work
+        assert all(checkpoints[i].cumulative_primitive_work ==
+                   checkpoints[i - 1].cumulative_primitive_work +
+                   checkpoints[i].declared_primitive_work for i in range(1, len(checkpoints)))
         adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=100)
         scored = adapter.compare(tuple(checkpoints), [world])
         assert scored["same_worlds"]

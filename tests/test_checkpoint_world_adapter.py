@@ -44,6 +44,22 @@ def test_all_arms_same_world_and_compute():
                for row in result["rows"])
 
 
+def test_efficiency_uses_cumulative_lineage_work_and_ceiling():
+    agent, adapter = _adapter()
+    full, ancestor = _checkpoints(agent, full_work=2, ancestor_work=2)
+    costly_full = CheckpointExpression("full-g3", "parent", "expr-full",
+        full.params, 2, generation=3, cumulative_primitive_work=9)
+    low_cost_ancestor = CheckpointExpression("ancestor-g3", "parent", "expr-ancestor",
+        ancestor.params, 2, generation=3, cumulative_primitive_work=6)
+    world = {"world_id": "same-world", "initial_state": [0, 1, 2, 3],
+             "goal_state": [1, 2, 0, 3]}
+    result = adapter.compare((low_cost_ancestor, costly_full), [world])
+    assert not result["efficiency_comparable"]
+    assert [outcome["status"] for outcome in result["rows"][0]["outcomes"]] == [
+        "scored", "work_denied"]
+    assert result["rows"][0]["outcomes"][1]["cumulative_primitive_work"] == 9
+
+
 def test_comparison_rejects_vacuous_panels_and_duplicate_checkpoint_ids():
     agent, adapter = _adapter()
     full, ancestor = _checkpoints(agent)
@@ -209,7 +225,7 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     tampered = CheckpointExpression(checkpoint.checkpoint_id, checkpoint.parent_digest,
         checkpoint.expression_digest, tuple(changed), checkpoint.declared_primitive_work,
         checkpoint.generation, checkpoint.checkpoint_digest, checkpoint.approval_id,
-        checkpoint.receipt_id)
+        checkpoint.receipt_id, checkpoint.cumulative_primitive_work)
     try:
         strict_adapter.score(tampered, **world)
     except ValueError as exc:
