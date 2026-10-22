@@ -736,7 +736,7 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 
 ## Phase 11 — Representation invention and cross-domain transfer
 
-**Entry:** Phase 10 lifted schemas and goal-directed invention; Phase 7 acquired qualia. **Status:** planned.
+**Entry:** Phase 10 lifted schemas and goal-directed invention; Phase 7 acquired qualia. **Status:** in progress; P11.01 semantic contract and acceptance passed.
 
 Use acquired distinctions and current observer/frame contracts to propose and test representations. P4 D5 proved candidate-work savings on two generated families, not general transfer; P4 C5 measured no resolution advantage. This phase tests new domain pairs and evidence-backed frame choice.
 
@@ -756,6 +756,8 @@ Use acquired distinctions and current observer/frame contracts to propose and te
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cognition_aperture_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** choosing the most flattering frame by suppressing residuals.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P11.01 semantic freeze (2026-10-22):** [`COGNITION_REPRESENTATION_SEARCH_CONTRACT.md`](COGNITION_REPRESENTATION_SEARCH_CONTRACT.md) freezes representation identity, full canonical package cost, training/held-out split boundaries, forced-frame preservation, bidirectional map verification and exact-conjugation requirements. Map/decoder/exception/residual costs cannot be omitted, and held-out data can reject adoption but cannot select a proposal. Verification: `tests/test_representation_search.py tests/test_cognition_aperture_migrated.py` — 13 passed.
 
 ### P11.02 — Search and verify alternative representations
 
