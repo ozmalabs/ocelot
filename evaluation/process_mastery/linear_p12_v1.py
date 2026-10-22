@@ -67,8 +67,12 @@ def _provenance():
         bundle.update(rel.encode() + b"\0" + (ROOT / rel).read_bytes() + b"\0")
     engine = hashlib.sha256()
     for rel in ("runners/dsl/Cargo.toml", "runners/dsl/Cargo.lock",
+                "runners/dsl/src/py.rs", "runners/dsl/src/substrate.rs",
+                "runners/dsl/src/graph.rs", "runners/dsl/src/checker.rs",
+                "runners/dsl/src/graph_rules.rs", "runners/dsl/src/prog_eval.rs",
                 "runners/dsl/src/process_algebra.rs", "runners/dsl/src/term.rs",
-                "runners/dsl/src/eval.rs", "runners/dsl/src/engine.rs"):
+                "runners/dsl/src/rule_json.rs", "runners/dsl/src/seed_manifest.rs",
+                "runners/dsl/src/grammar.rs", "runners/dsl/src/reflex_runtime.rs"):
         file = ROOT / rel
         if file.exists():
             engine.update(rel.encode() + b"\0" + file.read_bytes() + b"\0")
