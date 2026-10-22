@@ -135,6 +135,19 @@ def _agent_for(arm):
                          "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
 
 
+def _replay(agent, initial, trace, schemas):
+    state = list(initial)
+    for node in trace:
+        params = schemas[node].get("params")
+        state = agent.native.evaluate(
+            {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+             "state": {"type": "Var", "name": "state"}},
+            {"p": params, "state": state})
+        if state is None:
+            return None
+    return state
+
+
 def _run_task(family, seed, arm, split):
     started = time.perf_counter()
     task_data = _world(family, seed)
@@ -160,9 +173,11 @@ def _run_task(family, seed, arm, split):
     schemas = {n: agent.attrs(n) for n in agent.nodes("ProcessSchema")}
     trace = attrs.get("trace", [])
     trace_is_graph = all(n in schemas for n in trace)
+    replayed_state = _replay(agent, task_data["initial"], trace, schemas)
+    trace_replays = replayed_state == attrs.get("state")
     no_answer_fields = all(not any(key in row for key in ("solution", "scramble_path", "answer"))
                            for row in [attrs, *schemas.values()])
-    if not trace_is_graph or not no_answer_fields:
+    if not trace_is_graph or not trace_replays or not no_answer_fields:
         status = "FAILED"
     strategy_n = len(agent.nodes("DiscoveredStrategy"))
     record = agent.trial_record(
@@ -175,6 +190,7 @@ def _run_task(family, seed, arm, split):
         discovered_strategies=strategy_n,
         input_audit={"answer_fields_absent": no_answer_fields,
                      "trace_nodes_are_graph_schemas": trace_is_graph,
+                     "trace_replays_to_reported_state": trace_replays,
                      "task_has_initial_goal_only": True},
         observation={"state": attrs.get("state"), "status": attrs.get("status")},
         compute={"ticks": run["ticks"], "quiescent": run["quiescent"],

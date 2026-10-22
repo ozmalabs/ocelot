@@ -34,7 +34,8 @@ def analyze(payload):
                                   max(1, sum(row.get("outcome") == "solved" for row in completed))),
             "input_audit_failures": sum(
                 row.get("input_audit", {}).get("answer_fields_absent") is False or
-                row.get("input_audit", {}).get("trace_nodes_are_graph_schemas") is False
+                row.get("input_audit", {}).get("trace_nodes_are_graph_schemas") is False or
+                row.get("input_audit", {}).get("trace_replays_to_reported_state") is False
                 for row in group),
         }
     return {"schema": "pmb-linear-p10-analysis-v1",
@@ -44,7 +45,8 @@ def analyze(payload):
             "unsupported_rows": sum(row["status"] == "UNSUPPORTED" for row in rows),
             "leakage_or_trace_audit_failures": sum(
                 row.get("input_audit", {}).get("answer_fields_absent") is False or
-                row.get("input_audit", {}).get("trace_nodes_are_graph_schemas") is False
+                row.get("input_audit", {}).get("trace_nodes_are_graph_schemas") is False or
+                row.get("input_audit", {}).get("trace_replays_to_reported_state") is False
                 for row in rows)}
 
 
