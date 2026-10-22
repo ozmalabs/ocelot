@@ -157,6 +157,7 @@ def test_missing_opportunity_is_counted_without_inventing_a_transition():
     assert learner.accounting.missing_observations == 1
     assert learner.accounting.target_actions == 0
     assert learner.hypotheses() == []
+    assert learner.learning_records[0]["status"] == "not_observed"
 
 
 def _source_prior(learner, *, map_status="verified", target_event="target-transfer-1",
@@ -217,7 +218,7 @@ def test_fresh_learns_unseen_target_in_two_independent_native_worlds():
             receipt = (world.apply(object_id, action) if isinstance(world, ThermalWorld)
                        else world.operate(object_id, action))
             learner.observe_world_receipt(receipt)
-        learner.settle()
+            learner.settle()
         prediction = learner.predict(
             query_id=f"unseen:{world.family}", action_kind=action,
             object_type=kind, feature_key=feature, before_value=before,
@@ -225,6 +226,8 @@ def test_fresh_learns_unseen_target_in_two_independent_native_worlds():
         assert prediction["expected_after_value"] == after
         assert learner.accounting.target_actions == 2
         assert learner.accounting.visible_observations == 2
+        assert [row["hypothesis_count"] for row in learner.learning_records] == [0, 1]
+        assert all(row["status"] == "settled" for row in learner.learning_records)
 
 
 def test_world_receipt_replay_and_unauthorized_receipt_are_rejected():
@@ -361,8 +364,6 @@ def test_native_source_prior_transfers_through_map_and_fresh_target_receipt():
         assert effect_receipt["status"] == "verified"
 
         target_learner = NativeTargetLearner(transfer_enabled=True)
-        target_learner.expose_source(source_id="source-model", relation="matched",
-                                     units=float(len(source_receipts)))
         target_learner.import_source_prior(
             prior_id=prior_id, source_id="source-model", action_kind=target_action,
             object_type=target_type, feature_key=target_feature,
@@ -371,6 +372,11 @@ def test_native_source_prior_transfers_through_map_and_fresh_target_receipt():
             map_evidence=map_record, target_receipt=effect_receipt)
         target_learner.observe_world_receipt(target_validation_receipt)
         target_learner.settle()
+        assert target_learner.accounting.source_map_observations == 2
+        assert target_learner.accounting.source_information_units == 2.0
+        assert target_learner.accounting.target_map_interactions == 2
+        assert target_learner.accounting.target_actions == 3
+        assert target_learner.accounting.map_verification_queries == 4
         assert len(target_learner.hypotheses()) == 1
         prediction = target_learner.predict(
             query_id=f"transfer-unseen:{source_world.__class__.__name__}",

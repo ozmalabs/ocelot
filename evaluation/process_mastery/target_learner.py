@@ -30,6 +30,9 @@ class LearningAccounting:
     target_actions: int = 0
     source_information_units: float = 0.0
     native_rule_steps: int = 0
+    source_map_observations: int = 0
+    target_map_interactions: int = 0
+    map_verification_queries: int = 0
 
 
 class NativeTargetLearner:
@@ -50,6 +53,8 @@ class NativeTargetLearner:
         self.s._inner.load_seed_manifest(TARGET_EXPOSURE_MANIFEST, self.ag)
         self.accounting = LearningAccounting()
         self._ingested_world_receipts: set[str] = set()
+        self._pending_learning_records: list[dict] = []
+        self.learning_records: list[dict] = []
         for node in self.s.nodes("NetworkModeState"):
             self.s.set_attr(node, "epoch", 10.0)
 
@@ -72,6 +77,13 @@ class NativeTargetLearner:
         """Translate external verifier records; this method does not verify them."""
         if not map_evidence or not target_receipt:
             raise ValueError("source prior requires independent map and target receipts")
+        source_events = map_evidence.get("source_events", ())
+        target_events = map_evidence.get("target_events", ())
+        self.accounting.source_map_observations += len(source_events)
+        self.accounting.source_information_units += float(len(source_events))
+        self.accounting.target_map_interactions += len(target_events)
+        self.accounting.target_actions += len(target_events)
+        self.accounting.map_verification_queries += len(source_events) + len(target_events)
         prior = self.s.add_node("TargetProcessPrior", {
             "prior_id": prior_id, "source_id": source_id, "owner_id": self.owner_id,
             "action_kind": action_kind, "object_type": object_type,
@@ -101,6 +113,8 @@ class NativeTargetLearner:
         self.accounting.evidence_opportunities += 1
         if not visible:
             self.accounting.missing_observations += 1
+            self.learning_records.append({"event_id": event_id, "status": "not_observed",
+                                          "hypothesis_count": len(self.hypotheses())})
             return None
         if any(value is None for value in
                (action_kind, object_id, object_type, feature_key, before_value, after_value)):
@@ -123,6 +137,8 @@ class NativeTargetLearner:
         self.accounting.visible_observations += 1
         if action_occurred:
             self.accounting.target_actions += 1
+        self._pending_learning_records.append({"event_id": event_id,
+                                               "observation_status": "observed"})
         return observation
 
     def observe_world_receipt(self, receipt: WorldReceipt, *, source_epoch=3,
@@ -150,6 +166,15 @@ class NativeTargetLearner:
             steps += used
             if used == 0:
                 self.accounting.native_rule_steps += steps
+                hypotheses = self.hypotheses()
+                for record in self._pending_learning_records:
+                    self.learning_records.append({
+                        **record, "status": "settled",
+                        "hypothesis_count": len(hypotheses),
+                        "hypothesis_keys": [row.get("hypothesis_key") for row in hypotheses],
+                        "native_rule_steps": steps,
+                    })
+                self._pending_learning_records.clear()
                 return steps
         raise RuntimeError("native target learner exceeded rule-step bound")
 
