@@ -90,3 +90,16 @@ The existing scheduler has no resumable multi-stage cursor, atomic receipt
 protocol, interruption handoff, library compression stage, or strategy-yield
 store. These remain P13.02–P13.04 implementation requirements. Human comparison
 is unavailable unless a matched protocol is separately preregistered.
+
+### Decay adapter boundary
+
+The current `staleness_decay` and `demotion_hierarchy` rules are attached to
+`Retina` (`HeldDecayParams`/`HeldTierParams`, `HeldSurfaceCell` and
+`HierTrace`). They do not decay `Episode` or `SemanticSupport` records, so
+P13.02 cannot claim episodic decay by merely loading those seeds or replaying
+their retina rules. The sleep implementation must add an explicit
+graph-native, once-per-epoch decay adapter for memory records, preserve their
+source/provenance and disconfirming links, and test that decay changes only
+derived accessibility/freshness (never observed status or evidence content).
+If the adapter cannot preserve those invariants, the decay stage must abstain
+and the limitation must remain open rather than deleting or rewriting evidence.
