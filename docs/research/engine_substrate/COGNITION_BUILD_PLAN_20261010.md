@@ -2,7 +2,7 @@
 
 **Reconciled:** 2026-10-22 through P11.E3 heldout closeout; includes Track I foundation commit `53da7321`.
 
-This is the **sole execution order** for the cognition build and former Track I. Phases 0–5 are completed implementation/reporting cycles with the limits below. Continue with Phase 6, then execute Phases 7–15 in order. Former P6 and I0–I7 work is integrated here; there is no parallel Track I schedule. Original IDs are retained in the coverage table and task headings so existing code, tests and results remain traceable.
+This is the **sole execution order** for the cognition build and former Track I. Phases 0–5 are completed implementation/reporting cycles with the limits below. Phases 6–15 now also have completed reporting cycles with explicit failed/unestablished capabilities. Continue with Phase 16, then execute Phases 17–22 in order. Former P6 and I0–I7 work is integrated here; the post-P15 review adds behavioral/provenance closure phases, and there is no parallel Track I schedule. Original IDs are retained in the coverage table and task headings so existing code, tests and results remain traceable.
 
 The [archived overarching roadmap](COGNITION_BUILD_PLAN_20261010_ARCHIVE.md), [former Phase 6 plan](COGNITION_BUILD_P6_NEW_FACULTIES_PLAN.md) and [former Track I specification](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) are historical design references. Their ordering and completion assumptions are superseded here. P0–P5 detailed plans and all preregistrations/results remain historical evidence; do not rewrite a failed or invalidated result to fit this schedule.
 
@@ -38,7 +38,7 @@ This audit read committed code, tests, commit history and recorded results. **No
 - `process_solving` currently uses a hand-written generic greedy Hamming-distance strategy. It must remain a named comparator; it does not meet the original “agent discovers its own strategy” requirement. `harness.py::Agent` also initializes Track I policies on; it cannot silently serve as a Track-I-disabled baseline arm.
 - `realised_by` is a node-valued source attribute, with an explicit owner `has_process_schema` edge. Preserve that implemented interface rather than assuming rule effects can add an edge to an arbitrary computed node. P3's RelaxLadder has not been migrated to ProcessSchema.
 
-### Remaining linear schedule
+### Linear schedule and reporting-cycle status
 
 | Phase | Deliverable | Former scope | Entry |
 |---|---|---|---|
@@ -52,8 +52,15 @@ This audit read committed code, tests, commit history and recorded results. **No
 | 13 | Staged sleep, reusable libraries and strategy recall | former P6.B2, I3.2/I3.3 | 12 |
 | 14 | Laws, proof-carrying adoption and invention operators | I4.5, I7.1/I7.3 | 13 |
 | 15 | Scaled portfolios, self-curriculum and repeated improvement | I7.2/I7.4/I7.5; final L1–L7 evidence | 14 |
+| 16 | Native execution/provenance and valid comparators | Post-P15 review closure; details below | 15 |
+| 17 | Behavioral qualia and acquired significance | Post-P15 review closure; details below | 16 |
+| 18 | Observation-built models and real world experiments | Post-P15 review closure; details below | 17 |
+| 19 | Generic process invention and reusable strategies | Post-P15 review closure; details below | 18 |
+| 20 | Fresh learning, transfer and social acquisition | Post-P15 review closure; details below | 19 |
+| 21 | Finite-memory retention and useful curriculum | Post-P15 review closure; details below | 20 |
+| 22 | Independent-goal repeated improvement and capability audit | Post-P15 review closure; details below | 21 |
 
-These are delivery phases, not the old L0–L7 capability levels. Close a level only when its assembled evidence satisfies the criteria in §6. No later capability is presumed available to an earlier implementation: replay v0 and explicit held processes suffice before library learning; early targeted search does not require a future strategy library.
+Rows 6–15 are closed reporting cycles, not uniformly passed capability gates; rows 16–22 are planned. These are delivery phases, not the old L0–L7 capability levels. Close a level only when its assembled evidence satisfies the criteria in §6. No later capability is presumed available to an earlier implementation: replay v0 and explicit held processes suffice before library learning; early targeted search does not require a future strategy library.
 
 ## 3. Task contract
 
@@ -1264,7 +1271,7 @@ Complete remaining I7 work and measure the entire accumulated system. Parallel e
 
 **P15.E2 development status (2026-10-22):** The finite-permutation process-macro adapter produces paired native `ProcessApply` outcomes for all three arms and all three approved generations. The eight-task development panel completed 24 paired task worlds with zero integrity failures: full system 24/24, unchanged operator 7/24, adaptive curriculum 7/24. Per-generation outcomes were 8/8 vs 0/8, 8/8 vs 3/8, and 8/8 vs 4/8 for full system versus unchanged operator. Paired bootstraps report +2.0 full-system work units per task on average (95% interval [1.67, 2.33]) and no resolved latency difference. The preregistered conditional-logistic generation slope is not estimable on this development panel due singular conditional information; this is not trend evidence. Candidate selection checks recorded v1 2/2 vs 0/2, v2 2/2 vs 0/2 and v3 2/2 vs 0/2, each with eight invariant checks and candidate work 8/12/16. The v1/v2/v3 approvals are separately materialized with the exact frozen digest. Runner/analyzer self-checks pass and the focused P15 bundle passes 70 tests. E2 froze as preregistration commit `e0483bc2`; the committed hash table matches all evaluated artifacts.
 
-**P15.E3 result record (2026-10-22):** The single frozen draw completed all 1,800 rows (200 tasks × three generations × three arms) and 100/100 preregistered tampering controls, with zero scored-row integrity failures. Full system solved 600/600; unchanged and adaptive each solved 196/600. By generation, full versus unchanged solved 200/200 vs 0/200, 200/200 vs 56/200, and 200/200 vs 140/200; the paired gap narrows from 100 to 72 to 30 points as the unchanged operator increasingly matches the power-specific target. Adaptive curriculum exactly matches unchanged. The primary conditional-logistic trend fit is not estimable due complete/near-complete separation, so the registered positive-trend criterion is NOT_ESTABLISHED; the per-generation exact McNemar results do not replace it. Full system used +2.0 work units/task on average (95% paired-bootstrap interval [1.9367, 2.0650]); the tiny measured latency interval is not interpreted as a practical gain. There were no actions, invariant failures, budget overruns, input leaks, pairing errors or provenance mismatches. Full results and raw hashes are in [`COGNITION_LINEAR_P15_RESULTS.md`](COGNITION_LINEAR_P15_RESULTS.md); raw records remain outside git. Phase 15 closeout is complete with the trend criterion failed, no L-level closed and no automatic next phase authorized.
+**P15.E3 result record (2026-10-22):** The single frozen draw completed all 1,800 rows (200 tasks × three generations × three arms) and 100/100 preregistered tampering controls, with zero scored-row integrity failures. Full system solved 600/600; unchanged and adaptive each solved 196/600. By generation, full versus unchanged solved 200/200 vs 0/200, 200/200 vs 56/200, and 200/200 vs 140/200; the paired gap narrows from 100 to 72 to 30 points as the unchanged operator increasingly matches the power-specific target. Adaptive curriculum exactly matches unchanged. The primary conditional-logistic trend fit is not estimable due complete/near-complete separation, so the registered positive-trend criterion is NOT_ESTABLISHED; the per-generation exact McNemar results do not replace it. Full system used +2.0 work units/task on average (95% paired-bootstrap interval [1.9367, 2.0650]); the tiny measured latency interval is not interpreted as a practical gain. There were no actions, invariant failures, budget overruns, input leaks, pairing errors or provenance mismatches. Full results and raw hashes are in [`COGNITION_LINEAR_P15_RESULTS.md`](COGNITION_LINEAR_P15_RESULTS.md); raw records remain outside git. Phase 15 closeout is complete with the trend criterion NOT_ESTABLISHED (the registered pass condition was not met), no L-level closed. The subsequent user-requested review authorizes planning Phases 16–22; P16.01 is the next implementation entry. The native-binary fingerprint and scored execution-path qualifications in the post-P15 review remain mandatory.
 
 **P15.03 completion record (2026-10-22):** Added generated `process_curriculum` rules for observed training counterexamples, frozen training representation residuals, contested acquired distinctions and stale strategy successes checked against a fresh zero-step training task. Curriculum tasks are emitted only after shared ThinkingBudget approval, with training split, unknown expected outcome, source epochs, one attempt and no answer/held-out fields. One evidence/task funding lock serializes admissions; policy is disabled by default and caps evidence at 512 and tasks at 256. Unlearnable outcomes suppress their exact source key; progress resolves it; epoch/deadline mismatch marks it stale. The scheduler can mark a new zero-step task stuck before the background rule runs, so the stale-success check accepts that state while still rejecting progressed tasks. Verification: prescribed P15.03 bundle passes 15 tests. No §5 regression identified in this bundle. P15.04 is next; curriculum coverage does not establish an improvement in task success.
 
@@ -1362,6 +1369,831 @@ Complete remaining I7 work and measure the entire accumulated system. Parallel e
 - **Non-goals:** rerunning/tuning the same holdout; claiming a whole L-level from one mechanism panel.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+
+## Post-P15 extension — acquisition and end-to-end capability
+
+**Added:** 2026-10-22 after [the P15 source/results review](COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md). Phases 0–15 remain closed reporting cycles with their recorded limits. Execute **16 → 17 → 18 → 19 → 20 → 21 → 22**, using the same task contract. This extension addresses missing behavioral connections and experiment validity before adding another layer of self-improvement claims. No implementation or new held-out run was performed by this planning update.
+
+A failed advantage can be an informative result. It cannot retire the underlying missing native execution, unsupported comparator or absent acquired-axis consumer. Each phase below has explicit structural prerequisites; these must pass before advancing. Benefit hypotheses remain honest pass/fail/unestablished outcomes, and the next entry names any supported fallback. Preserve earlier preregistrations and all their negative outcomes.
+
+## Phase 16 — Native execution provenance and valid comparators
+
+**Entry:** P15 reporting closed at `41bb53fe`; current dirty native artifacts are excluded from new freezes. **Status:** P16.E1–E3 complete under corrected v2; the v1 freeze was invalidated before interpretation. P17 is now the next entry.
+
+**Reason:** P15 hashes the wrapper as the binary, selects the scored process in Python, and aligns targets to the active macro. Establish the actual decision/execution boundary and artifact identity before any new learning claim.
+
+**Registered evidence to freeze:** Conformance phase: 200 independent goals each in permutation and finite state-dependent tool worlds; 100 controls each for missing/stale/tampered expression, wrapper/native mismatch and unauthorized emission. Required: 100% agreement of instrumented native execution with the externally scored world, zero stale/unauthorized execution, zero missing adapters and exact loaded-extension attestation. Success-rate differences are descriptive here; a correct primitive comparator may legitimately fail hard goals.
+
+### P16.01 — Freeze the post-P15 validity and support contract
+
+- **ID:** P16.01
+- **Tier:** T1
+- **Goal:** Freeze the post-P15 validity and support contract.
+- **Read first:** `evaluation/process_mastery/linear_p15_v1.py::_run_task`; `evaluation/process_mastery/linear_p15_v1.py::provenance`; `scripts/gen_invention_operator_authorship_seed.py::build`; `scripts/gen_recursive_process_improvement_seed.py`; `docs/research/engine_substrate/COGNITION_PROCESS_EXECUTION_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`; `docs/research/engine_substrate/PMB_V1_SPEC.md`.
+- **Pattern to copy:** source-bound action authorization and P15 review findings.
+- **Steps:** 1. Define agent-owned candidate selection/expression evaluation/world action/receipt boundaries and prohibit arm-specific host process construction. 2. Enumerate process/view/comparator support and exact versus predicted effects. 3. Specify causal knockout/mutation controls, real artifact attestations and end-to-end resource counters.
+- **Guard:** specification only.
+- **Acceptance:** every scored agent operation has a native owner; all opaque/unsupported forms and missing baselines explicitly listed; original P15 outcomes unchanged.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_linear_p15_adapter.py -q -p no:cacheprovider`.
+- **Non-goals:** patching a frozen runner or declaring historical binary provenance reconstructed from a commit.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P16.02 — Attest the loaded native extension and frozen dependency closure
+
+- **ID:** P16.02
+- **Tier:** T2
+- **Goal:** Attest the loaded native extension and frozen dependency closure.
+- **Read first:** `evaluation/process_mastery/linear_p15_v1.py::provenance`; `runners/dsl/python/substrate_rs/__init__.py`; `tests/test_engine_provenance_migrated.py`; `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`.
+- **Touch:** new `evaluation/process_mastery/runtime_attestation.py`; new `tests/test_runtime_attestation.py`; new `docs/research/engine_substrate/COGNITION_PROVENANCE_REVIEW.md`.
+- **Pattern to copy:** existing engine build metadata and repository failure-baseline accounting.
+- **Steps:** 1. Hash the actually loaded native module path separately from wrapper/source/build metadata. 2. Bind imported symbols to that module and reject stale/dirty/unavailable attestation for a new freeze; allow clearly labeled development only. 3. Audit earlier runner fingerprint code, classify which artifacts can be proven and retain unrecoverable execution-time provenance as unknown.
+- **Guard:** read/check only; no engine rebuild in this task.
+- **Acceptance:** `test_hashes_loaded_extension_not_wrapper`, `test_native_change_breaks_freeze`, `test_same_wrapper_different_native_rejected`, `test_missing_build_receipt_unknown`; previous reports not silently rehashed.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_runtime_attestation.py tests/test_engine_provenance_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** copying a native library, pretending the current dirty build proves the archived runtime, or changing historical hash tables.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P16.03 — Execute graph-selected operator expression data end to end
+
+- **ID:** P16.03
+- **Tier:** T2
+- **Goal:** Execute graph-selected operator expression data end to end.
+- **Read first:** `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`; `scripts/gen_invention_operator_authorship_seed.py`; `runners/dsl/src/process_algebra.rs`; `seeds/process_solving.json`; `tests/test_recursive_process_improvement.py`.
+- **Touch:** new `scripts/gen_native_process_execution_seed.py` + `seeds/native_process_execution.json`; new `tests/test_native_process_execution.py`; `runners/dsl/src/process_algebra.rs` only if existing composition Terms cannot evaluate the declared expression.
+- **Pattern to copy:** native ProcessApply and graph-owned pre/action/receipt lifecycle.
+- **Steps:** 1. Select a current eligible process through graph rules and evaluate its actual expression/source reference. 2. Emit a proposed world action through authorization and ingest the externally computed result; no Python arm switch selects the process. 3. Meter expression traversal/composition/application and failed proposals; mutation/deletion of the active operator must affect the very next scored execution.
+- **Guard:** NativeProcessExecutionPolicy disabled; existing approval and sink rules preserved.
+- **Acceptance:** `test_graph_selected_expression_reaches_world`, `test_mutated_expression_changes_outcome`, `test_missing_expression_abstains`, `test_revocation_blocks_execution`, `test_meter_includes_composition`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_native_process_execution.py tests/test_recursive_process_improvement.py -q -p no:cacheprovider`.
+- **Non-goals:** applying a host-computed equivalent process while merely checking that an approved operator exists.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P16.04 — Complete working primitive-search and legal world adapters
+
+- **ID:** P16.04
+- **Tier:** T2
+- **Goal:** Complete working primitive-search and legal world adapters.
+- **Read first:** `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/puzzle_worlds.py`; `seeds/cognition_planner.json`; `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`; `tests/test_pmb_puzzle_worlds.py`.
+- **Touch:** `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/puzzle_worlds.py`; new `tests/test_native_world_comparators.py`.
+- **Pattern to copy:** P5 bounded graph search and P10 affordance-installation correction.
+- **Steps:** 1. Expose the same goal, primitive actions, state-dependent legality and world transition protocol to baseline/search/learned arms. 2. Install an actual native primitive-search policy with explicit frontier/budget and enforce sliding blank adjacency; split out a ≤3-file seed task first if no existing planner expression suffices. 3. Exercise known solvable and unsolvable development cases and supported finite transition receipt adapters; keep unimplemented capability/motor views explicitly opaque.
+- **Guard:** explicit evaluator profiles; policy decisions remain native.
+- **Acceptance:** `test_primitive_search_executes_real_path`, `test_equal_primitive_access`, `test_illegal_sliding_move_rejected`, `test_failed_search_not_missing_adapter`, `test_observed_receipt_matches_world`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_native_world_comparators.py tests/test_pmb_puzzle_worlds.py tests/test_native_process_execution.py -q -p no:cacheprovider`.
+- **Non-goals:** supplying a solution trace or falsely reporting missing physical/capability models as implemented.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P16.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P16.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate attested native process execution and comparator interfaces with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p16_native_causal_chain`, `test_p16_state_perturbation_changes_execution`, `test_p16_default_isolation`, `test_p16_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_runtime_attestation.py tests/test_native_process_execution.py tests/test_native_world_comparators.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P16.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P16.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p16_v1.py`; new `evaluation/process_mastery/analyze_linear_p16_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P16_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_runtime_attestation.py tests/test_native_process_execution.py tests/test_native_world_comparators.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P16.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P16.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P16_PREREG.md`; `evaluation/process_mastery/linear_p16_v1.py`; `evaluation/process_mastery/analyze_linear_p16_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P16_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_runtime_attestation.py tests/test_native_process_execution.py tests/test_native_world_comparators.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**Implementation record (2026-10-22):** P16.01's native evidence contract was frozen in `0efb5c4f`. P16.02 adds `runtime_attestation.py` and a provenance review: new freezes distinguish the package wrapper from the loaded extension and require a matching build receipt; focused tests cover wrapper/native divergence, changed bytes and missing receipts. P16.03 adds a disabled-by-default graph selector, evaluates the selected expression through native process terms, obtains a shared ThinkingBudget debit before evaluation, and sends only the resulting proposal through the authorization/world-receipt boundary. Mutation, missing-expression, revocation, work-meter and world-receipt tests pass. P16.04 connects the existing graph-resident bounded planner to finite sliding and tool world adapters; complete transition models distinguish a real exhausted search from an unknown/incomplete model, and the sliding search executes through the world-owned legal-action/receipt adapter. P16.E1 installs the policy in cognition-on only, keeps it disabled at profile boot, and passes default/conversation isolation and shared-budget integration checks. The P16 focused bundle passed 74 tests; cognition profile integration and Track I foundation passed 46 tests.
+
+P16.E2/E3 remain open. No P16 runner, analyzer, standalone preregistration, or sealed evaluation has been frozen or run. The currently loaded extension is `16b94f563be757ad9293e4921864466052d02e3fa07102ecff9e014b0b76a12b`, while the tracked native artifact is `a6ec6b37db89ad17fef19c7231ecf3531f8771a8ccf82b0b872bf19227f816e7`; the user-dirty build receipt describes the loaded bytes but cannot establish a clean freeze. Preserve both historical P15 results and the dirty generated artifacts. Do not enter P17 until a clean, matching loaded-native artifact is available, P16.E2 is frozen after development self-checks, and P16.E3 reports its registered outcomes.
+
+**P16.02 attestation correction (2026-10-22):** Commit `0246b0bb` fixes two fail-closed attestation defects found while preparing a clean artifact: the public Python `Substrate` wrapper was compared to the native class instead of `_NativeSubstrate`, and cleanliness was checked against the caller checkout instead of the loaded package's source worktree. The build receipt's exact extension digest and full Rust source closure are now verified; cleanliness covers the wrapper and every build input while allowing the sanctioned generated extension/receipt outputs to differ from checked-in placeholders. The isolated artifact built from commit `0246b0bb` attested `ATTESTED` with bound native symbols, matching source closure, extension SHA-256 `b4bbda168693def44b8da6825d0c6c9feddcae8249274524f746a9fa8ab062a1`, and receipt SHA-256 `6ea5443a70b410abf1c7bd697dac944a075a2f512f90db96a86d9e1a45e623a1`. The 121-test P16/profile regression bundle passed. This establishes a buildable attested artifact for development; E2's complete runner/analyzer, source bundle freeze, and sealed allocation remain unimplemented, so P16.E2/E3 remain open and P17 is not authorized.
+
+Regression verification (2026-10-22): `failure_baseline.py verify --list results/cognition_gate_baseline.json` reports the existing four held reds, zero stale listed failures and zero new failures. The 20-file sweep wrote `/tmp/cognition-linear-gate.json`: 16 GREEN, two RED already represented by the frozen baseline (frozen core invariant and dual-process core), one timeout classified `NOT_ESTABLISHED` at 420 seconds (`test_capability_control_fabric_migrated.py`), and one all-skipped file. The broad P16/profile regression bundle passed 121 tests. No baseline entry was changed.
+
+**P16.03 source-binding correction (2026-10-22):** The audit found that `execute_selected` still accepted process values as host-supplied Python arguments and composed the expression in Python. Commit `774e6cbb` moves source IDs into the graph-selected request, checks agent ownership, task domain, active status, source epoch and value digest, and evaluates the graph-authored `native_term` directly in Rust. The expression-graph witness and native-term digest are checked before evaluation; missing, stale, foreign or mutated inputs abstain. Unauthorized proposals are verified not to reach the world adapter. Verification: 129 focused P16/profile/Track-I tests passed. This repairs the mechanism path but does not substitute for the P16 matched-arm runner, frozen allocation or results ledger.
+
+**P16.E2/E3 v2 closeout (2026-10-22):** Commit `cbed5182` adds the matched conformance runner/analyzer and finite one-step permutation/state-dependent-tool panels. The v1 standalone freeze was committed as `756d7db3`, but its build-receipt digest was malformed (61 characters); the held-out raw file was preserved and the analyzer correctly rejected it before reporting. V1 outcomes are not interpreted. Commit `18edc116` versions the protocol and uses a fresh held-out offset; corrected standalone freeze `COGNITION_LINEAR_P16_V2_PREREG.md` was committed alone as `0cfc5765` before the new draw. The v2 held-out allocation passed: 800/800 rows completed, all 400 paired worlds matched, all 800 receipts verified, all 500 fault controls passed and all five tamper probes detected changes. Depth-1 primitive search solved 400/400 versus 25/400 graph-expression outcomes; success differences are descriptive and do not establish strategy quality. The exact native extension attested `ATTESTED`. See [`COGNITION_LINEAR_P16_RESULTS.md`](COGNITION_LINEAR_P16_RESULTS.md) and the standalone freeze for raw hashes and limits. P17 entry is permitted only for the behavioral/qualia question and remains bounded by these results; no capability level closes.
+
+## Phase 17 — Qualia that changes later inference action and significance
+
+**Entry:** P16 attested native execution, P7 episode acquisition and P8 counterexample records. **Status:** P17.E1–E3 complete under corrected v2; v1 was rejected before interpretation. P18 is the next supported entry.
+
+**Reason:** P7 validates feature-associated candidate axes without demonstrating a downstream action/prediction consumer, standing significance, general dimension search or retirement. Close that learning loop rather than adding more declaration nodes.
+
+**Registered evidence to freeze:** 200 fresh later-task worlds each for tool/contact and incidental social request/repair, with acquired/frozen/shuffled/no-experience arms plus 100 orthogonal and reversal controls per family. Native causal use is mandatory: acquired-axis knockout must remove the traced contribution or provoke abstention; unperturbed source truth remains fixed. Primary proposed gain≥20 pp on later prediction/action at equal exposure/compute, zero wrong-source acceptance, and recovery after real counterexamples. A failed gain remains a failure even if axis counts increase.
+
+### P17.01 — Specify behavioral consumers and learned significance without answer axes
+
+- **ID:** P17.01
+- **Tier:** T1
+- **Goal:** Specify behavioral consumers and learned significance without answer axes.
+- **Read first:** `docs/research/engine_substrate/COGNITION_QUALIA_ACQUISITION_CONTRACT.md`; `scripts/gen_qualia_acquisition_seed.py`; `scripts/gen_experience_signature_seed.py`; `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`; `tests/test_qualia_acquisition.py`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_QUALIA_BEHAVIOR_CONTRACT.md`; new `tests/test_qualia_behavior.py`.
+- **Pattern to copy:** P7 source-grounded witnesses and dimension/aperture distinction.
+- **Steps:** 1. Define which prediction, attention allocation and action affordance changes can be justified by acquired distinctions. 2. Separate episode fact, empirical prediction, live relevance and standing significance with support/counterexamples. 3. Prohibit fixtures from naming target axes or writing positive significance; preserve missing-dimension versus finer-grain tests.
+- **Guard:** new qualia behavior policies disabled.
+- **Acceptance:** planned `test_no_target_dimension_input`, `test_axis_has_native_consumer`, `test_significance_has_outcome_witness`, `test_unknown_feature_not_false_zero`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_acquisition.py tests/test_experience_signature.py -q -p no:cacheprovider`.
+- **Non-goals:** equating a validated dimension node or supplied valence with behavioral acquisition.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P17.02 — Use acquired dimensions in native predictions and action proposals
+
+- **ID:** P17.02
+- **Tier:** T2
+- **Goal:** Use acquired dimensions in native predictions and action proposals.
+- **Read first:** `docs/research/engine_substrate/COGNITION_QUALIA_BEHAVIOR_CONTRACT.md`; `seeds/qualia_acquisition.json`; `seeds/experience_signature.json`; `seeds/native_process_execution.json`.
+- **Touch:** new `scripts/gen_qualia_behavior_seed.py` + `seeds/qualia_behavior.json`; `tests/test_qualia_behavior.py`.
+- **Pattern to copy:** native hypothesis query/goal proposal and source-bound recall.
+- **Steps:** 1. Project acquired coordinates for fresh observations through verified frame bindings. 2. Let the native consumer propose discriminating predictions or actions, with source evidence and uncertainty. 3. Recheck outcomes through P16; test dimension knockout/permutation without altering external goals or scorer data.
+- **Guard:** QualiaBehaviorPolicy disabled; inference/action funded.
+- **Acceptance:** `test_acquired_axis_changes_new_prediction`, `test_axis_knockout_blocks_supported_action`, `test_frozen_space_receives_same_experience`, `test_wrong_owner_axis_hidden`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_behavior.py tests/test_native_process_execution.py -q -p no:cacheprovider`.
+- **Non-goals:** a host classifier deciding which learned feature should determine the answer.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P17.03 — Learn context-sensitive significance from verified consequences
+
+- **ID:** P17.03
+- **Tier:** T2
+- **Goal:** Learn context-sensitive significance from verified consequences.
+- **Read first:** `docs/research/engine_substrate/COGNITION_QUALIA_BEHAVIOR_CONTRACT.md`; `seeds/qualia_behavior.json`; `seeds/core_emotions.json`; `seeds/cognition_aperture.json`.
+- **Touch:** new `scripts/gen_experiential_significance_seed.py` + `seeds/experiential_significance.json`; new `tests/test_experiential_significance.py`.
+- **Pattern to copy:** existing standing/live CAN distinction and P8 evidence-supported experiment choice.
+- **Steps:** 1. Decode recurring consequence structures into context-bound relevance/affordance records, retaining favorable and adverse outcomes. 2. Use those records to allocate attention or propose sufficient interventions without converting coherence into truth. 3. Require standing significance to be supported over episodes and contexts; reversals remain evidence, not erased exceptions.
+- **Guard:** ExperientialSignificancePolicy disabled; no new arbitrary learning-rate schedule.
+- **Acceptance:** `test_significance_earned_from_outcomes`, `test_same_feature_different_context_distinguished`, `test_relevance_changes_attention`, `test_confident_wrong_prediction_rechecked`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_experiential_significance.py tests/test_qualia_behavior.py -q -p no:cacheprovider`.
+- **Non-goals:** a universal scalar good/bad ranking or hard-coded salience answer.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P17.04 — Revise split and retire acquired distinctions under counterevidence
+
+- **ID:** P17.04
+- **Tier:** T2
+- **Goal:** Revise split and retire acquired distinctions under counterevidence.
+- **Read first:** `docs/research/engine_substrate/COGNITION_QUALIA_BEHAVIOR_CONTRACT.md`; `scripts/gen_qualia_acquisition_seed.py`; `seeds/experiential_significance.json`; `tests/test_qualia_dimension_compensation_migrated.py`.
+- **Touch:** `scripts/gen_qualia_acquisition_seed.py` + `seeds/qualia_acquisition.json`; `scripts/gen_qualia_behavior_seed.py` + `seeds/qualia_behavior.json`; new `tests/test_qualia_revision.py`.
+- **Pattern to copy:** P8 disputed hypotheses and epoch invalidation.
+- **Steps:** 1. Accumulate exact counterexamples and distinguish changed context from a failed axis. 2. Fund bounded grain/transform/new-dimension alternatives; split only with verified evidence. 3. Retire unsupported candidate influence, preserve all historical witnesses and invalidate dependent recall/plans.
+- **Guard:** qualia policies explicitly enabled; terminal leases restored.
+- **Acceptance:** `test_counterexample_removes_stale_influence`, `test_context_split_verified`, `test_retired_axis_cannot_drive_action`, `test_orthogonal_information_not_manufactured`, `test_save_load_preserves_revisions`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_revision.py tests/test_qualia_behavior.py tests/test_qualia_dimension_compensation_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** silently deleting disconfirming episodes or broadening tolerance to make every outcome match.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P17.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P17.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate behavioral qualia acquisition, significance and revision with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p17_native_causal_chain`, `test_p17_state_perturbation_changes_execution`, `test_p17_default_isolation`, `test_p17_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_behavior.py tests/test_experiential_significance.py tests/test_qualia_revision.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P17.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P17.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p17_v1.py`; new `evaluation/process_mastery/analyze_linear_p17_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P17_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_behavior.py tests/test_experiential_significance.py tests/test_qualia_revision.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P17.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P17.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P17_PREREG.md`; `evaluation/process_mastery/linear_p17_v1.py`; `evaluation/process_mastery/analyze_linear_p17_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P17_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_behavior.py tests/test_experiential_significance.py tests/test_qualia_revision.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P17.E3 closeout (2026-10-22):** P17 v1's held-out raw scorecard was preserved but rejected before interpretation because the preregistered build source fingerprint contained a transcription error. The v2 protocol and preregistration were frozen independently with held-out offset +2,000,000. The single v2 allocation passed all registered gates: 1,600/1,600 paired-arm rows, 400/400 controls, 5/5 tampering probes, exact loaded-native provenance, and zero structural failures. Acquired prediction/action success was 200/200 in each family versus 0/200 for frozen, shuffled and no-experience controls (+100 pp per comparator, above the registered +20 pp threshold). The result supports only source-bound behavioral use of acquired distinctions in the specified finite simulator families; it does not establish real-world qualia, consciousness, human-relative significance or general strategy. P18 entry is supported for observation-built models and verified simulator experiments; no capability level closes. See [`COGNITION_LINEAR_P17_RESULTS.md`](COGNITION_LINEAR_P17_RESULTS.md), [`COGNITION_LINEAR_P17_PREREG.md`](COGNITION_LINEAR_P17_PREREG.md) and [`COGNITION_LINEAR_P17_V2_PREREG.md`](COGNITION_LINEAR_P17_V2_PREREG.md).
+
+## Phase 18 — Observation-built world models and real experiment consequences
+
+**Entry:** P17 behavioral distinctions and P16 real simulator receipts. **Status:** P18.E1–E3 complete; conformance passed and registered comparative efficacy is NOT_ESTABLISHED. P19's model-view entry is supported with that limit.
+
+**Reason:** P8 selected among supplied hypotheses and revised finite graph fixtures. Build candidate mechanisms from observed traces and run graph-chosen interventions against independent world dynamics; a simulator transition is real to that declared world but is not a physical-world claim.
+
+**Registered evidence to freeze:** 200 object-mechanism worlds and 200 partially observed temporal worlds; learned/held-vocabulary-search/passive/fixed-probe arms at equal world access and interaction budgets, 100 ambiguous/missing/irregular controls each. Primary ≥20 pp held-out effect/continuation prediction gain or ≥25% fewer interventions with solve loss≤2 pp. Require no supplied transition hypotheses/answer feature and at least 100 actual simulator-result-linked refinements; unsupported model classes abstain.
+
+### P18.01 — Specify an observation basis and model search without supplied hypotheses
+
+- **ID:** P18.01
+- **Tier:** T1
+- **Goal:** Specify an observation basis and model search without supplied hypotheses.
+- **Read first:** `docs/research/engine_substrate/COGNITION_MODEL_LEARNING_CONTRACT.md`; `scripts/gen_process_induction_seed.py`; `scripts/gen_latent_process_seed.py`; `scripts/gen_experiment_design_seed.py`; `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_OBSERVED_MODEL_CONTRACT.md`; new `tests/test_observed_model_learning.py`.
+- **Pattern to copy:** existing pre/action/post induction and typed ProcessSchema views.
+- **Steps:** 1. Freeze raw observed object/action/relation basis and the common held expression vocabulary. 2. Define bounded candidate generation, object binding, contradiction and nonidentifiability; simulator equations remain scorer/world-owned. 3. Specify native model effects for the supported TransitionHypothesis view and stale receipt behavior.
+- **Guard:** specification only.
+- **Acceptance:** planned `test_no_candidate_hypotheses_ingested`, `test_held_vocabulary_not_world_truth`, `test_ambiguous_model_stays_portfolio`, `test_transition_view_has_model_receipt`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_induction.py tests/test_latent_process.py -q -p no:cacheprovider`.
+- **Non-goals:** claiming unrestricted causal induction or using a hidden causal label as a percept.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P18.E3 closeout (2026-10-22):** The single frozen v1 allocation completed 1,600/1,600 paired rows, 300/300 structural controls and 5/5 tampering checks with exact loaded-native provenance and zero integrity failures. It recorded 400 actual simulator-result-linked refinements. Learned models succeeded on 200/200 worlds in both object-mechanism and temporal families; held-vocabulary search also succeeded on 200/200 in both. Passive and fixed-probe arms succeeded on 0/200. The registered efficacy threshold is NOT_ESTABLISHED because the strongest comparator tied; no intervention reduction offsets the tie. This establishes a bounded native model→graph-proposed probe→verified result→model revision path in these finite worlds, not comparative benefit or unrestricted causal discovery. P19's entry is supported because the model view and evidence path exist alongside P16 execution and P17 behavior, with the comparative result carried forward. No capability level closes. See [`COGNITION_LINEAR_P18_RESULTS.md`](COGNITION_LINEAR_P18_RESULTS.md) and [`COGNITION_LINEAR_P18_PREREG.md`](COGNITION_LINEAR_P18_PREREG.md).
+
+### P18.02 — Generate and verify process-model candidates from observations
+
+- **ID:** P18.02
+- **Tier:** T2
+- **Goal:** Generate and verify process-model candidates from observations.
+- **Read first:** `docs/research/engine_substrate/COGNITION_OBSERVED_MODEL_CONTRACT.md`; `scripts/gen_process_induction_seed.py`; `runners/dsl/src/process_algebra.rs`; `tests/test_observed_model_learning.py`.
+- **Touch:** `scripts/gen_process_induction_seed.py` + `seeds/process_induction.json`; `runners/dsl/src/process_algebra.rs`; `tests/test_observed_model_learning.py`.
+- **Pattern to copy:** native structural unification, bounded program templates and exact finite effect evaluation.
+- **Steps:** 1. Build supported candidate expressions from source-bound observations using existing native Terms. 2. Retain all evidence-consistent candidates and separate prediction from observation. 3. Evaluate supported model-backed transition process views and invalidate effects when model/frame epochs change.
+- **Guard:** ModelLearningPolicy; bounded shared budget.
+- **Acceptance:** `test_unseen_object_effect_induced`, `test_new_action_effect_not_supplied`, `test_model_counterexample_changes_portfolio`, `test_transition_model_epoch_reverified`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_observed_model_learning.py tests/test_process_native_views.py -q -p no:cacheprovider`.
+- **Non-goals:** selecting the right member of a fixture-provided completed model set and calling that induction.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P18.03 — Execute discriminating probes against independent worlds
+
+- **ID:** P18.03
+- **Tier:** T2
+- **Goal:** Execute discriminating probes against independent worlds.
+- **Read first:** `docs/research/engine_substrate/COGNITION_OBSERVED_MODEL_CONTRACT.md`; `scripts/gen_experiment_design_seed.py`; `evaluation/process_mastery/harness.py`; `seeds/native_process_execution.json`.
+- **Touch:** `scripts/gen_experiment_design_seed.py` + `seeds/experiment_design.json`; new `evaluation/process_mastery/observed_worlds.py`; new `tests/test_world_experiment_loop.py`.
+- **Pattern to copy:** P16 authorized native action/observed result boundary.
+- **Steps:** 1. Implement mechanical finite worlds from hidden state/equations and expose only allowed observations and actions. 2. Choose probes from native competing predictions and ingest actual world receipts after execution. 3. Recompute projections/models from outcomes; assert result-linked values change, not only an audit version counter.
+- **Guard:** ExperimentDesignPolicy and native action authorization.
+- **Acceptance:** `test_agent_probe_changes_world_state`, `test_receipt_matches_hidden_world_transition`, `test_actual_outcome_refines_prediction`, `test_no_information_probe_declined`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_world_experiment_loop.py tests/test_observed_model_learning.py -q -p no:cacheprovider`.
+- **Non-goals:** a Python experiment selector or declaring physical/robotic validation from a simulator.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P18.04 — Infer latent process state from prediction failures and fresh continuations
+
+- **ID:** P18.04
+- **Tier:** T2
+- **Goal:** Infer latent process state from prediction failures and fresh continuations.
+- **Read first:** `docs/research/engine_substrate/COGNITION_OBSERVED_MODEL_CONTRACT.md`; `scripts/gen_latent_process_seed.py`; `seeds/qualia_behavior.json`; `tests/test_world_experiment_loop.py`.
+- **Touch:** `scripts/gen_latent_process_seed.py` + `seeds/latent_process.json`; new `tests/test_latent_observed_world.py`.
+- **Pattern to copy:** regular TimeInfer witnesses and P17 distinction revision.
+- **Steps:** 1. Collect observed residual windows from the same independent world. 2. Propose supported latent transformations without named target states, re-induce and test on fresh interventions/continuations. 3. Preserve irregular/insufficient refusal and retire a latent that fails new evidence.
+- **Guard:** LatentProcessPolicy; observed-data funding.
+- **Acceptance:** `test_latent_predicts_new_intervention`, `test_latent_not_hidden_state_label`, `test_spurious_latent_retired`, `test_irregular_time_refused`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_latent_observed_world.py tests/test_latent_process.py -q -p no:cacheprovider`.
+- **Non-goals:** inventing a latent solely to memorize the complete training trace.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P18.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P18.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate observed model generation and world experiment/refinement with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p18_native_causal_chain`, `test_p18_state_perturbation_changes_execution`, `test_p18_default_isolation`, `test_p18_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_observed_model_learning.py tests/test_world_experiment_loop.py tests/test_latent_observed_world.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P18.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P18.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p18_v1.py`; new `evaluation/process_mastery/analyze_linear_p18_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P18_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_observed_model_learning.py tests/test_world_experiment_loop.py tests/test_latent_observed_world.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P18.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P18.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P18_PREREG.md`; `evaluation/process_mastery/linear_p18_v1.py`; `evaluation/process_mastery/analyze_linear_p18_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P18_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_observed_model_learning.py tests/test_world_experiment_loop.py tests/test_latent_observed_world.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+## Phase 19 — Novel goal-directed processes and general strategy search
+
+**Entry:** P18 supported learned model views, P16 actual execution and P17 acquired significance. **Status:** entry supported; P19.01–P19.04 and P19.E1 are implemented and integrated under disabled-by-default policies. The bounded grammar includes recursive Compose/Inverse/Power(2|3), exact observed-state and failed-subgoal guards, and one explicit composition subgoal. Failure evidence guides a different subgoal order only on an exact matching binding; wider constraint generalization remains open. Strategy lifting, exact candidate approval/revocation, receipt-backed strategy retention, a cognition-on causal fixture and witnessed one-step commutator size transfer are implemented. A composed proposal with a temporarily worsening intermediate state reaches a simulated world, is retained from its receipt, and solves an unseen binding through strategy lift. Focused integration/search/adoption regressions pass (93 tests). Standalone preregistration, matched held-out evaluation and results ledger remain outstanding; P20 is not authorized until P19.E3 establishes its entry.
+
+**Reason:** P10 stored exact-context traces after solving but did not improve strategies; P14/P15 instantiate known commutator-power recipes. Use task residuals to select general legal expression constructions and discover reusable subgoal structure.
+
+**Registered evidence to freeze:** 200 new process-effect goals and 200 multi-step tool/constraint tasks in each of permutation and irreversible object worlds; generic invention/discovered strategy versus measured greedy and native primitive-search at equal primitive-operation/model-query caps. Include 100 impossible/illegal/precondition controls. Primary ≥20 pp observed solve gain over the stronger supported comparator; require at least one verified held-out non-template process and unseen-binding strategy use. Cost frontier and failed searches remain visible.
+
+### P19.01 — Specify a general operator grammar and real strategy choices
+
+- **ID:** P19.01
+- **Tier:** T1
+- **Goal:** Specify a general operator grammar and real strategy choices.
+- **Read first:** `docs/research/engine_substrate/COGNITION_GOAL_INVENTION_CONTRACT.md`; `scripts/gen_invention_operator_authorship_seed.py`; `scripts/gen_recursive_process_improvement_seed.py`; `scripts/gen_strategy_discovery_seed.py`; `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`; new `tests/test_open_process_search.py`.
+- **Pattern to copy:** held algebra expression templates, graph goal regression and invariant obligations.
+- **Steps:** 1. Define generic typed Compose/Inverse/Power/guard/subgoal grammar, admissibility and bounds without candidate-name dispatch. 2. Make operator and strategy proposals follow unmet effects and acquired constraints. 3. Freeze genuine novelty relative to the held library, legal preconditions and exact-versus-model verification requirements.
+- **Guard:** new generic search policy disabled.
+- **Acceptance:** planned `test_candidate_name_does_not_choose_recipe`, `test_new_effect_drives_expression_search`, `test_strategy_not_exact_trace_lookup`, `test_invalid_composition_unknown`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_invention.py tests/test_strategy_discovery.py -q -p no:cacheprovider`.
+- **Non-goals:** unbounded synthesis or hard-coding each benchmark solution as a new proposal rule.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P19.02 — Generate candidate expressions from residual effects in graph rules
+
+- **ID:** P19.02
+- **Tier:** T2
+- **Goal:** Generate candidate expressions from residual effects in graph rules.
+- **Read first:** `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`; `scripts/gen_invention_round_seed.py`; `scripts/gen_goal_invention_seed.py`; `seeds/native_process_execution.json`.
+- **Touch:** new `scripts/gen_open_process_search_seed.py` + `seeds/open_process_search.json`; `tests/test_open_process_search.py`.
+- **Pattern to copy:** existing graph expression construction and verified native process effects.
+- **Steps:** 1. Enumerate admissible expression data from shared held grammar with actual graph frontier state. 2. Rank by verified coverage, residual and declared work without a task-specific recipe. 3. Evaluate candidate expression trees through P16 and retain proof/model/source identity and failures.
+- **Guard:** OpenProcessSearchPolicy disabled; exact budget per node/query.
+- **Acceptance:** `test_unseen_operator_expression_generated`, `test_changed_goal_changes_proposal`, `test_new_candidate_executed_not_host_rebuilt`, `test_proposal_budget_includes_failures`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_open_process_search.py tests/test_native_process_execution.py -q -p no:cacheprovider`.
+- **Non-goals:** counting a familiar power instantiated at a new name as unconstrained meta-invention.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P19.03 — Learn reusable subgoal and constraint-preservation strategies
+
+- **ID:** P19.03
+- **Tier:** T2
+- **Goal:** Learn reusable subgoal and constraint-preservation strategies.
+- **Read first:** `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`; `scripts/gen_strategy_discovery_seed.py`; `scripts/gen_process_lifting_seed.py`; `tests/test_open_process_search.py`.
+- **Touch:** `scripts/gen_strategy_discovery_seed.py` + `seeds/strategy_discovery.json`; new `tests/test_strategy_generalization.py`.
+- **Pattern to copy:** bounded goal regression, lifting witnesses and invariant-wall evidence.
+- **Steps:** 1. Search choices of subgoal order/constraint preservation from partially successful and failed traces. 2. Lift the found control structure with explicit preconditions. 3. Verify unseen bindings, object counts and longer tasks that require temporary worsening rather than greedy Hamming descent.
+- **Guard:** StrategyDiscoveryPolicy; bounded native search.
+- **Acceptance:** `test_new_binding_uses_discovered_strategy`, `test_temporary_regression_allowed`, `test_failed_constraint_not_replayed`, `test_world_receipt_confirms_strategy`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_strategy_generalization.py tests/test_process_lifting.py tests/test_open_process_search.py -q -p no:cacheprovider`.
+- **Non-goals:** a human-authored piece-placement policy, scorer-provided witness plan, or calling trace storage a learned strategy.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P19.04 — Feed novel verified processes through existing adoption and rollback
+
+- **ID:** P19.04
+- **Tier:** T2
+- **Goal:** Feed novel verified processes through existing adoption and rollback.
+- **Read first:** `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`; `seeds/process_proof_adoption.json`; `seeds/invention_operator_authorship.json`; `seeds/recursive_process_improvement.json`.
+- **Touch:** new `scripts/gen_open_process_adoption_seed.py` + `seeds/open_process_adoption.json`; new `tests/test_open_process_adoption.py`.
+- **Pattern to copy:** existing exact candidate/digest proof/approval gates and ancestry.
+- **Steps:** 1. Bind generic candidates to full expression digests and their verification domain. 2. Preserve proof obligations and candidate-specific human approvals where already required; no v1/v2/v3 approval extends to new candidates. 3. Keep rejected/changed candidates and roll back dependent plans on revoked support.
+- **Guard:** OpenProcessAdoptionPolicy disabled; existing gates unchanged.
+- **Acceptance:** `test_expression_digest_not_candidate_name`, `test_new_candidate_not_preapproved`, `test_proof_binds_new_expression`, `test_invalidated_process_stops_next_action`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_open_process_adoption.py tests/test_process_proof_adoption.py tests/test_native_process_execution.py -q -p no:cacheprovider`.
+- **Non-goals:** introducing a new approval requirement beyond existing machinery or bypassing existing approval to finish evaluation.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P19.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P19.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate generic process/strategy search and verified adoption with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p19_native_causal_chain`, `test_p19_state_perturbation_changes_execution`, `test_p19_default_isolation`, `test_p19_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_open_process_search.py tests/test_strategy_generalization.py tests/test_open_process_adoption.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P19.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P19.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p19_v1.py`; new `evaluation/process_mastery/analyze_linear_p19_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P19_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_open_process_search.py tests/test_strategy_generalization.py tests/test_open_process_adoption.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P19.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P19.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P19_PREREG.md`; `evaluation/process_mastery/linear_p19_v1.py`; `evaluation/process_mastery/analyze_linear_p19_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P19_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_open_process_search.py tests/test_strategy_generalization.py tests/test_open_process_adoption.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P19 implementation checkpoint (2026-10-22):** Added `COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`, a disabled-by-default graph seed for bounded Compose in both parent orders, Inverse, and Power(2|3), with exact observed-state guards, composition-subgoal metadata, and rank selection by verified coverage/residual status/work. Residual expressions now recursively compose with held processes in either order and accept recursive Inverse/Power(2|3) constructors up to the declared depth; all attempts are budgeted and recursive parent source identities are included in verifier-side digests. Search links a task's exact-binding failure constraints before enumeration and marks expressions repeating a failed intermediate subgoal `constraint_failed`, allowing a separately verified alternate order to win without minting the failed one. Opt-in strategy lifting applies a receipt-learned expression to a different state and goal when object count and source/model/frame/probe epochs match. A size-transfer path reuses a single-step commutator strategy on a larger domain only after the existing process-lifting policy has two differently sized structural witnesses and an exact native-fingerprinted target instance; arbitrary strategies do not receive size generalization. Failed graph strategy replays retain binding- and epoch-specific constraints that block blind same-binding retries while leaving other bindings eligible. Candidates remain unapproved until a verifier-side content digest receipt and exact candidate-specific human approval are attached; native execution rechecks the live effect and records the independent world-transition result. The cognition-on causal-chain fixture verifies one shared-budget debit, graph-authored choice, candidate-bound approval, independently applied finite-world result, receipt-bound learned strategy, unseen-state reuse, and abstention after a changed model epoch. A composed proposal whose intermediate subgoal worsens Hamming distance is executed, retained from its world receipt, and reused under a new binding. Focused P19 search, strategy, lifting, adoption, native execution and cognition-on integration regressions: 93 passed. This is partial mechanism/integration evidence, not a phase evaluation. Broader constraint guards and general object-count transfer remain incomplete. The representative world receipt used a deterministic finite test transition; external/world-backed evaluation, standalone preregistration, matched held-out allocation and results ledger remain outstanding. Registered criteria are unchanged.
+
+**P19.E2 development record (2026-10-23):** Commit `4b7d5810` adds independent permutation and irreversible-object worlds, receipt verification, disjoint development/held-out/control seed blocks, measured greedy and native primitive-search arms, and a graph-side singular tie-break enabled only in the comparator profile. The development self-check covers all 32 registered development tasks and 100 impossible/illegal/precondition controls. Native primitive search solved 32/32 within 8 primitive actions and 4,096 model queries. Generic graph invention with synthetic candidate-specific development approvals completed 8/32; 16 proposals failed independent world execution and 8 tasks produced no candidate. All 8 receipt-backed strategies solved a changed state and goal binding through native strategy replay. Focused tests: 58 passed. The standalone preregistration was frozen as `cfc4efd2`; held-out results and limitations are reported below.
+
+**P19.E3 closeout (2026-10-23):** See [`COGNITION_LINEAR_P19_RESULTS.md`](COGNITION_LINEAR_P19_RESULTS.md). The sole frozen held-out allocation completed 2,400/2,400 rows with 100/100 controls passing, zero structural failures and exact native provenance. Native primitive search solved 800/800 and greedy 632/800. Invention had 582 proposals awaiting exact candidate approval, 202 no-candidate and 16 ambiguous rows; therefore primary efficacy is `NOT_ESTABLISHED`, not a zero-skill failure. Both required mechanism criteria were unmet in this run (zero receipted non-template inventions and zero unseen-binding strategy solves). No capability claim follows. Phase 20 is authorized only for the fresh target-learning and social-acquisition interfaces supported by P18/P19 evidence paths; it must not assume P19 invention/strategy efficacy.
+
+## Phase 20 — Fresh learning transfer and observational social acquisition
+
+**Entry:** P19 goal search and P18 learned-model interfaces; P17 behavioral qualia. **Status:** P20.01–P20.04 and E1–E3 reported. Native fresh learning, bounded observation/demonstration/instruction acquisition, reward-only abstention and explanation reconstruction passed structural checks. Frozen transfer efficacy failed (mapped-source minus fresh AUC −0.333 versus +0.20); no beneficial transfer claim is supported. P19's NOT_ESTABLISHED efficacy and unmet mechanism limits carry forward.
+
+**Reason:** P11 lacked a fresh target learner and P12 had a single-primitive success ceiling. Implement the same real learner in every arm, vary only available source/social experience, and count its actual world actions and information.
+
+**Registered evidence (frozen and run):** 200 streams per target domain pair; fresh/source/mismatched-source, observation/demonstration/instruction/reward-only; 100 wrong-frame/missing/body/false-description controls. The preregistration selected the ≥20 pp fixed-budget learning-curve AUC criterion and disabled the interaction-cost alternative before holdout. The frozen result is −33.3 pp; retain it as FAIL. Fresh learner development checks passed; held-out structural validity and native provenance passed.
+
+### P20.01 — Specify a common target learner and fair source exposure
+
+- **ID:** P20.01
+- **Tier:** T1
+- **Goal:** Specify a common target learner and fair source exposure.
+- **Read first:** `docs/research/engine_substrate/COGNITION_REPRESENTATION_SEARCH_CONTRACT.md`; `docs/research/engine_substrate/COGNITION_SOCIAL_ACQUISITION_CONTRACT.md`; `evaluation/process_mastery/linear_p11_v1.py`; `evaluation/process_mastery/linear_p12_v1.py`; `seeds/process_induction.json`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LEARNING_TRANSFER_CONTRACT.md`; new `tests/test_target_learner.py`.
+- **Pattern to copy:** P18 real observed-model learning and P16 arm-affordance parity.
+- **Steps:** 1. Specify common learner/probe/action interfaces for every arm and what source exposure changes. 2. Distinguish evidence opportunities, informative observations, actions and total work; freeze fair data/compute comparisons. 3. Define target generalization, learning curves, right-censoring and unsupported input before outcomes.
+- **Guard:** target learner/transfer policies disabled.
+- **Acceptance:** planned `test_fresh_has_real_learning_path`, `test_same_target_affordances`, `test_missing_adapter_hard_error`, `test_evidence_and_work_separate`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_transfer.py tests/test_social_process.py -q -p no:cacheprovider`.
+- **Non-goals:** comparing a working source mapper against an inert fresh arm.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P20.01 implementation record (2026-10-23):** Added [`COGNITION_LEARNING_TRANSFER_CONTRACT.md`](COGNITION_LEARNING_TRANSFER_CONTRACT.md) to bound the initial learner to the existing native receipt-bound categorical transition inducer. `tests/test_target_learner.py` now covers fresh learning, common target affordances across source conditions, missing-adapter hard error, evidence/work separation, missing or mismatched receipt refusal, counterevidence, disabled-policy behavior and separate source/evidence/action accounting. `NativeTargetLearner` ingests typed target-world receipts and reads native hypotheses/predictions; source exposure is separately charged. The P20.01 acceptance tests pass; phase-level closure awaits the registered P20 evaluation.
+
+### P20.02 — Learn target maps and processes from native exploration
+
+- **ID:** P20.02
+- **Tier:** T2
+- **Goal:** Learn target maps and processes from native exploration.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LEARNING_TRANSFER_CONTRACT.md`; `scripts/gen_process_transfer_seed.py`; `seeds/process_induction.json`; `seeds/open_process_search.json`.
+- **Touch:** new `scripts/gen_target_learning_seed.py` + `seeds/target_learning.json`; `tests/test_target_learner.py`.
+- **Pattern to copy:** P18 model candidates and P19 missing-effect search.
+- **Steps:** 1. Let fresh agents infer supported target processes/frame maps from their own evidence. 2. Let source arms propose compatible priors/candidates but require the same target verification. 3. Preserve wrong-source rejection, valid unsuccessful searches and actual per-step learning records.
+- **Guard:** TargetLearningPolicy; same resource contract in all arms.
+- **Acceptance:** `test_fresh_learns_unseen_target`, `test_source_uses_same_target_verifier`, `test_wrong_map_rejected`, `test_outcomes_recorded_after_each_probe`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_target_learner.py tests/test_world_experiment_loop.py -q -p no:cacheprovider`.
+- **Non-goals:** supplying the source map or target answer in a fresh-arm initialization.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P20.02 progress (2026-10-23):** Added independently coded `ThermalWorld` and `LatchWorld` targets plus relabeled heat-source and lever-source domains. The same native learner acquires source effects from actual authorized interactions. Two distinct budgeted paired source/target receipt records now cause a native graph rule to propose a categorical action/type/feature/value map; an independent verifier checks that proposal against the underlying receipts. Matched source-prior prediction still needs a fresh target-effect receipt, and the learner predicts unseen object bindings in both target families. Replay/unauthorized receipts, insufficient pairs, conflicting pairs and wrong maps are rejected. The experiment supplies source↔target object-pair identity; autonomous discovery of that correspondence and uniform arm streams remain open. A two-domain development curve now runs fresh, mapped-source and mismatched-source arms with 8 streams per domain pair, native learning, unseen-object execution and resource counters. Development normalized AUC was 0.500 fresh, 0.167 mapped-source and 0.500 mismatched-source. The mapped arm used three target actions; fresh and mismatched arms used two. Mismatched source evidence failed to produce a native map and the learner then succeeded from target receipts. Raw records are `/tmp/cognition_p20_dev_curve_8_v2.json` (SHA-256 `ad64bacdbe5a7a34737c93ab6e7875fcd60a9777baf52bcbc5e61e065a29e33f`). These are development-only results; the registered full-arm learning-curve evaluation remains open. P20.02 is not closed.
+
+### P20.03 — Acquire multi-step processes from incidental interaction
+
+- **ID:** P20.03
+- **Tier:** T2
+- **Goal:** Acquire multi-step processes from incidental interaction.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LEARNING_TRANSFER_CONTRACT.md`; `scripts/gen_social_process_seed.py`; `scripts/gen_imitation_seed.py`; `seeds/qualia_behavior.json`.
+- **Touch:** `scripts/gen_social_process_seed.py` + `seeds/social_process.json`; `scripts/gen_imitation_seed.py` + `seeds/imitation.json`; new `tests/test_observational_process_learning.py`.
+- **Pattern to copy:** P12 attributed action events and P17 consequence-grounded distinctions.
+- **Steps:** 1. Observe other agents using tools, requesting, misunderstanding and repairing while pursuing ordinary goals. 2. Infer candidate processes through the common target learner without teacher markers, hidden intention labels or source AST. 3. Handle omitted steps/partial access as uncertainty and test own-body multi-step execution through the existing action boundary.
+- **Guard:** social policies disabled; ordinary action/adoption checks.
+- **Acceptance:** `test_incidental_interaction_teaches_multistep_process`, `test_no_teacher_flag_needed`, `test_hidden_step_not_invented`, `test_other_success_not_own_receipt`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_observational_process_learning.py tests/test_target_learner.py tests/test_response_inhibition_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** a scripted behavioral oracle choosing the demonstration interpretation.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P20.03 progress (2026-10-23):** Added `observed_sequence_learning` native rules and profile wiring. Given a complete two-action episode, current primitive affordances and funded requests, the graph creates an unverified ordered candidate for witnessed observation, demonstration, or parsed instruction without a teacher marker or source AST; partial episodes abstain, and another actor's success creates no own receipt. A reward-only episode with no action sequence produces a funded `abstained_underidentified` result rather than an invented process. A separate executor requires funded fresh-world verification, exact current primitive links and epoch agreement before native promotion. It then routes each own action through a per-step authorization callback and records sink-bound own-trial receipts; denial stops before the denied world action. Source-specific adapters now require ordered world receipts for observation/demonstration, a successful public language parse for instruction, and scalar feedback without sequence data for reward-only; source types and links are declared in the regenerated native seed. A development panel sends every arm through the same funded native learner; instruction is authored in a separate source world and parsed in the receiver world. The three sequence-bearing arms verify and execute on a fresh case, while reward-only abstains. The panel records evidence opportunities, visible observations, source-world and target actions, source-information units, native learner settlement steps, graph size, elapsed time and budget debits. Development-only wrong-frame, missing-step, body-mismatch and false-description controls all abstain without false candidates. An eight-stream-per-arm, 100-control development run passed all 32 social streams and 100/100 controls; output is at `/tmp/cognition_p20_social_dev_8x100.json` (SHA-256 `162b99a6c6e6914f8792259d73c58149d365d89fc3575f093c08e4c5aa0849bf`). This is not a registered comparison and does not replace the frozen allocation. The focused source-adapter, consumer, explanation, target-learning and cognition-on profile suite passes (97 tests). This remains bounded to two-step request→repair; general sequence induction, omitted-step uncertainty beyond complete/partial episodes, and arbitrary own-body replay remain open. P20.E2 still requires matched scoring and the full frozen panel.
+
+### P20.04 — Rebuild novel multi-step processes from bounded explanations
+
+- **ID:** P20.04
+- **Tier:** T2
+- **Goal:** Rebuild novel multi-step processes from bounded explanations.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LEARNING_TRANSFER_CONTRACT.md`; `scripts/gen_process_explanation_seed.py`; `seeds/target_learning.json`; `tests/test_process_explain_rebuild.py`.
+- **Touch:** `scripts/gen_process_explanation_seed.py` + `seeds/process_explanation.json`; new `tests/test_multistep_explain_rebuild.py`.
+- **Pattern to copy:** isolated P12 receiver and fixed shared primitive vocabulary.
+- **Steps:** 1. Produce explanations of new composed processes with preconditions and key contingencies. 2. Reconstruct using an isolated receiver with no original expressions, IDs or fingerprints. 3. Execute on fresh worlds, expose counterexamples to incomplete explanations and measure fidelity beside words/evidence/actions.
+- **Guard:** ProcessExplanationPolicy; native reconstruction.
+- **Acceptance:** `test_receiver_rebuilds_novel_composition`, `test_source_ids_cannot_leak`, `test_missing_precondition_causes_unknown`, `test_unseen_world_effects_match`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_multistep_explain_rebuild.py tests/test_process_explain_rebuild.py tests/test_target_learner.py -q -p no:cacheprovider`.
+- **Non-goals:** an AST serialization called explanation or an unrestricted natural-language claim from a bounded vocabulary.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P20.04 progress (2026-10-23):** Extended the native explanation author to draft a bounded ordered list of public steps from a `ProcessSchema`; it does not include the source expression or fingerprint. A sender produces two independently self-monitored sentences with explicit precondition headers; an isolated receiver reparses each sentence through the grounded language comprehension path and passes only event labels, explicit preconditions, current shared vocabulary and epochs to the graph. The graph binds each event/precondition to a distinct shared primitive, creates an unverified candidate without source IDs/AST/fingerprint, and records `unknown_missing_precondition` when a step precondition is absent. A funded fresh-world verifier checks the composed effect and rejects a counterexample starting outside the first-step precondition; only its epoch-bound receipt can trigger native schema adoption. Focused tests cover the native draft→production→independent reparse→native reconstruction→independent finite-world path, plus the request→repair cognition-on profile path. This remains a bounded two-step protocol; integrated end-to-end work/fidelity measurements and broader contingency coverage remain open, so P20.04 is not closed.
+
+**P20.E1 progress (2026-10-23):** Added the guarded `target_learning` and `observed_sequence_learning` rules to the cognition-on seed closure; both policies remain disabled by default. Profile-level causal tests show that receipted target observations produce a native hypothesis and new-binding prediction; a matched source prior enters only with exact map and current target receipts; changing the observed effect changes prediction; and a complete incidental episode yields an unverified candidate linked to observed primitives. The profile test also fresh-world verifies, natively promotes and executes that sequence through per-step authorization with own-trial receipts. P20.04 now has a native draft→production→independent comprehension→native reconstruction→fresh-world verification test, and its native consumer is also exercised through the cognition-on profile. Default/conversation isolation and shared-budget debits hold in profile tests. E1 remains open because the full registered multi-arm learning-curve/evaluation panel is not frozen or complete and P20 explanation work/fidelity accounting is not yet incorporated in a complete scored profile run.
+
+### P20.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P20.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate common fresh learner and multi-step social/explanation consumers with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p20_native_causal_chain`, `test_p20_state_perturbation_changes_execution`, `test_p20_default_isolation`, `test_p20_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_target_learner.py tests/test_observational_process_learning.py tests/test_multistep_explain_rebuild.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P20.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P20.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p20_v1.py`; new `evaluation/process_mastery/analyze_linear_p20_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P20_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_target_learner.py tests/test_observational_process_learning.py tests/test_multistep_explain_rebuild.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P20.E2 development checkpoint (2026-10-23):** Added `linear_p20_v1.py` to run the current fresh/mapped/mismatched target learner in both domain pairs together with observation, demonstration, parsed-instruction and reward-only social arms, native explanation production/reconstruction/fidelity, and structural controls. Added `analyze_linear_p20_v1.py`, which checks pair×arm completeness, duplicate rows, receipt gates, social execution/abstention, explanation fidelity/adoption/source isolation, resource fields, control outcomes, exact source-file hashes and allocation digest. It labels the payload `DEVELOPMENT_ONLY` and the primary `NOT_ESTIMATED`; held-out execution raises until the standalone freeze exists. The analyzer verified loaded-extension/build-source attestation as `ATTESTED`. An eight-stream-per-cell integrated development payload completed 48 target rows, 32 social rows, 8 native explanation-rebuild trials and 100 controls, all with structural status PASS. The deterministic development allocation digest is `8f4b89c4f2cd2ac58d2b11d8f998f08ae447b60b1865cf9f6730d78b830d167a`. Raw payload and analyzer output are `/tmp/cognition_p20_combined_dev_8x100.json` (SHA-256 `7f563d3328367d304fe5089df81cbb2d3b1707360ae4327593894d1973bf1304`) and `/tmp/cognition_p20_combined_dev_8x100_analysis.json` (SHA-256 `1507506c0babe2182aaaa7694ef145cf20915766db62f38d78dc87e194b7a0b0`). Descriptive development normalized AUCs were 0.500 fresh, 0.167 mapped-source and 0.500 mismatched-source; the primary remains unestimated because this is development data. The focused combined P20 regression suite passes 100 tests, including tampering checks. Task/source distribution independence, frozen effect/stop rules, standalone preregistration and held-out runner remain open. E2 is not complete and no held-out access has occurred.
+
+### P20.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P20.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P20_PREREG.md`; `evaluation/process_mastery/linear_p20_v1.py`; `evaluation/process_mastery/analyze_linear_p20_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P20_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_target_learner.py tests/test_observational_process_learning.py tests/test_multistep_explain_rebuild.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P20.E3 results (2026-10-23):** See [`COGNITION_LINEAR_P20_RESULTS.md`](COGNITION_LINEAR_P20_RESULTS.md). The standalone preregistration was committed alone as `42e577db`; its fixed allocation completed 1,200 target arm rows, 800 social rows, 200 explanations and 100 controls. Runtime provenance was `ATTESTED`; structural analysis passed with zero failures. Primary mapped-source minus fresh normalized AUC was −0.333 (fresh 0.500, mapped 0.167, mismatched 0.500), a valid `FAIL` against +0.20. Observation, demonstration and instruction each verified/executed 200/200; reward-only abstained 200/200; explanation reconstruction/adoption was 200/200 at 100% fidelity; controls passed 100/100. P21 may use the fresh native learner as its supported consumer, but must carry the transfer failure unchanged. Raw payload SHA-256 `76f575f5710449f58adf0d7152452a14d2d831f643bee5b4e7599d90e2f938c8`; analyzer SHA-256 `6ecfaa9738670bb32ef41f87e96c38aaeaf315ed6c2a903bcd9312d84233f5c8`. Focused regression: 101 tests before final freeze hardening; the changed runner/analyzer tests then passed 4 tests.
+
+## Phase 21 — Resource-bounded retention and useful self-curriculum
+
+**Entry:** P20 actual fresh-learning streams and P13 staged replay/library machinery. **Status:** entry supported using the fresh native target learner; mapped-source transfer benefit is unsupported and must not be assumed.
+
+**Reason:** P13 showed verified cost savings but no accuracy/retention benefit; P15 curriculum matched unchanged and its generated task was not a demonstrated learning input. Connect replay/curriculum to the actual learner, with finite memory and equal evidence policies. **Status:** P21.01–E3 complete. Charged-memory storage, staged native sleep, cognition-on integration and native curriculum delivery passed structural checks. Both registered held-out efficacy primaries failed validly; retain the ceiling-limited task-distribution gap for future work.
+
+**Registered evidence to freeze:** 200 paired learning→idle→interference→delayed-novel-test streams at each of three fixed workload/capacity strata; full sleep/replay-only/matched awake/no offline and residual-selected versus random versus fixed curriculum ablations. Primary delayed learning-curve area gain≥10 pp over replay-only at new-task loss≤2 pp; curriculum primary≥10 pp under equal total interactions/work. Report the full capacity curves even at ceiling/floor. No arm may retain hidden originals outside its charged memory or receive an artificially disabled learner.
+
+### P21.01 — Specify charged memory interference and training-task delivery
+
+- **ID:** P21.01
+- **Tier:** T1
+- **Goal:** Specify charged memory interference and training-task delivery.
+- **Read first:** `docs/research/engine_substrate/COGNITION_SLEEP_STAGE_CONTRACT.md`; `scripts/gen_process_curriculum_seed.py`; `scripts/gen_library_learning_seed.py`; `seeds/target_learning.json`; `docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`; new `tests/test_developmental_memory.py`.
+- **Pattern to copy:** existing sleep cursors, memory tiers and real target learner.
+- **Steps:** 1. Specify charged resident/durable evidence, retrieval/rebuild cost and equal capacity/forgetting semantics across arms. 2. Define independent interference/delayed test distributions and candidate training tasks with real solvability/unknown outcomes. 3. Freeze three broad capacity/workload strata from non-efficacy sizing checks; do not choose a stratum by treatment benefit.
+- **Guard:** memory/curriculum extensions disabled.
+- **Acceptance:** planned `test_no_uncharged_hidden_originals`, `test_all_arms_same_memory_policy`, `test_curriculum_task_reaches_learner`, `test_later_test_not_curriculum_input`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_sleep_regime_migrated.py tests/test_process_curriculum.py -q -p no:cacheprovider`.
+- **Non-goals:** breaking the control learner or importing a planted forgetting curve to manufacture retention.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P21.02 — Consolidate and retrieve learned evidence under real capacity limits
+
+- **ID:** P21.02
+- **Tier:** T2
+- **Goal:** Consolidate and retrieve learned evidence under real capacity limits.
+- **Read first:** `docs/research/engine_substrate/COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`; `scripts/gen_sleep_regime_seed.py`; `scripts/gen_library_learning_seed.py`; `scripts/gen_strategy_library_seed.py`.
+- **Touch:** `scripts/gen_sleep_regime_seed.py` + `seeds/sleep_regime.json`; `scripts/gen_library_learning_seed.py` + `seeds/library_learning.json`; `tests/test_developmental_memory.py`.
+- **Pattern to copy:** P13 verified chunk cost accounting and restart-safe stage ownership.
+- **Steps:** 1. Apply the same declared capacity/eviction model to source evidence, chunks and rebuild data in all arms. 2. Let sleep retain/reconstruct verified useful structure without discarding counterexamples. 3. Route retrieval into the P20 learner and meter actual delayed task decisions, retrieval overhead and interference failures.
+- **Guard:** SleepRegimePolicy/LibraryLearningPolicy; existing shared budget.
+- **Acceptance:** `test_sleep_chunk_used_on_delayed_task`, `test_evicted_source_not_read_through_host`, `test_counterevidence_survives_compression`, `test_foreground_resume_preserved`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_developmental_memory.py tests/test_sleep_regime_migrated.py tests/test_library_learning.py -q -p no:cacheprovider`.
+- **Non-goals:** calling a library cost gain a retention gain or exempting original traces from capacity.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P21.03 — Run generated curriculum tasks through native learning
+
+- **ID:** P21.03
+- **Tier:** T2
+- **Goal:** Run generated curriculum tasks through native learning.
+- **Read first:** `docs/research/engine_substrate/COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`; `scripts/gen_process_curriculum_seed.py`; `seeds/target_learning.json`; `scripts/gen_qualia_acquisition_seed.py` (P17 revision rules).
+- **Touch:** `scripts/gen_process_curriculum_seed.py` + `seeds/process_curriculum.json`; new `scripts/gen_curriculum_learning_bridge_seed.py` + `seeds/curriculum_learning_bridge.json`; new `tests/test_curriculum_learning.py`.
+- **Pattern to copy:** observed residual admission locks and P20 actual task execution.
+- **Steps:** 1. Transform admissible native curriculum requests into independent world training events without a target solution. 2. Execute/probe/learn under shared work and exposure caps and feed observed progress back to task selection. 3. Test random/fixed/residual selectors against identical task pools; suppress repeated unlearnable tasks and preserve held-out isolation.
+- **Guard:** CurriculumLearningBridgePolicy disabled; no extra operator approval.
+- **Acceptance:** `test_curriculum_result_changes_learner`, `test_generated_task_not_just_status_receipt`, `test_random_arm_same_task_access`, `test_no_progress_stops_repetition`, `test_sealed_eval_ids_hidden`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_curriculum_learning.py tests/test_process_curriculum.py tests/test_target_learner.py -q -p no:cacheprovider`.
+- **Non-goals:** using graph task creation alone as evidence that curriculum improved learning.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P21.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P21.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate capacity-bounded consolidation and actual curriculum learning with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p21_native_causal_chain`, `test_p21_state_perturbation_changes_execution`, `test_p21_default_isolation`, `test_p21_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_developmental_memory.py tests/test_curriculum_learning.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+**P21.01 contract record (2026-10-23):** Added [`COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`](COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md), freezing byte-accounted capacities, shared admission/eviction policy, protected counterevidence, answer-free training-task delivery, delayed-test isolation and zero-tolerance controls. Added `ChargedMemory`, which stores serialized bytes only, rejects over-capacity evidence, provides deterministic eviction and counts retrieval/decode work. Lossless compressed chunks carry source-record IDs and reconstruct their full evidence. This does not yet connect the P13 native sleep cursor to charged storage or establish retention benefit.
+
+**P21.02/P21.03 mechanism record (2026-10-23):** Retrieved transition receipts have been passed to the common P20 `NativeTargetLearner`; the delayed probe is answered from a native hypothesis. Protected counterevidence survives lossless chunk replacement, and evicted records are unavailable from the store. A new generated `curriculum_learning_bridge` seed emits answer-free training requests from native P15 tasks and writes an outcome only after two distinct observed receipts and a matching native candidate hypothesis. An end-to-end development test starts from a graph-authored counterexample task, executes authorized actions in a new thermal world, feeds typed receipts to native learning and observes the curriculum task complete. The seed is installed in the cognition-on closure with its policy disabled; default and conversation profiles remain isolated. These are mechanism checks, not a retention/curriculum efficacy estimate.
+
+**P21.E2/E3 result (2026-10-23):** The standalone protocol was frozen in `31ce0440` against code commit `f9212d28`; its 600 sleep-stream IDs, 600 curriculum-stream IDs and 100 controls completed once. Exact native runtime provenance was `ATTESTED`; the analyzer returned structural `PASS`, zero failures, 2,400 sleep rows, 1,800 curriculum rows and 100/100 controls. Full-sleep minus replay-only delayed learning-curve AUC was 0.000 against +0.10, with new-task loss 0.000: valid `FAIL`. Residual minus mean(random,fixed) curriculum delayed accuracy was 0.000 against +0.10: valid `FAIL`. All primary arms were at delayed-accuracy ceiling. The ledger is [`COGNITION_LINEAR_P21_RESULTS.md`](COGNITION_LINEAR_P21_RESULTS.md); raw SHA-256 `d906b3c1eca6e4dafac64a9c1f1bf3d807c77d2571f1202657fc0454516aadd1`, analyzer SHA-256 `3a1d8da1920e30ff0266ef142eb15f93ad3718fc7b37332f5b96fcfbaede5fb3`. This does not establish efficacy or close a capability level.
+
+### P21.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P21.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p21_v1.py`; new `evaluation/process_mastery/analyze_linear_p21_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P21_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_developmental_memory.py tests/test_curriculum_learning.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P21.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P21.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P21_PREREG.md`; `evaluation/process_mastery/linear_p21_v1.py`; `evaluation/process_mastery/analyze_linear_p21_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P21_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_developmental_memory.py tests/test_curriculum_learning.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+## Phase 22 — Independent-goal multi-generation improvement and capability audit
+
+**Entry:** P16 exact execution/provenance, P17–P21 supported learned behavior and P19 generic proposals; all claimed prerequisites reviewed. P21 mechanisms are available but both efficacy primaries failed at ceiling, so P22 must use a new independent-goal panel and cannot rely on a P21 benefit. **Status:** active; P22.01 estimand/specification work is the next gate.
+
+**Reason:** Replace operator-aligned targets and hard-coded successors with an actual learning/invention loop on independent task distributions. This is a new protocol on untouched goals; it must not repair/rescore the P15 trend or assume a human comparison.
+
+**Registered evidence to freeze:** At least 3 approved generations where existing policy requires approval, ≥200 common task worlds per claimed family/checkpoint plus ≥200 fresh validation worlds, in at least two structurally distinct supported domains. Same sealed evaluation panel at each checkpoint, disjoint training/selection/world-parameter validation blocks and identical primitive-work/model-query ceilings across arms. Primary paired checkpoint improvement versus frozen ancestor at equal budget; prespecify ≥10 pp final improvement and a ≥5 pp/generation slope in paired score differences with one-sided 99% lower bound>0, Holm-corrected across claimed families. Use world-cluster bootstrap or a design-based bounded-score estimator defined for all-success/all-failure; ceiling/flat scores mean zero improvement, not an estimator failure or a changed test.
+
+### P22.01 — Freeze independent worlds resource matching and ceiling-safe inference
+
+- **ID:** P22.01
+- **Tier:** T1
+- **Goal:** Freeze independent worlds resource matching and ceiling-safe inference.
+- **Read first:** `docs/research/engine_substrate/COGNITION_RECURSIVE_IMPROVEMENT_CONTRACT.md`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`; `docs/research/engine_substrate/COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_INDEPENDENT_IMPROVEMENT_CONTRACT.md`; `docs/research/engine_substrate/PMB_V1_SPEC.md`; new `tests/test_improvement_estimand.py`.
+- **Pattern to copy:** paired raw outcome/bootstrap accounting, without P15 separated logistic primary.
+- **Steps:** 1. Choose supported independent goal-generating worlds before candidate search; neither operator names nor powers may affect them. 2. Freeze common and fresh panels, equal budget frontiers, primary paired improvement/slope estimands and multiplicity. 3. Write analytic fixtures for ceiling, floor, flat, reversed and positive trends and verify zero effect remains zero; capability claims require actual family coverage.
+- **Guard:** specification only.
+- **Acceptance:** `test_ceiling_flat_is_zero_improvement`, `test_ancestor_same_worlds`, `test_generation_not_goal_parameter`, `test_cost_mismatch_blocks_efficiency_claim`, `test_pair_cluster_preserved`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_improvement_estimand.py -q -p no:cacheprovider`.
+- **Non-goals:** switching estimators after a held-out fit fails or claiming superiority from a one-call restriction that gives one arm extra primitive work.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P22.02 — Drive generic operator proposals and qualification from observed tasks
+
+- **ID:** P22.02
+- **Tier:** T2
+- **Goal:** Drive generic operator proposals and qualification from observed tasks.
+- **Read first:** `docs/research/engine_substrate/COGNITION_INDEPENDENT_IMPROVEMENT_CONTRACT.md`; `scripts/gen_open_process_search_seed.py`; `scripts/gen_recursive_process_improvement_seed.py`; `seeds/curriculum_learning_bridge.json`.
+- **Touch:** new `scripts/gen_independent_improvement_seed.py` + `seeds/independent_improvement.json`; new `tests/test_independent_improvement.py`.
+- **Pattern to copy:** P19 generic expression search, P21 actual training progress and existing candidate approval.
+- **Steps:** 1. Propose next operators from training residuals using graph-selected generic grammar/search. 2. Qualify on separate native development trials with measured effects/cost/proofs; retain unchanged ancestor and rollback lineage. 3. Request only candidate-specific existing approvals when required; record approval costs and human edits without assuming any past authorization extends forward.
+- **Guard:** IndependentImprovementPolicy disabled; existing approval boundaries remain.
+- **Acceptance:** `test_next_candidate_not_named_in_seed`, `test_qualification_from_native_trials`, `test_no_holdout_in_proposal`, `test_new_approval_exact_expression`, `test_rollback_stops_current_execution`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_independent_improvement.py tests/test_open_process_adoption.py tests/test_curriculum_learning.py -q -p no:cacheprovider`.
+- **Non-goals:** an adapter constructing each next recipe or entering fabricated development measurements.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P22.03 — Evaluate actual checkpoints with causal ablations and fixed compute
+
+- **ID:** P22.03
+- **Tier:** T2
+- **Goal:** Evaluate actual checkpoints with causal ablations and fixed compute.
+- **Read first:** `docs/research/engine_substrate/COGNITION_INDEPENDENT_IMPROVEMENT_CONTRACT.md`; `evaluation/process_mastery/runtime_attestation.py`; `seeds/native_process_execution.json`; `tests/test_independent_improvement.py`.
+- **Touch:** new `evaluation/process_mastery/checkpoint_world_adapter.py`; new `tests/test_checkpoint_world_adapter.py`; new `tests/test_improvement_causal_ablation.py`.
+- **Pattern to copy:** P16 source-expression execution checks and same-world native comparators.
+- **Steps:** 1. Snapshot genuine ancestor and learned checkpoints without changing goals or host action rules. 2. Run unchanged/adaptive-only/invention-only/full arms through the same learner/native sink at equal cumulative data/primitive budgets. 3. Knock out learned axes, libraries or active operators in development-only control panels and verify the scored path depends on the claimed components.
+- **Guard:** read-only frozen checkpoint evaluation; all policies explicit.
+- **Acceptance:** `test_all_arms_same_world_and_compute`, `test_changed_active_expression_changes_scored_result`, `test_checkpoint_restore_no_state_leak`, `test_component_ablation_changes_claimed_path`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_checkpoint_world_adapter.py tests/test_improvement_causal_ablation.py tests/test_independent_improvement.py -q -p no:cacheprovider`.
+- **Non-goals:** choosing the process in Python by arm name, dropping failed tasks or excluding composition/approval/training costs.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P22.04 — Audit capability levels against demonstrated input breadth
+
+- **ID:** P22.04
+- **Tier:** T1
+- **Goal:** Audit capability levels against demonstrated input breadth.
+- **Read first:** `docs/research/engine_substrate/PMB_V1_SPEC.md`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`; `docs/research/engine_substrate/COGNITION_INDEPENDENT_IMPROVEMENT_CONTRACT.md`; this plan §6.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_CAPABILITY_CLOSURE_MATRIX.md`; `docs/research/engine_substrate/PMB_V1_SPEC.md`.
+- **Pattern to copy:** existing explicit L1–L7 evidence gates and review gap ledger.
+- **Steps:** 1. Map each level to actual world/adaptor/mechanism/held-out evidence and noncovered prerequisites. 2. Record protocol-matched human sources or unavailable status; do not infer human equivalence from perfect synthetic scores. 3. Retain opaque motor/capability/family processes, unsupported raw perception/irregular time and limited language as open with named consumers needed before any further extension.
+- **Guard:** documentation only.
+- **Acceptance:** every L-level has supported/failed/unavailable disposition and exact evidence; no blanket capability closure from a finite family.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_improvement_estimand.py tests/test_checkpoint_world_adapter.py -q -p no:cacheprovider`.
+- **Non-goals:** creating a new benchmark to label the system powerful without its underlying causal learning evidence.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P22.E1 — Integrate the native phase and audit causal dependencies
+
+- **ID:** P22.E1
+- **Tier:** T2
+- **Goal:** Integrate the native phase and audit causal dependencies.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** existing guarded cognition profile and one-budget integration.
+- **Steps:** 1. Integrate independent-goal multi-generation loop and checkpoint evaluation with disabled defaults and declared dependency closure. 2. Execute world input→native choice→authorized result→observed receipt through the actual consumer. 3. Perturb the learned state/operator/model and verify the declared causal path changes or abstains; record boot/memory/work and default isolation.
+- **Guard:** cognition-on opt-in only; no new host approval assumed.
+- **Acceptance:** `test_p22_native_causal_chain`, `test_p22_state_perturbation_changes_execution`, `test_p22_default_isolation`, `test_p22_shared_budget`; no Python agent dispatch.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_improvement_estimand.py tests/test_independent_improvement.py tests/test_checkpoint_world_adapter.py tests/test_improvement_causal_ablation.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** a disconnected lifecycle fixture substituted for scored execution.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P22.E2 — Freeze an informative matched-arm evaluation
+
+- **ID:** P22.E2
+- **Tier:** T1
+- **Goal:** Freeze an informative matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md`; `evaluation/process_mastery/harness.py`; `evaluation/process_mastery/scorecard.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/linear_p22_v1.py`; new `evaluation/process_mastery/analyze_linear_p22_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P22_PREREG.md`.
+- **Pattern to copy:** P15 fixed artifact/allocation checks, corrected by P16 actual extension attestation.
+- **Steps:** 1. Implement the phase-specific panels, working comparators and development self-checks. 2. Freeze task/source distributions independently of learned operators; include all failures and every declared resource. 3. Freeze actual loaded-native/source/wrapper/build/profile/world hashes and commit preregistration alone before sealed allocation access; use §5 CLI and extension rules.
+- **Guard:** evaluation only; no frozen historical protocol edits.
+- **Acceptance:** all arm adapters and structural audit controls pass development checks; effect criteria, exposure limits and exact allocations frozen; missing adapters prevent freeze.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_improvement_estimand.py tests/test_independent_improvement.py tests/test_checkpoint_world_adapter.py tests/test_improvement_causal_ablation.py -q -p no:cacheprovider`.
+- **Non-goals:** threshold tuning on held-out data; non-working controls scored as zero skill; superiority inferred solely from unequal macro-call expressiveness.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
+### P22.E3 — Report all outcomes and decide the next supported entry
+
+- **ID:** P22.E3
+- **Tier:** T1
+- **Goal:** Report all outcomes and decide the next supported entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P22_PREREG.md`; `evaluation/process_mastery/linear_p22_v1.py`; `evaluation/process_mastery/analyze_linear_p22_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P22_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** earlier immutable negative ledgers plus P16 provenance classification.
+- **Steps:** 1. Run the frozen allocation once and archive raw bytes/hashes and artifact identities. 2. Report all benefit and zero-tolerance structural criteria, learning curves, resource denominators and unsupported inputs. 3. Mark the next entry supported only when its native consumers and evidence paths exist; retain negative benefits and add explicit repair tasks for failed structural gates.
+- **Guard:** new frozen protocol; documentation closeout only.
+- **Acceptance:** every registered criterion classified; exact-native artifact attested; no missing arm hidden; next entry supported or explicitly blocked.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_improvement_estimand.py tests/test_independent_improvement.py tests/test_checkpoint_world_adapter.py tests/test_improvement_causal_ablation.py -q -p no:cacheprovider`.
+- **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
+- **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
+
 ## 5. Common integration, evaluation and regression gates
 
 Every new phase uses its own registered protocol and `.E1 → .E2 → .E3` ordering. E1 completes integration **before** freezing hashes. E2 freezes a runner with working adapters and records the full engine build provenance and dependency closure. E3 runs once on the fixed draw and reports all hypotheses, controls, unknowns and failure limits. If an implementation defect invalidates a comparison, preserve it, version the corrected protocol and use an untouched split; never rescore the defective report into success.
@@ -1388,6 +2220,15 @@ OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python "evaluation/process_mastery/analyz
 ```
 
 Self-checks use development-only seeds and exercise null, timeout, unsafe output and comparator disagreement. Holdout draws wait until the standalone freeze. The baseline experiment and new phase evaluations produce new scorecards; preserve `evaluation/process_mastery/results/i0_baseline.json` as the original NOT_RUN record. Generated reports remain uncommitted; record their hashes, commands and retention locations in the phase results document.
+
+
+### Additional gates for Phases 16–22
+
+- **Artifact identity:** P16's runtime attestation is mandatory for every new freeze, including the actual loaded native extension, wrapper, build metadata, relevant full Rust source closure, profile, generators, world code and analyzer. Missing/dirty artifact identity blocks a held-out run. Do not use the P15 wrapper hash as evidence for native provenance.
+- **Causal execution:** the same graph-selected expression/model/acquired distinction must reach the scored native execution path. Native mutation/knockout controls must change or block that path. Host code can generate independent world truth and externally score results; it cannot choose the agent's operator, compile a target-specific recipe or decide adoption by arm name.
+- **Independent goals:** task generation cannot use active operator/candidate name, power, generation index or learned solution. All arms share the same world and primitive/model access; checkpoint evaluation uses fixed task distribution and matched primitive-work ceilings. Record literal task IDs/seeds and enforce disjoint training/selection/evaluation allocations. Extend the existing namespace with phase codes 16–22 and check every prior recorded range for collisions before freeze.
+- **Working controls:** every comparator must execute and learn on declared development sanity worlds before E2 freezes. Missing adapters are hard errors. All-zero held-out performance is allowed when it comes from a real learner, and all-success outcomes must yield an honest zero improvement under the chosen estimator. Do not condition primary work comparisons only on successful treatment cases or silently drop censored failures.
+- **Coverage and order:** required native consumer/provenance/support tests must pass before advancing. Failed benefit hypotheses remain failed with named safe fallbacks. L-level closure additionally requires its particular model, learning, transfer, explanation or human-baseline evidence in the closure matrix; no new arbitrary stopping criterion is introduced by this planning update.
 
 ### Regression gate
 
@@ -1463,7 +2304,9 @@ P3 rung-1 cache speedup remains failed. P4 C5's incremental-resolution test rema
 
 ## 7. Next executable action
 
-Start **P7.01**, then execute the remaining tasks in their printed order. Phase 6's limited evidence is closed in `COGNITION_LINEAR_P6_RESULTS.md`; do not treat NOT_RUN D4/mechanism panels, opaque process kinds, or the small supplied-process Loopover result as completed capability gates. Do not restart completed P4/P5 implementation. Every later phase's next action is its first numbered task after the preceding results review.
+Start **P17.01**. P16.E3 passed its corrected, versioned held-out conformance protocol; see [`COGNITION_LINEAR_P16_RESULTS.md`](COGNITION_LINEAR_P16_RESULTS.md). Keep the invalid v1 protocol and its raw bytes preserved without inference. P16 supports exact native provenance and finite one-step execution conformance only; it does not establish comparative strategy quality or autonomous process discovery. Phases 0–15 retain their historical outcomes, including P15's NOT_ESTABLISHED trend; do not rerun or rescore those sealed allocations.
+
+The immediate next goal is to test whether acquired qualia changes what the agent predicts and does. P16's attested graph-selected expression path and verified finite-world receipts are available as bounded execution interfaces; its primitive-search solve rate is not a general strategy result. This user-requested extension authorizes planning and ordinary implementation tasks; it grants no new candidate-specific operator approval beyond those already recorded.
 
 **P7.03 implementation record (2026-10-22):** Added generated `qualia_acquisition` with its policy disabled by default. Observed feature/outcome records must match owner, episode, event and source/model/frame epochs, then receive an approved ThinkingBudget request before witness creation. Three distinct recurrence witnesses propose one owner/feature candidate; two fresh contexts must repeat supported consequences before a `QualiaDimension` becomes standing. Contradictions retain their validation evidence and mark the dimension contested; two fresh positive validations restore standing, and earlier episode witnesses can be decoded through the acquired coordinate. The named P7.03 acceptance cases plus no-target, finer-grain, funding exhaustion, stale receipt and owner separation controls are covered. Verification: `tests/test_qualia_acquisition.py tests/test_experience_signature.py tests/test_qualia_dimension_compensation_migrated.py` — 27 passed.
 
