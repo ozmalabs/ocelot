@@ -337,6 +337,8 @@ def fallback_when_budget_disabled_rule():
          ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"]],
         And(policy_on(), Eq(A("budget", "enabled"), L(0.0)),
             Eq(A("t", "status"), L("active")), eligible,
+            Not(Exists(N("agent", "has_thinking_budget"), "active_budget",
+                        Eq(A("active_budget", "enabled"), L(1.0)))),
             Not(Eq(A("t", "strategy_fallback_recorded"), L(1)))),
         [["add_node", "fallback", "StrategyRecallFallback", {
             "status": "cold_start", "reason": "shared_budget_disabled",

@@ -139,3 +139,22 @@ def test_denied_recall_funding_falls_back_without_retry():
     assert agent.attrs(task)["strategy_funding_fallback"] == 1
     assert not agent.s.neighbours(task, "has_strategy_recall_attempt")
     assert agent.attrs(task)["status"] == "solved"
+
+
+def test_disabled_duplicate_budget_does_not_override_approved_recall():
+    agent = _agent()
+    _domain, _source, _entry = _learn_cycle(agent)
+    disabled = agent.s.add_node("ThinkingBudget", {
+        "enabled": 0.0, "remaining": 0.0, "capacity": 0.0,
+        "last_refill_epoch": 0.0, "refill_per_epoch": 0.0,
+    })
+    agent.s.add_edge(agent.ag, "has_thinking_budget", disabled, {})
+    cycle = next(p for p in agent.schemas("domain") if agent.attrs(p)["name"] == "cycle")
+    initial = [2, 1, 0]
+    task = agent.add_solve_task("domain", initial, _apply(agent, cycle, initial))
+    _tick(agent)
+    request = agent.s.neighbours(task, "has_strategy_recall_request")[0]
+    assert agent.attrs(request)["status"] == "approved"
+    assert len(agent.s.neighbours(task, "has_strategy_recall_attempt")) == 1
+    assert not agent.s.neighbours(task, "has_strategy_recall_fallback")
+    assert agent.attrs(task)["status"] == "solved"

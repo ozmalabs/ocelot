@@ -4199,6 +4199,37 @@
           {
             "type": "Not",
             "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget",
+                "any_type": false
+              },
+              "var_name": "active_budget",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "active_budget"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
               "type": "Eq",
               "a": {
                 "type": "Attr",
