@@ -180,3 +180,48 @@ def puzzle_panel(family: str, *, first_seed=1_000_000, tasks=200, controls=100):
             task["requested_action"] = "illegal_face_turn"
         control_rows.append(task)
     return {"family": family, "tasks": rows, "controls": control_rows}
+
+
+def _permutation_parity(values):
+    return sum(values[i] > values[j] for i in range(len(values))
+               for j in range(i + 1, len(values))) % 2
+
+
+def p16_task(family: str, seed: int):
+    """Independent finite conformance world for P16's two registered panels."""
+    if family not in {"permutation", "state_dependent_tool"}:
+        raise ValueError(f"unsupported P16 family: {family}")
+    states = tuple(itertools.permutations(range(4)))
+    action_maps = tuple(itertools.permutations(range(4)))
+    actions = {"perm_" + "".join(map(str, action)): action for action in action_maps}
+    state_keys = {state: ",".join(map(str, state)) for state in states}
+    legal_by_state = {}
+    for state in states:
+        if family == "state_dependent_tool" and _permutation_parity(state) == 0:
+            allowed = [name for name, action in actions.items()
+                       if _permutation_parity(action) == 0]
+        else:
+            allowed = list(actions)
+        legal_by_state[state_keys[state]] = sorted(allowed)
+
+    rng = random.Random(seed)
+    initial = rng.choice(states)
+    legal_inputs = legal_by_state[state_keys[initial]]
+    input_a, input_b = rng.sample(legal_inputs, 2)
+    goal_action = rng.choice(legal_inputs)
+    goal = _apply_position_map(initial, actions[goal_action])
+    transitions = []
+    # The registered P16 panel tests a complete one-step action model. Keep the
+    # search burden fixed at the declared one-step horizon; multi-step strategy
+    # quality is outside this execution-conformance protocol.
+    for state in (initial,):
+        for name in legal_by_state[state_keys[state]]:
+            target = _apply_position_map(state, actions[name])
+            transitions.append((state_keys[state], name, state_keys[target]))
+    return {
+        "family": family, "seed": int(seed), "initial_state": initial,
+        "goal_state": goal, "primitive_affordances": actions,
+        "legal_actions_by_state": legal_by_state,
+        "process_input_a": input_a, "process_input_b": input_b,
+        "transition_model": transitions,
+    }

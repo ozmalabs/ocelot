@@ -24,6 +24,7 @@ os.environ.setdefault("OZMA_SEED_PERSIST_DISABLED", "1")
 from substrate.boot_core import CORE_SEEDS, boot_core  # noqa: E402
 
 from evaluation.process_mastery import generators as gen  # noqa: E402
+from evaluation.process_mastery.native_process_execution import params_digest  # noqa: E402
 from evaluation.process_mastery.scorecard import write_scorecard  # noqa: E402,F401
 
 TRACK_I_SEEDS = (
@@ -95,7 +96,8 @@ class Agent:
         for hname, params in held.items():
             node = {
                 "kind": kind, "domain": name, "domain_kind": kind, "name": hname,
-                "params": list(params), "cost": 1.0, "provenance": "held", "status": "active",
+                "params": list(params), "source_digest": params_digest(list(params)),
+                "cost": 1.0, "provenance": "held", "status": "active",
                 "invariants": [], "owner_agent": self.ag, "source_epoch": 0,
                 "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0,
                 "source_probe_epoch": 0,

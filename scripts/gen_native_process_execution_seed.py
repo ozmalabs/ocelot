@@ -82,7 +82,8 @@ def build():
             Eq(A("candidate", "status"), L("promoted")),
             Eq(A("task", "status"), L("active")),
             Eq(A("budget_request", "status"), L("approved"))),
-        [["set_attr", "request", "status", "funded"]])
+        [["set_attr", "request", "status", "funded"],
+         ["set_attr", "task", "status", "execution_pending"]])
     return {
         "id": SEED_ID, "version": "1.0.0", "depends_on": ["recursive_process_improvement"],
         "self_load_only": True, "area": OFFLINE_AREA,

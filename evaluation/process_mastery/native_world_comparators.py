@@ -21,7 +21,8 @@ class NativeWorldAdapter:
     @classmethod
     def from_task(cls, task: dict[str, Any], *, world_id: str | None = None):
         family = task.get("family")
-        if family not in {"sliding_3x3", "cube_2x2x2", "tool_goal"}:
+        if family not in {"sliding_3x3", "cube_2x2x2", "tool_goal", "permutation",
+                          "state_dependent_tool"}:
             raise ValueError("UNSUPPORTED world family")
         legal_map = task.get("legal_actions_by_state", {})
         return cls(family, tuple(task["initial_state"]), tuple(task["goal_state"]),
