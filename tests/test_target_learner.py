@@ -6,7 +6,8 @@ from substrate_rs import _native
 from scripts.gen_process_induction_seed import build_seed
 from evaluation.process_mastery.target_learner import NativeTargetLearner, build_target_learner
 from evaluation.process_mastery.target_learning_worlds import (
-    LatchWorld, ThermalWorld, WorldReceipt,
+    HeatSourceWorld, LatchWorld, LeverSourceWorld, ThermalWorld, WorldReceipt,
+    verify_categorical_effect_map, verify_source_prior_target_effect,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -267,3 +268,113 @@ def test_evidence_and_work_separate():
     assert learner.accounting.visible_observations == 1
     assert learner.accounting.missing_observations == 1
     assert learner.accounting.target_actions == 1
+
+
+def test_source_target_maps_are_verified_on_two_independent_domain_pairs():
+    cases = (
+        (HeatSourceWorld(sample_ids=("s1", "s2")),
+         ThermalWorld(object_ids=("t1", "t2")),
+         lambda world, key: world.apply_heat(key, "apply_heat"),
+         lambda world, key: world.apply(key, "warm"),
+         {"apply_heat": "warm"}, {"MetalSample": "ThermalSample"},
+         {"heat_level": "temperature"},
+         {"chilled": "cold", "tempered": "warm"}, {"s1": "t1", "s2": "t2"}),
+        (LeverSourceWorld(lever_ids=("s1", "s2")),
+         LatchWorld(latch_ids=("t1", "t2")),
+         lambda world, key: world.raise_control(key, "raise_control"),
+         lambda world, key: world.operate(key, "lift"),
+         {"raise_control": "lift"}, {"ControlLever": "Latch"},
+         {"orientation": "position"}, {"down": "lowered", "up": "raised"},
+         {"s1": "t1", "s2": "t2"}),
+    )
+    for (source_world, target_world, source_step, target_step, actions, types,
+         features, values, objects) in cases:
+        source_receipts = [source_step(source_world, key) for key in ("s1", "s2")]
+        target_receipts = [target_step(target_world, key) for key in ("t1", "t2")]
+        record = verify_categorical_effect_map(
+            source_receipts=source_receipts, target_receipts=target_receipts,
+            map_id=f"map:{source_world.__class__.__name__}", action_map=actions,
+            object_type_map=types, feature_map=features, value_map=values,
+            object_map=objects, target_frame_epoch=5)
+        assert record["status"] == "verified"
+        assert record["witness_count"] == 2
+        wrong = verify_categorical_effect_map(
+            source_receipts=source_receipts, target_receipts=target_receipts,
+            map_id="wrong", action_map=actions, object_type_map=types,
+            feature_map=features, value_map={**values, list(values)[-1]: "wrong"},
+            object_map=objects, target_frame_epoch=5)
+        assert wrong["status"] == "rejected"
+        insufficient = verify_categorical_effect_map(
+            source_receipts=source_receipts[:1], target_receipts=target_receipts[:1],
+            map_id="one-witness", action_map=actions, object_type_map=types,
+            feature_map=features, value_map=values, object_map={"s1": "t1"},
+            target_frame_epoch=5)
+        assert insufficient["status"] == "rejected"
+
+
+def test_native_source_prior_transfers_through_map_and_fresh_target_receipt():
+    cases = (
+        (HeatSourceWorld(sample_ids=("s1", "s2")),
+         ThermalWorld(object_ids=("t1", "t2", "t3", "t4")),
+         lambda world, key: world.apply_heat(key, "apply_heat"),
+         lambda world, key: world.apply(key, "warm"),
+         {"apply_heat": "warm"}, {"MetalSample": "ThermalSample"},
+         {"heat_level": "temperature"},
+         {"chilled": "cold", "tempered": "warm"}, {"s1": "t1", "s2": "t2"},
+         "apply_heat", "MetalSample", "heat_level", "chilled", "tempered",
+         "warm", "ThermalSample", "temperature", "cold", "warm"),
+        (LeverSourceWorld(lever_ids=("s1", "s2")),
+         LatchWorld(latch_ids=("t1", "t2", "t3", "t4")),
+         lambda world, key: world.raise_control(key, "raise_control"),
+         lambda world, key: world.operate(key, "lift"),
+         {"raise_control": "lift"}, {"ControlLever": "Latch"},
+         {"orientation": "position"}, {"down": "lowered", "up": "raised"},
+         {"s1": "t1", "s2": "t2"},
+         "raise_control", "ControlLever", "orientation", "down", "up",
+         "lift", "Latch", "position", "lowered", "raised"),
+    )
+    for (source_world, target_world, source_step, target_step, actions, types,
+         features, values, objects, source_action, source_type, source_feature,
+         source_before, source_after, target_action, target_type, target_feature,
+         target_before, target_after) in cases:
+        source_learner = NativeTargetLearner()
+        source_receipts = [source_step(source_world, key) for key in ("s1", "s2")]
+        for receipt in source_receipts:
+            source_learner.observe_world_receipt(receipt)
+        source_learner.settle()
+        source_hypothesis = source_learner.hypotheses()[0]
+        assert source_hypothesis["action_kind"] == source_action
+        assert source_hypothesis["after_value"] == source_after
+
+        map_record = verify_categorical_effect_map(
+            source_receipts=source_receipts,
+            target_receipts=[target_step(target_world, key) for key in ("t1", "t2")],
+            map_id=f"transfer:{source_world.__class__.__name__}",
+            action_map=actions, object_type_map=types, feature_map=features,
+            value_map=values, object_map=objects, target_frame_epoch=5)
+        assert map_record["status"] == "verified"
+        target_validation_receipt = target_step(target_world, "t3")
+        prior_id = f"prior:{source_hypothesis['hypothesis_key']}"
+        effect_receipt = verify_source_prior_target_effect(
+            prior_id=prior_id, source_hypothesis=source_hypothesis,
+            map_record=map_record, target_receipt=target_validation_receipt)
+        assert effect_receipt["status"] == "verified"
+
+        target_learner = NativeTargetLearner(transfer_enabled=True)
+        target_learner.expose_source(source_id="source-model", relation="matched",
+                                     units=float(len(source_receipts)))
+        target_learner.import_source_prior(
+            prior_id=prior_id, source_id="source-model", action_kind=target_action,
+            object_type=target_type, feature_key=target_feature,
+            before_value=target_before, after_value=target_after,
+            source_epoch=3, model_epoch=2, frame_epoch=5,
+            map_evidence=map_record, target_receipt=effect_receipt)
+        target_learner.observe_world_receipt(target_validation_receipt)
+        target_learner.settle()
+        assert len(target_learner.hypotheses()) == 1
+        prediction = target_learner.predict(
+            query_id=f"transfer-unseen:{source_world.__class__.__name__}",
+            action_kind=target_action, object_type=target_type,
+            feature_key=target_feature, before_value=target_before,
+            object_id="t4")
+        assert prediction["expected_after_value"] == target_after
