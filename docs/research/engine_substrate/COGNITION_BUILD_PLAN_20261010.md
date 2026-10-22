@@ -2171,6 +2171,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 **P22 development ceiling audit (2026-10-23):** A fixed 32-world training-block control now runs the common native solver over each generated family with fresh isolated worlds. It solves 0/32 D4 tasks and 11/32 Loopover tasks, confirming neither current panel is at the all-success ceiling for the unchanged solver. The D4 panel is at the floor for this ancestor policy, so it can detect recovery but cannot support a claim of degradation from that comparator. This is a generator/ancestor diagnostic only; invention-only/full comparators, candidate approvals, common independent-goal checkpoint panels, and validation worlds remain outstanding.
 
+**P22 regression refresh (2026-10-23):** The combined P22 estimator, proposal/adoption, native checkpoint, resource, arm-wiring, causal-ablation and cognition-profile suite passes 113 tests. No P22 held-out draw has been accessed.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1
