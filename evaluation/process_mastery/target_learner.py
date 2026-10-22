@@ -147,7 +147,7 @@ class NativeTargetLearner:
         return observation
 
     def observe_world_receipt(self, receipt: WorldReceipt, *, source_epoch=3,
-                              model_epoch=2, frame_epoch=5):
+                              model_epoch=2, frame_epoch=5, action_occurred=True):
         """Ingest an actual simulator receipt; reject replay and unauthorized data."""
         if not isinstance(receipt, WorldReceipt):
             raise TypeError("target learner requires a typed WorldReceipt")
@@ -162,7 +162,7 @@ class NativeTargetLearner:
             feature_key=receipt.feature_key, before_value=receipt.before_value,
             after_value=receipt.after_value, source_epoch=source_epoch,
             model_epoch=model_epoch, frame_epoch=frame_epoch,
-            visible=True, action_occurred=True)
+            visible=True, action_occurred=action_occurred)
 
     def observe_map_pair(self, *, pair_id: str, source: WorldReceipt,
                          target: WorldReceipt, source_epoch=3, target_frame_epoch=5):

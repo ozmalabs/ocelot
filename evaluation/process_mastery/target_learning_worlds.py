@@ -132,6 +132,52 @@ class LeverSourceWorld:
         return receipt
 
 
+class InconsistentHeatSourceWorld:
+    """Mismatched source control: one typed action has conflicting outcomes."""
+
+    def __init__(self, *, sample_ids):
+        self.states = {str(key): "chilled" for key in sample_ids}
+        self.epoch = 0
+        self.receipts: list[WorldReceipt] = []
+
+    def apply_heat(self, sample_id: str, operation: str) -> WorldReceipt:
+        if sample_id not in self.states or operation != "apply_heat":
+            raise ValueError("invalid inconsistent-source interaction")
+        before = self.states[sample_id]
+        after = ("tempered" if sample_id.endswith("a") else "fractured") \
+            if before == "chilled" else before
+        self.states[sample_id] = after
+        self.epoch += 1
+        receipt = WorldReceipt(
+            f"inconsistent-heat:{self.epoch}:{sample_id}", sample_id, "MetalSample",
+            operation, "heat_level", before, after, "observed", True, self.epoch)
+        self.receipts.append(receipt)
+        return receipt
+
+
+class InconsistentLeverSourceWorld:
+    """Mismatched lever source with incompatible effects across paired objects."""
+
+    def __init__(self, *, lever_ids):
+        self.orientations = {str(key): "down" for key in lever_ids}
+        self.epoch = 0
+        self.receipts: list[WorldReceipt] = []
+
+    def raise_control(self, lever_id: str, operation: str) -> WorldReceipt:
+        if lever_id not in self.orientations or operation != "raise_control":
+            raise ValueError("invalid inconsistent-source interaction")
+        before = self.orientations[lever_id]
+        after = ("up" if lever_id.endswith("a") else "sideways") \
+            if before == "down" else before
+        self.orientations[lever_id] = after
+        self.epoch += 1
+        receipt = WorldReceipt(
+            f"inconsistent-lever:{self.epoch}:{lever_id}", lever_id, "ControlLever",
+            operation, "orientation", before, after, "observed", True, self.epoch)
+        self.receipts.append(receipt)
+        return receipt
+
+
 class RequestRepairWorld:
     """Fresh social task world with an ordered request→repair precondition."""
 

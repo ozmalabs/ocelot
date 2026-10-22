@@ -19,7 +19,8 @@ for _path in (ROOT, ROOT / "runners/dsl/python"):
 
 from evaluation.process_mastery.target_learner import NativeTargetLearner
 from evaluation.process_mastery.target_learning_worlds import (
-    HeatSourceWorld, LatchWorld, LeverSourceWorld, ThermalWorld,
+    HeatSourceWorld, InconsistentHeatSourceWorld, InconsistentLeverSourceWorld,
+    LatchWorld, LeverSourceWorld, ThermalWorld,
     verify_induced_map_candidate, verify_source_prior_target_effect,
 )
 
@@ -35,6 +36,8 @@ class DomainPair:
     target_object_type: str
     target_feature: str
     target_before: str
+    mismatch_source_factory: object
+    mismatch_source_step: object
 
 
 DOMAIN_PAIRS = (
@@ -43,13 +46,17 @@ DOMAIN_PAIRS = (
                lambda ids: ThermalWorld(object_ids=ids),
                lambda world, key: world.apply_heat(key, "apply_heat"),
                lambda world, key: world.apply(key, "warm"),
-               "warm", "ThermalSample", "temperature", "cold"),
+               "warm", "ThermalSample", "temperature", "cold",
+               lambda ids: InconsistentHeatSourceWorld(sample_ids=ids),
+               lambda world, key: world.apply_heat(key, "apply_heat")),
     DomainPair("lever_to_latch",
                lambda ids: LeverSourceWorld(lever_ids=ids),
                lambda ids: LatchWorld(latch_ids=ids),
                lambda world, key: world.raise_control(key, "raise_control"),
                lambda world, key: world.operate(key, "lift"),
-               "lift", "Latch", "position", "lowered"),
+               "lift", "Latch", "position", "lowered",
+               lambda ids: InconsistentLeverSourceWorld(lever_ids=ids),
+               lambda world, key: world.raise_control(key, "raise_control")),
 )
 
 
@@ -160,6 +167,40 @@ def _mapped_stream(pair, stream_id):
             "map_status": map_record["status"], "target_effect_status": effect["status"]}
 
 
+def _mismatched_stream(pair, stream_id):
+    source = pair.mismatch_source_factory((f"{stream_id}:source-a", f"{stream_id}:source-b"))
+    target = pair.target_factory((f"{stream_id}:target-a", f"{stream_id}:target-b"))
+    learner = NativeTargetLearner(owner_id=f"mismatch:{stream_id}", transfer_enabled=True)
+    learner.s.set_attr(learner.s.nodes("TargetLearningPolicy")[0], "enabled", 1.0)
+    curve = [{"target_interactions": 0, "success": int(
+        _prediction_success(learner, pair, stream_id=stream_id, checkpoint=0))}]
+    target_receipts = []
+    for index, suffix in enumerate(("a", "b"), 1):
+        source_receipt = pair.mismatch_source_step(source, f"{stream_id}:source-{suffix}")
+        target_receipt = pair.target_step(target, f"{stream_id}:target-{suffix}")
+        target_receipts.append(target_receipt)
+        learner.observe_map_pair(pair_id=f"{stream_id}:mismatch-pair:{index}",
+                                 source=source_receipt, target=target_receipt)
+        # The same target action receipt becomes fresh evidence after the
+        # source mismatch is visible; it is not charged as a second action.
+        learner.observe_world_receipt(target_receipt, action_occurred=False)
+        learner.settle()
+        curve.append({"target_interactions": index, "success": int(
+            _prediction_success(learner, pair, stream_id=stream_id,
+                               checkpoint=index))})
+    candidates = [node for node in learner.s.nodes("RepresentationMap")
+                  if learner.s.node(node)["attrs"].get("mapping_kind")
+                  == "induced_categorical_effect"]
+    if candidates:
+        raise RuntimeError(f"mismatched source produced a map candidate: {stream_id}")
+    return {"arm": "mismatched_source", "stream_id": stream_id, "curve": curve,
+            "target_actions": learner.accounting.target_actions,
+            "source_information_units": learner.accounting.source_information_units,
+            "native_rule_steps": learner.accounting.native_rule_steps,
+            "graph": learner.graph_footprint(),
+            "map_status": "abstained_conflicting_source"}
+
+
 def run_development_panel(*, streams_per_pair=4):
     """Run all declared development streams; no held-out allocation is read."""
     records = []
@@ -168,10 +209,12 @@ def run_development_panel(*, streams_per_pair=4):
             stream_id = f"dev:{pair.name}:{index:04d}"
             records.append(_fresh_stream(pair, stream_id))
             records.append(_mapped_stream(pair, stream_id))
+            records.append(_mismatched_stream(pair, stream_id))
     checkpoints = sorted({point["target_interactions"] for row in records
                           for point in row["curve"]})
     curves = {}
-    for arm in ("fresh", "mapped_source"):
+    arms = ("fresh", "mapped_source", "mismatched_source")
+    for arm in arms:
         curves[arm] = {}
         for point in checkpoints:
             values = []
