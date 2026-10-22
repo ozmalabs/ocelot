@@ -2189,6 +2189,10 @@ The reproducible probe CLI outputs were rerun and matched the archived raw JSON 
 
 **P22.E1 acceptance verification refresh (2026-10-23):** The exact E1 verification bundle (`test_improvement_estimand.py`, `test_independent_improvement.py`, `test_checkpoint_world_adapter.py`, `test_improvement_causal_ablation.py`, `test_cognition_profile_integration.py`) passes 88 tests. This confirms the local native mechanism and profile gates; the full four-arm training adapters and external candidate-specific approvals remain outstanding.
 
+**P22 four-arm development wiring probe (2026-10-23):** Added a training-only native runner and exercised all four explicit arms on the same eight v2 training worlds per family, with fresh cognition-on graphs and 64 shared-budget capacity. Raw JSON is archived with hashes in [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md). Training-only solved counts were D4 3/8, 3/8, 3/8, 1/8 and Loopover 1/8, 1/8, 1/8, 0/8 for unchanged/adaptive/invention/full. These are not effects. Resource vectors do not match. The full arm leaves funded native search requests without terminal outcomes and fails to dispatch later curriculum tasks (D4: 2/8 curriculum tasks completed, 5 not dispatched; Loopover: 1/8 completed, 6 not dispatched); Loopover invention-only leaves seven funded requests unresolved. No approvals or world receipts were created. This exposes a lifecycle/resource defect: P22.E2 cannot freeze until request settlement and sequential dispatch are repaired, all arms terminalize all paired tasks, and cumulative resources match or the preregistered efficiency claim is dropped.
+
+The refreshed combined P22 regression bundle, including `tests/test_p22_four_arm_development.py`, passes 118 tests. Both four-arm raw JSON files were rerun byte-identically; their hashes are recorded in the development report.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1
