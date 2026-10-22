@@ -979,11 +979,13 @@ Integrate former P6.F3 and I6 rather than duplicating demonstration pipelines. O
 
 ## Phase 13 — Staged sleep reusable libraries and strategy recall
 
-**Entry:** Phase 12 verified episodes/processes, P1 replay scheduler and Phase 10 traces. **Status:** authorized; implementation not started. Use only verified P12 episodes/processes and existing replay/trace interfaces. P12's social-acquisition advantage failed at 0 points; this does not block mechanism work, but no social benefit may be assumed.
+**Entry:** Phase 12 verified episodes/processes, P1 replay scheduler and Phase 10 traces. **Status:** in progress; P13.01 contract frozen, P13.02–P13.E3 open. Use only verified P12 episodes/processes and existing replay/trace interfaces. P12's social-acquisition advantage failed at 0 points; this does not block mechanism work, but no social benefit may be assumed.
 
 Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle producer; one owner delegates existing replay rather than running it twice. Learning is measured by later verified behavior, not support_count or number of stored schemas. Strategy-yield records supplement discovered processes without changing their verification contract.
 
 **Registered evidence:** 200 paired learn→idle→interference→delayed-test streams with full sleep, P1 replay-only, matched-compute awake rehearsal and no-offline arms; 100 interrupt/restart controls. Primary delayed accuracy gain≥10 points over replay-only and new-task loss≤2 points; zero foreground starvation/double debit/ungrounded consolidation. Library reuse must reduce held-out primitive or exact-verifier work≥25% including retrieval and decoder overhead.
+
+**P13.01 record (2026-10-22):** [`COGNITION_SLEEP_STAGE_CONTRACT.md`](COGNITION_SLEEP_STAGE_CONTRACT.md) freezes sole cycle ownership, delegation to the existing one-replay-per-cycle EWM owner, ordered replay→consolidate→decay→library→recombine stages, idempotency keys and receipts, shared-budget billing, foreground interruption/resumption, evidence protection and complete library cost. The new baseline boundary suite `tests/test_sleep_regime_migrated.py` passes 4/4, including single-owner/replay, foreground gating and same-epoch no-double-debit behavior; the existing scheduler suite passes 6/6. This does not claim a staged cursor or checkpoint-resume behavior: those mechanisms are explicitly open for P13.02.
 
 ### P13.01 — Freeze sleep stage ownership library cost and interruption
 
