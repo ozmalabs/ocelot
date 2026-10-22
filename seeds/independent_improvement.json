@@ -130,6 +130,30 @@
       }
     },
     {
+      "provenance": "seed:p22:has_outcome:ProcessCurriculumTask:ProcessCurriculumOutcome",
+      "src": {
+        "type": "ProcessCurriculumTask",
+        "var": "src"
+      },
+      "edge_type": "has_outcome",
+      "tgt": {
+        "type": "ProcessCurriculumOutcome",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:from_evidence:ProcessCurriculumTask:ProcessCurriculumEvidence",
+      "src": {
+        "type": "ProcessCurriculumTask",
+        "var": "src"
+      },
+      "edge_type": "from_evidence",
+      "tgt": {
+        "type": "ProcessCurriculumEvidence",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:p22:proposes_native_candidate:IndependentImprovementProposal:OpenProcessCandidate",
       "src": {
         "type": "IndependentImprovementProposal",
@@ -481,6 +505,505 @@
           "curriculum_task",
           "status",
           "delivered_to_native_search"
+        ]
+      ]
+    },
+    {
+      "name": "iicb_close_training_task_on_native_terminal_outcome",
+      "area": "memory_consolidation",
+      "order": 100,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Record native solve, search, proposal, qualification, or budget-denial outcomes and release the curriculum scheduler for its next task.",
+      "match": [
+        [
+          "agent",
+          "has_independent_improvement_curriculum_bridge_policy",
+          "bridge"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_policy",
+          "curriculum_policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "curriculum_task"
+        ],
+        [
+          "curriculum_task",
+          "from_evidence",
+          "evidence"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "solve_task"
+        ],
+        [
+          "solve_task",
+          "about_domain",
+          "domain"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "searches_task",
+          "solve_task"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "bridge"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "bridge"
+              },
+              "key": "required_split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "delivered_to_native_search"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "curriculum_task"
+              },
+              "key": "task_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "solve_task"
+              },
+              "key": "task_key"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "solve_task"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "solved"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposal_recorded"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "qualified_terminal"
+                }
+              },
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
+                },
+                "var_name": "attempt",
+                "predicate": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Exists",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_budget_request",
+                  "any_type": false
+                },
+                "var_name": "budget_request",
+                "predicate": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget_request"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "denied"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "edge_type": "has_outcome",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "outcome",
+          "ProcessCurriculumOutcome",
+          {
+            "status": "observed",
+            "evidence_status": "observed",
+            "assessment": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "solve_task"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "solved"
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "solved"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "proposal_recorded"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "candidate_proposed"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "qualified_terminal"
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "candidate_qualified"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "search_completed"
+                    }
+                  }
+                }
+              }
+            },
+            "observed_terminal_status": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "solve_task"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "solved"
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "solved"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "proposal_recorded"
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "proposal_recorded"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "qualified_terminal"
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "qualified_terminal"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "native_search_completed"
+                    }
+                  }
+                }
+              }
+            },
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "task_key"
+              }
+            },
+            "split": "training",
+            "attempt_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "edge_type": "has_search_attempt",
+                  "any_type": false
+                }
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "curriculum_task"
+                },
+                "key": "frame_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "curriculum_task",
+          "has_outcome",
+          "outcome",
+          {}
+        ],
+        [
+          "set_attr",
+          "curriculum_task",
+          "status",
+          "completed"
+        ],
+        [
+          "set_attr",
+          "evidence",
+          "status",
+          "resolved"
+        ],
+        [
+          "set_attr",
+          "curriculum_policy",
+          "scheduler_status",
+          "ready"
         ]
       ]
     },

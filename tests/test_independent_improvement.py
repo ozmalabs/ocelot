@@ -328,37 +328,41 @@ def test_native_curriculum_releases_training_task_to_same_process_search_graph()
             "p": {"type": "Var", "name": "p"},
             "state": {"type": "Var", "name": "state"}},
             {"p": target, "state": [0, 1, 2, 3]})
-        evidence = agent.s.add_node("ProcessCurriculumEvidence", {
-            "evidence_key": "p22:training:bridge:0001",
-            "source_kind": "registered_training_pool", "source_id": "p22:train:0001",
-            "task_kind": "process_composition", "action_kind": "apply",
-            "object_type": "Permutation", "feature_key": "permutation",
-            "before_value": [0, 1, 2, 3], "domain": domain_name,
-            "initial_state": [0, 1, 2, 3], "goal": goal,
-            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
-            "status": "eligible", "split": "training",
-            "expected_outcome": "unknown", "sealed_labels_present": False,
-            "fixed_rank": 0.0, "random_rank": 0.0})
-        agent.s.add_edge(agent.agent, "has_process_curriculum_evidence", evidence, {})
+        for trial in ("0001", "0002"):
+            evidence = agent.s.add_node("ProcessCurriculumEvidence", {
+                "evidence_key": f"p22:training:bridge:{trial}",
+                "source_kind": "registered_training_pool", "source_id": f"p22:train:{trial}",
+                "task_kind": "process_composition", "action_kind": "apply",
+                "object_type": "Permutation", "feature_key": "permutation",
+                "before_value": [0, 1, 2, 3], "domain": domain_name,
+                "initial_state": [0, 1, 2, 3], "goal": goal,
+                "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+                "status": "eligible", "split": "training",
+                "expected_outcome": "unknown", "sealed_labels_present": False,
+                "fixed_rank": 0.0, "random_rank": 0.0})
+            agent.s.add_edge(agent.agent, "has_process_curriculum_evidence", evidence, {})
 
         for _ in range(64):
             if agent.inner.run_rules(20_000) == 0:
                 break
         curriculum_tasks = agent.s.nodes("ProcessCurriculumTask")
-        assert len(curriculum_tasks) == 1
-        curriculum_attrs = agent.s.node(curriculum_tasks[0])["attrs"]
-        assert curriculum_attrs["status"] == "delivered_to_native_search"
-        assert curriculum_attrs["split"] == "training"
-        solve_tasks = [node for node in agent.s.nodes("SolveTask")
-                       if agent.s.node(node)["attrs"].get("task_key") ==
-                       curriculum_attrs["task_key"]]
-        assert len(solve_tasks) == 1
-        solve_attrs = agent.s.node(solve_tasks[0])["attrs"]
-        assert solve_attrs["status"] == "stuck"
-        assert solve_attrs["split"] == "training"
-        assert solve_attrs["initial_state"] == [0, 1, 2, 3]
-        assert solve_attrs["goal"] == goal
-        assert agent.inner.neighbours(solve_tasks[0], "about_domain") == [domain]
+        assert len(curriculum_tasks) == 2
+        curriculum_tasks.sort(key=lambda task: agent.s.node(task)["attrs"]["task_key"])
+        assert agent.s.node(curriculum_tasks[0])["attrs"]["status"] == "completed"
+        assert agent.s.node(curriculum_tasks[1])["attrs"]["status"] == "delivered_to_native_search"
+        assert all(agent.s.node(task)["attrs"]["split"] == "training"
+                   for task in curriculum_tasks)
+        assert len(agent.inner.neighbours(curriculum_tasks[0], "has_outcome")) == 1
+        outcome = agent.inner.neighbours(curriculum_tasks[0], "has_outcome")[0]
+        assert agent.s.node(outcome)["attrs"]["status"] == "observed"
+        assert agent.s.node(agent.s.nodes("ProcessCurriculumPolicy")[0])["attrs"]["scheduler_status"] == "active"
+        solve_tasks = agent.s.nodes("SolveTask")
+        assert len(solve_tasks) == 2
+        assert all(agent.s.node(task)["attrs"]["split"] == "training" for task in solve_tasks)
+        assert all(agent.s.node(task)["attrs"]["initial_state"] == [0, 1, 2, 3]
+                   and agent.s.node(task)["attrs"]["goal"] == goal for task in solve_tasks)
+        assert all(agent.inner.neighbours(task, "about_domain") == [domain]
+                   for task in solve_tasks)
         assert any(agent.s.node(attempt)["attrs"].get("status") == "verified"
                    for attempt in agent.s.nodes("OpenProcessSearchAttempt"))
         assert agent.s.nodes("OpenProcessAdoptionApproval") == []

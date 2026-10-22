@@ -11,7 +11,7 @@ OUT = ROOT / "seeds" / "independent_improvement.json"
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-from track_i_seed_lib import A, And, Count, Eq, Exists, L, N, Not, T, policy_on, productions
+from track_i_seed_lib import A, And, Count, Eq, Exists, IfThenElse, L, N, Not, Or, T, policy_on, productions
 
 
 def build():
@@ -44,6 +44,8 @@ def build():
         ("Agent", "has_open_process_search_request", "OpenProcessSearchRequest"),
         ("OpenProcessSearchRequest", "has_search_attempt", "OpenProcessSearchAttempt"),
         ("OpenProcessSearchRequest", "searches_task", "SolveTask"),
+        ("ProcessCurriculumTask", "has_outcome", "ProcessCurriculumOutcome"),
+        ("ProcessCurriculumTask", "from_evidence", "ProcessCurriculumEvidence"),
         ("IndependentImprovementProposal", "proposes_native_candidate", "OpenProcessCandidate"),
         ("IndependentImprovementProposal", "derived_from_trial", "OpenProcessSearchAttempt"),
         ("IndependentImprovementProposal", "has_native_qualification", "IndependentImprovementQualification"),
@@ -90,6 +92,53 @@ def build():
             ["add_edge", "agent", "has_solve_task", "solve_task", {}],
             ["add_edge", "solve_task", "about_domain", "domain", {}],
             ["set_attr", "curriculum_task", "status", "delivered_to_native_search"]]})
+    # The scheduler may release its next residual only after a delivered task
+    # has a native terminal outcome. This runs after the finite P19 grammar
+    # rules, so any recorded attempt means the bounded frontier has quiesced.
+    # Failures remain explicit and count in the evidence denominator.
+    base["rules"].append({"name": "iicb_close_training_task_on_native_terminal_outcome",
+        "area": "memory_consolidation", "order": 100,
+        "latency_class": "background", "batch": False,
+        "comment": "Record native solve, search, proposal, qualification, or budget-denial outcomes and release the curriculum scheduler for its next task.",
+        "match": [["agent", "has_independent_improvement_curriculum_bridge_policy", "bridge"],
+            ["agent", "has_process_curriculum_policy", "curriculum_policy"],
+            ["agent", "has_process_curriculum_task", "curriculum_task"],
+            ["curriculum_task", "from_evidence", "evidence"],
+            ["agent", "has_solve_task", "solve_task"],
+            ["solve_task", "about_domain", "domain"],
+            ["agent", "has_open_process_search_request", "request"],
+            ["request", "searches_task", "solve_task"]],
+        "where": And(policy_on("bridge"), policy_on("curriculum_policy"),
+            Eq(A("bridge", "required_split"), L("training")),
+            Eq(A("curriculum_task", "split"), L("training")),
+            Eq(A("curriculum_task", "status"), L("delivered_to_native_search")),
+            Eq(A("curriculum_task", "task_key"), A("solve_task", "task_key")),
+            Or(Eq(A("solve_task", "status"), L("solved")),
+               Eq(A("request", "status"), L("proposal_recorded")),
+               Eq(A("request", "status"), L("qualified_terminal")),
+               Exists(N("request", "has_search_attempt"), "attempt", L(True)),
+               Exists(N("request", "has_budget_request"), "budget_request",
+                   Eq(A("budget_request", "status"), L("denied")))),
+            Not(Exists(N("curriculum_task", "has_outcome"), "old", L(True)))),
+        "effects": [["add_node", "outcome", "ProcessCurriculumOutcome", {
+            "status": "observed", "evidence_status": "observed",
+            "assessment": T(IfThenElse(Eq(A("solve_task", "status"), L("solved")),
+                L("solved"), IfThenElse(Eq(A("request", "status"), L("proposal_recorded")),
+                L("candidate_proposed"), IfThenElse(Eq(A("request", "status"), L("qualified_terminal")),
+                L("candidate_qualified"), L("search_completed"))))),
+            "observed_terminal_status": T(IfThenElse(Eq(A("solve_task", "status"), L("solved")),
+                L("solved"), IfThenElse(Eq(A("request", "status"), L("proposal_recorded")),
+                L("proposal_recorded"), IfThenElse(Eq(A("request", "status"), L("qualified_terminal")),
+                L("qualified_terminal"), L("native_search_completed"))))),
+            "task_key": T(A("curriculum_task", "task_key")),
+            "split": "training", "attempt_count": T(Count(N("request", "has_search_attempt"))),
+            "source_epoch": T(A("curriculum_task", "source_epoch")),
+            "model_epoch": T(A("curriculum_task", "model_epoch")),
+            "frame_epoch": T(A("curriculum_task", "frame_epoch"))}],
+            ["add_edge", "curriculum_task", "has_outcome", "outcome", {}],
+            ["set_attr", "curriculum_task", "status", "completed"],
+            ["set_attr", "evidence", "status", "resolved"],
+            ["set_attr", "curriculum_policy", "scheduler_status", "ready"]]})
     # A proposal is a reference to a generic P19 expression, never a named recipe.
     base["rules"].append({"name": "iip_propose_native_training_candidate",
         "area": "memory_consolidation", "order": 12,
