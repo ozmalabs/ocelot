@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03 and P10.04 implemented with focused acceptance passed.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03–P10.05 implemented with focused acceptance passed.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -680,6 +680,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_pmb_puzzle_worlds.py tests/test_strategy_discovery.py -q -p no:cacheprovider`.
 - **Non-goals:** a Python puzzle solver, hand-authored placement strategy or unmatched human-record comparison.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P10.05 implementation record (2026-10-22):** Added deterministic 2×2×2 cube face-turn permutations and 3×3 sliding-puzzle adjacent transpositions with legality/reachability checks and exact external solved-state oracles. Seeded task records expose only initial state, goal and primitive affordances; scramble histories are discarded. `puzzle_panel` allocates 200 tasks and 100 controls by default per family. Sliding controls are parity-proven unreachable states; cube controls submit an action absent from the legal affordance set. These are world/evaluation adapters, not an agent solver or human macro library. Verification: `tests/test_pmb_puzzle_worlds.py tests/test_strategy_discovery.py` — 10 passed. No comparative solve claim is made here.
 
 ### P10.E1 — Integrate the phase and validate the evidence adapter
 
