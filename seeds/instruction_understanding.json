@@ -105,6 +105,7 @@
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "statement"}},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "act"}, "key": "name"}, "b": {"type": "Lit", "value": "request"}},
         {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "prev_mention"}, "var_name": "previous", "predicate": {"type": "Lit", "value": true}}},
+        {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_hypothesised"}, "b": {"type": "Lit", "value": 1}}},
         {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_recognised"}, "b": {"type": "Lit", "value": 1}}}
       ]},
       "effects": [
@@ -157,11 +158,18 @@
       "latency_class": "soft_realtime",
       "match": [["agent", "received", "message"], ["message", "has_mention", "head"]],
       "where": {"type": "And", "items": [
-        {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "b": {"type": "Lit", "value": "statement"}},
+        {"type": "In", "member": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_kind"}, "container": {"type": "Lit", "value": ["statement", "instruction"]}},
+        {"type": "Or", "items": [
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}, "b": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}},
+          {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "comp_predicate"}, "b": {"type": "Lit", "value": null}}
+        ]},
         {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "from"}, "b": {"type": "Lit", "value": "interlocutor"}},
         {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "sak_ends_q"}, "b": {"type": "Lit", "value": 1}}},
         {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "prev_mention"}, "var_name": "previous", "predicate": {"type": "Lit", "value": true}}},
-        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "refers_to"}, "var_name": "known", "predicate": {"type": "Lit", "value": true}}},
+        {"type": "Not", "arg": {"type": "Exists", "source": {"type": "Neighbours", "node": {"type": "Var", "name": "head"}, "edge_type": "refers_to"}, "var_name": "known", "predicate": {"type": "And", "items": [
+          {"type": "Eq", "a": {"type": "TypeOf", "node": {"type": "Var", "name": "known"}}, "b": {"type": "Lit", "value": "Concept"}},
+          {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "known"}, "key": "instruction_route"}, "b": {"type": "Lit", "value": null}}}
+        ]}}},
         {"type": "Not", "arg": {"type": "Eq", "a": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "instruction_hypothesised"}, "b": {"type": "Lit", "value": 1}}}
       ]},
       "effects": [
@@ -169,6 +177,7 @@
         ["add_node", "request", "TeacherRequest", {"status": "requested", "teacher_tier": "dictionary", "origin": "agent", "question_kind": "classify_instruction_head", "question_predicate": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}, "question_content": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "head"}, "key": "text"}}, "instruction_context": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "message"}, "key": "text"}}}],
         ["add_edge", "hypothesis", "hypothesises", "message"],
         ["add_edge", "hypothesis", "seeks_teacher", "request"],
+        ["set_attr", "message", "comp_kind", "statement"],
         ["set_attr", "message", "instruction_hypothesised", 1]
       ]
     },
