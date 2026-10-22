@@ -11,7 +11,7 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (  # noqa: E402
-    A, And, Eq, Exists, L, Lt, N, Not, OFFLINE_AREA, PAntiUnifyWitness,
+    A, And, Count, Eq, Exists, L, Lt, N, Not, OFFLINE_AREA, PAntiUnifyWitness,
     StringConcat, T, V, Vec, policy_on, productions, rule,
 )
 
@@ -30,6 +30,7 @@ def source_family_rule():
         [["agent", "has_process_lifting_policy", "pol"],
          ["agent", "has_process_schema", "a"], ["agent", "has_process_schema", "b"]],
         And(policy_on(), Eq(A("pol", "enabled"), L(1.0)), Lt(V("a"), V("b")),
+            Lt(Count(N("agent", "has_lifted_process_family")), A("pol", "max_sources")),
             Not(Eq(A("a", "domain"), A("b", "domain"))),
             Eq(A("a", "kind"), A("b", "kind")),
             Eq(A("a", "domain_kind"), A("b", "domain_kind")),

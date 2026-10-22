@@ -143,6 +143,29 @@
             }
           },
           {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_lifted_process_family",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_sources"
+            }
+          },
+          {
             "type": "Not",
             "arg": {
               "type": "Eq",

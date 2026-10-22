@@ -37,10 +37,14 @@ def test_unseen_size_verified():
     pytest.skip("Symbolic family-to-process construction is not implemented; no unseen-size effect is claimed")
 
 
-def test_bad_binding_rejected():
+def test_mismatched_kind_rejected():
     agent = _family_agent()
     _pair(agent, right_kind="integer_matrix")
     assert not agent.nodes("LiftedProcessFamily")
+
+
+def test_bad_binding_rejected():
+    pytest.skip("No executable symbolic binding constructor is implemented yet")
 
 
 def test_lifted_provenance_retained():
