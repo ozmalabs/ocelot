@@ -205,6 +205,105 @@ def _recursive_compose_rule(*, reverse=False):
          ["add_edge", "attempt", "uses_parent_process", "a", {}]], batch=False)
 
 
+def _recursive_unary_rule(operator, power=None):
+    if operator == "inverse":
+        params = PInverse(A("prior", "params"))
+        inner = Vec(L("inverse"), _tree("prior"))
+        subgoal = L(None)
+        work = A("prior", "work_cost")
+        key_parts = [L("inverse["), A("prior", "expression_key"), L("]")]
+    else:
+        params = PPower(A("prior", "params"), power)
+        inner = Vec(L("power"), L(float(power)), _tree("prior"))
+        subgoal = PApply(A("prior", "params"), A("task", "initial_state"))
+        work = Times(L(float(power)), A("prior", "work_cost"))
+        key_parts = [L(f"power{power}["), A("prior", "expression_key"), L("]")]
+    key = {"type": "StringConcat", "parts": key_parts}
+    applied = PApply(params, A("task", "initial_state"))
+    tree = Vec(L("guard"), A("task", "initial_state"),
+               Vec(L("subgoal"), subgoal, inner))
+    return rule(
+        f"ops_record_recursive_{operator}_attempt", ONLINE_AREA, 25,
+        "Apply a bounded unary grammar constructor to a residual graph-authored expression.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "searches_task", "task"], ["task", "about_domain", "d"],
+         ["request", "has_search_attempt", "prior"],
+         ["prior", "about_task", "task"]],
+        And(policy_on(), Eq(A("request", "status"), L("funded")),
+            Eq(A("task", "status"), L("stuck")),
+            Eq(A("prior", "status"), L("residual")),
+            Lt(A("prior", "depth"), A("pol", "max_depth")),
+            Lt(Count(N("agent", "has_open_process_search_attempt")),
+               A("pol", "max_attempts")),
+            Not(Exists(N("request", "has_search_attempt"), "old",
+                       Eq(A("old", "expression_key"), key)))),
+        [["add_node", "attempt", "OpenProcessSearchAttempt", {
+            "expression_key": T(key), "operator_kind": "recursive_unary",
+            "expression_tree": T(tree), "params": T(params),
+            "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
+            "guard_state": T(A("task", "initial_state")), "subgoal_state": T(subgoal),
+            "depth": T(Plus(A("prior", "depth"), L(1.0))),
+            "effect_digest": T(PFingerprint(params, A("d", "probes"))),
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending", "domain": T(A("d", "name")),
+            "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")),
+            "frame_epoch": T(A("d", "frame_epoch")), "work_cost": T(work),
+            "status": T(IfThenElse(is_none(params), L("unknown"),
+                IfThenElse(is_none(applied), L("unknown"),
+                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))),
+            "rank_score": T(IfThenElse(is_none(params), Plus(L(2000000.0), work),
+                IfThenElse(is_none(applied), Plus(L(2000000.0), work),
+                    IfThenElse(Eq(applied, A("task", "goal")), work,
+                        Plus(L(1000000.0), work)))))}],
+         ["add_edge", "request", "has_search_attempt", "attempt", {}],
+         ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
+         ["add_edge", "attempt", "about_task", "task", {}],
+         ["add_edge", "attempt", "extends_search_attempt", "prior", {}]], batch=False)
+
+
+def _mint_recursive_unary_rule():
+    return rule(
+        "ops_mint_verified_recursive_unary_candidate", ONLINE_AREA, 30,
+        "Retain only the lowest-work exact recursive unary expression for the funded task.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_search_attempt", "attempt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "has_search_attempt", "attempt"],
+         ["attempt", "about_task", "task"], ["task", "about_domain", "d"]],
+        And(policy_on(), Eq(A("attempt", "operator_kind"), L("recursive_unary")),
+            Eq(A("attempt", "status"), L("verified")),
+            Eq(A("attempt", "domain"), A("d", "name")),
+            Eq(A("attempt", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("attempt", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("attempt", "frame_epoch"), A("d", "frame_epoch")),
+            Eq(V("attempt"), Argmin(N("request", "has_search_attempt"),
+                                    "best", A("best", "rank_score"))),
+            Lt(Count(N("agent", "has_open_process_candidate")),
+               A("pol", "max_candidates")),
+            Not(Exists(N("agent", "has_open_process_candidate"), "old",
+                       Eq(A("old", "expression_key"), A("attempt", "expression_key"))))),
+        [["add_node", "candidate", "OpenProcessCandidate", {
+            "expression_key": T(A("attempt", "expression_key")),
+            "expression_digest": T(A("attempt", "expression_digest")),
+            "expression_tree": T(A("attempt", "expression_tree")),
+            "params": T(A("attempt", "params")),
+            "effect_digest": T(A("attempt", "effect_digest")),
+            "domain": T(A("attempt", "domain")), "kind": T(A("attempt", "kind")),
+            "source_epoch": T(A("attempt", "source_epoch")),
+            "model_epoch": T(A("attempt", "model_epoch")),
+            "frame_epoch": T(A("attempt", "frame_epoch")),
+            "precondition_kind": "native_apply_defined",
+            "guard_state": T(A("attempt", "guard_state")),
+            "subgoal_state": T(A("attempt", "subgoal_state")),
+            "work_cost": T(A("attempt", "work_cost")),
+            "verification": "native_process_apply_on_observed_source_state",
+            "approval_required": 1.0, "status": "unapproved_candidate"}],
+         ["add_edge", "agent", "has_open_process_candidate", "candidate", {}],
+         ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]], batch=False)
+
+
 def build():
     specs = [
         ("Agent", "has_open_process_search_policy", "OpenProcessSearchPolicy"),
@@ -261,6 +360,8 @@ def build():
     for index, operator in enumerate(("inverse", "power2", "power3"), start=2):
         rules.extend(_expression_rule(operator, index))
     rules.extend((_recursive_compose_rule(), _recursive_compose_rule(reverse=True)))
+    rules.extend((_recursive_unary_rule("inverse"), _recursive_unary_rule("power", 2),
+                  _recursive_unary_rule("power", 3), _mint_recursive_unary_rule()))
     return {"id": SEED_ID, "version": "1.0.0",
         "depends_on": ["process_solving", "thinking_budget"],
         "self_load_only": True, "area": OFFLINE_AREA,

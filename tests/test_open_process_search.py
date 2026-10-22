@@ -30,6 +30,18 @@ def _compose(agent, a, b):
         "b": {"type": "Var", "name": "b"}}, {"a": a, "b": b})
 
 
+def _inverse(agent, process):
+    return agent.native.evaluate({"type": "ProcessInverse",
+        "a": {"type": "Var", "name": "p"}}, {"p": process})
+
+
+def _power(agent, process, exponent):
+    result = process
+    for _ in range(exponent - 1):
+        result = _compose(agent, result, process)
+    return result
+
+
 def _tick(agent):
     for _ in range(12):
         agent.s.tick(4000)
@@ -156,6 +168,26 @@ def test_residual_expression_expands_recursively_with_depth_bound():
     ancestor_parent = agent.native.neighbours(ancestors[0], "uses_parent_process")[0]
     agent.s.set_attr(ancestor_parent, "source_digest", "mutated-parent-source")
     assert open_process_candidate_digest(agent, candidate) != before
+
+
+def test_recursive_inverse_and_power_transform_residual_expressions():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
+    for operator, exponent in (("inverse", None), ("power", 2), ("power", 3)):
+        agent, _ = _agent(held=held, attempts=256)
+        initial = [0, 1, 2, 3]
+        residual = _compose(agent, held["p"], held["q"])
+        expected = (_inverse(agent, residual) if operator == "inverse"
+                    else _power(agent, residual, exponent))
+        goal = _apply(agent, expected, initial)
+        task = agent.add_solve_task("search", initial, goal)
+        agent.s.set_attr(task, "status", "stuck")
+        _tick(agent)
+        attempts = [agent.attrs(node) for node in agent.nodes("OpenProcessSearchAttempt")]
+        assert any(attrs["operator_kind"] == "recursive_unary"
+                   and attrs["status"] == "verified" and attrs["params"] == expected
+                   for attrs in attempts)
+        candidates = [agent.attrs(node) for node in agent.nodes("OpenProcessCandidate")]
+        assert any(attrs["params"] == expected for attrs in candidates)
 
 
 def test_changed_goal_changes_proposal():
