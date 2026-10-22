@@ -31,7 +31,7 @@ BASE_SEED = 25_111_000  # selection/development block for family_code=11
 N_DEVELOPMENT = 8
 N_SELF_CHECK = 2
 GENERATION_INDEX = 1
-BUDGET = 300_000.0  # three sequential generation reservations share one arm budget
+BUDGET = 400_000.0  # three 100k generation reservations plus shared curriculum funding
 MAX_TICKS = 400
 MAX_STEPS_PER_TICK = 100_000
 
@@ -86,7 +86,7 @@ def _profile(arm):
         if _nodes(agent, kind):
             _set_only(agent, kind, False)
     _set_only(agent, "ProcessSchemaPolicy", False)
-    if arm == "adaptive_curriculum":
+    if arm in {"adaptive_curriculum", "full_system"}:
         _set_only(agent, "ProcessCurriculumPolicy", True)
     if arm == "full_system":
         _set_only(agent, "InventionOperatorAuthorshipPolicy", True)
@@ -148,6 +148,11 @@ def _process(agent, seed):
 def V(name): return {"type": "Var", "name": name}
 
 
+def _apply(agent, process, state):
+    return _eval(agent, {"type": "ProcessApply", "p": V("p"), "state": V("state")},
+                 {"p": process, "state": state})
+
+
 def _exercise_curriculum(agent, seed):
     hyp = agent.s.add_node("ProcessInductionHypothesis", {
         "owner_id": "p15-adapter", "action_kind": "apply", "object_type": "permutation",
@@ -194,8 +199,8 @@ def _exercise_operator_generation(agent):
         comm, square = _process(agent, seed)
         initial = _permutation(seed + 7)
         goal = [square[x] for x in initial]
-        parent_success += int([comm[x] for x in initial] == goal)
-        candidate_success += int([square[x] for x in initial] == goal)
+        parent_success += int(list(_apply(agent, comm, initial)) == goal)
+        candidate_success += int(list(_apply(agent, square, initial)) == goal)
         invariant_checks += int(all(sorted(p) == list(range(4)) for p in (comm, square))) * 4
     for key, value in {"development_yield": float(candidate_success),
                        "parent_development_yield": float(parent_success),
@@ -245,8 +250,8 @@ def _measure_successor_v2(agent):
                      {"left": square, "right": comm})
         initial = _permutation(seed + 7)
         goal = [cube[x] for x in initial]
-        parent_success += int([square[x] for x in initial] == goal)
-        candidate_success += int([cube[x] for x in initial] == goal)
+        parent_success += int(list(_apply(agent, square, initial)) == goal)
+        candidate_success += int(list(_apply(agent, cube, initial)) == goal)
         invariant_checks += int(all(sorted(p) == list(range(4))
                                     for p in (comm, square, cube))) * 4
     for key, value in {"development_yield": float(candidate_success),
@@ -309,8 +314,8 @@ def _measure_successor_v3(agent):
                        {"left": cube, "right": comm})
         initial = _permutation(seed + 7)
         goal = [fourth[x] for x in initial]
-        parent_success += int([cube[x] for x in initial] == goal)
-        candidate_success += int([fourth[x] for x in initial] == goal)
+        parent_success += int(list(_apply(agent, cube, initial)) == goal)
+        candidate_success += int(list(_apply(agent, fourth, initial)) == goal)
         invariant_checks += int(all(sorted(p) == list(range(4))
                                     for p in (comm, square, cube, fourth))) * 4
     for key, value in {"development_yield": float(candidate_success),
@@ -327,12 +332,24 @@ def _measure_successor_v3(agent):
     pending = [g for g in _nodes(agent, "RecursiveProcessGeneration")
                if agent.s.node(g)["attrs"].get("candidate_name") == "commutator_fourth_v3"]
     if len(pending) != 1 or agent.s.node(pending[0])["attrs"].get("status") != "pending_approval":
-        raise RuntimeError("generation 3 did not remain pending its independent approval")
+        raise RuntimeError(f"generation 3 did not remain pending its independent approval: "
+                           f"{[agent.s.node(g)['attrs'] for g in pending]}")
+    approval = agent.s.add_node("OperatorPromotionApproval", {
+        "status": "approved", "approval_kind": "human",
+        "candidate_name": "commutator_fourth_v3",
+        "criteria_digest": "pmb-v1-frozen-criteria"})
+    _edge(agent, agent.agent, "has_promotion_approval", approval)
+    _settle(agent)
+    if agent.s.node(pending[0])["attrs"].get("status") != "active":
+        raise RuntimeError("approved generation 3 did not pass the existing human promotion gate")
     return {"candidate_name": attrs["name"], "parent_yield": parent_success,
             "candidate_yield": candidate_success, "invariant_checks": invariant_checks,
-            "candidate_work": 16, "candidate_status": attrs["status"],
+            "candidate_work": 16, "candidate_status": agent.s.node(candidate)["attrs"]["status"],
             "generation_status": agent.s.node(pending[0])["attrs"]["status"],
-            "approval_required": True, "criteria_digest": attrs["criteria_digest"]}
+            "approval_event": {"status": agent.s.node(approval)["attrs"]["status"],
+                               "candidate_name": "commutator_fourth_v3",
+                               "criteria_digest": "pmb-v1-frozen-criteria"},
+            "criteria_digest": attrs["criteria_digest"]}
 
 
 def _run_task(agent, arm, seed, generation):
@@ -342,9 +359,8 @@ def _run_task(agent, arm, seed, generation):
         operator = _eval(agent, {"type": "ProcessCompose", "a": V("left"), "b": V("right")},
                          {"left": operator, "right": comm})
     initial = _permutation(seed + 7)
-    apply = lambda p: [p[x] for x in initial]
-    expected = apply(operator)
-    result = apply(operator if arm == "full_system" else comm)
+    expected = _apply(agent, operator, initial)
+    result = _apply(agent, operator if arm == "full_system" else comm, initial)
     return result == expected, comm, operator, square
 
 
@@ -362,6 +378,8 @@ def provenance():
         "docs/research/engine_substrate/COGNITION_RECURSIVE_IMPROVEMENT_CONTRACT.md",
         "docs/research/engine_substrate/PMB_V1_SPEC.md",
         "runners/dsl/src/process_algebra.rs", "runners/dsl/src/cognitive_cycle.rs",
+        "runners/dsl/Cargo.toml", "runners/dsl/pyproject.toml",
+        "runners/dsl/uv.lock", "runners/dsl/python/substrate_rs/_native.build.json",
     )
     return {"phase": PHASE, "source_bundle_sha256": _file_digest(paths),
             "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"],
@@ -371,14 +389,26 @@ def provenance():
             "engine_binary_sha256": hashlib.sha256(Path(substrate_rs.__file__).read_bytes()).hexdigest(),
             "profile_sha256": _file_digest(("substrate/boot_profiles.py", "seeds/cognition_on_params.json")),
             "world_adapter_sha256": _file_digest(("substrate/world_adapter.py", "evaluation/process_mastery/harness.py")),
+            "dependency_closure_sha256": _file_digest(("runners/dsl/Cargo.toml",
+                "runners/dsl/pyproject.toml", "runners/dsl/uv.lock",
+                "runners/dsl/python/substrate_rs/_native.build.json")),
+            "engine_source_sha256": _file_digest(("runners/dsl/src/process_algebra.rs",
+                "runners/dsl/src/cognitive_cycle.rs")),
             "python": sys.version.split()[0]}
 
 
-def run(*, n=N_DEVELOPMENT, self_check=False):
+def run(*, n=N_DEVELOPMENT, self_check=False, split="development"):
+    if split not in {"development", "heldout"}:
+        raise ValueError("P15 split must be development or heldout")
     if n < 1 or n > 200:
         raise ValueError("P15 n must be in [1, 200]")
-    if not self_check and n != N_DEVELOPMENT:
-        raise ValueError("development draw uses the frozen eight-task self-check panel")
+    if self_check and split != "development":
+        raise ValueError("self-check is development-only")
+    if not self_check and split == "development" and n != N_DEVELOPMENT:
+        raise ValueError("development draw uses the frozen eight-task panel")
+    if not self_check and split == "heldout" and n != 200:
+        raise ValueError("held-out draw uses the frozen 200-task panel")
+    control_block = 1 if split == "development" else 2
     records = []
     access_hash = _digest(["ProcessApply", "ProcessCompose", "ProcessCommutator",
                            "held permutation primitives", "external_actions=0"])
@@ -386,11 +416,11 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
     candidate_development = successor_development = third_development = None
     for arm in ARMS:
         agent, boot_seconds, budget = _profile(arm)
-        generation_states = {1: None, 2: None}
+        generation_states = {1: None, 2: None, 3: None}
         try:
-            if arm == "adaptive_curriculum":
+            if arm in {"adaptive_curriculum", "full_system"}:
                 _exercise_curriculum(agent, TRAINING_SEED_BASE)
-            elif arm == "full_system":
+            if arm == "full_system":
                 _, _, generation_one, candidate_development = _exercise_operator_generation(agent)
                 generation_states[1] = generation_one
                 successor_development = _measure_successor_v2(agent)
@@ -403,9 +433,16 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
                 generation_states[2] = next(g for g in _nodes(agent, "RecursiveProcessGeneration")
                     if agent.s.node(g)["attrs"].get("candidate_name") == "commutator_cube_v2"
                     and agent.s.node(g)["attrs"].get("status") == "active")
-            for generation in (1, 2):
+                approval_v3 = next(n for n in _nodes(agent, "OperatorPromotionApproval")
+                                   if agent.s.node(n)["attrs"].get("candidate_name") == "commutator_fourth_v3")
+                if agent.s.node(approval_v3)["attrs"].get("criteria_digest") != "pmb-v1-frozen-criteria":
+                    raise RuntimeError("generation 3 approval digest mismatch")
+                generation_states[3] = next(g for g in _nodes(agent, "RecursiveProcessGeneration")
+                    if agent.s.node(g)["attrs"].get("candidate_name") == "commutator_fourth_v3"
+                    and agent.s.node(g)["attrs"].get("status") == "active")
+            for generation in (1, 2, 3):
                 family_code = 10 + generation
-                seed_base = 25_000_000 + family_code * 10_000 + 1_000
+                seed_base = 25_000_000 + family_code * 10_000 + control_block * 1_000
                 generation_state = generation_states[generation]
                 if generation_state is not None:
                     attrs = agent.s.node(generation_state)["attrs"]
@@ -413,8 +450,10 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
                         raise RuntimeError(f"full-system generation {generation} failed its invariant gate")
                 for ix in range(n):
                     seed = seed_base + ix
+                    task_started = time.perf_counter()
                     solved, comm, operator, square = _run_task(agent, arm, seed, generation)
-                    task_work = (2 * generation + 2) if arm == "full_system" else 1
+                    task_seconds = time.perf_counter() - task_started
+                    task_work = (generation + 2) if arm == "full_system" else 2
                     if generation_state is not None:
                         generation_attrs = agent.s.node(generation_state)["attrs"]
                         remaining = float(generation_attrs["budget_remaining"])
@@ -432,6 +471,7 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
                         "seed": seed, "generation": generation, "profile": arm,
                         "solved": bool(solved), "operator_calls": 1,
                         "agent_work_units": task_work,
+                        "task_seconds": task_seconds,
                         "actions": 0, "invariant_checks_passed": int(all(sorted(p) == list(range(4)) for p in (comm, operator, square))),
                         "boot_seconds": boot_seconds, "graph_nodes_end": len(graph["nodes"]),
                         "graph_serialized_bytes": len(json.dumps(graph, sort_keys=True).encode()),
@@ -445,11 +485,13 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
             agent.close()
     if any(len(hashes) != 1 for hashes in worlds.values()):
         raise RuntimeError("paired arms received different generated task worlds")
-    metadata = {"phase": PHASE, "split": "development", "seed_base": BASE_SEED,
+    metadata = {"phase": PHASE, "split": split, "seed_base": BASE_SEED,
         "seed_formula": "25_000_000 + family_code*10_000 + control_block*1_000 + draw",
-        "family_index": 1, "generation_indexes": [1, 2],
-        "family_codes": [11, 12], "selection_control_block": 1, "training_control_block": 0,
+        "family_index": 1, "generation_indexes": [1, 2, 3],
+        "family_codes": [11, 12, 13], "selection_control_block": 1, "training_control_block": 0,
         "evaluation_control_block": 2, "integrity_control_block": 3,
+        "task_control_block": control_block,
+        "training_seed_base": TRAINING_SEED_BASE,
         "selection_draws_per_generation": list(range(n)),
         "candidate_selection_draws": {"generation_1": [800, 801],
                                       "generation_2": [800, 801],
@@ -457,9 +499,12 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
         "candidate_development": candidate_development,
         "successor_development": successor_development,
         "third_generation_development": third_development,
-        "completed_generations": [1, 2],
+        "completed_generations": [1, 2, 3],
         "n_per_generation_per_arm": n, "arms": list(ARMS),
         "shared_budget_per_arm_across_three_generations": BUDGET,
+        "generation_budget_cap": 100_000,
+        "per_generation_task_work": {"unchanged_operator": 2,
+            "adaptive_curriculum": 2, "full_system": "generation+2"},
         "limits": {"max_ticks": MAX_TICKS, "max_steps_per_tick": MAX_STEPS_PER_TICK,
                    "max_nodes": 100000, "max_graph_bytes": 64 * 1024 * 1024},
         "artifact_provenance": provenance(), "self_check": bool(self_check),
@@ -472,11 +517,14 @@ def run(*, n=N_DEVELOPMENT, self_check=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n", type=int, default=N_DEVELOPMENT)
+    parser.add_argument("--n", type=int)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--self-check", action="store_true")
+    parser.add_argument("--split", choices=("development", "heldout"), default="development")
     args = parser.parse_args()
-    payload = run(n=N_SELF_CHECK if args.self_check else args.n, self_check=args.self_check)
+    n = N_SELF_CHECK if args.self_check else (args.n if args.n is not None else
+        (200 if args.split == "heldout" else N_DEVELOPMENT))
+    payload = run(n=n, self_check=args.self_check, split=args.split)
     if args.output:
         write_scorecard(args.output, metadata=payload["metadata"], records=payload["records"])
     else:

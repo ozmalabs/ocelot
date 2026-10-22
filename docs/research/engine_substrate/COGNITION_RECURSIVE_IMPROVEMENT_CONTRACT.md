@@ -1,6 +1,6 @@
 # Recursive process improvement contract
 
-**Status:** P15.01 specification, frozen before P15 implementation. The user explicitly approved promotion of `commutator_square_v1` and `commutator_cube_v2`, each under criteria digest `pmb-v1-frozen-criteria`, on 2026-10-22. Each authorization is scoped to its named candidate and digest; neither is blanket approval for later candidates or generations. The graph must carry each corresponding `OperatorPromotionApproval` event before runtime promotion.
+**Status:** P15.01 specification, frozen before P15 implementation. The user explicitly approved promotion of `commutator_square_v1`, `commutator_cube_v2`, and `commutator_fourth_v3`, each under criteria digest `pmb-v1-frozen-criteria`, on 2026-10-22. Each authorization is scoped to its named candidate and digest; none is blanket approval for later candidates or generations. The graph must carry each corresponding `OperatorPromotionApproval` event before runtime promotion.
 
 ## Generation and lineage records
 
@@ -8,7 +8,7 @@ A generation is an immutable record of one operator portfolio state, its parent 
 
 An agent-authored generation contains only graph-produced candidate data and declared measurements. Host code may install the frozen starting graph, provide world events and explicit human approval events, invoke bounded native ticks, and collect mechanical outcome records. A human-authored operator edit, changed verifier/criterion, manually edited candidate, missing ancestry edge, or absent approval event invalidates an autonomous-generation claim. Failed, timed-out, rejected, stale, or rolled-back generations remain in the lineage with their receipts and resource use; they are never silently removed or retried without charge.
 
-Approval remains per candidate. The received approval events for `commutator_square_v1` and `commutator_cube_v2` each authorize only the named candidate and exact frozen digest. Every later candidate that reaches `awaiting_human` requires a separate explicit human approval against the criteria digest active for that candidate. No approval is implied by a positive score, a graph-authored proposal, or continuation of the experiment. Each accepted generation preserves the previous active operator as its rollback target. Any proof, adoption, grounding, source-epoch, or action-safety invariant violation suspends that generation and restores the last verified ancestor; rollback itself is recorded and charged.
+Approval remains per candidate. The received approval events for `commutator_square_v1`, `commutator_cube_v2`, and `commutator_fourth_v3` each authorize only the named candidate and exact frozen digest. Every later candidate that reaches `awaiting_human` requires a separate explicit human approval against the criteria digest active for that candidate. No approval is implied by a positive score, a graph-authored proposal, or continuation of the experiment. Each accepted generation preserves the previous active operator as its rollback target. Any proof, adoption, grounding, source-epoch, or action-safety invariant violation suspends that generation and restores the last verified ancestor; rollback itself is recorded and charged.
 
 ## Fixed machinery and mutable state
 
