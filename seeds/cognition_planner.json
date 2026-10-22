@@ -23,6 +23,8 @@
         "maximum_depth": 8.0,
         "maximum_expansions": 256.0,
         "maximum_path_arrivals": 4096.0,
+        "single_path_per_state": 0.0,
+        "singular_candidate_selection": 0.0,
         "expansion_cost": 1.0,
         "maximum_branching": 8.0,
         "current_model_epoch": -1.0,
@@ -5944,6 +5946,48 @@
             }
           },
           {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "policy"
+                    },
+                    "key": "single_path_per_state"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "destination"
+                    },
+                    "edge_type": "has_path_arrival",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              }
+            ]
+          },
+          {
             "type": "Lt",
             "a": {
               "type": "Count",
@@ -8495,6 +8539,93 @@
               "field": "selected",
               "snapshot_field": "shape_snapshot"
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "planner_policy"
+                    },
+                    "key": "singular_candidate_selection"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "b": {
+                  "type": "Argmin",
+                  "source": {
+                    "type": "FutureManifoldSelection",
+                    "episode": {
+                      "type": "Var",
+                      "name": "episode"
+                    },
+                    "policy": {
+                      "type": "Var",
+                      "name": "manifold_policy"
+                    },
+                    "candidates": {
+                      "type": "Filter",
+                      "source": {
+                        "type": "Neighbours",
+                        "node": {
+                          "type": "Var",
+                          "name": "request"
+                        },
+                        "edge_type": "has_imagined_plan_candidate",
+                        "any_type": false
+                      },
+                      "var_name": "feasible_candidate",
+                      "predicate": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "feasible_candidate"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "feasible_path"
+                        }
+                      }
+                    },
+                    "field": "selected",
+                    "snapshot_field": "shape_snapshot"
+                  },
+                  "var_name": "selected_path",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "selected_path"
+                    },
+                    "key": "path_identity"
+                  },
+                  "default": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              }
+            ]
           }
         ]
       },

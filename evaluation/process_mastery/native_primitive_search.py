@@ -11,12 +11,13 @@ from substrate.world_adapter import WorldAdapter
 
 def _run_to_fixpoint(adapter):
     for ticks in range(1, 31):
-        if adapter.inner.run_rules(1_000) == 0:
+        if adapter.inner.run_rules(100_000) == 0:
             return ticks
     raise RuntimeError("native primitive planner did not reach a fixpoint")
 
 
-def search_and_execute(task: dict[str, Any], *, world, remaining: float = 100_000.0):
+def search_and_execute(task: dict[str, Any], *, world, remaining: float = 100_000.0,
+                       depth_limit: int = 1, max_path_arrivals: int = 4096):
     """Search the complete supplied finite model and execute one world receipt.
 
     Python encodes world states/transitions as graph data and transports the
@@ -32,7 +33,9 @@ def search_and_execute(task: dict[str, Any], *, world, remaining: float = 100_00
     budget = adapter.s.nodes("ThinkingBudget")[0]
     for key, value in {"enabled": 1.0, "maximum_depth": 8.0,
                        "maximum_expansions": 256.0,
-                       "maximum_path_arrivals": 4096.0,
+                       "maximum_path_arrivals": float(max_path_arrivals),
+                       "single_path_per_state": 1.0,
+                       "singular_candidate_selection": 1.0,
                        "current_model_epoch": 2.0,
                        "current_goal_epoch": 3.0,
                        "current_manifold_epoch": 5.0,
@@ -68,7 +71,7 @@ def search_and_execute(task: dict[str, Any], *, world, remaining: float = 100_00
         "model_id": "p16-model", "model_epoch": 2.0, "model_complete": 1.0,
         "goal_id": "p16-goal", "goal_epoch": 3.0, "manifold_id": "p16-manifold",
         "manifold_epoch": 5.0, "required_horizon": 1.0, "deadline_epoch": 10.0,
-        "intervention_unit": "action", "depth_limit": 1.0, "expansion_limit": 256.0,
+        "intervention_unit": "action", "depth_limit": float(depth_limit), "expansion_limit": 256.0,
         "world_access": {"initial_state": list(task["initial_state"]),
                          "goal_state": list(task["goal_state"]),
                          "primitive_affordances": task["primitive_affordances"],
@@ -128,13 +131,48 @@ def search_and_execute(task: dict[str, Any], *, world, remaining: float = 100_00
                 "graph_nodes": len(adapter.s.nodes()), "actions": 0}
     candidates = adapter.inner.neighbours(request, "has_imagined_plan_candidate")
     if len(candidates) != 1:
-        raise RuntimeError(f"expected one graph-selected plan, found {len(candidates)}")
+        statuses = [adapter.s.node(node)["attrs"].get("status") for node in candidates]
+        selected = [adapter.s.node(node)["attrs"] for node in candidates
+                    if adapter.s.node(node)["attrs"].get("status") == "proposal"]
+        if len(selected) == 1:
+            action = selected[0].get("first_action_key")
+            if not isinstance(action, str):
+                raise RuntimeError("graph-selected plan has no first primitive")
+            receipt = world.transition(world.state, action)
+            if not world.verify_receipt(receipt):
+                raise RuntimeError("external primitive-search receipt failed verification")
+            return {"status": "COMPLETED", "planner_status": "solved", "action": action,
+                    "receipt": receipt, "ticks": ticks,
+                    "expanded": request_attrs.get("expanded_count", 0),
+                    "graph_nodes": len(adapter.s.nodes()), "actions": 1,
+                    "remaining_budget": adapter.s.node(budget)["attrs"].get("remaining"),
+                    "graph_nodes_added": len(adapter.s.nodes()) - before_nodes,
+                    "plan_candidate": selected[0]}
+        raise RuntimeError(f"expected one graph-selected plan, found {len(candidates)} ({statuses})")
     arrivals = adapter.inner.neighbours(candidates[0], "has_terminal_path_arrival")
     if len(arrivals) != 1:
         raise RuntimeError(f"expected one terminal path, found {len(arrivals)}")
-    transition = adapter.inner.neighbours(arrivals[0], "via_transition")
+    # The world boundary executes one primitive at a time. Walk the native
+    # path-arrival ancestry back to its first transition instead of emitting
+    # the terminal transition from a later state.
+    arrival = arrivals[0]
+    seen_arrivals = set()
+    ancestry = []
+    while True:
+        if arrival in seen_arrivals:
+            raise RuntimeError("native plan path contains an ancestry cycle")
+        seen_arrivals.add(arrival)
+        ancestry.append(arrival)
+        parent = adapter.inner.neighbours(arrival, "parent_path_arrival")
+        if not parent:
+            break
+        if len(parent) != 1:
+            raise RuntimeError("native plan path has ambiguous ancestry")
+        arrival = parent[0]
+    first_step = ancestry[-2] if len(ancestry) > 1 else ancestry[0]
+    transition = adapter.inner.neighbours(first_step, "via_transition")
     if len(transition) != 1:
-        raise RuntimeError("terminal path has no unique native transition")
+        raise RuntimeError("native path has no unique first transition")
     action = adapter.s.node(transition[0])["attrs"]["action_key"]
     receipt = world.transition(world.state, action)
     if not world.verify_receipt(receipt):

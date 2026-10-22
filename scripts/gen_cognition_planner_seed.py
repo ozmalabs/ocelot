@@ -633,6 +633,8 @@ def materialize_path_arrival_rule():
                       Eq(A("parent_arrival", "model_epoch"), A("request", "model_epoch")),
                       Eq(A("parent_arrival", "source_epoch"), A("request", "source_epoch")),
                       Eq(A("parent_arrival", "depth"), A("frontier", "depth")),
+                      Or(Not(Eq(A("policy", "single_path_per_state"), L(1.0))),
+                         Eq({"type": "Count", "source": N("destination", "has_path_arrival")}, ZERO)),
                       Lt({"type": "Count", "source": N("request", "has_path_arrival")},
                          A("request", "path_arrival_limit")),
                       Not(known_arrival)),
@@ -845,6 +847,11 @@ def classify_path_projection_rule(status, condition, order):
 
 def finalize_path_candidate_selection_rule():
     selection_result = selection("episode", "manifold_policy", N("request", "has_imagined_plan_candidate"))
+    # Pareto selection may retain several candidates with identical declared
+    # intervention and goal value. Resolve only that tie in the graph, using
+    # the stable path identity already carried by each native arrival.
+    selected_path = Argmin(selection_result, "selected_path",
+                           A("selected_path", "path_identity"))
     return {
         "name": "cp_select_native_minimum_intervention_paths", "area": AREA, "order": 26.1,
         "latency_class": "hard_realtime", "batch": False,
@@ -857,7 +864,9 @@ def finalize_path_candidate_selection_rule():
                       Eq(A("request", "status"), L("searching")),
                       Eq(A("request", "search_complete"), L(1.0)),
                       Eq(A("candidate", "status"), L("feasible_path")),
-                      In(V("candidate"), selection_result)),
+                      In(V("candidate"), selection_result),
+                      Or(Not(Eq(A("planner_policy", "singular_candidate_selection"), L(1.0))),
+                         Eq(V("candidate"), selected_path))),
         "effects": [["set_attr", "candidate", "status", "proposal"]],
     }
 
@@ -1144,6 +1153,8 @@ def build_seed():
         "nodes": [{"local_id": 0, "type": "CognitionPlannerPolicy", "attrs": {
             "enabled": 0.0, "maximum_depth": 8.0, "maximum_expansions": 256.0,
             "maximum_path_arrivals": 4096.0,
+            "single_path_per_state": 0.0,
+            "singular_candidate_selection": 0.0,
             "expansion_cost": 1.0, "maximum_branching": 8.0,
             "current_model_epoch": -1.0, "current_goal_epoch": -1.0,
             "current_manifold_epoch": -1.0,
