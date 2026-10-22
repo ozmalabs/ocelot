@@ -141,6 +141,8 @@ def mint_offline_cycle_rule():
                 "mode": "offline",
                 "epoch": T(A("mode", "epoch")),
                 "source": "consolidation_scheduler",
+                "sleep_stage_cursor": "unclaimed",
+                "sleep_stage_epoch": -1.0,
             }],
             ["add_node", "req", "SystemTwoEscalation", {
                 "status": "requested",
@@ -200,6 +202,8 @@ def mint_offline_cycle_budgeted_rule():
                 "mode": "offline",
                 "epoch": T(A("mode", "epoch")),
                 "source": "consolidation_scheduler",
+                "sleep_stage_cursor": "unclaimed",
+                "sleep_stage_epoch": -1.0,
             }],
             ["add_node", "req", "SystemTwoEscalation", {
                 "status": "requested",
@@ -366,7 +370,7 @@ def productions():
 def build():
     return {
         "id": "consolidation_scheduler",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "depends_on": [
             "episodic_working_memory_core",
             "default_mode_core",
