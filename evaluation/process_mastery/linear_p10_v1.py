@@ -82,6 +82,8 @@ def _unsupported(family, seed, arm, split, reason, task_data=None):
                               task_id=f"{family}-{seed}",
                               initial_state=task_data.get("initial") if task_data else None,
                               goal=task_data.get("goal") if task_data else None,
+                              world_access_sha256=_sha(json.dumps(task_data, sort_keys=True,
+                                                                 default=list).encode()) if task_data else None,
                               outcome=None, compute=None)
 
 
@@ -166,6 +168,7 @@ def _run_task(family, seed, arm, split):
     record = agent.trial_record(
         status, family=family, seed=seed, split=split, profile=arm,
         task_id=f"{family}-{seed}", initial_state=task_data["initial"], goal=task_data["goal"],
+        world_access_sha256=_sha(json.dumps(task_data, sort_keys=True, default=list).encode()),
         outcome="solved" if solved else "unsolved", steps=attrs.get("steps"),
         process_trace=[{"node": str(n), "name": schemas[n].get("name"),
                         "provenance": schemas[n].get("provenance")} for n in trace],
@@ -220,6 +223,12 @@ def run(*, split: str, n: int = 200, self_check=False):
     controls = 3 if self_check else BLOCKS["controls"][1]
     control_start = BLOCKS["controls"][0] - 11_000_000 + offset
     rows.extend(_tool_control(control_start + i, split) for i in range(controls))
+    if self_check:
+        for family in families:
+            hashes = {row.get("world_access_sha256") for row in rows
+                      if row.get("family") == family and row.get("world_access_sha256")}
+            if len(hashes) != 1:
+                raise RuntimeError(f"self-check world access mismatch for {family}: {hashes}")
     metadata = {**_provenance(), "split": split, "arms": list(ARMS),
                 "seed_blocks": {k: {"start": v[0] - 11_000_000 + offset,
                                      "count": v[1] if not self_check else 1}
