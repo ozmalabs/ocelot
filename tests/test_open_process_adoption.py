@@ -8,10 +8,11 @@ from tests.test_open_process_search import _apply, _compose
 
 def _agent():
     return Agent(track_i=False,
-        extra_seeds=("open_process_search", "open_process_adoption"),
+        extra_seeds=("open_process_search", "open_process_adoption", "strategy_discovery"),
         policy_overrides={
             "OpenProcessSearchPolicy": {"enabled": 1.0, "max_attempts": 64.0},
             "OpenProcessAdoptionPolicy": {"enabled": 1.0},
+            "StrategyDiscoveryPolicy": {"enabled": 1.0, "allow_lift": 1.0},
             "ProcessSchemaPolicy": {"enabled": 1.0},
         },
         budget={"enabled": 1.0, "remaining": 100.0, "capacity": 100.0,
@@ -142,3 +143,8 @@ def test_unapproved_candidate_cannot_reach_world_and_receipt_binds_strategy():
     assert len(receipt_nodes) == 1
     assert agent.attrs(receipt_nodes[0])["status"] == "verified"
     assert agent.attrs(receipt_nodes[0])["expression_digest"] == result["proposal"]["expression_digest"]
+    _tick(agent)
+    strategy_nodes = [strategy for strategy in agent.nodes("DiscoveredStrategy")
+                      if agent.attrs(strategy).get("source") == "native_world_receipt"]
+    assert len(strategy_nodes) == 1
+    assert agent.native.neighbours(strategy_nodes[0], "witnessed_by_world_receipt") == receipt_nodes

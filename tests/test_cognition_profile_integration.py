@@ -136,7 +136,8 @@ def test_p19_native_causal_chain_and_perturbation_abstention():
     agent = boot_cognition_on()
     try:
         native, root, store = agent.inner, agent.agent, agent.s
-        for policy_type in ("OpenProcessSearchPolicy", "OpenProcessAdoptionPolicy"):
+        for policy_type in ("OpenProcessSearchPolicy", "OpenProcessAdoptionPolicy",
+                            "StrategyDiscoveryPolicy"):
             for node in _nodes(agent, policy_type):
                 native.set_attr(node, "enabled", 1.0)
         for node in _nodes(agent, "ProcessSchemaPolicy"):
@@ -150,7 +151,7 @@ def test_p19_native_causal_chain_and_perturbation_abstention():
         domain = store.add_node("ProcessDomain", {
             "name": "p19-profile", "kind": "permutation",
             "probes": [[0, 1, 2, 3]], "source_epoch": 0.0,
-            "model_epoch": 0.0, "frame_epoch": 0.0,
+            "model_epoch": 0.0, "frame_epoch": 0.0, "probe_epoch": 0.0,
         })
         _edge(agent, root, "has_process_domain", domain)
         held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
@@ -228,6 +229,11 @@ def test_p19_native_causal_chain_and_perturbation_abstention():
         assert len(receipts) == 1
         assert store.node(receipts[0])["attrs"]["status"] == "verified"
         assert len(calls) == 1
+        _p19_tick(agent)
+        strategies = [n for n in _nodes(agent, "DiscoveredStrategy")
+                      if store.node(n)["attrs"].get("source") == "native_world_receipt"]
+        assert len(strategies) == 1
+        assert list(native.neighbours(strategies[0], "witnessed_by_world_receipt")) == receipts
 
         # A changed binding cannot trigger another world transition.
         native.set_attr(domain, "model_epoch", 1.0)

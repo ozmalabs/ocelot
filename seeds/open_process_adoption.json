@@ -107,6 +107,18 @@
       }
     },
     {
+      "provenance": "seed:open_process_adoption:uses_approved_open_process_candidate:SolveTask:OpenProcessCandidate",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "uses_approved_open_process_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:open_process_adoption:has_world_execution_receipt:OpenProcessCandidate:OpenProcessWorldReceipt",
       "src": {
         "type": "OpenProcessCandidate",
@@ -127,6 +139,54 @@
       "edge_type": "has_expression_digest_receipt",
       "tgt": {
         "type": "OpenProcessDigestReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_adoption:has_open_process_world_receipt:SolveTask:OpenProcessWorldReceipt",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_open_process_world_receipt",
+      "tgt": {
+        "type": "OpenProcessWorldReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_adoption:adopted_as_process:OpenProcessCandidate:ProcessSchema",
+      "src": {
+        "type": "OpenProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "adopted_as_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_adoption:has_process_schema:Agent:ProcessSchema",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_adoption:has_held_process:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "has_held_process",
+      "tgt": {
+        "type": "ProcessSchema",
         "var": "tgt"
       }
     },
@@ -1311,10 +1371,157 @@
           }
         ],
         [
+          "add_node",
+          "process",
+          "ProcessSchema",
+          {
+            "name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "expression_key"
+              }
+            },
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "kind"
+              }
+            },
+            "domain_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "domain"
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "params"
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "work_cost"
+              }
+            },
+            "status": "pending_world_verification",
+            "invented": 1,
+            "provenance": "invented_by:open_process_search",
+            "source_digest": "pending_world_verification",
+            "owner_agent": {
+              "__term__": {
+                "type": "Var",
+                "name": "agent"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            },
+            "fingerprint": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "effect_digest"
+              }
+            },
+            "fingerprint_checked": 0,
+            "dedup_checked": 0,
+            "verification_receipt": "pending_world_verification"
+          }
+        ],
+        [
           "add_edge",
           "candidate",
           "approved_by_open_process_adoption",
           "approval",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "adopted_as_process",
+          "process",
+          {}
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "process",
+          {}
+        ],
+        [
+          "add_edge",
+          "domain",
+          "has_held_process",
+          "process",
           {}
         ],
         [

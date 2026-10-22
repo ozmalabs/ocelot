@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-from track_i_seed_lib import A, And, Count, Eq, L, N, Not, OFFLINE_AREA, Or, policy_on, productions, rule
+from track_i_seed_lib import A, And, Count, Eq, L, N, Not, OFFLINE_AREA, Or, T, V, policy_on, productions, rule
 
 SEED_ID = "open_process_adoption"
 OUT = ROOT / "seeds" / f"{SEED_ID}.json"
@@ -24,8 +24,13 @@ def build():
         ("OpenProcessAdoptionApproval", "approves_open_process_candidate", "OpenProcessCandidate"),
         ("OpenProcessCandidate", "approved_by_open_process_adoption", "OpenProcessAdoptionApproval"),
         ("OpenProcessCandidate", "has_dependent_task", "SolveTask"),
+        ("SolveTask", "uses_approved_open_process_candidate", "OpenProcessCandidate"),
         ("OpenProcessCandidate", "has_world_execution_receipt", "OpenProcessWorldReceipt"),
         ("OpenProcessCandidate", "has_expression_digest_receipt", "OpenProcessDigestReceipt"),
+        ("SolveTask", "has_open_process_world_receipt", "OpenProcessWorldReceipt"),
+        ("OpenProcessCandidate", "adopted_as_process", "ProcessSchema"),
+        ("Agent", "has_process_schema", "ProcessSchema"),
+        ("ProcessDomain", "has_held_process", "ProcessSchema"),
         ("Agent", "has_process_domain", "ProcessDomain"),
     ]
     match = [
@@ -76,7 +81,28 @@ def build():
          ["set_attr", "candidate", "adopted_source_epoch", {"__term__": A("candidate", "source_epoch")}],
          ["set_attr", "candidate", "adopted_model_epoch", {"__term__": A("candidate", "model_epoch")}],
          ["set_attr", "candidate", "adopted_frame_epoch", {"__term__": A("candidate", "frame_epoch")}],
+         ["add_node", "process", "ProcessSchema", {
+            "name": {"__term__": A("candidate", "expression_key")},
+            "kind": {"__term__": A("candidate", "kind")},
+            "domain_kind": {"__term__": A("candidate", "kind")},
+            "domain": {"__term__": A("candidate", "domain")},
+            "params": {"__term__": A("candidate", "params")},
+            "cost": {"__term__": A("candidate", "work_cost")},
+            "status": "pending_world_verification", "invented": 1,
+            "provenance": "invented_by:open_process_search",
+            "source_digest": "pending_world_verification",
+            "owner_agent": {"__term__": V("agent")},
+            "source_epoch": {"__term__": A("candidate", "source_epoch")},
+            "model_epoch": {"__term__": A("candidate", "model_epoch")},
+            "frame_epoch": {"__term__": A("candidate", "frame_epoch")},
+            "probe_epoch": {"__term__": L(0.0)},
+            "fingerprint": {"__term__": A("candidate", "effect_digest")},
+            "fingerprint_checked": 0, "dedup_checked": 0,
+            "verification_receipt": "pending_world_verification"}],
          ["add_edge", "candidate", "approved_by_open_process_adoption", "approval", {}],
+         ["add_edge", "candidate", "adopted_as_process", "process", {}],
+         ["add_edge", "agent", "has_process_schema", "process", {}],
+         ["add_edge", "domain", "has_held_process", "process", {}],
          ["set_attr", "approval", "status", "consumed"]],
         batch=False,
     )

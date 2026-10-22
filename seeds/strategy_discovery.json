@@ -109,6 +109,30 @@
       }
     },
     {
+      "provenance": "seed:strategy_discovery:has_open_process_world_receipt:SolveTask:OpenProcessWorldReceipt",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_open_process_world_receipt",
+      "tgt": {
+        "type": "OpenProcessWorldReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_discovery:witnessed_by_world_receipt:DiscoveredStrategy:OpenProcessWorldReceipt",
+      "src": {
+        "type": "DiscoveredStrategy",
+        "var": "src"
+      },
+      "edge_type": "witnessed_by_world_receipt",
+      "tgt": {
+        "type": "OpenProcessWorldReceipt",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:strategy_discovery:executes_discovered_strategy:SolveTask:DiscoveredStrategy",
       "src": {
         "type": "SolveTask",
@@ -1093,6 +1117,320 @@
           "t",
           "strategy_next_state",
           null
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "sd_record_world_receipted_strategy",
+      "area": "process_solving",
+      "order": 23,
+      "latency_class": "background",
+      "comment": "Retain a strategy only when a solved graph trace is linked to an exact verified native-process world receipt.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_discovery_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "t",
+          "has_open_process_world_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "solved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "trace"
+              },
+              "b": {
+                "type": "Lit",
+                "value": []
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "observed_state"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "state"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_discovered_strategy",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_records"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_recorded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "DiscoveredStrategy",
+          {
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "trace": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "trace"
+              }
+            },
+            "step_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "steps"
+              }
+            },
+            "initial_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "initial_state"
+              }
+            },
+            "goal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "goal"
+              }
+            },
+            "object_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "object_count"
+              }
+            },
+            "source": "native_world_receipt",
+            "status": "verified",
+            "witnessed_effect": "solved_goal_with_world_receipt",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probe_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_discovered_strategy",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "s",
+          "about_domain",
+          "d",
+          {}
+        ],
+        [
+          "add_edge",
+          "s",
+          "witnessed_by_task",
+          "t",
+          {}
+        ],
+        [
+          "add_edge",
+          "s",
+          "witnessed_by_world_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_recorded",
+          1
         ]
       ],
       "batch": false

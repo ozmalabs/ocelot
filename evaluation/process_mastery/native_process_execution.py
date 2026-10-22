@@ -320,6 +320,35 @@ def execute_open_process_candidate(agent, candidate, *, state,
         "observed_state": observed,
     })
     native.add_edge(candidate, "has_world_execution_receipt", receipt, {})
+    process_nodes = native.neighbours(candidate, "adopted_as_process")
+    attempts = native.neighbours(candidate, "derived_from_attempt")
+    tasks = [task for attempt in attempts
+             for task in native.neighbours(attempt, "about_task")]
+    if result == "verified" and len(process_nodes) == 1 and len(tasks) == 1:
+        process = process_nodes[0]
+        process_attrs = _attrs(agent, process)
+        if process_attrs.get("params") == attrs.get("params"):
+            agent.s.set_attr(process, "status", "active")
+            agent.s.set_attr(process, "source_digest", params_digest(attrs.get("params")))
+            agent.s.set_attr(process, "fingerprint_checked", 1)
+            agent.s.set_attr(process, "dedup_checked", 1)
+            agent.s.set_attr(process, "indexed", 1)
+            agent.s.set_attr(process, "verification_receipt", "native_world_receipt")
+            task = tasks[0]
+            task_attrs = _attrs(agent, task)
+            native.add_edge(task, "has_open_process_world_receipt", receipt, {})
+            native.add_edge(task, "uses_approved_open_process_candidate", candidate, {})
+            agent.s.set_attr(task, "state", observed)
+            agent.s.set_attr(task, "trace", list(task_attrs.get("trace") or []) + [process])
+            agent.s.set_attr(task, "steps", int(task_attrs.get("steps", 0)) + 1)
+            agent.s.set_attr(task, "moves", float(task_attrs.get("moves", 0.0)) +
+                             float(process_attrs.get("cost", 1.0)))
+            agent.s.set_attr(task, "status", "solved" if observed == task_attrs.get("goal") else "active")
+    elif result != "verified":
+        agent.s.set_attr(candidate, "status", "invalidated")
+        agent.s.set_attr(candidate, "adoption_status", "invalidated")
+        for process in process_nodes:
+            agent.s.set_attr(process, "status", "proof_blocked")
     if result != "verified":
         return {"status": "FAILED", "reason": "world_result_contradicts_native_prediction",
                 "proposal": proposal, "receipt": world_receipt, "evidence_node": receipt}

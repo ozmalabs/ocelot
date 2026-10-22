@@ -27,6 +27,8 @@ def build():
         ("Agent", "has_discovered_strategy", "DiscoveredStrategy"),
         ("DiscoveredStrategy", "about_domain", "ProcessDomain"),
         ("DiscoveredStrategy", "witnessed_by_task", "SolveTask"),
+        ("SolveTask", "has_open_process_world_receipt", "OpenProcessWorldReceipt"),
+        ("DiscoveredStrategy", "witnessed_by_world_receipt", "OpenProcessWorldReceipt"),
         ("SolveTask", "executes_discovered_strategy", "DiscoveredStrategy"),
     ]
     record = rule(
@@ -119,6 +121,35 @@ def build():
         [["add_edge", "t", "executes_discovered_strategy", "s", {}],
          ["set_attr", "t", "strategy_started", 1], ["set_attr", "t", "strategy_index", 0],
          ["set_attr", "t", "status", "replaying"]], batch=False)
+    record_receipt = rule(
+        "sd_record_world_receipted_strategy", ONLINE_AREA, 23,
+        "Retain a strategy only when a solved graph trace is linked to an exact verified native-process world receipt.",
+        [["agent", "has_strategy_discovery_policy", "pol"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"],
+         ["t", "has_open_process_world_receipt", "receipt"]],
+        And(policy_on(), Eq(A("t", "status"), L("solved")),
+            Not(Eq(A("t", "trace"), L([]))),
+            Eq(A("receipt", "status"), L("verified")),
+            Eq(A("receipt", "observed_state"), A("t", "state")),
+            Lt(Count(N("agent", "has_discovered_strategy")), A("pol", "max_records")),
+            Not(Eq(A("t", "strategy_recorded"), L(1)))),
+        [["add_node", "s", "DiscoveredStrategy", {
+            "kind": T(A("d", "kind")), "domain": T(A("d", "name")),
+            "trace": T(A("t", "trace")), "step_count": T(A("t", "steps")),
+            "initial_state": T(A("t", "initial_state")), "goal_state": T(A("t", "goal")),
+            "object_count": T(A("t", "object_count")),
+            "source": "native_world_receipt", "status": "verified",
+            "witnessed_effect": "solved_goal_with_world_receipt",
+            "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")),
+            "frame_epoch": T(A("d", "frame_epoch")),
+            "probe_epoch": T(A("d", "probe_epoch")),
+        }],
+         ["add_edge", "agent", "has_discovered_strategy", "s", {}],
+         ["add_edge", "s", "about_domain", "d", {}],
+         ["add_edge", "s", "witnessed_by_task", "t", {}],
+         ["add_edge", "s", "witnessed_by_world_receipt", "receipt", {}],
+         ["set_attr", "t", "strategy_recorded", 1]], batch=False)
     return {
         "id": SEED_ID, "version": "1.0.0", "depends_on": ["process_solving"],
         "self_load_only": True, "area": ONLINE_AREA,
@@ -130,7 +161,8 @@ def build():
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_strategy_discovery_policy",
                    "tgt": {"local": 0}, "attrs": {}}],
-        "productions": productions(SEED_ID, specs), "rules": [lift, start, step, record],
+        "productions": productions(SEED_ID, specs),
+        "rules": [lift, start, step, record_receipt, record],
     }
 
 
