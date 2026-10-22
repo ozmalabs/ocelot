@@ -71,6 +71,44 @@ def test_expression_digest_not_candidate_name():
     assert agent.attrs(candidate)["adopted_expression_digest"] == original_digest
 
 
+def test_recursive_candidate_approval_survives_native_string_value_roundtrip():
+    agent = _agent()
+    first = _candidate(agent)
+    attest_open_process_candidate(agent, first)
+    _approve(agent, first)
+    _tick(agent)
+    assert agent.attrs(first)["status"] == "adopted_candidate"
+
+    for policy in agent.nodes("OpenProcessSearchPolicy"):
+        agent.s.set_attr(policy, "max_attempts", 30000.0)
+    initial = [0, 1, 2, 3]
+    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
+    recursive = _compose(agent, left, _compose(agent, right, left))
+    task = agent.add_solve_task("search", initial, _apply(agent, recursive, initial),
+                                training_trial_key="recursive-approval-roundtrip")
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent, count=20)
+
+    candidates = [candidate for candidate in agent.nodes("OpenProcessCandidate")
+                  if candidate != first
+                  and agent.attrs(candidate).get("status") == "unapproved_candidate"]
+    assert candidates
+    candidate = candidates[-1]
+    attest_open_process_candidate(agent, candidate)
+    approval = _approve(agent, candidate)
+    _tick(agent)
+    assert agent.attrs(candidate)["status"] == "adopted_candidate"
+    assert agent.attrs(approval)["status"] == "consumed"
+
+    # JSON comparison preserves the approval's visible tree binding while
+    # still detecting a changed tree before dependent work can continue.
+    changed_tree = list(agent.attrs(candidate)["expression_tree"])
+    changed_tree[0] = "changed"
+    agent.s.set_attr(candidate, "expression_tree", changed_tree)
+    _tick(agent)
+    assert agent.attrs(candidate)["status"] == "invalidated"
+
+
 def test_new_candidate_not_preapproved():
     agent = _agent()
     candidate = _candidate(agent)

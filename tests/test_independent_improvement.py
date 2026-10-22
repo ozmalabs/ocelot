@@ -3,6 +3,10 @@ import json
 from pathlib import Path
 
 from evaluation.process_mastery.native_process_execution import attest_open_process_candidate
+from evaluation.process_mastery.native_process_execution import execute_open_process_candidate
+from evaluation.process_mastery.checkpoint_world_adapter import (
+    capture_adopted_checkpoint, capture_held_process_checkpoint,
+)
 from substrate.seed_loader import manifest_for
 from tests.test_open_process_search import _agent as _p19_agent, _apply, _compose
 from tests.test_open_process_adoption import (
@@ -85,6 +89,92 @@ def test_qualification_from_native_trials():
     for _ in range(4):
         agent.s.tick(4000)
     assert len(agent.nodes("OpenProcessSearchAttempt")) == attempt_count
+
+
+def test_three_generation_native_development_lineage():
+    """Exercise repeated training qualification, exact approval and receipt capture.
+
+    These candidate-bound approvals are local test fixtures. This test proves
+    the native mechanism can extend a lineage; it does not provide live human
+    authorization or an efficacy result.
+    """
+    agent = _adoption_agent()
+    candidate = _adoption_candidate(agent)
+    for policy in agent.nodes("OpenProcessSearchPolicy"):
+        agent.s.set_attr(policy, "max_attempts", 30000.0)
+    parent = capture_held_process_checkpoint(agent, agent.schemas("search")[0],
+        checkpoint_id="p22-dev-g0")
+    first_attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    first_task = agent.native.neighbours(first_attempt, "about_task")[0]
+    agent.s.set_attr(first_task, "split", "training")
+    _install(agent)
+    agent.s.set_attr(agent.nodes("IndependentImprovementPolicy")[0], "enabled", 1.0)
+    attest_open_process_candidate(agent, candidate)
+    for _ in range(8):
+        agent.s.tick(4000)
+
+    initial = [0, 1, 2, 3]
+    held_a, held_b = [1, 0, 2, 3], [0, 2, 1, 3]
+    checkpoints = [parent]
+    for generation in range(1, 4):
+        if generation > 1:
+            operand = held_b if generation == 2 else held_a
+            target = _compose(agent, list(checkpoints[-1].params), operand)
+            goal = _apply(agent, target, initial)
+            task = agent.add_solve_task("search", initial, goal,
+                training_trial_key=f"p22-dev-g{generation}-trial1")
+            agent.s.set_attr(task, "split", "training")
+            agent.s.set_attr(task, "status", "stuck")
+            for _ in range(24):
+                agent.s.tick(4000)
+            candidates = [node for node in agent.nodes("OpenProcessCandidate")
+                          if agent.attrs(node).get("status") == "unapproved_candidate"]
+            assert candidates
+            candidate = candidates[-1]
+            attest_open_process_candidate(agent, candidate)
+            for _ in range(8):
+                agent.s.tick(4000)
+
+        attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+        task = agent.native.neighbours(attempt, "about_task")[0]
+        goal = agent.attrs(task)["goal"]
+        second_trial = agent.add_solve_task("search", initial, goal,
+            training_trial_key=f"p22-dev-g{generation}-trial2")
+        agent.s.set_attr(second_trial, "split", "training")
+        agent.s.set_attr(second_trial, "status", "stuck")
+        for _ in range(24):
+            agent.s.tick(4000)
+        proposal = next(proposal for proposal in agent.nodes("IndependentImprovementProposal")
+            if agent.native.neighbours(proposal, "derived_from_trial") == [attempt])
+        assert agent.native.neighbours(proposal, "has_native_qualification")
+        assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
+
+        approval = _approve(agent, candidate)
+        for _ in range(12):
+            agent.s.tick(4000)
+        assert agent.attrs(candidate)["status"] == "adopted_candidate"
+        assert agent.attrs(approval)["status"] == "consumed"
+        attrs = agent.attrs(candidate)
+
+        def transition(action):
+            observed = [None] * len(initial)
+            for source, destination in enumerate(action):
+                observed[destination] = initial[source]
+            return {"observed_state": observed}
+
+        execution = execute_open_process_candidate(agent, candidate,
+            state=attrs["guard_state"],
+            authorize=lambda proposed: proposed["expression_digest"] == attrs["expression_digest"],
+            world_transition=transition)
+        assert execution["status"] == "COMPLETED"
+        checkpoints.append(capture_adopted_checkpoint(agent, candidate,
+            checkpoint_id=f"p22-dev-g{generation}", parent=checkpoints[-1],
+            generation=generation,
+            declared_primitive_work=int(attrs["work_cost"])))
+
+    assert [checkpoint.generation for checkpoint in checkpoints] == [0, 1, 2, 3]
+    assert all(checkpoints[i].parent_digest == checkpoints[i - 1].checkpoint_digest
+               for i in range(1, len(checkpoints)))
 
 
 def test_no_holdout_in_proposal():

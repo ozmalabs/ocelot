@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-from track_i_seed_lib import A, And, Count, Eq, L, N, Not, OFFLINE_AREA, Or, T, V, policy_on, productions, rule
+from track_i_seed_lib import A, And, Count, Eq, L, N, Not, OFFLINE_AREA, Or, T, ToJsonString, V, policy_on, productions, rule
 
 SEED_ID = "open_process_adoption"
 OUT = ROOT / "seeds" / f"{SEED_ID}.json"
@@ -51,7 +51,13 @@ def build():
         Eq(A("approval", "approval_kind"), L("human")),
         Eq(A("approval", "expression_digest"), A("candidate", "expression_digest")),
         Eq(A("approval", "expression_key"), A("candidate", "expression_key")),
-        Eq(A("approval", "expression_tree"), A("candidate", "expression_tree")),
+        # Recursive search trees can contain Surface(Text) leaves produced by
+        # StringConcat. Approval input round-trips those leaves as ordinary
+        # strings, so native structural Eq rejects a semantically identical
+        # tree (Surface != Str). Compare the exact JSON representation instead;
+        # the candidate digest independently binds the same tree contents.
+        Eq(ToJsonString(A("approval", "expression_tree")),
+           ToJsonString(A("candidate", "expression_tree"))),
         Eq(A("approval", "effect_digest"), A("candidate", "effect_digest")),
         Eq(A("approval", "params"), A("candidate", "params")),
         Eq(A("approval", "guard_state"), A("candidate", "guard_state")),
@@ -119,7 +125,8 @@ def build():
             Or(Not(Eq(A("approval", "status"), L("consumed"))),
                Not(Eq(A("approval", "expression_digest"), A("candidate", "expression_digest"))),
                Not(Eq(A("approval", "expression_key"), A("candidate", "expression_key"))),
-               Not(Eq(A("approval", "expression_tree"), A("candidate", "expression_tree"))),
+               Not(Eq(ToJsonString(A("approval", "expression_tree")),
+                      ToJsonString(A("candidate", "expression_tree")))),
                Not(Eq(A("approval", "effect_digest"), A("candidate", "effect_digest"))),
                Not(Eq(A("approval", "params"), A("candidate", "params"))),
                Not(Eq(A("approval", "guard_state"), A("candidate", "guard_state"))),
@@ -131,7 +138,9 @@ def build():
                Not(Eq(A("domain", "source_epoch"), A("candidate", "adopted_source_epoch"))),
                Not(Eq(A("domain", "model_epoch"), A("candidate", "adopted_model_epoch"))),
                Not(Eq(A("domain", "frame_epoch"), A("candidate", "adopted_frame_epoch"))),
-               Not(Eq(A("candidate", "expression_tree"), A("candidate", "adopted_expression_tree"))))),
+               Not(Eq(ToJsonString(A("candidate", "expression_tree")),
+                      ToJsonString(A("candidate", "adopted_expression_tree"))))),
+            ),
         [["set_attr", "candidate", "status", "invalidated"],
          ["set_attr", "candidate", "adoption_status", "invalidated"],
          ["set_attr", "candidate", "invalidation_reason", "approved_expression_or_domain_binding_changed"]],
