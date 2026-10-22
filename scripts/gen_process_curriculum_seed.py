@@ -31,7 +31,10 @@ def _evidence_attrs(key, kind, source, task_kind, source_epoch, model_epoch, fra
         "source_epoch": T(source_epoch), "model_epoch": T(model_epoch),
         "frame_epoch": T(frame_epoch), "status": "eligible",
         "split": "training", "expected_outcome": "unknown",
-        "sealed_labels_present": False, **task_fields,
+        "sealed_labels_present": False,
+        "fixed_rank": task_fields.get("fixed_rank", 0.0),
+        "random_rank": task_fields.get("random_rank", 0.0),
+        **task_fields,
     }
 
 
@@ -225,15 +228,31 @@ def build():
 
     # One active funding token serializes curriculum admission. Work remains
     # graph-owned; outcomes only arrive through typed experience records.
+    residual_before = Lt(A("prior", "evidence_key"), A("evidence", "evidence_key"))
+    fixed_before = Or(
+        Lt(A("prior", "fixed_rank"), A("evidence", "fixed_rank")),
+        And(Eq(A("prior", "fixed_rank"), A("evidence", "fixed_rank")), residual_before),
+    )
+    random_before = Or(
+        Lt(A("prior", "random_rank"), A("evidence", "random_rank")),
+        And(Eq(A("prior", "random_rank"), A("evidence", "random_rank")), residual_before),
+    )
+    selected_before = Or(
+        And(Eq(A("policy", "selector_mode"), L("residual")), residual_before),
+        And(Eq(A("policy", "selector_mode"), L("fixed")), fixed_before),
+        And(Eq(A("policy", "selector_mode"), L("random")), random_before),
+    )
     earlier = Exists(N("agent", "has_process_curriculum_evidence"), "prior",
-                     And(Eq(A("prior", "status"), L("eligible")),
-                         Lt(A("prior", "evidence_key"), A("evidence", "evidence_key"))))
+                     And(Eq(A("prior", "status"), L("eligible")), selected_before))
     rules.append({
-        "name": "pc_fund_one_deterministic_training_residual", "area": AREA,
+        "name": "pc_fund_one_ranked_training_residual", "area": AREA,
         "order": 10, "latency_class": "background", "batch": False,
-        "comment": "Fund one lowest-key verified residual at a time from the shared ThinkingBudget; the policy lock prevents over-requesting.",
+        "comment": "Fund one verified training residual at a time using the configured native selector and shared ThinkingBudget.",
         "match": [policy, mode, budget, ["agent", "has_process_curriculum_evidence", "evidence"]],
         "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                     Or(Eq(A("policy", "selector_mode"), L("residual")),
+                        Eq(A("policy", "selector_mode"), L("fixed")),
+                        Eq(A("policy", "selector_mode"), L("random"))),
                      Eq(A("policy", "scheduler_status"), L("ready")),
                      Eq(A("budget", "enabled"), L(1.0)),
                      Eq(A("evidence", "status"), L("eligible")),
@@ -379,7 +398,8 @@ def build():
                         "description": "Fund at most one bounded training task at a time from source- and epoch-bound residual evidence."},
         "nodes": [{"local_id": 0, "type": "ProcessCurriculumPolicy", "attrs": {
             "name": "process_curriculum_policy", "enabled": 0.0,
-            "scheduler_status": "ready", "last_evidence_epoch": -1,
+            "scheduler_status": "ready", "selector_mode": "residual",
+            "last_evidence_epoch": -1,
             "max_evidence": 512.0, "max_tasks": 256.0,
             "max_active_tasks": 1.0, "max_attempts_per_evidence": 1.0,
             "task_cost": 1.0,

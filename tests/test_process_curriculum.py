@@ -76,6 +76,37 @@ def test_curriculum_targets_real_residual_without_exposing_answer():
     assert ta["answer_fields_absent"] is True
 
 
+def test_residual_fixed_and_random_selectors_use_the_same_native_task_pool():
+    ranks = {"a": (3.0, 2.0), "b": (2.0, 1.0), "c": (1.0, 3.0)}
+    selected = {}
+    pools = {}
+    for mode in ("residual", "fixed", "random"):
+        agent = _agent()
+        policy = _curriculum_nodes(agent, "ProcessCurriculumPolicy")[0]
+        agent.s.set_attr(policy, "selector_mode", mode)
+        keys = []
+        for suffix, (fixed_rank, random_rank) in ranks.items():
+            key = f"task-{suffix}"
+            keys.append(key)
+            evidence = agent.s.add_node("ProcessCurriculumEvidence", {
+                "evidence_key": key, "source_kind": "registered_training_pool",
+                "source_id": f"pool:{suffix}", "task_kind": "counterexample_discrimination",
+                "action_kind": "press", "object_type": "switch", "feature_key": "light",
+                "before_value": "off", "source_epoch": 3, "model_epoch": 2,
+                "frame_epoch": 5, "status": "eligible", "split": "training",
+                "expected_outcome": "unknown", "sealed_labels_present": False,
+                "fixed_rank": fixed_rank, "random_rank": random_rank,
+            })
+            agent.s.add_edge(agent.ag, "has_process_curriculum_evidence", evidence, {})
+        _tick(agent)
+        tasks = _curriculum_nodes(agent, "ProcessCurriculumTask")
+        assert len(tasks) == 1
+        selected[mode] = agent.s.node(tasks[0])["attrs"]["task_key"]
+        pools[mode] = sorted(keys)
+    assert pools["residual"] == pools["fixed"] == pools["random"]
+    assert selected == {"residual": "task-a", "fixed": "task-c", "random": "task-b"}
+
+
 def test_unlearnable_task_is_retired_without_repetition():
     agent = _agent()
     _counterexample(agent, "unlearnable-event")

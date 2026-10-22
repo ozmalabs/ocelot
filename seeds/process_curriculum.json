@@ -23,6 +23,7 @@
         "name": "process_curriculum_policy",
         "enabled": 0.0,
         "scheduler_status": "ready",
+        "selector_mode": "residual",
         "last_evidence_epoch": -1,
         "max_evidence": 512.0,
         "max_tasks": 256.0,
@@ -770,6 +771,8 @@
             "split": "training",
             "expected_outcome": "unknown",
             "sealed_labels_present": false,
+            "fixed_rank": 0.0,
+            "random_rank": 0.0,
             "owner_id": {
               "__term__": {
                 "type": "Attr",
@@ -1135,6 +1138,8 @@
             "split": "training",
             "expected_outcome": "unknown",
             "sealed_labels_present": false,
+            "fixed_rank": 0.0,
+            "random_rank": 0.0,
             "candidate_id": {
               "__term__": {
                 "type": "Attr",
@@ -1482,6 +1487,8 @@
             "split": "training",
             "expected_outcome": "unknown",
             "sealed_labels_present": false,
+            "fixed_rank": 0.0,
+            "random_rank": 0.0,
             "owner_id": {
               "__term__": {
                 "type": "Attr",
@@ -1951,6 +1958,8 @@
             "split": "training",
             "expected_outcome": "unknown",
             "sealed_labels_present": false,
+            "fixed_rank": 0.0,
+            "random_rank": 0.0,
             "domain": {
               "__term__": {
                 "type": "Attr",
@@ -2017,12 +2026,12 @@
       ]
     },
     {
-      "name": "pc_fund_one_deterministic_training_residual",
+      "name": "pc_fund_one_ranked_training_residual",
       "area": "process_curriculum",
       "order": 10,
       "latency_class": "background",
       "batch": false,
-      "comment": "Fund one lowest-key verified residual at a time from the shared ThinkingBudget; the policy lock prevents over-requesting.",
+      "comment": "Fund one verified training residual at a time using the configured native selector and shared ThinkingBudget.",
       "match": [
         [
           "agent",
@@ -2062,6 +2071,56 @@
               "type": "Lit",
               "value": 1.0
             }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "selector_mode"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "residual"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "selector_mode"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "fixed"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "policy"
+                  },
+                  "key": "selector_mode"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "random"
+                }
+              }
+            ]
           },
           {
             "type": "Eq",
@@ -2164,23 +2223,222 @@
                     }
                   },
                   {
-                    "type": "Lt",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "prior"
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "policy"
+                              },
+                              "key": "selector_mode"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "residual"
+                            }
+                          },
+                          {
+                            "type": "Lt",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "evidence_key"
+                            },
+                            "b": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "evidence"
+                              },
+                              "key": "evidence_key"
+                            }
+                          }
+                        ]
                       },
-                      "key": "evidence_key"
-                    },
-                    "b": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "evidence"
+                      {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "policy"
+                              },
+                              "key": "selector_mode"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "fixed"
+                            }
+                          },
+                          {
+                            "type": "Or",
+                            "items": [
+                              {
+                                "type": "Lt",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "prior"
+                                  },
+                                  "key": "fixed_rank"
+                                },
+                                "b": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "evidence"
+                                  },
+                                  "key": "fixed_rank"
+                                }
+                              },
+                              {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior"
+                                      },
+                                      "key": "fixed_rank"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "evidence"
+                                      },
+                                      "key": "fixed_rank"
+                                    }
+                                  },
+                                  {
+                                    "type": "Lt",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior"
+                                      },
+                                      "key": "evidence_key"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "evidence"
+                                      },
+                                      "key": "evidence_key"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
                       },
-                      "key": "evidence_key"
-                    }
+                      {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "policy"
+                              },
+                              "key": "selector_mode"
+                            },
+                            "b": {
+                              "type": "Lit",
+                              "value": "random"
+                            }
+                          },
+                          {
+                            "type": "Or",
+                            "items": [
+                              {
+                                "type": "Lt",
+                                "a": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "prior"
+                                  },
+                                  "key": "random_rank"
+                                },
+                                "b": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "evidence"
+                                  },
+                                  "key": "random_rank"
+                                }
+                              },
+                              {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior"
+                                      },
+                                      "key": "random_rank"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "evidence"
+                                      },
+                                      "key": "random_rank"
+                                    }
+                                  },
+                                  {
+                                    "type": "Lt",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior"
+                                      },
+                                      "key": "evidence_key"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "evidence"
+                                      },
+                                      "key": "evidence_key"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }

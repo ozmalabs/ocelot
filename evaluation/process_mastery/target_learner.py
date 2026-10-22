@@ -49,7 +49,9 @@ class NativeTargetLearner:
                     "refill_per_epoch": 0.0, "last_refill_epoch": 10.0},
             profile="p20-native-target-learner")
         self.s = self.agent.s
-        self.ag = self.agent.ag
+        self.ag = getattr(self.agent, "ag", getattr(self.agent, "agent", None))
+        if self.ag is None:
+            raise TypeError("target learner requires an agent root node")
         self.s._inner.load_seed_manifest(TARGET_EXPOSURE_MANIFEST, self.ag)
         self.accounting = LearningAccounting()
         self._ingested_world_receipts: set[str] = set()
@@ -212,7 +214,13 @@ class NativeTargetLearner:
     def settle(self, *, max_rounds=40, steps_per_round=2000):
         steps = 0
         for _ in range(max_rounds):
-            used = int(self.s.tick(steps_per_round))
+            if hasattr(self.agent, "inner"):
+                # A cognition-on WorldAdapter schedules a limited cognitive
+                # cycle on tick(); explicit phase settlement must execute the
+                # native rules in this shared graph, as its profile tests do.
+                used = int(self.agent.inner.run_rules(steps_per_round))
+            else:
+                used = int(self.s.tick(steps_per_round))
             steps += used
             if used == 0:
                 self.accounting.native_rule_steps += steps
