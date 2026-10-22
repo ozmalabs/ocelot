@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from collections import Counter
 from pathlib import Path
 
@@ -210,7 +211,8 @@ def analyze(payload, *, preregistration=None):
         failures.append("explanation_rows_do_not_match_allocation")
 
     effect = target.get("paired_auc_difference_mapped_minus_fresh")
-    if not isinstance(effect, (int, float)):
+    if (not isinstance(effect, (int, float)) or isinstance(effect, bool)
+            or not math.isfinite(effect)):
         failures.append("primary_effect_missing")
     if not heldout:
         primary_status = "NOT_ESTIMATED"

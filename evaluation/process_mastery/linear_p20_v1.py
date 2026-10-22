@@ -266,7 +266,7 @@ def run_heldout(*, preregistration):
         "phase": PHASE, "split": "heldout", "status": "heldout_pending_analysis",
         "heldout_accessed": True, "preregistration_path": str(path),
         "preregistration_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "freeze_commit": frozen.get("freeze_commit"), "run_commit": _commit(),
+        "freeze_commit": _commit(), "run_commit": _commit(),
         "provenance": provenance, "allocation_plan": allocation_plan,
         "allocation_sha256": allocation_sha,
         "allocation": {
@@ -310,12 +310,14 @@ def main():
     parser.add_argument("--preregistration", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    result = run(args.split,
-                 target_streams_per_pair=args.target_streams_per_pair,
-                 social_streams_per_arm=args.social_streams_per_arm,
-                 social_controls_per_kind=args.social_controls_per_kind,
-                 explanation_streams=args.explanation_streams,
-                 preregistration=args.preregistration)
+    if args.split == "heldout":
+        result = run("heldout", preregistration=args.preregistration)
+    else:
+        result = run("development",
+                     target_streams_per_pair=args.target_streams_per_pair,
+                     social_streams_per_arm=args.social_streams_per_arm,
+                     social_controls_per_kind=args.social_controls_per_kind,
+                     explanation_streams=args.explanation_streams)
     encoded = json.dumps(result, sort_keys=True, indent=2) + "\n"
     if args.output:
         args.output.write_text(encoded, encoding="utf-8")
