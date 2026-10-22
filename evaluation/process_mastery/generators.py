@@ -180,5 +180,5 @@ def blicket_outcome(truth, objects) -> int:
 # Family-a puzzle mechanics live in their own module; re-export here beside
 # Loopover so world selection can use one deterministic generator namespace.
 from evaluation.process_mastery.puzzle_worlds import (  # noqa: E402,F401
-    cube_task, sliding_task,
+    cube_task, sliding_task, tool_goal_task,
 )

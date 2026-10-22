@@ -129,6 +129,33 @@ def sliding_solved(state):
     return tuple(state) == (1, 2, 3, 4, 5, 6, 7, 8, 0)
 
 
+def tool_goal_task(seed: int):
+    """A tiny grid-world tool-composition task; the witness sequence is discarded."""
+    rng = random.Random(seed)
+    tools = {
+        "tool_left": (1, 0, 2, 3),
+        "tool_middle": (0, 2, 1, 3),
+        "tool_right": (0, 1, 3, 2),
+    }
+    initial = (0, 1, 2, 3)
+    # Choose a reachable goal at distance two or more. The sampled path is
+    # deliberately kept local and never returned in the task record.
+    reachable = {}
+    for a, pa in tools.items():
+        for b, pb in tools.items():
+            if a == b:
+                continue
+            candidate = _apply_position_map(_apply_position_map(initial, pa), pb)
+            if candidate not in tools.values() and candidate != initial:
+                reachable[candidate] = (a, b)
+    goals = sorted(reachable)
+    if not goals:
+        raise RuntimeError("tool set has no non-primitive composed goal")
+    goal = goals[rng.randrange(len(goals))]
+    return {"family": "tool_goal", "seed": int(seed), "initial_state": initial,
+            "goal_state": goal, "primitive_affordances": tools}
+
+
 def sliding_task(seed: int, length: int = 30):
     return {"family": "sliding_3x3", "seed": int(seed),
             "initial_state": sliding_scramble(seed, length),

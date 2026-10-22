@@ -4,6 +4,7 @@ import pytest
 from evaluation.process_mastery.puzzle_worlds import (
     cube_apply, cube_moves, cube_solved, cube_task, puzzle_panel,
     sliding_apply, sliding_moves, sliding_reachable, sliding_solved, sliding_task,
+    tool_goal_task,
 )
 
 
@@ -36,9 +37,11 @@ def test_unreachable_control_distinguished():
 
 
 def test_no_solution_path_ingested():
-    for task in (cube_task(17), sliding_task(17)):
+    for task in (cube_task(17), sliding_task(17), tool_goal_task(17)):
         assert "solution" not in task and "scramble_path" not in task and "moves_to_goal" not in task
         assert task["initial_state"] != task["goal_state"]
+    tool = tool_goal_task(17)
+    assert not any(perm == tuple(tool["goal_state"]) for perm in tool["primitive_affordances"].values())
     cube_control = puzzle_panel("cube_2x2x2", tasks=0, controls=1)["controls"][0]
     assert cube_control["requested_action"] not in cube_control["primitive_affordances"]
 
@@ -46,5 +49,6 @@ def test_no_solution_path_ingested():
 def test_seeded_world_reproducible():
     assert cube_task(901) == cube_task(901)
     assert sliding_task(901) == sliding_task(901)
+    assert tool_goal_task(901) == tool_goal_task(901)
     assert puzzle_panel("cube_2x2x2", tasks=2, controls=1) == puzzle_panel(
         "cube_2x2x2", tasks=2, controls=1)

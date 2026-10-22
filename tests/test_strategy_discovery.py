@@ -53,6 +53,21 @@ def test_found_strategy_replays_through_native_process_view():
     assert _replay(agent, [0, 1, 2], agent.attrs(replay)["trace"]) == [2, 0, 1]
 
 
+def test_stale_epoch_blocks_strategy_replay():
+    agent = _agent()
+    domain = agent.add_domain("stale", "permutation", [[0, 1, 2]], {"cycle": [1, 2, 0]})
+    source = agent.add_solve_task("stale", [0, 1, 2], [2, 0, 1])
+    _tick(agent)
+    assert agent.attrs(source)["status"] == "solved"
+    for policy in agent.nodes("SolverPolicy"):
+        agent.s.set_attr(policy, "enabled", 0.0)
+    agent.s.set_attr(domain, "model_epoch", 1.0)
+    replay = agent.add_solve_task("stale", [0, 1, 2], [2, 0, 1])
+    _tick(agent)
+    assert agent.attrs(replay)["status"] == "active"
+    assert "strategy_started" not in agent.attrs(replay)
+
+
 def test_delayed_progress_not_greedy_trap():
     agent = _agent()
     agent.add_domain("delayed", "permutation", [[0, 1, 2, 3]], {

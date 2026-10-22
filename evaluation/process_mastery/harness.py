@@ -89,7 +89,7 @@ class Agent:
     def add_domain(self, name, kind, probes, held: dict[str, object], trees=None, **attrs):
         d = self.s.add_node("ProcessDomain", {
             "name": name, "kind": kind, "probes": probes, "probe_epoch": 0,
-            "frame_epoch": 0, **attrs,
+            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0, **attrs,
         })
         self.s.add_edge(self.ag, "has_process_domain", d, {})
         for hname, params in held.items():
