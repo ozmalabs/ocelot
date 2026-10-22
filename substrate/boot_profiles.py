@@ -826,6 +826,8 @@ COGNITION_ON_SEEDS = (
     "process_portfolio",
     "process_curriculum",
     "recursive_process_improvement",
+    # P16 graph-selected expression requests; policy and emission stay gated.
+    "native_process_execution",
     # P10 goal-directed invention and exact-context strategy replay remain
     # policy-disabled until an explicit cognition-on evaluation enables them.
     "process_lifting",

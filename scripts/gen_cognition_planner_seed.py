@@ -1091,6 +1091,7 @@ def terminalize_missing_transition_rule():
                       Eq(A("request", "status"), L("searching")),
                       Eq(A("frontier", "status"), L("ready")),
                       Eq(A("budget_req", "status"), L("approved")),
+                      Not(Eq(A("request", "model_complete"), L(1.0))),
                       Eq({"type": "Count", "source": Filter(
                           N("agent", "has_cognition_plan_transition"), "transition",
                           And(Eq(A("transition", "source_state_key"), A("frontier", "state_key")),
@@ -1105,10 +1106,37 @@ def terminalize_missing_transition_rule():
     }
 
 
+def terminalize_complete_frontier_rule():
+    return {
+        "name": "cp_terminalize_complete_frontier", "area": AREA, "order": 24,
+        "latency_class": "hard_realtime", "batch": False,
+        "match": [["agent", "has_cognition_planner_policy", "policy"],
+                  ["agent", "has_cognition_plan_request", "request"],
+                  ["request", "has_frontier", "frontier"],
+                  ["frontier", "has_expansion_budget_request", "budget_req"]],
+        "where": And(Eq(A("policy", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("searching")),
+                      Eq(A("request", "model_complete"), L(1.0)),
+                      Eq(A("frontier", "status"), L("ready")),
+                      Eq(A("budget_req", "status"), L("approved")),
+                      Eq({"type": "Count", "source": Filter(
+                          N("agent", "has_cognition_plan_transition"), "transition",
+                          And(Eq(A("transition", "source_state_key"), A("frontier", "state_key")),
+                              Eq(A("transition", "model_epoch"), A("request", "model_epoch")),
+                              Exists(N("transition", "has_feasibility_receipt"), "receipt",
+                                     verified_receipt("receipt", "request", "transition"))))}, ZERO)),
+        "effects": [["set_attr", "frontier", "status", "terminal"],
+                    ["set_attr", "frontier", "terminal_reason", "frontier_closed"],
+                    ["set_attr", "frontier", "expanded_epoch", T(A("budget_req", "debited_epoch"))],
+                    ["set_attr", "frontier", "expanded_counted", 1.0],
+                    ["set_attr", "request", "expanded_count", T(Plus(A("request", "expanded_count"), L(1.0))) ]],
+    }
+
+
 def build_seed():
     specs = production_specs()
     return {
-        "id": "cognition_planner", "version": "1.2.0", "depends_on": ["thinking_budget", "generative_world_model", "cognition_manifold", "default_mode_core"],
+        "id": "cognition_planner", "version": "1.3.0", "depends_on": ["thinking_budget", "generative_world_model", "cognition_manifold", "default_mode_core"],
         "self_load_only": True,
         "area": AREA,
         "description": "Opt-in graph-resident bounded planning with complete linked path arrivals over explicit versioned model transitions; emits advisory imagined candidates only.",
@@ -1146,7 +1174,8 @@ def build_seed():
                   terminalize_path_arrival_limit_rule(), close_unresolved_path_projection_rule(),
                   close_solved_request_rule(),
                   terminalize_depth_rule(), terminalize_expansion_bound_rule(), terminalize_unfunded_rule(),
-                  terminalize_missing_transition_rule(), terminalize_model_dead_end_rule(),
+                  terminalize_missing_transition_rule(), terminalize_complete_frontier_rule(),
+                  terminalize_model_dead_end_rule(),
                   close_request_rule("missing_transition", "unknown", 27),
                   close_request_rule("frontier_closed", "exhausted", 28)],
     }

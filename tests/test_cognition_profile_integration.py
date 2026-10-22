@@ -644,6 +644,29 @@ def test_p15_shared_budget():
     agent.close()
 
 
+def test_p16_native_execution_profile_is_opt_in_and_budgeted():
+    p16 = {"native_process_execution"}
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "NativeProcessExecutionPolicy")
+    assert len(policy) == 1
+    assert agent.s.node(policy[0])["attrs"].get("enabled") == 0.0
+    exported = {rule["name"] for rule in agent.inner.export_rules()}
+    for item in manifest_for("native_process_execution").get("rules", ()):
+        if isinstance(item, dict) and item.get("name"):
+            assert item["name"] in exported
+    assert p16.issubset(set(COGNITION_ON_SEEDS))
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p16.isdisjoint(installed_seeds(default.s))
+    assert p16.isdisjoint(installed_seeds(conversation.s))
+    assert not _nodes(default, "NativeProcessExecutionPolicy")
+    assert not _nodes(conversation, "NativeProcessExecutionPolicy")
+    agent.close()
+    default.close()
+    conversation.close()
+
+
 def test_p12_profile_chain():
     p12 = {"imitation", "social_process", "process_explanation"}
     agent = boot_cognition_on()

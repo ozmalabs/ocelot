@@ -1,0 +1,373 @@
+{
+  "id": "native_process_execution",
+  "version": "1.0.0",
+  "depends_on": [
+    "recursive_process_improvement"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "P16.03 graph selector for native expression execution. Disabled by default; action authorization remains at the existing sink.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "NativeProcessExecutionPolicy",
+      "attrs": {
+        "name": "native_process_execution_policy",
+        "enabled": 0.0,
+        "max_expression_visits": 64.0,
+        "human_gate": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_native_process_execution_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:native_process_execution:has_native_process_execution_policy:Agent:NativeProcessExecutionPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_native_process_execution_policy",
+      "tgt": {
+        "type": "NativeProcessExecutionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:has_invention_operator:Agent:InventionOperator",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invention_operator",
+      "tgt": {
+        "type": "InventionOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:derived_from_candidate:InventionOperator:CandidateOperator",
+      "src": {
+        "type": "InventionOperator",
+        "var": "src"
+      },
+      "edge_type": "derived_from_candidate",
+      "tgt": {
+        "type": "CandidateOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:has_solve_task:Agent:SolveTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_solve_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:has_native_execution_request:SolveTask:NativeExecutionRequest",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_native_execution_request",
+      "tgt": {
+        "type": "NativeExecutionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:selected_operator:NativeExecutionRequest:InventionOperator",
+      "src": {
+        "type": "NativeExecutionRequest",
+        "var": "src"
+      },
+      "edge_type": "selected_operator",
+      "tgt": {
+        "type": "InventionOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:selected_candidate:NativeExecutionRequest:CandidateOperator",
+      "src": {
+        "type": "NativeExecutionRequest",
+        "var": "src"
+      },
+      "edge_type": "selected_candidate",
+      "tgt": {
+        "type": "CandidateOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:for_solve_task:NativeExecutionRequest:SolveTask",
+      "src": {
+        "type": "NativeExecutionRequest",
+        "var": "src"
+      },
+      "edge_type": "for_solve_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:native_process_execution:has_execution_budget_request:NativeExecutionRequest:ThinkingBudgetRequest",
+      "src": {
+        "type": "NativeExecutionRequest",
+        "var": "src"
+      },
+      "edge_type": "has_execution_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "npe_select_current_graph_operator",
+      "area": "memory_consolidation",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "Select the active graph-owned candidate for a task; no arm name or host process is consulted.",
+      "match": [
+        [
+          "agent",
+          "has_native_process_execution_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_invention_operator",
+          "operator"
+        ],
+        [
+          "operator",
+          "derived_from_candidate",
+          "candidate"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "task"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "operator"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "promoted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "edge_type": "has_native_execution_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "selected"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "request",
+          "NativeExecutionRequest",
+          {
+            "status": "selected",
+            "selected_by": "native_graph_rule",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "source_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_native_execution_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "task",
+          "has_native_execution_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "selected_operator",
+          "operator",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "selected_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "for_solve_task",
+          "task",
+          {}
+        ],
+        [
+          "add_node",
+          "budget_request",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "native_process_expression",
+            "status": "pending",
+            "cost": 8.0,
+            "deadline_epoch": null
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_execution_budget_request",
+          "budget_request",
+          {}
+        ],
+        [
+          "add_edge",
+          "budget_request",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ]
+      ],
+      "batch": true
+    }
+  ]
+}
