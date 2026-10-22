@@ -86,6 +86,55 @@ def test_failed_constraint_not_replayed():
     assert "strategy_started" not in agent.attrs(stale)
 
 
+def test_new_object_count_uses_witnessed_lifted_strategy():
+    from tests.test_process_lifting import _commutator
+
+    agent = Agent(extra_seeds=("strategy_discovery", "process_lifting"),
+        policy_overrides={
+            "StrategyDiscoveryPolicy": {"enabled": 1.0, "allow_lift": 1.0},
+            "ProcessLiftingPolicy": {"enabled": 1.0, "unseen_size_enabled": 1.0},
+        })
+    for size in (3, 5):
+        domain_name = f"train-{size}"
+        agent.add_domain(domain_name, "permutation", [list(range(size))],
+                         {f"commutator-{size}": _commutator(size)}, size=size)
+        process = agent.schemas(domain_name)[0]
+        agent.s.set_attr(process, "operator", "commutator")
+        agent.s.set_attr(process, "expr_tree", [
+            "commutator", ["cycle", size, 0, size], ["swap", size, 0, 1]])
+    _tick(agent, 8)
+    families = agent.nodes("LiftedProcessFamily")
+    assert len(families) == 1
+
+    source_state = [0, 1, 2]
+    source_process = agent.schemas("train-3")[0]
+    source_goal = _apply_native(agent, agent.attrs(source_process)["params"], source_state)
+    source_task = agent.add_solve_task("train-3", source_state, source_goal)
+    _tick(agent)
+    assert agent.attrs(source_task)["status"] == "solved"
+    assert len(agent.nodes("DiscoveredStrategy")) == 1
+    for policy in agent.nodes("SolverPolicy"):
+        agent.s.set_attr(policy, "enabled", 0.0)
+
+    target_size = 6
+    target_domain = agent.add_domain("target-6", "permutation", [list(range(target_size))],
+        {"identity": list(range(target_size))}, size=target_size)
+    _tick(agent, 8)
+    lifted = [schema for schema in agent.schemas("target-6")
+              if agent.attrs(schema).get("provenance") == "lifted_from_witness"]
+    assert len(lifted) == 1
+    initial = list(range(target_size))
+    goal = _apply_native(agent, agent.attrs(lifted[0])["params"], initial)
+    task = agent.add_solve_task("target-6", initial, goal)
+    _tick(agent)
+    assert agent.attrs(task)["strategy_started"] == 1
+    assert agent.attrs(task)["strategy_size_lifted"] == 1
+    assert agent.attrs(task)["status"] == "solved"
+    used = agent.native.neighbours(task, "uses_lifted_strategy_instance")
+    assert used == lifted
+    assert len(agent.attrs(used[0])["params"]) == target_size
+
+
 def test_temporary_regression_allowed():
     agent, _ = _open_agent(held={"p": [3, 2, 0, 1], "q": [0, 3, 1, 2]})
     initial = [2, 0, 3, 1]

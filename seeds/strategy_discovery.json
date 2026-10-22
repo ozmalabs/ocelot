@@ -191,9 +191,675 @@
         "type": "DiscoveredStrategy",
         "var": "tgt"
       }
+    },
+    {
+      "provenance": "seed:strategy_discovery:has_lifted_process_family:Agent:LiftedProcessFamily",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_lifted_process_family",
+      "tgt": {
+        "type": "LiftedProcessFamily",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_discovery:has_source_schema:LiftedProcessFamily:ProcessSchema",
+      "src": {
+        "type": "LiftedProcessFamily",
+        "var": "src"
+      },
+      "edge_type": "has_source_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_discovery:has_lifted_instance:LiftedProcessFamily:ProcessSchema",
+      "src": {
+        "type": "LiftedProcessFamily",
+        "var": "src"
+      },
+      "edge_type": "has_lifted_instance",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_discovery:uses_lifted_strategy_instance:SolveTask:ProcessSchema",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "uses_lifted_strategy_instance",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
     }
   ],
   "rules": [
+    {
+      "name": "sd_start_witnessed_size_lift",
+      "area": "process_solving",
+      "order": 7,
+      "latency_class": "background",
+      "comment": "Start a new-size strategy only when process_lifting has produced an exact native-verified instance from two size witnesses.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_discovery_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "target_domain"
+        ],
+        [
+          "agent",
+          "has_discovered_strategy",
+          "s"
+        ],
+        [
+          "s",
+          "about_domain",
+          "source_domain"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "source_domain"
+        ],
+        [
+          "agent",
+          "has_lifted_process_family",
+          "family"
+        ],
+        [
+          "family",
+          "has_source_schema",
+          "source_process"
+        ],
+        [
+          "family",
+          "has_lifted_instance",
+          "instance"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "source_process"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "instance"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "allow_lift"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "family"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "witnessed_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "instance"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_process"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_process"
+              },
+              "key": "operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "source_process"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "trace"
+              },
+              "index": {
+                "type": "Lit",
+                "value": 0
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "instance"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "size"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "object_count"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "size"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "object_count"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "object_count"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "object_count"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target_domain"
+              },
+              "key": "probe_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_domain"
+              },
+              "key": "probe_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "edge_type": "has_strategy_failure_constraint",
+                "any_type": false
+              },
+              "var_name": "failure",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "initial_state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "initial_state"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "goal_state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "object_count"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "object_count"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "kind"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "frame_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "failure"
+                      },
+                      "key": "probe_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "probe_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_started"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "t",
+          "executes_discovered_strategy",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "uses_lifted_strategy_instance",
+          "instance",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_started",
+          1
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_index",
+          0
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_size_lifted",
+          1
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          "replaying"
+        ]
+      ],
+      "batch": false
+    },
     {
       "name": "sd_start_lifted_strategy",
       "area": "process_solving",
@@ -1104,6 +1770,447 @@
       "batch": false
     },
     {
+      "name": "sd_apply_witnessed_size_lift_step",
+      "area": "process_solving",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "Apply the exact process-lifting instance through native ProcessApply and retain the target-size trace.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_discovery_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "t",
+          "executes_discovered_strategy",
+          "s"
+        ],
+        [
+          "t",
+          "uses_lifted_strategy_instance",
+          "p"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "replaying"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "strategy_size_lifted"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "strategy_index"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "trace"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "probe_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "probe_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "strategy_next_state",
+          {
+            "__term__": {
+              "type": "ProcessApply",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "key": "params"
+              },
+              "state": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "state",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "strategy_next_state"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_next_state"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "trace",
+          {
+            "__term__": {
+              "type": "Append",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "trace"
+              },
+              "item": {
+                "type": "Var",
+                "name": "p"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "steps",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "steps"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "moves",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "moves"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "cost"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_index",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "strategy_index"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "strategy_next_state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "solved"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "strategy_index"
+                  },
+                  "b": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "s"
+                      },
+                      "key": "trace"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "strategy_failed"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "replaying"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_next_state",
+          null
+        ]
+      ],
+      "batch": false
+    },
+    {
       "name": "sd_apply_matching_strategy_step",
       "area": "process_solving",
       "order": 10,
@@ -1172,6 +2279,24 @@
             "b": {
               "type": "Lit",
               "value": "replaying"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_size_lifted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
             }
           },
           {

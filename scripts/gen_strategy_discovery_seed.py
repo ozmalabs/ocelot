@@ -11,7 +11,7 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (
-    A, And, Append, Count, Eq, Exists, IfThenElse, IndexAt, L, Lt, N, Not, ONLINE_AREA,
+    A, And, Append, Count, Eq, Exists, Gt, IfThenElse, IndexAt, L, Lt, N, Not, ONLINE_AREA,
     Plus, PApply, T, V, is_none, policy_on, productions, rule,
 )
 
@@ -34,6 +34,10 @@ def build():
         ("DiscoveredStrategy", "has_strategy_failure_constraint", "StrategyFailureConstraint"),
         ("SolveTask", "recorded_strategy_failure", "StrategyFailureConstraint"),
         ("SolveTask", "executes_discovered_strategy", "DiscoveredStrategy"),
+        ("Agent", "has_lifted_process_family", "LiftedProcessFamily"),
+        ("LiftedProcessFamily", "has_source_schema", "ProcessSchema"),
+        ("LiftedProcessFamily", "has_lifted_instance", "ProcessSchema"),
+        ("SolveTask", "uses_lifted_strategy_instance", "ProcessSchema"),
     ]
     record = rule(
         "sd_record_solved_trace", ONLINE_AREA, 24,
@@ -97,6 +101,7 @@ def build():
          ["t", "executes_discovered_strategy", "s"], ["s", "about_domain", "d"],
          ["agent", "has_process_schema", "p"]],
         And(policy_on(), Eq(A("t", "status"), L("replaying")),
+            Not(Eq(A("t", "strategy_size_lifted"), L(1))),
             Lt(A("t", "strategy_index"), Count(A("s", "trace"))),
             Eq(V("p"), IndexAt(A("s", "trace"), A("t", "strategy_index"))),
             Eq(A("d", "source_epoch"), A("s", "source_epoch")),
@@ -118,6 +123,34 @@ def build():
          ["set_attr", "t", "strategy_next_state", None]],
         batch=False,
     )
+    size_lift_step = rule(
+        "sd_apply_witnessed_size_lift_step", ONLINE_AREA, 10,
+        "Apply the exact process-lifting instance through native ProcessApply and retain the target-size trace.",
+        [["agent", "has_strategy_discovery_policy", "pol"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"],
+         ["t", "executes_discovered_strategy", "s"],
+         ["t", "uses_lifted_strategy_instance", "p"]],
+        And(policy_on(), Eq(A("t", "status"), L("replaying")),
+            Eq(A("t", "strategy_size_lifted"), L(1)),
+            Lt(A("t", "strategy_index"), Count(A("s", "trace"))),
+            Eq(A("p", "domain"), A("d", "name")),
+            Eq(A("d", "source_epoch"), A("s", "source_epoch")),
+            Eq(A("d", "model_epoch"), A("s", "model_epoch")),
+            Eq(A("d", "frame_epoch"), A("s", "frame_epoch")),
+            Eq(A("d", "probe_epoch"), A("s", "probe_epoch"))),
+        [["set_attr", "t", "strategy_next_state", T(PApply(A("p", "params"), A("t", "state")))],
+         ["set_attr", "t", "state", T(IfThenElse(is_none(A("t", "strategy_next_state")),
+                                                      A("t", "state"),
+                                                      A("t", "strategy_next_state")))],
+         ["set_attr", "t", "trace", T(Append(A("t", "trace"), V("p")))],
+         ["set_attr", "t", "steps", T(Plus(A("t", "steps"), L(1)))],
+         ["set_attr", "t", "moves", T(Plus(A("t", "moves"), A("p", "cost")))],
+         ["set_attr", "t", "strategy_index", T(Plus(A("t", "strategy_index"), L(1)))],
+         ["set_attr", "t", "status", T(IfThenElse(
+             Eq(A("t", "strategy_next_state"), A("t", "goal")), L("solved"),
+             IfThenElse(Eq(A("t", "strategy_index"), Count(A("s", "trace"))),
+                        L("strategy_failed"), L("replaying"))))],
+         ["set_attr", "t", "strategy_next_state", None]], batch=False)
     record_failure = rule(
         "sd_record_failed_strategy_binding", ONLINE_AREA, 25,
         "Retain a replay failure as a binding-specific constraint so the same strategy is not retried blindly.",
@@ -160,6 +193,41 @@ def build():
             Not(Eq(A("t", "strategy_started"), L(1)))),
         [["add_edge", "t", "executes_discovered_strategy", "s", {}],
          ["set_attr", "t", "strategy_started", 1], ["set_attr", "t", "strategy_index", 0],
+         ["set_attr", "t", "status", "replaying"]], batch=False)
+    size_lift_start = rule(
+        "sd_start_witnessed_size_lift", ONLINE_AREA, 7,
+        "Start a new-size strategy only when process_lifting has produced an exact native-verified instance from two size witnesses.",
+        [["agent", "has_strategy_discovery_policy", "pol"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "target_domain"],
+         ["agent", "has_discovered_strategy", "s"], ["s", "about_domain", "source_domain"],
+         ["agent", "has_process_domain", "source_domain"],
+         ["agent", "has_lifted_process_family", "family"],
+         ["family", "has_source_schema", "source_process"],
+         ["family", "has_lifted_instance", "instance"],
+         ["agent", "has_process_schema", "source_process"],
+         ["agent", "has_process_schema", "instance"]],
+        And(policy_on(), Eq(A("pol", "allow_lift"), L(1)),
+            Eq(A("t", "status"), L("active")), Eq(A("s", "status"), L("verified")),
+            Eq(A("family", "status"), L("witnessed_candidate")),
+            Eq(A("instance", "status"), L("active")),
+            Eq(A("source_process", "domain"), A("source_domain", "name")),
+            Eq(A("source_process", "operator"), L("commutator")),
+            Eq(V("source_process"), IndexAt(A("s", "trace"), L(0))),
+            Eq(A("instance", "domain"), A("target_domain", "name")),
+            Eq(A("source_domain", "kind"), A("target_domain", "kind")),
+            Eq(A("source_domain", "size"), A("s", "object_count")),
+            Eq(A("target_domain", "size"), A("t", "object_count")),
+            Gt(A("t", "object_count"), A("s", "object_count")),
+            Eq(A("target_domain", "source_epoch"), A("source_domain", "source_epoch")),
+            Eq(A("target_domain", "model_epoch"), A("source_domain", "model_epoch")),
+            Eq(A("target_domain", "frame_epoch"), A("source_domain", "frame_epoch")),
+            Eq(A("target_domain", "probe_epoch"), A("source_domain", "probe_epoch")),
+            failure_binding_match,
+            Not(Eq(A("t", "strategy_started"), L(1)))),
+        [["add_edge", "t", "executes_discovered_strategy", "s", {}],
+         ["add_edge", "t", "uses_lifted_strategy_instance", "instance", {}],
+         ["set_attr", "t", "strategy_started", 1], ["set_attr", "t", "strategy_index", 0],
+         ["set_attr", "t", "strategy_size_lifted", 1],
          ["set_attr", "t", "status", "replaying"]], batch=False)
     record_receipt = rule(
         "sd_record_world_receipted_strategy", ONLINE_AREA, 23,
@@ -213,7 +281,8 @@ def build():
         "edges": [{"src": {"role": "agent_root"}, "type": "has_strategy_discovery_policy",
                    "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(SEED_ID, specs),
-        "rules": [lift, start, step, record_failure, record_receipt, record],
+        "rules": [size_lift_start, lift, start, size_lift_step, step, record_failure,
+                  record_receipt, record],
     }
 
 
