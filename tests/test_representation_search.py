@@ -181,10 +181,12 @@ def test_graph_rule_funds_one_bounded_representation_search():
                   budget={"enabled": 1.0, "remaining": 3.0,
                           "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
     s, ag = agent.s, agent.ag
+    mode = next(iter(s.neighbours(ag, "has_network_mode_state")))
+    epoch = s.node(mode)["attrs"]["epoch"]
     req = s.add_node("RepresentationSearchRequest", {
         "owner_id": "owner-b", "source_epoch": 7, "model_epoch": 2,
         "frame_epoch": 5, "training_split_id": "dev-b", "candidate_cap": 16,
-        "operation_id": "search-b", "search_epoch": 0,
+        "operation_id": "search-b", "search_epoch": epoch,
         "training_only": True, "status": "requested"})
     s.add_edge(ag, "has_representation_search_request", req, {})
     for _ in range(6):
@@ -195,3 +197,44 @@ def test_graph_rule_funds_one_bounded_representation_search():
     assert attrs["requester_kind"] == "representation_search"
     assert attrs["source_key"] == "search-b"
     assert s.node(req)["attrs"]["status"] == "funding_pending"
+
+
+def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
+    agent = Agent(extra_seeds=("representation_search",),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}},
+                  budget={"enabled": 1.0, "remaining": 3.0,
+                          "refill_per_epoch": 0.0, "last_refill_epoch": 0.0})
+    s, ag = agent.s, agent.ag
+    mode = next(iter(s.neighbours(ag, "has_network_mode_state")))
+    epoch = s.node(mode)["attrs"]["epoch"]
+    req = s.add_node("RepresentationSearchRequest", {
+        "owner_id": "owner-c", "source_epoch": 7, "model_epoch": 2,
+        "frame_epoch": 5, "training_split_id": "dev-c", "candidate_cap": 16,
+        "operation_id": "search-c", "search_epoch": epoch,
+        "training_only": True, "status": "requested"})
+    evidence = s.add_node("RepresentationTransformEvidence", {
+        "candidate_id": "candidate-c", "status": "acquired_transform",
+        "owner_id": "owner-c", "source_epoch": 7, "model_epoch": 2,
+        "frame_epoch": 5, "training_split_id": "dev-c",
+        "canonical_package": {"model": "m", "map": [1, 0], "decoder": "d"},
+        "package_bits": 320, "training_residual_bits": 16,
+        "training_total_bits": 336, "package_cost_complete": True,
+        "forced_frame_preserved": True, "discriminating_evidence": True})
+    s.add_edge(ag, "has_representation_search_request", req, {})
+    s.add_edge(req, "has_transform_evidence", evidence, {})
+    for _ in range(12):
+        s.tick(1000)
+    proposals = list(s.neighbours(req, "has_candidate_proposal"))
+    assert len(proposals) == 1, {
+        "request_status": s.node(req)["attrs"].get("status"),
+        "fund_attrs": [{k: s.node(n)["attrs"].get(k) for k in
+                        ("status", "debited_epoch", "operation_id", "requester_kind")}
+                       for n in s.neighbours(req, "funded_by_request")],
+        "evidence": s.node(evidence)["attrs"],
+    }
+    attrs = s.node(proposals[0])["attrs"]
+    assert attrs["candidate_id"] == "candidate-c"
+    assert attrs["canonical_package"] == {"model": "m", "map": [1, 0], "decoder": "d"}
+    assert attrs["training_total_bits"] == 336
+    assert attrs["status"] == "candidate"
+    assert attrs["heldout_used_for_selection"] is False

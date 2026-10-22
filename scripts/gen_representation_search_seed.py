@@ -22,6 +22,8 @@ def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name":
 def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
 def SortBy(src, var, key): return {"type": "SortBy", "source": src, "var_name": var, "key": key}
 def IndexAt(seq, index): return {"type": "IndexAt", "seq": seq, "index": L(index)}
+def Count(src): return {"type": "Count", "source": src}
+def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
 
 
 def build_seed():
@@ -47,6 +49,7 @@ def build_seed():
         ("Agent", "has_representation_search_request", "RepresentationSearchRequest"),
         ("RepresentationSearchRequest", "funded_by_request", "ThinkingBudgetRequest"),
         ("RepresentationSearchRequest", "has_candidate_proposal", "RepresentationProposal"),
+        ("RepresentationSearchRequest", "has_transform_evidence", "RepresentationTransformEvidence"),
         ("Agent", "has_representation_proposal", "RepresentationProposal"),
         ("Agent", "has_thinking_budget_request", "ThinkingBudgetRequest"),
         ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
@@ -73,6 +76,48 @@ def build_seed():
                         ["set_attr", "proposal", "transition_to_frame", T(A("proposal", "target_frame_id"))],
                         ["set_attr", "proposal", "recall_invalidated", True],
                         ["set_attr", "proposal", "transfer_invalidated", True]]}
+    proposal_rule = {"name": "rs_propose_from_held_transform_evidence", "area": AREA,
+                    "order": 1, "latency_class": "hard_realtime", "batch": False,
+                    "match": [["ag", "has_representation_search_policy", "pol"],
+                              ["ag", "has_representation_search_request", "request"],
+                              ["request", "has_transform_evidence", "evidence"],
+                              ["request", "funded_by_request", "fund"]],
+                    "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                                 Eq(A("request", "status"), L("funding_pending")),
+                                 Eq(A("fund", "status"), L("approved")),
+                                 Eq(A("fund", "debited_epoch"), A("request", "search_epoch")),
+                                 Eq(A("fund", "requester_kind"), L("representation_search")),
+                                 Eq(A("evidence", "status"), L("acquired_transform")),
+                                 Eq(A("evidence", "owner_id"), A("request", "owner_id")),
+                                 Eq(A("evidence", "source_epoch"), A("request", "source_epoch")),
+                                 Eq(A("evidence", "model_epoch"), A("request", "model_epoch")),
+                                 Eq(A("evidence", "frame_epoch"), A("request", "frame_epoch")),
+                                 Eq(A("evidence", "training_split_id"), A("request", "training_split_id")),
+                                 Eq(A("evidence", "package_cost_complete"), L(True)),
+                                 Not(Exists(N("request", "has_candidate_proposal"), "old",
+                                            Eq(A("old", "candidate_id"), A("evidence", "candidate_id")))),
+                                 Lt(Count(N("request", "has_candidate_proposal")),
+                                    A("request", "candidate_cap"))),
+                    "effects": [["add_node", "proposal", "RepresentationProposal", {
+                        "candidate_id": T(A("evidence", "candidate_id")),
+                        "owner_id": T(A("evidence", "owner_id")),
+                        "source_epoch": T(A("evidence", "source_epoch")),
+                        "model_epoch": T(A("evidence", "model_epoch")),
+                        "frame_epoch": T(A("evidence", "frame_epoch")),
+                        "training_split_id": T(A("evidence", "training_split_id")),
+                        "candidate_cap": T(A("request", "candidate_cap")),
+                        "status": "candidate",
+                        "canonical_package": T(A("evidence", "canonical_package")),
+                        "package_bits": T(A("evidence", "package_bits")),
+                        "training_residual_bits": T(A("evidence", "training_residual_bits")),
+                        "training_total_bits": T(A("evidence", "training_total_bits")),
+                        "package_cost_complete": True,
+                        "heldout_used_for_selection": False,
+                        "forced_frame_preserved": T(A("evidence", "forced_frame_preserved")),
+                        "discriminating_evidence": T(A("evidence", "discriminating_evidence")),
+                        "target_effect_verified": False}],
+                                ["add_edge", "request", "has_candidate_proposal", "proposal", {}],
+                                ["add_edge", "ag", "has_representation_proposal", "proposal", {}]]}
     request_rule = {"name": "rs_request_shared_funded_bounded_search", "area": AREA,
                     "order": 1, "latency_class": "hard_realtime", "batch": False,
                     "match": [["ag", "has_representation_search_policy", "pol"],
@@ -90,6 +135,7 @@ def build_seed():
                                                    L(":"), A("request", "owner_id"), L(":"),
                                                    {"type": "ToJsonString", "value": A("request", "source_epoch")})),
                         "source_key": T(A("request", "operation_id")),
+                        "operation_id": T(A("request", "operation_id")),
                         "source_epoch": T(A("request", "source_epoch")),
                         "requested_epoch": T(A("mode", "epoch")),
                         "cost": T(A("pol", "probe_cost")), "status": "pending"}],
@@ -110,7 +156,7 @@ def build_seed():
                        "tgt": {"local": 0}, "attrs": {}}],
             "productions": [{"provenance": f"seed:{AREA}:{e}:{s}:{t}", "src": {"type": s, "var": "src"},
                              "edge_type": e, "tgt": {"type": t, "var": "tgt"}} for s,e,t in relations],
-            "rules": [request_rule, rule]}
+            "rules": [request_rule, proposal_rule, rule]}
 
 
 def main():
