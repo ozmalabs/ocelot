@@ -1106,7 +1106,7 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 
 ## Phase 14 — Laws proofs and safely authored invention operators
 
-**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01 complete, P14.02 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
+**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.02 complete, P14.03 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
 
 Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention loop. Earlier processes retain their supported verification scope; proof requirements apply to explicitly proof-admitting domains. Bounded fingerprints do not become proofs. Operator proposals cannot modify criteria, verifier or held-out tests.
 
@@ -1143,6 +1143,8 @@ Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention l
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_laws.py tests/test_invariant_walls.py -q -p no:cacheprovider`.
 - **Non-goals:** assuming absence of a counterexample proves a general law.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P14.02 completion record (2026-10-22):** Added disabled-by-default `process_laws` policy and generated `seeds/process_laws.json`. Its sole checked fragment is an exact permutation commutator: two active same-domain permutation arguments, the exact native `ProcessCommutator` result, fixed statement/assumption digests and matching family/model/process epochs are all required before a `LawProofReference` is attached. Finite-sample candidates with counterexamples are rejected; a validated later counterexample downgrades a checked law while retaining its proof reference as history. No broad theorem proving or sampled-invariant promotion is implemented. Verification: P14.02 bundle — 13 passed, including false finite-sample, family-binding, exact-constructor and counterexample controls. The checker is the bounded graph-resident structural rule, not a general proof kernel; P14.03 must preserve this scope.
 
 ### P14.03 — Enforce proof-carrying adoption in declared domains
 

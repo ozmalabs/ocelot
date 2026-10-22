@@ -1,0 +1,966 @@
+{
+  "id": "process_laws",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_schema"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "P14.02: disabled-by-default, bounded process-law checking. Only an exact structural commutator parity derivation is checked; empirical fingerprints remain conjectures and validated counterexamples reject claims.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessLawsPolicy",
+      "attrs": {
+        "name": "process_laws_policy",
+        "enabled": 0.0,
+        "supported_fragment": "permutation_commutator_parity_v1"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_laws_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_laws:has_process_laws_policy:Agent:ProcessLawsPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_laws_policy",
+      "tgt": {
+        "type": "ProcessLawsPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_laws:has_process_law_candidate:Agent:ProcessLaw",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_law_candidate",
+      "tgt": {
+        "type": "ProcessLaw",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_laws:about_process:ProcessLaw:ProcessSchema",
+      "src": {
+        "type": "ProcessLaw",
+        "var": "src"
+      },
+      "edge_type": "about_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_laws:has_proof_reference:ProcessLaw:LawProofReference",
+      "src": {
+        "type": "ProcessLaw",
+        "var": "src"
+      },
+      "edge_type": "has_proof_reference",
+      "tgt": {
+        "type": "LawProofReference",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_laws:has_counterexample:ProcessLaw:LawCounterexample",
+      "src": {
+        "type": "ProcessLaw",
+        "var": "src"
+      },
+      "edge_type": "has_counterexample",
+      "tgt": {
+        "type": "LawCounterexample",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_laws:contains_process_family:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "contains_process_family",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pl_check_permutation_commutator_law",
+      "area": "memory_consolidation",
+      "order": 40,
+      "latency_class": "background",
+      "comment": "Check only the algebraic parity law for an actual commutator schema whose two arguments and source family match the declared finite permutation-domain model. This structural rule is the entire supported proof fragment; finite observations are not premises.",
+      "match": [
+        [
+          "agent",
+          "has_process_laws_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_law_candidate",
+          "law"
+        ],
+        [
+          "law",
+          "about_process",
+          "s"
+        ],
+        [
+          "s",
+          "has_arg0",
+          "a"
+        ],
+        [
+          "s",
+          "has_arg1",
+          "b"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "conjecture"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "claim"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_even"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "evidence_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "structural_derivation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "family"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "family_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "family_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "family_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "model_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "process_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "statement_digest"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "4e3f9f19059a7254dbc8b885e464eccf69cec770eec50cb43a4d89e01415adb2"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "assumptions_digest"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "d055b01ab1e76e1190f7b04e01fe250ab42f5ce6ccc24eaf4dfd84263ec96077"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "params"
+            },
+            "b": {
+              "type": "ProcessCompose",
+              "a": {
+                "type": "ProcessCompose",
+                "a": {
+                  "type": "ProcessCompose",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "params"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "b"
+                    },
+                    "key": "params"
+                  }
+                },
+                "b": {
+                  "type": "ProcessInverse",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "params"
+                  }
+                }
+              },
+              "b": {
+                "type": "ProcessInverse",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "b"
+                  },
+                  "key": "params"
+                }
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "a"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "a"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "a"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "b"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "assumptions"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "permutation_group;parity_homomorphism_Z2;operator_semantics_v1"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "counterexample_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "law",
+          "status",
+          "checked"
+        ],
+        [
+          "set_attr",
+          "law",
+          "verdict",
+          "checked_theorem"
+        ],
+        [
+          "set_attr",
+          "law",
+          "proof_kind",
+          "native_structural_rule"
+        ],
+        [
+          "set_attr",
+          "law",
+          "proof_rule",
+          "parity_commutator_even_v1"
+        ],
+        [
+          "set_attr",
+          "law",
+          "proven",
+          1
+        ],
+        [
+          "add_node",
+          "proof",
+          "LawProofReference",
+          {
+            "rule": "parity_commutator_even_v1",
+            "statement": "commutator_even",
+            "assumptions": "permutation_group;parity_homomorphism_Z2;operator_semantics_v1",
+            "statement_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "law"
+                },
+                "key": "statement_digest"
+              }
+            },
+            "assumptions_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "law"
+                },
+                "key": "assumptions_digest"
+              }
+            },
+            "checker": "process_laws_seed_v1",
+            "family": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "family_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "family_digest"
+              }
+            },
+            "model_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_digest"
+              }
+            },
+            "family_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "process_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "status": "checked"
+          }
+        ],
+        [
+          "add_edge",
+          "law",
+          "has_proof_reference",
+          "proof",
+          {}
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "pl_reject_counterexampled_finite_law",
+      "area": "memory_consolidation",
+      "order": 41,
+      "latency_class": "background",
+      "comment": "A finite-sample law with an explicit counterexample is rejected; sampling never promotes a law to theorem.",
+      "match": [
+        [
+          "agent",
+          "has_process_laws_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_law_candidate",
+          "law"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "conjecture"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "evidence_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "finite_sample"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "counterexample_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "law",
+          "status",
+          "rejected"
+        ],
+        [
+          "set_attr",
+          "law",
+          "verdict",
+          "counterexample"
+        ],
+        [
+          "set_attr",
+          "law",
+          "proven",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "pl_downgrade_counterexampled_checked_law",
+      "area": "memory_consolidation",
+      "order": 42,
+      "latency_class": "background",
+      "comment": "A counterexample invalidates a checked law and retains its proof reference as historical evidence.",
+      "match": [
+        [
+          "agent",
+          "has_process_laws_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_law_candidate",
+          "law"
+        ],
+        [
+          "law",
+          "has_counterexample",
+          "ce"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "checked"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ce"
+              },
+              "key": "validated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "law",
+          "status",
+          "rejected"
+        ],
+        [
+          "set_attr",
+          "law",
+          "verdict",
+          "counterexample"
+        ],
+        [
+          "set_attr",
+          "law",
+          "proven",
+          0
+        ]
+      ]
+    }
+  ]
+}
