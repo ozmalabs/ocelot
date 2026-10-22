@@ -44,6 +44,49 @@ def test_all_arms_same_world_and_compute():
                for row in result["rows"])
 
 
+def test_comparison_rejects_vacuous_panels_and_duplicate_checkpoint_ids():
+    agent, adapter = _adapter()
+    full, ancestor = _checkpoints(agent)
+    try:
+        adapter.compare((ancestor, full), [])
+    except ValueError as exc:
+        assert "at least one common world" in str(exc)
+    else:
+        raise AssertionError("empty world panel was accepted")
+    duplicate = CheckpointExpression(full.checkpoint_id, "ancestor", "other",
+                                     full.params, 2)
+    try:
+        adapter.compare((ancestor, full, duplicate), [{
+            "world_id": "one", "initial_state": [0, 1, 2, 3],
+            "goal_state": [1, 2, 0, 3]}])
+    except ValueError as exc:
+        assert "identities must be unique" in str(exc)
+    else:
+        raise AssertionError("duplicate checkpoint identity was accepted")
+
+
+def test_scoring_rejects_malformed_permutations_and_negative_work():
+    agent, adapter = _adapter()
+    world = {"world_id": "valid", "initial_state": [0, 1, 2, 3],
+             "goal_state": [1, 2, 0, 3]}
+    malformed = CheckpointExpression("bad-permutation", "ancestor", "bad",
+                                     (0, 1, 1, 3), 1)
+    try:
+        adapter.score(malformed, **world)
+    except ValueError as exc:
+        assert "finite permutation" in str(exc)
+    else:
+        raise AssertionError("malformed process was scored as an ordinary failure")
+    negative_cost = CheckpointExpression("negative-work", "ancestor", "valid",
+                                         (0, 1, 2, 3), -1)
+    try:
+        adapter.score(negative_cost, **world)
+    except ValueError as exc:
+        assert "nonnegative integer" in str(exc)
+    else:
+        raise AssertionError("negative declared work was accepted")
+
+
 def test_changed_active_expression_changes_scored_result():
     agent, adapter = _adapter()
     full, ancestor = _checkpoints(agent)

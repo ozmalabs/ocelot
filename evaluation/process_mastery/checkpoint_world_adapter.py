@@ -148,13 +148,28 @@ class CheckpointWorldAdapter:
               initial_state: list[int], goal_state: list[int]) -> dict:
         if not world_id:
             raise ValueError("world identity is required")
+        work = checkpoint.declared_primitive_work
+        if isinstance(work, bool) or not isinstance(work, int) or work < 0:
+            raise ValueError("declared primitive work must be a nonnegative integer")
+        params = checkpoint.params
+        if (not isinstance(params, tuple) or len(params) < 2
+                or any(isinstance(value, bool) or not isinstance(value, int)
+                       for value in params)
+                or sorted(params) != list(range(len(params)))):
+            raise ValueError("checkpoint parameters must be a finite permutation")
+        for label, state in (("initial", initial_state), ("goal", goal_state)):
+            if (not isinstance(state, list) or len(state) != len(params)
+                    or any(isinstance(value, bool) or not isinstance(value, int)
+                           for value in state)
+                    or sorted(state) != list(range(len(params)))):
+                raise ValueError(f"{label} state must match the finite permutation domain")
         if (not self._checkpoint_digest_valid(checkpoint)
                 and not self.allow_unattested_fixtures):
             raise ValueError("checkpoint is not an intact attested native snapshot")
-        if checkpoint.declared_primitive_work > self.primitive_work_ceiling:
+        if work > self.primitive_work_ceiling:
             return {"world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                     "status": "work_denied", "score": None,
-                    "primitive_work": checkpoint.declared_primitive_work}
+                    "primitive_work": work}
         result = self.native.evaluate(
             {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
              "state": {"type": "Var", "name": "state"}},
@@ -163,7 +178,7 @@ class CheckpointWorldAdapter:
                 "parent_digest": checkpoint.parent_digest,
                 "expression_digest": checkpoint.expression_digest,
                 "status": "scored", "score": int(result == goal_state),
-                "primitive_work": checkpoint.declared_primitive_work,
+                "primitive_work": work,
                 "initial_state": list(initial_state), "goal_state": list(goal_state),
                 "result_state": result}
 
@@ -171,6 +186,13 @@ class CheckpointWorldAdapter:
                 worlds: list[dict]) -> dict:
         if len(checkpoints) < 2:
             raise ValueError("at least two checkpoints are required")
+        checkpoint_ids = [checkpoint.checkpoint_id for checkpoint in checkpoints]
+        if any(not checkpoint_id for checkpoint_id in checkpoint_ids):
+            raise ValueError("checkpoint identities are required")
+        if len(checkpoint_ids) != len(set(checkpoint_ids)):
+            raise ValueError("checkpoint identities must be unique")
+        if not worlds:
+            raise ValueError("at least one common world is required")
         ids = [world["world_id"] for world in worlds]
         if len(ids) != len(set(ids)):
             raise ValueError("world IDs must be unique within a checkpoint block")
