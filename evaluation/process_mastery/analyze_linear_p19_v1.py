@@ -43,9 +43,10 @@ def analyze(payload):
             audit["failures"].append({"kind": "resource_cap_exceeded", "key": key, "arm": arm})
         if row.get("expression_key", "").startswith(("compose:", "compose[", "power:", "inverse:")):
             audit["non_template_verified"] += int(row.get("status") == "COMPLETED"
-                and row.get("receipt_verified", True))
+                and row.get("solved") is True and row.get("receipt_verified", True))
         reuse = row.get("unseen_binding_strategy") or {}
-        audit["unseen_binding_strategy_solved"] += int(bool(reuse.get("solved")))
+        audit["unseen_binding_strategy_solved"] += int(bool(reuse.get("solved"))
+            and reuse.get("binding_changed") is True and reuse.get("goal_changed") is True)
         task, world, _witness = generate_task(key[0], key[1], key[2])
         if row.get("world_sha256") != world.task_digest(task):
             audit["failures"].append({"kind": "world_hash_mismatch", "key": key, "arm": arm})
@@ -106,6 +107,22 @@ def analyze(payload):
                     cell[arm]["primitives"].append(int(row.get("primitives", 0)))
                     cell[arm]["model_queries"].append(int(row.get("model_queries", 0)))
             for arm, values in cell.items():
+                status_counts = Counter(row.get("status", "unknown") for key, arm_rows in by_key.items()
+                    if key[:2] == (family, task_kind) and arm in arm_rows
+                    for row in (arm_rows[arm],))
+                points = sorted({(int(row.get("primitives", 0)),
+                                  int(row.get("model_queries", 0)),
+                                  bool(row.get("solved")))
+                    for key, arm_rows in by_key.items() if key[:2] == (family, task_kind)
+                    for row in ([arm_rows[arm]] if arm in arm_rows else [])})
+                frontier = [point for point in points if not any(
+                    other[2] == point[2] and other != point
+                    and other[0] <= point[0] and other[1] <= point[1]
+                    and (other[0] < point[0] or other[1] < point[1]) for other in points)]
+                values["status_counts"] = dict(status_counts)
+                values["resource_frontier"] = [
+                    {"primitives": p, "model_queries": q, "solved": solved}
+                    for p, q, solved in frontier]
                 values["solve_rate"] = values["solved"] / values["n"] if values["n"] else None
                 values["mean_primitives"] = (sum(values["primitives"]) / len(values["primitives"])
                                               if values["primitives"] else None)
@@ -129,12 +146,20 @@ def analyze(payload):
     else:
         primary = {"status": "NOT_ESTABLISHED",
                    "reason": "incomplete matched panel or candidate approval pending"}
+    mechanism = {
+        "non_template_verified_process": {
+            "status": "PASS" if audit["non_template_verified"] >= 1 else "FAIL",
+            "count": audit["non_template_verified"], "minimum": 1},
+        "unseen_binding_strategy_use": {
+            "status": "PASS" if audit["unseen_binding_strategy_solved"] >= 1 else "FAIL",
+            "count": audit["unseen_binding_strategy_solved"], "minimum": 1},
+    }
     prereg = payload.get("provenance", {})
     provenance_ok = prereg.get("runtime_attestation", {}).get("status") == "ATTESTED"
     if not provenance_ok:
         audit["failures"].append({"kind": "runtime_provenance_unattested"})
     return {"phase": "linear-p19-v1", "status": "PASS" if not audit["failures"] else "FAIL",
-            "primary": primary, "cells": cells,
+            "primary": primary, "mechanism_criteria": mechanism, "cells": cells,
             "counts": {"trials": len(trials), "expected_trials": len(expected) * len(ARMS),
                        "controls": len(controls), "authorization_pending": audit["authorization_pending"]},
             "audit": audit, "provenance_status": "ATTESTED" if provenance_ok else "NOT_ESTABLISHED"}
