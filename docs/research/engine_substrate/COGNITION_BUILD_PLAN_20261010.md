@@ -1106,7 +1106,7 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 
 ## Phase 14 — Laws proofs and safely authored invention operators
 
-**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.E2 complete, P14.E3 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
+**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** complete; P14.01–P14.E3 complete. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
 
 Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention loop. Earlier processes retain their supported verification scope; proof requirements apply to explicitly proof-admitting domains. Bounded fingerprints do not become proofs. Operator proposals cannot modify criteria, verifier or held-out tests.
 
@@ -1229,9 +1229,11 @@ Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention l
 - **Non-goals:** rerunning/tuning the same holdout; claiming a whole L-level from one mechanism panel.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P14.E3 completion record (2026-10-22):** Executed the corrected revision-1 held-out draw once and analyzed it against the frozen protocol. The authored `commutator_square` operator solved 200/200 one-call tasks versus 0/200 for the held operator (+100 pp; `PASS` against ≥20 pp), using four work units per task versus one. All 100 structural laws checked with binding proof references; all 100 false finite-sample claims were rejected; all 100 proof-reference/criteria tampering controls failed closed. Pairing, hashes/access, input audits, proof bindings, work accounting, allocation, provenance and external-action checks had zero failures. Runner and analyzer self-checks pass; the prescribed E3 regression bundle passes 18 tests, and the earlier broader E1 focused bundle passes 56 tests. Full results and raw hashes are in [`COGNITION_LINEAR_P14_RESULTS.md`](COGNITION_LINEAR_P14_RESULTS.md); raw records remain outside git. The candidate remains `awaiting_human`, so the Phase 15 entry condition requiring an approved candidate operator workflow is unmet. Do not start P15 implementation or claim promotion until an explicit approval event with the frozen criteria digest is recorded. Human comparison remains unavailable; no capability level is closed.
+
 ## Phase 15 — Scaled portfolios self-curriculum and repeated improvement
 
-**Entry:** Phase 14 proof/adoption machinery and approved candidate operator workflow. **Status:** planned.
+**Entry:** Phase 14 proof/adoption machinery and approved candidate operator workflow. **Status:** entry gated; Phase 14 machinery is complete, but the P14 candidate is still `awaiting_human`. After explicit approval is recorded against the frozen criteria digest, begin P15.01. Until then, no P15 implementation or evaluation draw is authorized by this plan.
 
 Complete remaining I7 work and measure the entire accumulated system. Parallel execution here is a runtime feature with deterministic folding, not permission to run development phases out of order. Self-curriculum chooses training experiences; an external sealed evaluation remains fixed and unavailable to the learner.
 
