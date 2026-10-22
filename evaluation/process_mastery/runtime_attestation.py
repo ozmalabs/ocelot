@@ -17,6 +17,13 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _repo_root(path: Path) -> Path | None:
+    for parent in path.resolve().parents:
+        if (parent / ".git").exists() and (parent / "runners/dsl/src").is_dir():
+            return parent
+    return None
+
+
 def attest(*, package: Any, native_module: Any | None = None,
            build_receipt: str | Path | None = None,
            expected: dict[str, str] | None = None,
@@ -45,9 +52,13 @@ def attest(*, package: Any, native_module: Any | None = None,
         result["issues"].append("wrapper_unavailable")
     if native_path and native_path.is_file():
         result["loaded_extension_sha256"] = _sha256(native_path)
+        # The public package wraps the native Substrate class with Python
+        # conveniences, so ``package.Substrate`` is intentionally not the
+        # extension's class. Bind the package's actual native alias instead.
+        native_names = ("NodeID", "_NativeSubstrate")
         result["native_symbols_bound"] = all(
-            getattr(package, name, None) is getattr(native, name, object())
-            for name in ("NodeID", "Substrate")
+            getattr(package, package_name, None) is getattr(native, native_name, object())
+            for package_name, native_name in zip(native_names, ("NodeID", "Substrate"))
         )
         if not any(str(native_path).endswith(suffix)
                    for suffix in importlib.machinery.EXTENSION_SUFFIXES):
@@ -66,9 +77,7 @@ def attest(*, package: Any, native_module: Any | None = None,
             files = receipt.get("files")
             if isinstance(files, dict) and files:
                 try:
-                    repo = Path(subprocess.check_output(
-                        ["git", "rev-parse", "--show-toplevel"],
-                        cwd=Path(__file__).resolve().parents[2], text=True).strip())
+                    repo = _repo_root(wrapper_path) or Path(__file__).resolve().parents[2]
                     result["build_sources_match"] = all(
                         (repo / rel).is_file() and _sha256(repo / rel) == digest
                         for rel, digest in files.items())
@@ -89,9 +98,13 @@ def attest(*, package: Any, native_module: Any | None = None,
             result["issues"].append("clean_build_not_proven")
         if receipt_path:
             try:
-                repo = subprocess.check_output(["git", "rev-parse", "--show-toplevel"],
-                                               cwd=Path(__file__).resolve().parents[2], text=True).strip()
-                paths = [wrapper_path, native_path, receipt_path]
+                repo = _repo_root(wrapper_path) or Path(__file__).resolve().parents[2]
+                # The extension and receipt are generated outputs and are
+                # expected to differ from the checked-in placeholders after
+                # a sanctioned build. Their exact bytes are already bound by
+                # the receipt/hash above. Cleanliness applies to the wrapper
+                # and every source input that produced those bytes.
+                paths = [wrapper_path]
                 relpaths = [str(p.relative_to(repo)) for p in paths if p]
                 try:
                     receipt = json.loads(receipt_path.read_text())

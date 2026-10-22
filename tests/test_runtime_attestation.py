@@ -14,7 +14,8 @@ def _fixture(tmp_path, native_bytes=b"native-one", receipt=True):
     node_id, substrate = object(), object()
     native = SimpleNamespace(__file__=str(extension), NodeID=node_id, Substrate=substrate)
     package = SimpleNamespace(__file__=str(wrapper), _native=native,
-                              NodeID=node_id, Substrate=substrate)
+                              NodeID=node_id, _NativeSubstrate=substrate,
+                              Substrate=object())
     build = tmp_path / "_native.build.json" if receipt else None
     if build:
         build.write_text(json.dumps({"source_fingerprint": "source-abc"}))
