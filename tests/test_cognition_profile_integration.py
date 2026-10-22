@@ -343,6 +343,92 @@ def test_p11_shared_budget():
     agent.close()
 
 
+def test_p12_profile_chain():
+    p12 = {"imitation", "social_process", "process_explanation"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p12:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("ImitationPolicy", "SocialProcessPolicy", "ProcessExplanationPolicy"):
+        policies = _nodes(agent, node_type)
+        assert policies and all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+                                for n in policies)
+
+    # Enable only the exercised faculty and expose a real witnessed world row.
+    policy = _nodes(agent, "ImitationPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    episode = agent.s.add_node("SocialEpisode", {
+        "episode_id": "p12-profile-episode", "status": "observed",
+        "observation_status": "complete", "source_kind": "directed_demonstration",
+        "owner_id": "agent-root", "actor_id": "peer",
+        "actor_body_id": "peer-body", "learner_body_id": "learner-body",
+        "source_epoch": 3, "model_epoch": 2, "target_frame_epoch": 4,
+        "binding_id": "object-a", "template_key": "press",
+        "action_sequence": ["seq", ["add", [1]]],
+    })
+    body_map = agent.s.add_node("SocialBodyFrameMap", {
+        "status": "verified", "source_body_id": "peer-body",
+        "target_body_id": "learner-body", "source_epoch": 3,
+        "target_frame_epoch": 4, "map_id": "p12-profile-map"})
+    agent.s.add_edge(agent.agent, "has_social_episode", episode, {})
+    agent.s.add_edge(episode, "uses_body_frame_map", body_map, {})
+    budget = next(n for n in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "imitation", "episode_id": "p12-profile-episode",
+        "source_epoch": 3, "operation_id": "p12-profile-request",
+        "source_key": "p12-profile-request", "status": "pending", "cost": 1.0})
+    agent.s.add_edge(agent.agent, "has_imitation_request", request, {})
+    agent.s.add_edge(request, "draws_on_thinking_budget", budget, {})
+    for _ in range(20):
+        if not agent.inner.run_rules(1000):
+            break
+    candidates = list(agent.s.nodes("DemonstratedProcessCandidate"))
+    assert len(candidates) == 1
+    assert agent.s.node(request)["attrs"]["status"] == "approved"
+    assert agent.s.node(request)["attrs"]["terminal_status"] == "completed"
+    agent.close()
+
+
+def test_p12_default_isolation():
+    p12_rules = {item["name"] for sid in {"imitation", "social_process", "process_explanation"}
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p12_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p12_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p12_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    budget = budgets[0]
+    before = agent.s.node(budget)["attrs"]["remaining"]
+    requests = []
+    for ix, requester in enumerate(("imitation", "social_process", "process_explanation")):
+        request = agent.s.add_node("ThinkingBudgetRequest", {
+            "requester_kind": requester, "source_key": f"p12-shared:{requester}",
+            "source_epoch": 0, "operation_id": f"p12-shared:{ix}",
+            "status": "pending", "cost": 0.5})
+        agent.s.add_edge(request, "draws_on_thinking_budget", budgets[0], {})
+        requests.append(request)
+    for _ in range(8):
+        agent.s.tick(1000)
+    assert all(agent.s.node(r)["attrs"]["status"] == "approved" for r in requests)
+    assert all(agent.s.node(r)["attrs"].get("debited_epoch") is not None for r in requests)
+    assert agent.s.node(budget)["attrs"]["remaining"] == before - 1.5
+    agent.close()
+
+
 def test_p9_profile_chain():
     p9 = {"invention_round", "invariant_miner"}
     agent = boot_cognition_on()

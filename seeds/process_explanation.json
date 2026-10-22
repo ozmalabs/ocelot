@@ -1,0 +1,1697 @@
+{
+  "id": "process_explanation",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_schema",
+    "thinking_budget",
+    "lang_production"
+  ],
+  "self_load_only": true,
+  "area": "process_explanation",
+  "description": "Explain verified effects in public language and rebuild only from parsed explanation plus shared primitives.",
+  "microtheory": {
+    "name": "process_explanation",
+    "description": "An isolated listener reconstructs candidate processes from monitored explanations and verifies on fresh states."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessExplanationPolicy",
+      "attrs": {
+        "name": "process_explanation_policy",
+        "enabled": 0.0,
+        "max_candidates": 16.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_explanation_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_explanation:Agent:has_process_explanation_policy:ProcessExplanationPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_explanation_policy",
+      "tgt": {
+        "type": "ProcessExplanationPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:Agent:has_process_explanation_request:ProcessExplanationRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_explanation_request",
+      "tgt": {
+        "type": "ProcessExplanationRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:ProcessExplanationRequest:explains_process:ProcessSchema",
+      "src": {
+        "type": "ProcessExplanationRequest",
+        "var": "src"
+      },
+      "edge_type": "explains_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:ProcessExplanationRequest:funded_by:ThinkingBudgetRequest",
+      "src": {
+        "type": "ProcessExplanationRequest",
+        "var": "src"
+      },
+      "edge_type": "funded_by",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:ThinkingBudgetRequest:draws_on_thinking_budget:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:Agent:has_process_explanation_draft:ProcessExplanationDraft",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_explanation_draft",
+      "tgt": {
+        "type": "ProcessExplanationDraft",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:ProcessExplanationDraft:describes_process:ProcessSchema",
+      "src": {
+        "type": "ProcessExplanationDraft",
+        "var": "src"
+      },
+      "edge_type": "describes_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:Agent:has_process_explanation_input:ProcessExplanationInput",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_explanation_input",
+      "tgt": {
+        "type": "ProcessExplanationInput",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:Agent:has_process_primitive_vocabulary:ProcessPrimitiveVocabulary",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_primitive_vocabulary",
+      "tgt": {
+        "type": "ProcessPrimitiveVocabulary",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:Agent:has_rebuilt_process_candidate:RebuiltProcessCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_rebuilt_process_candidate",
+      "tgt": {
+        "type": "RebuiltProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:RebuiltProcessCandidate:from_explanation:ProcessExplanationInput",
+      "src": {
+        "type": "RebuiltProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "from_explanation",
+      "tgt": {
+        "type": "ProcessExplanationInput",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:RebuiltProcessCandidate:uses_shared_primitive:ProcessPrimitiveVocabulary",
+      "src": {
+        "type": "RebuiltProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "uses_shared_primitive",
+      "tgt": {
+        "type": "ProcessPrimitiveVocabulary",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:RebuiltProcessCandidate:has_verification_request:ThinkingBudgetRequest",
+      "src": {
+        "type": "RebuiltProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_verification_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:RebuiltProcessCandidate:has_rebuild_verification:RebuildVerification",
+      "src": {
+        "type": "RebuiltProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_rebuild_verification",
+      "tgt": {
+        "type": "RebuildVerification",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:Agent:has_process_schema:ProcessSchema",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:ThinkingBudgetRequest:draws_on_thinking_budget:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pe_prepare_public_explanation_frame",
+      "area": "process_explanation",
+      "order": 1,
+      "latency_class": "soft_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_explanation_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_process_explanation_request",
+          "request"
+        ],
+        [
+          "request",
+          "explains_process",
+          "model"
+        ],
+        [
+          "request",
+          "funded_by",
+          "funding"
+        ],
+        [
+          "funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_explanation_authoring"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "request_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "model"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "model"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "model"
+                },
+                "key": "public_explanation_frame"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "model"
+                },
+                "key": "public_vocabulary"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_process_explanation_draft",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "request_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "request_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "draft",
+          "ProcessExplanationDraft",
+          {
+            "request_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "request_id"
+              }
+            },
+            "language": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "language"
+              }
+            },
+            "public_frame": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "model"
+                },
+                "key": "public_explanation_frame"
+              }
+            },
+            "supported_vocabulary": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "model"
+                },
+                "key": "public_vocabulary"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "model"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "status": "ready_for_language_production",
+            "source_ast_included": false,
+            "process_fingerprint_included": false
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_process_explanation_draft",
+          "draft",
+          {}
+        ],
+        [
+          "add_edge",
+          "draft",
+          "describes_process",
+          "model",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "drafted"
+        ],
+        [
+          "set_attr",
+          "funding",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pe_rebuild_candidate_from_parsed_explanation_and_shared_vocabulary",
+      "area": "process_explanation",
+      "order": 2,
+      "latency_class": "soft_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_explanation_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_process_explanation_input",
+          "input"
+        ],
+        [
+          "ag",
+          "has_process_primitive_vocabulary",
+          "primitive"
+        ],
+        [
+          "ag",
+          "has_process_explanation_request",
+          "request"
+        ],
+        [
+          "request",
+          "funded_by",
+          "funding"
+        ],
+        [
+          "funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "parse_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "parsed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "semantic_event"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "primitive"
+              },
+              "key": "semantic_event"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "primitive_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "primitive"
+              },
+              "key": "primitive_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_explanation_rebuild"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_rebuilt_process_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "candidate_id"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "rebuild:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "input"
+                      },
+                      "key": "explanation_id"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_rebuilt_process_candidate",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_candidates"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "RebuiltProcessCandidate",
+          {
+            "candidate_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "rebuild:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "input"
+                    },
+                    "key": "explanation_id"
+                  }
+                ]
+              }
+            },
+            "explanation_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "explanation_id"
+              }
+            },
+            "semantic_event": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "semantic_event"
+              }
+            },
+            "primitive_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "primitive"
+                },
+                "key": "primitive_id"
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "primitive"
+                },
+                "key": "native_effect"
+              }
+            },
+            "status": "unverified_candidate",
+            "provenance": "parsed_public_explanation",
+            "source_ast_included": false,
+            "source_actor_id_included": false,
+            "source_process_id_included": false,
+            "source_fingerprint_included": false,
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "frame_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_rebuilt_process_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "from_explanation",
+          "input",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "uses_shared_primitive",
+          "primitive",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "candidate_created"
+        ],
+        [
+          "set_attr",
+          "funding",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pe_abstain_ambiguous_or_unexpressed_explanation",
+      "area": "process_explanation",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_explanation_input",
+          "input"
+        ],
+        [
+          "ag",
+          "has_process_explanation_request",
+          "request"
+        ],
+        [
+          "request",
+          "funded_by",
+          "funding"
+        ],
+        [
+          "funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_explanation_rebuild"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "parse_status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "parsed"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "abstained_ambiguous"
+        ],
+        [
+          "set_attr",
+          "funding",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pe_reject_failed_rebuild_effect",
+      "area": "process_explanation",
+      "order": 3,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_rebuilt_process_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_rebuild_verification",
+          "receipt"
+        ],
+        [
+          "candidate",
+          "has_verification_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unverified_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "verification_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "fresh_native_rebuild"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "failed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_rebuild_validation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "rejected"
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "rejection_reason",
+          "fresh_native_effect_mismatch"
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pe_adopt_only_fresh_verified_rebuild",
+      "area": "process_explanation",
+      "order": 4,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_explanation_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_rebuilt_process_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "has_rebuild_verification",
+          "receipt"
+        ],
+        [
+          "candidate",
+          "has_verification_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unverified_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "verification_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "fresh_native_rebuild"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "exact_effect_match"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "probe_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 3
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_rebuild_validation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "candidate_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "candidate_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "schema",
+          "ProcessSchema",
+          {
+            "name": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "rebuilt:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "candidate_id"
+                  }
+                ]
+              }
+            },
+            "kind": "sequence",
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "semantic_event"
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "params"
+              }
+            },
+            "status": "active",
+            "provenance": "rebuilt_from_explanation",
+            "effect_evaluation": "exact:fresh_native_rebuild",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "source_ast_included": false,
+            "verification_receipt": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "receipt_id"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_process_schema",
+          "schema",
+          {}
+        ],
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "adopted"
+        ],
+        [
+          "set_attr",
+          "request",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    }
+  ]
+}

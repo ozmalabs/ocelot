@@ -820,6 +820,12 @@ COGNITION_ON_SEEDS = (
     # P11 frame search and exact process transfer remain opt-in at policy level.
     "representation_search",
     "process_transfer",
+    # P12 witnessed/instructed acquisition and isolated explanation/rebuild.
+    # All three policies remain disabled until a phase-specific evaluation
+    # explicitly enables them.
+    "imitation",
+    "social_process",
+    "process_explanation",
 )
 
 

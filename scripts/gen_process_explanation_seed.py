@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+"""Generate bounded process explanation/rebuild graph rules (P12.04)."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "seeds" / "process_explanation.json"
+AREA = "process_explanation"
+
+
+def V(n): return {"type": "Var", "name": n}
+def L(v): return {"type": "Lit", "value": v}
+def A(n, k): return {"type": "Attr", "node": V(n), "key": k}
+def T(v): return {"__term__": v}
+def Eq(a, b): return {"type": "Eq", "a": a, "b": b}
+def And(*xs): return {"type": "And", "items": list(xs)}
+def Not(x): return {"type": "Not", "arg": x}
+def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
+def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
+def Count(src): return {"type": "Count", "source": src}
+def Lt(a, b): return {"type": "Lt", "a": a, "b": b}
+def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
+
+
+def build_seed():
+    relations = [
+        ("Agent", "has_process_explanation_policy", "ProcessExplanationPolicy"),
+        ("Agent", "has_process_explanation_request", "ProcessExplanationRequest"),
+        ("ProcessExplanationRequest", "explains_process", "ProcessSchema"),
+        ("ProcessExplanationRequest", "funded_by", "ThinkingBudgetRequest"),
+        ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
+        ("Agent", "has_process_explanation_draft", "ProcessExplanationDraft"),
+        ("ProcessExplanationDraft", "describes_process", "ProcessSchema"),
+        ("Agent", "has_process_explanation_input", "ProcessExplanationInput"),
+        ("Agent", "has_process_primitive_vocabulary", "ProcessPrimitiveVocabulary"),
+        ("Agent", "has_rebuilt_process_candidate", "RebuiltProcessCandidate"),
+        ("RebuiltProcessCandidate", "from_explanation", "ProcessExplanationInput"),
+        ("RebuiltProcessCandidate", "uses_shared_primitive", "ProcessPrimitiveVocabulary"),
+        ("RebuiltProcessCandidate", "has_verification_request", "ThinkingBudgetRequest"),
+        ("RebuiltProcessCandidate", "has_rebuild_verification", "RebuildVerification"),
+        ("Agent", "has_process_schema", "ProcessSchema"),
+        ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
+    ]
+    explain = {
+        "name": "pe_prepare_public_explanation_frame", "area": AREA,
+        "order": 1, "latency_class": "soft_realtime", "batch": False,
+        "match": [["ag", "has_process_explanation_policy", "pol"],
+                  ["ag", "has_process_explanation_request", "request"],
+                  ["request", "explains_process", "model"],
+                  ["request", "funded_by", "funding"],
+                  ["funding", "draws_on_thinking_budget", "budget"]],
+        "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                      Eq(A("request", "status"), L("requested")),
+                      Eq(A("funding", "requester_kind"), L("process_explanation_authoring")),
+                      Eq(A("funding", "source_key"), A("request", "request_id")),
+                      Eq(A("funding", "source_epoch"), A("model", "source_epoch")),
+                      Eq(A("funding", "status"), L("approved")),
+                      Not(Eq(A("funding", "debited_epoch"), L(None))),
+                      Eq(A("model", "status"), L("active")),
+                      Not(Eq(A("model", "public_explanation_frame"), L(None))),
+                      Not(Eq(A("model", "public_vocabulary"), L(None))),
+                      Not(Exists(N("ag", "has_process_explanation_draft"), "old",
+                                 Eq(A("old", "request_id"), A("request", "request_id"))))),
+        "effects": [["add_node", "draft", "ProcessExplanationDraft", {
+            "request_id": T(A("request", "request_id")),
+            "language": T(A("request", "language")),
+            "public_frame": T(A("model", "public_explanation_frame")),
+            "supported_vocabulary": T(A("model", "public_vocabulary")),
+            "source_epoch": T(A("model", "source_epoch")),
+            "status": "ready_for_language_production",
+            "source_ast_included": False, "process_fingerprint_included": False}],
+                    ["add_edge", "ag", "has_process_explanation_draft", "draft", {}],
+                    ["add_edge", "draft", "describes_process", "model", {}],
+                    ["set_attr", "request", "status", "drafted"],
+                    ["set_attr", "funding", "terminal_status", "completed"]],
+    }
+    rebuild = {
+        "name": "pe_rebuild_candidate_from_parsed_explanation_and_shared_vocabulary",
+        "area": AREA, "order": 2, "latency_class": "soft_realtime", "batch": False,
+        "match": [["ag", "has_process_explanation_policy", "pol"],
+                  ["ag", "has_process_explanation_input", "input"],
+                  ["ag", "has_process_primitive_vocabulary", "primitive"],
+                  ["ag", "has_process_explanation_request", "request"],
+                  ["request", "funded_by", "funding"],
+                  ["funding", "draws_on_thinking_budget", "budget"]],
+        "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                      Eq(A("input", "parse_status"), L("parsed")),
+                      Eq(A("input", "semantic_event"), A("primitive", "semantic_event")),
+                      Eq(A("input", "primitive_id"), A("primitive", "primitive_id")),
+                      Eq(A("request", "explanation_id"), A("input", "explanation_id")),
+                      Eq(A("request", "status"), L("requested")),
+                      Eq(A("funding", "requester_kind"), L("process_explanation_rebuild")),
+                      Eq(A("funding", "explanation_id"), A("input", "explanation_id")),
+                      Eq(A("funding", "status"), L("approved")),
+                      Not(Eq(A("funding", "debited_epoch"), L(None))),
+                      Not(Exists(N("ag", "has_rebuilt_process_candidate"), "old",
+                                 Eq(A("old", "candidate_id"),
+                                    Concat(L("rebuild:"), A("input", "explanation_id"))))),
+                      Lt(Count(N("ag", "has_rebuilt_process_candidate")), A("pol", "max_candidates"))),
+        "effects": [["add_node", "candidate", "RebuiltProcessCandidate", {
+            "candidate_id": T(Concat(L("rebuild:"), A("input", "explanation_id"))),
+            "explanation_id": T(A("input", "explanation_id")),
+            "semantic_event": T(A("input", "semantic_event")),
+            "primitive_id": T(A("primitive", "primitive_id")),
+            "params": T(A("primitive", "native_effect")),
+            "status": "unverified_candidate", "provenance": "parsed_public_explanation",
+            "source_ast_included": False, "source_actor_id_included": False,
+            "source_process_id_included": False, "source_fingerprint_included": False,
+            "model_epoch": T(A("input", "model_epoch")),
+            "frame_epoch": T(A("input", "frame_epoch"))}],
+                    ["add_edge", "ag", "has_rebuilt_process_candidate", "candidate", {}],
+                    ["add_edge", "candidate", "from_explanation", "input", {}],
+                    ["add_edge", "candidate", "uses_shared_primitive", "primitive", {}],
+                    ["set_attr", "request", "status", "candidate_created"],
+                    ["set_attr", "funding", "terminal_status", "completed"]],
+    }
+    abstain_ambiguous = {
+        "name": "pe_abstain_ambiguous_or_unexpressed_explanation", "area": AREA,
+        "order": 2, "latency_class": "hard_realtime", "batch": False,
+        "match": [["ag", "has_process_explanation_input", "input"],
+                  ["ag", "has_process_explanation_request", "request"],
+                  ["request", "funded_by", "funding"],
+                  ["funding", "draws_on_thinking_budget", "budget"]],
+        "where": And(Eq(A("request", "explanation_id"), A("input", "explanation_id")),
+                      Eq(A("request", "status"), L("requested")),
+                      Eq(A("funding", "requester_kind"), L("process_explanation_rebuild")),
+                      Eq(A("funding", "explanation_id"), A("input", "explanation_id")),
+                      Eq(A("funding", "status"), L("approved")),
+                      Not(Eq(A("funding", "debited_epoch"), L(None))),
+                      Not(Eq(A("input", "parse_status"), L("parsed")))),
+        "effects": [["set_attr", "request", "status", "abstained_ambiguous"],
+                    ["set_attr", "funding", "terminal_status", "completed"]],
+    }
+    reject = {
+        "name": "pe_reject_failed_rebuild_effect", "area": AREA,
+        "order": 3, "latency_class": "hard_realtime", "batch": False,
+        "match": [["ag", "has_rebuilt_process_candidate", "candidate"],
+                  ["candidate", "has_rebuild_verification", "receipt"],
+                  ["candidate", "has_verification_request", "request"],
+                  ["request", "draws_on_thinking_budget", "budget"]],
+        "where": And(Eq(A("candidate", "status"), L("unverified_candidate")),
+                      Eq(A("receipt", "candidate_id"), A("candidate", "candidate_id")),
+                      Eq(A("receipt", "verification_kind"), L("fresh_native_rebuild")),
+                      Eq(A("receipt", "status"), L("failed")),
+                      Eq(A("receipt", "model_epoch"), A("candidate", "model_epoch")),
+                      Eq(A("request", "requester_kind"), L("process_rebuild_validation")),
+                      Eq(A("request", "candidate_id"), A("candidate", "candidate_id")),
+                      Eq(A("request", "status"), L("approved")),
+                      Not(Eq(A("request", "debited_epoch"), L(None)))),
+        "effects": [["set_attr", "candidate", "status", "rejected"],
+                    ["set_attr", "candidate", "rejection_reason", "fresh_native_effect_mismatch"],
+                    ["set_attr", "request", "terminal_status", "completed"]],
+    }
+    adopt = {
+        "name": "pe_adopt_only_fresh_verified_rebuild", "area": AREA,
+        "order": 4, "latency_class": "hard_realtime", "batch": False,
+        "match": [["ag", "has_process_explanation_policy", "pol"],
+                  ["ag", "has_rebuilt_process_candidate", "candidate"],
+                  ["candidate", "has_rebuild_verification", "receipt"],
+                  ["candidate", "has_verification_request", "request"],
+                  ["request", "draws_on_thinking_budget", "budget"]],
+        "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                      Eq(A("candidate", "status"), L("unverified_candidate")),
+                      Eq(A("receipt", "candidate_id"), A("candidate", "candidate_id")),
+                      Eq(A("receipt", "verification_kind"), L("fresh_native_rebuild")),
+                      Eq(A("receipt", "status"), L("verified")),
+                      Eq(A("receipt", "exact_effect_match"), L(True)),
+                      Eq(A("receipt", "model_epoch"), A("candidate", "model_epoch")),
+                      Eq(A("receipt", "frame_epoch"), A("candidate", "frame_epoch")),
+                      Eq(A("receipt", "probe_count"), L(3)),
+                      Eq(A("request", "requester_kind"), L("process_rebuild_validation")),
+                      Eq(A("request", "candidate_id"), A("candidate", "candidate_id")),
+                      Eq(A("request", "status"), L("approved")),
+                      Not(Eq(A("request", "debited_epoch"), L(None)))),
+        "effects": [["add_node", "schema", "ProcessSchema", {
+            "name": T(Concat(L("rebuilt:"), A("candidate", "candidate_id"))),
+            "kind": "sequence", "domain": T(A("candidate", "semantic_event")),
+            "params": T(A("candidate", "params")), "status": "active",
+            "provenance": "rebuilt_from_explanation",
+            "effect_evaluation": "exact:fresh_native_rebuild",
+            "model_epoch": T(A("candidate", "model_epoch")),
+            "frame_epoch": T(A("candidate", "frame_epoch")),
+            "source_ast_included": False,
+            "verification_receipt": T(A("receipt", "receipt_id"))}],
+                    ["add_edge", "ag", "has_process_schema", "schema", {}],
+                    ["set_attr", "candidate", "status", "adopted"],
+                    ["set_attr", "request", "terminal_status", "completed"]],
+    }
+    return {"id": "process_explanation", "version": "1.0.0",
+            "depends_on": ["process_schema", "thinking_budget", "lang_production"],
+            "self_load_only": True, "area": AREA,
+            "description": "Explain verified effects in public language and rebuild only from parsed explanation plus shared primitives.",
+            "microtheory": {"name": AREA, "description": "An isolated listener reconstructs candidate processes from monitored explanations and verifies on fresh states."},
+            "nodes": [{"local_id": 0, "type": "ProcessExplanationPolicy", "attrs": {
+                "name": "process_explanation_policy", "enabled": 0.0, "max_candidates": 16.0}}],
+            "edges": [{"src": {"role": "agent_root"}, "type": "has_process_explanation_policy", "tgt": {"local": 0}, "attrs": {}}],
+            "productions": [{"provenance": f"seed:{AREA}:{src}:{edge}:{tgt}", "src": {"type": src, "var": "src"},
+                             "edge_type": edge, "tgt": {"type": tgt, "var": "tgt"}} for src, edge, tgt in relations],
+            "rules": [explain, rebuild, abstain_ambiguous, reject, adopt]}
+
+
+if __name__ == "__main__":
+    OUT.write_text(json.dumps(build_seed(), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(OUT)
