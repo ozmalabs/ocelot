@@ -36,7 +36,7 @@ Every lifted schema records its witnesses, parent schema IDs, binding constraint
 - `test_no_handwritten_strategy_input`: treatment graph inputs contain worlds, held primitives, goals and observations only, with no placement recipe, solution trace, or target process.
 - P10.02 adds unseen-size native effect verification, bad-binding refusal, and lifted provenance.
 - P10.03 adds funded goal regression, denied-rung restoration, and verifier-preserving program candidates.
-- P10.04 adds task-trace strategy discovery, delayed-progress controls, odd-wall breaker use, and graph-decision-only traces.
+- P10.04 adds task-trace strategy discovery, exact-context native replay, delayed-progress controls, odd-wall breaker use, and graph-decision-only traces. The current replay contract requires exact domain kind, initial state, goal, and source/model/frame/probe epochs; broader transfer is not established.
 
 Controls include variable capture, missing bindings, out-of-range indices, mismatched dimensions, stale epochs, duplicate request/debit IDs, denied budget, unsupported effect families, cycles, held-out target leakage, and attempted Python strategy injection. No control may be converted to a passed identity or guessed solution.
 

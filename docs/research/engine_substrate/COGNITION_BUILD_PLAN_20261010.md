@@ -591,7 +591,7 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 
 ## Phase 10 — Lifting goal regression and agent-discovered strategies
 
-**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03 implemented and focused acceptance passed.
+**Entry:** Phase 9 verified process library and invariant evidence. **Status:** in progress; P10.01 frozen, P10.02 complete for the bounded native grammar, P10.03 and P10.04 implemented with focused acceptance passed.
 
 Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regression and targeted invention are delivered before the no-hand-written-strategy I2.7 gate. The old greedy Hamming solver stays a comparator and cannot supply the new strategy.
 
@@ -662,6 +662,8 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_strategy_discovery.py tests/test_goal_invention.py tests/test_invariant_walls.py -q -p no:cacheprovider`.
 - **Non-goals:** requiring old Python-probe solve counts regardless of new held-out distribution; relabeling authored greedy search as discovered strategy.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P10.04 implementation record (2026-10-22):** Added opt-in `strategy_discovery` rules that preserve verified task traces as graph-held strategies and replay them only for a new task with identical domain kind, initial state, goal, and source/model/frame/probe epochs. Replay applies one graph-held ProcessSchema per step through native `ProcessApply`; unsupported/mismatched contexts do not match. The `process_solving` generator now selects a process once, stores that selection, and applies/records that same schema, fixing a trace mismatch caused by recalculating selection after state mutation. Tests cover a discovered constraint-preserving trace, native replay, delayed progress via a verified invented commutator, the invariant wall's verified odd breaker, and trace-to-state replay. Verification: `tests/test_strategy_discovery.py tests/test_goal_invention.py tests/test_invariant_walls.py` — 18 passed. General strategy transfer beyond exact initial-state/goal/epoch matches remains unsupported.
 
 
 ### P10.05 — Extend permutation evaluation to cube and sliding worlds
