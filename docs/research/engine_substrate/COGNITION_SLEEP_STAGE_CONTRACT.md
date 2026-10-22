@@ -100,10 +100,12 @@ is enabled. Its mechanism fixture learns an exact repeated `SolveTask.trace`
 sequence, checks the native composition against both solved source tasks,
 records a compressed alternate trace with a witness, and includes definition,
 reference, decoder, exception, dispatch, retrieval and validation units in the
-cost comparison. No claim is made for other trace sources or held-out benefit;
-P13.E2/E3 own those gates. Strategy-yield storage and retrieval remain P13.04
-requirements. Human comparison is unavailable unless a matched protocol is
-separately preregistered.
+cost comparison. P13.04 adds disabled-by-default strategy entries from solved
+task traces, structure and epoch matching, SoftWeights over observed yield,
+per-step native application receipts and bounded-solver fallback. These are
+mechanism fixtures on graph-held task traces; held-out benefit and profile
+readiness remain unestablished for P13.E1–E3. Human comparison is unavailable
+unless a matched protocol is separately preregistered.
 
 ### Decay adapter boundary
 
