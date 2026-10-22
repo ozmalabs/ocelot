@@ -1,6 +1,6 @@
 # Process Mastery Battery (PMB) v1
 
-Status: specification and harness contract; held-out capability results are not yet established.
+Status: specification and harness contract; held-out capability results are not yet established. P15 recursive-improvement generations and their immutable split, arm, resource, analysis and human-comparison boundaries are specified in [`COGNITION_RECURSIVE_IMPROVEMENT_CONTRACT.md`](COGNITION_RECURSIVE_IMPROVEMENT_CONTRACT.md).
 
 PMB separates world generation, agent policy, and scoring. A task generator supplies an initial state, goal, and affordances; it never supplies a strategy or answer. Development and held-out instances use disjoint deterministic seed ranges (`0..9999` and `1000000..1009999`). Report per-instance records, aggregate scores, task-generator version, enabled seeds/policies, compute limits, and the exact held-out seed list. Do not tune on held-out outcomes.
 
@@ -20,6 +20,10 @@ Levels are gated by the Track I plan: L1 requires mechanism identification and e
 ## Reproducibility contract
 
 The harness is mechanical: it installs a declared world, boots a declared profile, ticks under fixed limits, and emits raw records. It must not choose operators, rank candidate actions, or repair outcomes in Python. Baseline runs omit Track I seeds and report unsupported tasks as unsupported, not as agent failures. Track I runs opt into its seeds and policies explicitly. A result is capability evidence only when the held-out generator, profile, scoring rule, and human comparison were frozen before the run.
+
+### Phase 15 recursive-improvement evaluation
+
+The three-generation evaluation freezes the engine, proof/evaluation machinery, task families, criteria, primitive access, ceilings and sealed held-out identifiers. Its matched arms are an unchanged P14 operator portfolio with fixed training, the same portfolio with graph-authored residual curriculum, and the full graph-authored curriculum/operator lifecycle with per-candidate human approval. Each family/generation/arm receives at least 200 fresh matched evaluation tasks from disjoint training, selection and sealed evaluation seed blocks. The registered primary is the corrected generation slope in paired task success for full versus unchanged; curriculum-only separates task-selection effects. Work is reported separately, with no efficiency inference from success alone. A zero-tolerance grounding, proof, provenance or external-action violation fails the generation. The full lineage, deterministic parallel-fold, shared-budget and claim contract is frozen in [`COGNITION_RECURSIVE_IMPROVEMENT_CONTRACT.md`](COGNITION_RECURSIVE_IMPROVEMENT_CONTRACT.md). No protocol-matched human baseline is currently available.
 
 Current implementation covers deterministic generators for Loopover, D4 transformations, and a blicket-style hidden mechanism, plus graph installation/ticking scaffolding. The Loopover evaluator is still an early mechanism probe; it is not a PMB-compliant held-out capability evaluation.
 
