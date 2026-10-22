@@ -95,6 +95,8 @@ def test_parity_law_checked():
     assert proof["assumptions_digest"] == agent.attrs(law)["assumptions_digest"]
     assert proof["family_digest"] == "family-sha256-fixture"
     assert proof["model_digest"] == "model-sha256-fixture"
+    process = agent.native.neighbours(law, "about_process")[0]
+    assert proof["process_params"] == agent.attrs(process)["params"]
 
 
 def test_false_finite_sample_law_rejected():

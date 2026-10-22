@@ -86,6 +86,7 @@ def build():
              "model_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "model_epoch"}},
              "frame_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "frame_epoch"}},
              "process_epoch": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "d"}, "key": "source_epoch"}},
+             "process_params": {"__term__": {"type": "Attr", "node": {"type": "Var", "name": "s"}, "key": "params"}},
              "status": "checked"}],
          ["add_edge", "law", "has_proof_reference", "proof", {}]], batch=True)
     false_sample_rule = rule(
