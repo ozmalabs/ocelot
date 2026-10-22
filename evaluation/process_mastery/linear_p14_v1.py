@@ -373,11 +373,33 @@ def _law_panel(n, split):
         correct = (la.get("status") == case["expected_status"]
                    and (la.get("proven") == 1) == (case["expected_status"] == "checked")
                    and (len(proof) == 1) == (case["expected_status"] == "checked"))
+        proof_binding_valid = case["expected_status"] == "rejected"
+        if proof:
+            pa = agent.s.node(proof[0])["attrs"]
+            da = agent.s.node(case["domain"])["attrs"]
+            sa = agent.s.node(case["schema"])["attrs"]
+            proof_binding_valid = all((
+                pa.get("status") == "checked",
+                pa.get("checker") == "process_laws_seed_v1",
+                pa.get("rule") == "parity_commutator_even_v1",
+                pa.get("family") == da.get("name"),
+                pa.get("family_digest") == da.get("family_digest"),
+                pa.get("model_digest") == da.get("model_digest"),
+                pa.get("family_epoch") == da.get("source_epoch"),
+                pa.get("process_epoch") == da.get("source_epoch"),
+                pa.get("model_epoch") == da.get("model_epoch"),
+                pa.get("frame_epoch") == da.get("frame_epoch"),
+                pa.get("process_params") == sa.get("params"),
+                pa.get("statement_digest") == la.get("statement_digest"),
+                pa.get("assumptions_digest") == la.get("assumptions_digest"),
+            ))
+            correct = correct and proof_binding_valid
         rows.append({
             "status": "COMPLETED", "family": "law_claim", "seed": seed,
             "claim_kind": kinds[ix % 2], "expected_status": case["expected_status"],
             "actual_status": la.get("status"), "proven": int(la.get("proven", 0)),
             "proof_reference_count": len(proof), "correct": correct,
+            "proof_binding_valid": proof_binding_valid,
             "counterexample_validated": kinds[ix % 2] != "false_finite_sample"
                 or any(agent.s.node(c)["attrs"].get("validated") == 1
                        for c in agent.inner.neighbours(case["law"], "has_counterexample")),
