@@ -70,6 +70,26 @@ def provenance():
     bundle = hashlib.sha256()
     for rel in paths:
         bundle.update(rel.encode() + b"\0" + (ROOT / rel).read_bytes() + b"\0")
+    profile_paths = ("substrate/boot_profiles.py", "seeds/cognition_on_params.json")
+    profile_bundle = hashlib.sha256()
+    for rel in profile_paths:
+        profile_bundle.update(rel.encode() + b"\0" + (ROOT / rel).read_bytes() + b"\0")
+    world_path = "substrate/world_adapter.py"
+    world_bundle = hashlib.sha256(world_path.encode() + b"\0"
+                                  + (ROOT / world_path).read_bytes() + b"\0")
+    engine_paths = (
+        "runners/dsl/Cargo.toml", "runners/dsl/Cargo.lock",
+        "runners/dsl/src/lib.rs", "runners/dsl/src/process_algebra.rs",
+        "runners/dsl/src/term.rs", "runners/dsl/src/cognitive_cycle.rs",
+        "runners/dsl/src/area_scheduler.rs", "runners/dsl/src/clock.rs",
+        "runners/dsl/src/substrate.rs", "runners/dsl/src/graph.rs",
+        "runners/dsl/src/graph_rules.rs", "runners/dsl/src/checker.rs",
+        "runners/dsl/src/prog_eval.rs", "runners/dsl/src/rule_json.rs",
+        "runners/dsl/src/seed_manifest.rs", "runners/dsl/src/py.rs",
+    )
+    engine_bundle = hashlib.sha256()
+    for rel in engine_paths:
+        engine_bundle.update(rel.encode() + b"\0" + (ROOT / rel).read_bytes() + b"\0")
     try:
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"],
                                          cwd=ROOT, text=True).strip()
@@ -77,6 +97,9 @@ def provenance():
         commit = "unavailable"
     return {"phase": PHASE, "git_commit": commit,
             "source_bundle_sha256": bundle.hexdigest(),
+            "profile_sha256": profile_bundle.hexdigest(),
+            "world_adapter_sha256": world_bundle.hexdigest(),
+            "engine_source_sha256": engine_bundle.hexdigest(),
             "runner_sha256": _sha(Path(__file__).read_bytes()),
             "analyzer_sha256": _sha((ROOT / "evaluation/process_mastery/analyze_linear_p13_v1.py").read_bytes()),
             "engine_binary_sha256": _sha(Path(substrate_rs.__file__).read_bytes()),
