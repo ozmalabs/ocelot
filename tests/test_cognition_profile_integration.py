@@ -155,6 +155,12 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
     manifold_policy = _nodes(agent, "CognitionManifoldPolicy")
     assert len(manifold_policy) == 1
     assert agent.s.node(manifold_policy[0])["attrs"].get("enabled") == 0.0
+    search_policy = _nodes(agent, "OpenProcessSearchPolicy")
+    assert len(search_policy) == 1
+    assert agent.s.node(search_policy[0])["attrs"].get("enabled") == 0.0
+    strategy_policy = _nodes(agent, "StrategyDiscoveryPolicy")
+    assert len(strategy_policy) == 1
+    assert agent.s.node(strategy_policy[0])["attrs"].get("allow_lift") == 0.0
     # Track I's opt-in invention operator manifest contributes two additional
     # disabled-policy tolerances to the cognition-on graph.
     assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 7

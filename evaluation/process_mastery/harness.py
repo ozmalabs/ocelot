@@ -118,7 +118,7 @@ class Agent:
     def add_solve_task(self, domain, state, goal, **attrs):
         t = self.s.add_node("SolveTask", {
             "domain": domain, "state": list(state), "initial_state": list(state),
-            "goal": list(goal), "status": "active",
+            "goal": list(goal), "object_count": float(len(state)), "status": "active",
             "steps": 0, "moves": 0.0, "trace": [], "stuck_count": 0, "tools_seen": 0, **attrs})
         self.s.add_edge(self.ag, "has_solve_task", t, {})
         self.s.add_edge(t, "about_domain", self.domains[domain], {})

@@ -42,6 +42,7 @@ def build():
             "kind": T(A("d", "kind")), "domain": T(A("d", "name")),
             "trace": T(A("t", "trace")), "step_count": T(A("t", "steps")),
             "initial_state": T(A("t", "initial_state")), "goal_state": T(A("t", "goal")),
+            "object_count": T(A("t", "object_count")),
             "source": "observed_graph_trace", "status": "verified",
             "witnessed_effect": "solved_goal", "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")), "frame_epoch": T(A("d", "frame_epoch")),
@@ -99,6 +100,25 @@ def build():
          ["set_attr", "t", "strategy_next_state", None]],
         batch=False,
     )
+    lift = rule(
+        "sd_start_lifted_strategy", ONLINE_AREA, 8,
+        "Reuse a verified ordered strategy under a different state binding; each process is still applied and checked by the native step rule.",
+        [["agent", "has_strategy_discovery_policy", "pol"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"],
+         ["agent", "has_discovered_strategy", "s"], ["s", "about_domain", "d"]],
+        And(policy_on(), Eq(A("pol", "allow_lift"), L(1)),
+            Eq(A("t", "status"), L("active")), Eq(A("s", "status"), L("verified")),
+            Not(Eq(A("t", "state"), A("s", "initial_state"))),
+            Eq(A("d", "kind"), A("s", "kind")),
+            Eq(A("t", "object_count"), A("s", "object_count")),
+            Eq(A("d", "source_epoch"), A("s", "source_epoch")),
+            Eq(A("d", "model_epoch"), A("s", "model_epoch")),
+            Eq(A("d", "frame_epoch"), A("s", "frame_epoch")),
+            Eq(A("d", "probe_epoch"), A("s", "probe_epoch")),
+            Not(Eq(A("t", "strategy_started"), L(1)))),
+        [["add_edge", "t", "executes_discovered_strategy", "s", {}],
+         ["set_attr", "t", "strategy_started", 1], ["set_attr", "t", "strategy_index", 0],
+         ["set_attr", "t", "status", "replaying"]], batch=False)
     return {
         "id": SEED_ID, "version": "1.0.0", "depends_on": ["process_solving"],
         "self_load_only": True, "area": ONLINE_AREA,
@@ -106,11 +126,11 @@ def build():
         "microtheory": {"name": SEED_ID, "description": "Learn strategies from witnessed task outcomes."},
         "nodes": [{"local_id": 0, "type": "StrategyDiscoveryPolicy", "attrs": {
             "name": "core_strategy_discovery_policy", "enabled": 0.0,
-            "max_records": 128.0,
+            "max_records": 128.0, "allow_lift": 0.0,
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_strategy_discovery_policy",
                    "tgt": {"local": 0}, "attrs": {}}],
-        "productions": productions(SEED_ID, specs), "rules": [start, step, record],
+        "productions": productions(SEED_ID, specs), "rules": [lift, start, step, record],
     }
 
 
