@@ -402,17 +402,22 @@ def test_native_curriculum_releases_training_task_to_same_process_search_graph()
             if agent.inner.run_rules(20_000) == 0:
                 break
         curriculum_tasks = agent.s.nodes("ProcessCurriculumTask")
-        print("BRIDGEDEBUG", [(agent.s.node(task)["attrs"].get("status"), agent.s.node(task)["attrs"].get("task_key")) for task in curriculum_tasks], [(agent.s.node(task)["attrs"].get("status"), agent.s.node(task)["attrs"].get("task_key")) for task in agent.s.nodes("SolveTask")], [agent.s.node(req)["attrs"].get("status") for req in agent.s.nodes("OpenProcessSearchRequest")])
         assert len(curriculum_tasks) == 2
         curriculum_tasks.sort(key=lambda task: agent.s.node(task)["attrs"]["task_key"])
-        assert agent.s.node(curriculum_tasks[0])["attrs"]["status"] == "completed"
-        assert agent.s.node(curriculum_tasks[1])["attrs"]["status"] == "delivered_to_native_search"
+        assert all(agent.s.node(task)["attrs"]["status"] == "completed"
+                   for task in curriculum_tasks)
         assert all(agent.s.node(task)["attrs"]["split"] == "training"
                    for task in curriculum_tasks)
-        assert len(agent.inner.neighbours(curriculum_tasks[0], "has_outcome")) == 1
-        outcome = agent.inner.neighbours(curriculum_tasks[0], "has_outcome")[0]
-        assert agent.s.node(outcome)["attrs"]["status"] == "observed"
-        assert agent.s.node(agent.s.nodes("ProcessCurriculumPolicy")[0])["attrs"]["scheduler_status"] == "active"
+        outcomes = [agent.inner.neighbours(task, "has_outcome")[0]
+                    for task in curriculum_tasks]
+        assert all(agent.s.node(outcome)["attrs"]["status"] == "observed"
+                   for outcome in outcomes)
+        assert agent.s.node(outcomes[1])["attrs"]["observed_terminal_status"] == \
+            "global_attempt_ceiling"
+        assert agent.s.node(outcomes[1])["attrs"]["assessment"] == \
+            "search_attempt_ceiling"
+        assert agent.s.node(agent.s.nodes("ProcessCurriculumPolicy")[0])["attrs"][
+            "scheduler_status"] == "ready"
         solve_tasks = agent.s.nodes("SolveTask")
         assert len(solve_tasks) == 2
         assert all(agent.s.node(task)["attrs"]["split"] == "training" for task in solve_tasks)

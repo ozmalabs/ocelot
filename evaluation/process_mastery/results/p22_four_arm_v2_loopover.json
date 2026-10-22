@@ -1,5 +1,5 @@
 {
-  "all_arms_terminal": false,
+  "all_arms_terminal": true,
   "approvals_created": 0,
   "arms": {
     "adaptive_only": {
@@ -2549,7 +2549,7 @@
       "world_receipt_count": 0
     },
     "full": {
-      "all_tasks_terminal": false,
+      "all_tasks_terminal": true,
       "approval_count": 0,
       "configuration": {
         "arm": "full",
@@ -2594,24 +2594,66 @@
       },
       "curriculum_outcomes": [
         {
-          "assessment": "search_completed",
+          "assessment": "search_attempt_ceiling",
           "outcome_id": "#1613",
           "status": "observed",
           "task_key": "p22:pmb_generated_loopover_v2:0250"
+        },
+        {
+          "assessment": "search_attempt_ceiling",
+          "outcome_id": "#1619",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0251"
+        },
+        {
+          "assessment": "search_attempt_ceiling",
+          "outcome_id": "#1626",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0252"
+        },
+        {
+          "assessment": "search_attempt_ceiling",
+          "outcome_id": "#1632",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0253"
+        },
+        {
+          "assessment": "search_attempt_ceiling",
+          "outcome_id": "#1639",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0254"
+        },
+        {
+          "assessment": "solved",
+          "outcome_id": "#1645",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0255"
+        },
+        {
+          "assessment": "search_attempt_ceiling",
+          "outcome_id": "#1657",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0256"
+        },
+        {
+          "assessment": "search_attempt_ceiling",
+          "outcome_id": "#1669",
+          "status": "observed",
+          "task_key": "p22:pmb_generated_loopover_v2:0257"
         }
       ],
       "proposal_count": 0,
       "proposals": [],
       "resource_snapshot": {
         "cumulative_resources": {
-          "budget_approved": 6.0,
-          "budget_requested": 6.0,
-          "native_solver_primitive_work": 3.0,
-          "native_solver_steps": 3.0,
+          "budget_approved": 24.0,
+          "budget_requested": 24.0,
+          "native_solver_primitive_work": 18.0,
+          "native_solver_steps": 24.0,
           "search_declared_primitive_work": 132.0,
           "training_evidence_exposures": 8.0,
-          "training_outcomes": 1.0,
-          "training_task_exposures": 2.0
+          "training_outcomes": 8.0,
+          "training_task_exposures": 8.0
         },
         "node_counts": {
           "AdaptiveControlPolicy": 1,
@@ -2681,12 +2723,12 @@
           "OpenProcessAdoptionPolicy": 1,
           "OpenProcessSearchAttempt": 66,
           "OpenProcessSearchPolicy": 1,
-          "OpenProcessSearchRequest": 2,
+          "OpenProcessSearchRequest": 7,
           "OperationPrimitive": 10,
           "ProcessCurriculumEvidence": 8,
-          "ProcessCurriculumOutcome": 1,
+          "ProcessCurriculumOutcome": 8,
           "ProcessCurriculumPolicy": 1,
-          "ProcessCurriculumTask": 2,
+          "ProcessCurriculumTask": 8,
           "ProcessDomain": 2,
           "ProcessExplanationPolicy": 1,
           "ProcessLawsPolicy": 2,
@@ -2715,11 +2757,15 @@
           "SimilarityRecallPolicy": 1,
           "SleepRegimePolicy": 2,
           "SocialProcessPolicy": 1,
-          "SolveTask": 2,
+          "SolveTask": 8,
           "SolverPolicy": 1,
+          "StrategyApplicationReceipt": 6,
           "StrategyDiscoveryPolicy": 1,
+          "StrategyLibraryEntry": 1,
           "StrategyLibraryPolicy": 2,
-          "StrategyRecallFallback": 1,
+          "StrategyRecallAttempt": 2,
+          "StrategyRecallFallback": 4,
+          "StrategyYieldObservation": 2,
           "SystemOneRefusalMark": 1,
           "SystemTwoTaskSet": 7,
           "TargetLearningPolicy": 1,
@@ -2774,7 +2820,7 @@
           "Term.VecSub": 2,
           "Theorem": 3,
           "ThinkingBudget": 1,
-          "ThinkingBudgetRequest": 4,
+          "ThinkingBudgetRequest": 17,
           "ThoughtManifoldPolicy": 1,
           "Tolerance": 7,
           "WindowOfTolerance": 1,
@@ -3472,11 +3518,62 @@
           "#1616",
           "#1617",
           "#1618",
+          "#1619",
           "#162",
+          "#1620",
+          "#1621",
+          "#1622",
+          "#1623",
+          "#1624",
+          "#1625",
+          "#1626",
+          "#1627",
+          "#1628",
+          "#1629",
           "#163",
+          "#1630",
+          "#1631",
+          "#1632",
+          "#1633",
+          "#1634",
+          "#1635",
+          "#1636",
+          "#1637",
+          "#1638",
+          "#1639",
           "#164",
+          "#1640",
+          "#1641",
+          "#1642",
+          "#1643",
+          "#1644",
+          "#1645",
+          "#1646",
+          "#1647",
+          "#1648",
+          "#1649",
           "#165",
+          "#1650",
+          "#1651",
+          "#1652",
+          "#1653",
+          "#1654",
+          "#1655",
+          "#1656",
+          "#1657",
+          "#1658",
+          "#1659",
           "#166",
+          "#1660",
+          "#1661",
+          "#1662",
+          "#1663",
+          "#1664",
+          "#1665",
+          "#1666",
+          "#1667",
+          "#1668",
+          "#1669",
           "#167",
           "#168",
           "#169",
@@ -4405,17 +4502,17 @@
         "resource_counts": {
           "budget_denials": 0,
           "candidate_approval_events": 0,
-          "curriculum_tasks": 2,
+          "curriculum_tasks": 8,
           "improvement_proposals": 0,
           "qualifications": 0,
           "search_attempts": 66,
-          "search_requests": 2,
-          "solve_tasks": 2,
+          "search_requests": 7,
+          "solve_tasks": 8,
           "world_receipts": 0
         },
         "schema": "p22_native_resource_snapshot_v1",
-        "serialized_graph_bytes": 289053,
-        "snapshot_sha256": "3c193784a32b9673684c2701791b146a60cfe10afb3d9f8f358eca8731bf8ed8",
+        "serialized_graph_bytes": 308841,
+        "snapshot_sha256": "dc47535acef5d43c7c6f1cf97254dd0d2d5882427a278439f42dc0e84a85def6",
         "status_counts": [
           {
             "count": 1,
@@ -4448,38 +4545,23 @@
             "type": "OpenProcessSearchAttempt"
           },
           {
-            "count": 2,
-            "status": "funded",
+            "count": 7,
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
-            "count": 6,
-            "status": "eligible",
-            "type": "ProcessCurriculumEvidence"
-          },
-          {
-            "count": 1,
+            "count": 8,
             "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
-            "count": 1,
-            "status": "scheduled",
-            "type": "ProcessCurriculumEvidence"
-          },
-          {
-            "count": 1,
+            "count": 8,
             "status": "observed",
             "type": "ProcessCurriculumOutcome"
           },
           {
-            "count": 1,
+            "count": 8,
             "status": "completed",
-            "type": "ProcessCurriculumTask"
-          },
-          {
-            "count": 1,
-            "status": "delivered_to_native_search",
             "type": "ProcessCurriculumTask"
           },
           {
@@ -4493,17 +4575,37 @@
             "type": "RecursiveProcessGeneration"
           },
           {
-            "count": 2,
+            "count": 1,
+            "status": "solved",
+            "type": "SolveTask"
+          },
+          {
+            "count": 7,
             "status": "stuck",
             "type": "SolveTask"
           },
           {
+            "count": 6,
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
             "count": 1,
+            "status": "active",
+            "type": "StrategyLibraryEntry"
+          },
+          {
+            "count": 2,
+            "status": "observed_failure",
+            "type": "StrategyRecallAttempt"
+          },
+          {
+            "count": 4,
             "status": "cold_start",
             "type": "StrategyRecallFallback"
           },
           {
-            "count": 4,
+            "count": 17,
             "status": "approved",
             "type": "ThinkingBudgetRequest"
           }
@@ -4986,12 +5088,37 @@
           },
           {
             "node_id": "#1545",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1617",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
+            "type": "OpenProcessSearchRequest"
+          },
+          {
+            "node_id": "#1624",
+            "status": "global_attempt_ceiling",
+            "type": "OpenProcessSearchRequest"
+          },
+          {
+            "node_id": "#1630",
+            "status": "global_attempt_ceiling",
+            "type": "OpenProcessSearchRequest"
+          },
+          {
+            "node_id": "#1637",
+            "status": "global_attempt_ceiling",
+            "type": "OpenProcessSearchRequest"
+          },
+          {
+            "node_id": "#1655",
+            "status": "global_attempt_ceiling",
+            "type": "OpenProcessSearchRequest"
+          },
+          {
+            "node_id": "#1667",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
@@ -5001,41 +5128,76 @@
           },
           {
             "node_id": "#1534",
-            "status": "scheduled",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1535",
-            "status": "eligible",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1536",
-            "status": "eligible",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1537",
-            "status": "eligible",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1538",
-            "status": "eligible",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1539",
-            "status": "eligible",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1540",
-            "status": "eligible",
+            "status": "resolved",
             "type": "ProcessCurriculumEvidence"
           },
           {
             "node_id": "#1613",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1619",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1626",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1632",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1639",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1645",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1657",
+            "status": "observed",
+            "type": "ProcessCurriculumOutcome"
+          },
+          {
+            "node_id": "#1669",
             "status": "observed",
             "type": "ProcessCurriculumOutcome"
           },
@@ -5046,7 +5208,37 @@
           },
           {
             "node_id": "#1615",
-            "status": "delivered_to_native_search",
+            "status": "completed",
+            "type": "ProcessCurriculumTask"
+          },
+          {
+            "node_id": "#1621",
+            "status": "completed",
+            "type": "ProcessCurriculumTask"
+          },
+          {
+            "node_id": "#1628",
+            "status": "completed",
+            "type": "ProcessCurriculumTask"
+          },
+          {
+            "node_id": "#1634",
+            "status": "completed",
+            "type": "ProcessCurriculumTask"
+          },
+          {
+            "node_id": "#1641",
+            "status": "completed",
+            "type": "ProcessCurriculumTask"
+          },
+          {
+            "node_id": "#1647",
+            "status": "completed",
+            "type": "ProcessCurriculumTask"
+          },
+          {
+            "node_id": "#1659",
+            "status": "completed",
             "type": "ProcessCurriculumTask"
           },
           {
@@ -5125,7 +5317,97 @@
             "type": "SolveTask"
           },
           {
+            "node_id": "#1622",
+            "status": "stuck",
+            "type": "SolveTask"
+          },
+          {
+            "node_id": "#1629",
+            "status": "stuck",
+            "type": "SolveTask"
+          },
+          {
+            "node_id": "#1635",
+            "status": "stuck",
+            "type": "SolveTask"
+          },
+          {
+            "node_id": "#1642",
+            "status": "solved",
+            "type": "SolveTask"
+          },
+          {
+            "node_id": "#1648",
+            "status": "stuck",
+            "type": "SolveTask"
+          },
+          {
+            "node_id": "#1660",
+            "status": "stuck",
+            "type": "SolveTask"
+          },
+          {
+            "node_id": "#1651",
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
+            "node_id": "#1652",
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
+            "node_id": "#1653",
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
+            "node_id": "#1663",
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
+            "node_id": "#1664",
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
+            "node_id": "#1665",
+            "status": "native_applied",
+            "type": "StrategyApplicationReceipt"
+          },
+          {
+            "node_id": "#1644",
+            "status": "active",
+            "type": "StrategyLibraryEntry"
+          },
+          {
+            "node_id": "#1650",
+            "status": "observed_failure",
+            "type": "StrategyRecallAttempt"
+          },
+          {
+            "node_id": "#1662",
+            "status": "observed_failure",
+            "type": "StrategyRecallAttempt"
+          },
+          {
             "node_id": "#1544",
+            "status": "cold_start",
+            "type": "StrategyRecallFallback"
+          },
+          {
+            "node_id": "#1623",
+            "status": "cold_start",
+            "type": "StrategyRecallFallback"
+          },
+          {
+            "node_id": "#1636",
+            "status": "cold_start",
+            "type": "StrategyRecallFallback"
+          },
+          {
+            "node_id": "#1643",
             "status": "cold_start",
             "type": "StrategyRecallFallback"
           },
@@ -5148,119 +5430,229 @@
             "node_id": "#1618",
             "status": "approved",
             "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1620",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1625",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1627",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1631",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1633",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1638",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1640",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1646",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1649",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1656",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1658",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1661",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
+          },
+          {
+            "node_id": "#1668",
+            "status": "approved",
+            "type": "ThinkingBudgetRequest"
           }
         ],
         "thinking_budget_capacity": 64.0,
-        "thinking_budget_remaining": 58.0,
-        "thinking_budget_spent": 6.0
+        "thinking_budget_remaining": 40.0,
+        "thinking_budget_spent": 24.0
       },
       "search_requests": [
         {
           "request_id": "#1545",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1543"
           ]
         },
         {
           "request_id": "#1617",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1616"
           ]
+        },
+        {
+          "request_id": "#1624",
+          "status": "global_attempt_ceiling",
+          "task_ids": [
+            "#1622"
+          ]
+        },
+        {
+          "request_id": "#1630",
+          "status": "global_attempt_ceiling",
+          "task_ids": [
+            "#1629"
+          ]
+        },
+        {
+          "request_id": "#1637",
+          "status": "global_attempt_ceiling",
+          "task_ids": [
+            "#1635"
+          ]
+        },
+        {
+          "request_id": "#1655",
+          "status": "global_attempt_ceiling",
+          "task_ids": [
+            "#1648"
+          ]
+        },
+        {
+          "request_id": "#1667",
+          "status": "global_attempt_ceiling",
+          "task_ids": [
+            "#1660"
+          ]
         }
       ],
-      "solved_count": 0,
+      "solved_count": 1,
       "training_tasks": [
         {
           "curriculum_status": "completed",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0250",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0250"
         },
         {
-          "curriculum_status": "delivered_to_native_search",
+          "curriculum_status": "completed",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0251",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0251"
         },
         {
-          "curriculum_status": "not_selected",
-          "search_request_statuses": [],
-          "solve_status": "not_dispatched",
+          "curriculum_status": "completed",
+          "search_request_statuses": [
+            "global_attempt_ceiling"
+          ],
+          "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0252",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0252"
         },
         {
-          "curriculum_status": "not_selected",
-          "search_request_statuses": [],
-          "solve_status": "not_dispatched",
+          "curriculum_status": "completed",
+          "search_request_statuses": [
+            "global_attempt_ceiling"
+          ],
+          "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0253",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0253"
         },
         {
-          "curriculum_status": "not_selected",
-          "search_request_statuses": [],
-          "solve_status": "not_dispatched",
+          "curriculum_status": "completed",
+          "search_request_statuses": [
+            "global_attempt_ceiling"
+          ],
+          "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0254",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0254"
         },
         {
-          "curriculum_status": "not_selected",
+          "curriculum_status": "completed",
           "search_request_statuses": [],
-          "solve_status": "not_dispatched",
-          "solved": false,
+          "solve_status": "solved",
+          "solved": true,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0255",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0255"
         },
         {
-          "curriculum_status": "not_selected",
-          "search_request_statuses": [],
-          "solve_status": "not_dispatched",
+          "curriculum_status": "completed",
+          "search_request_statuses": [
+            "global_attempt_ceiling"
+          ],
+          "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0256",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0256"
         },
         {
-          "curriculum_status": "not_selected",
-          "search_request_statuses": [],
-          "solve_status": "not_dispatched",
+          "curriculum_status": "completed",
+          "search_request_statuses": [
+            "global_attempt_ceiling"
+          ],
+          "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0257",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0257"
         }
       ],
       "world_receipt_count": 0
     },
     "invention_only": {
-      "all_tasks_terminal": false,
+      "all_tasks_terminal": true,
       "approval_count": 0,
       "configuration": {
         "arm": "invention_only",
@@ -7199,8 +7591,8 @@
           "world_receipts": 0
         },
         "schema": "p22_native_resource_snapshot_v1",
-        "serialized_graph_bytes": 341123,
-        "snapshot_sha256": "e99b4cb0b9c8d340706517be2ccde02429add2700514d3773f6d7969e1d4baf0",
+        "serialized_graph_bytes": 341452,
+        "snapshot_sha256": "2267835014c74acf832c4526d71d54c67570c3ed049c5464de798328c860025d",
         "status_counts": [
           {
             "count": 1,
@@ -7234,7 +7626,7 @@
           },
           {
             "count": 7,
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
@@ -8086,37 +8478,37 @@
           },
           {
             "node_id": "#1555",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1557",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1559",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1561",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1563",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1698",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
             "node_id": "#1700",
-            "status": "funded",
+            "status": "global_attempt_ceiling",
             "type": "OpenProcessSearchRequest"
           },
           {
@@ -8342,49 +8734,49 @@
       "search_requests": [
         {
           "request_id": "#1555",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1536"
           ]
         },
         {
           "request_id": "#1557",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1540"
           ]
         },
         {
           "request_id": "#1559",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1534"
           ]
         },
         {
           "request_id": "#1561",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1538"
           ]
         },
         {
           "request_id": "#1563",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1542"
           ]
         },
         {
           "request_id": "#1698",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1546"
           ]
         },
         {
           "request_id": "#1700",
-          "status": "funded",
+          "status": "global_attempt_ceiling",
           "task_ids": [
             "#1548"
           ]
@@ -8395,61 +8787,61 @@
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0250",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0250"
         },
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0251",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0251"
         },
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0252",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0252"
         },
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0253",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0253"
         },
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0254",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0254"
         },
         {
@@ -8465,25 +8857,25 @@
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0256",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0256"
         },
         {
           "curriculum_status": "not_selected",
           "search_request_statuses": [
-            "funded"
+            "global_attempt_ceiling"
           ],
           "solve_status": "stuck",
           "solved": false,
           "split": "training",
           "task_key": "p22:pmb_generated_loopover_v2:0257",
-          "terminal": false,
+          "terminal": true,
           "world_id": "p22:loopover-v2:train:0257"
         }
       ],
@@ -10787,24 +11179,24 @@
         "world_receipts": 0
       },
       "full": {
-        "budget_approved": 6.0,
+        "budget_approved": 24.0,
         "budget_denials": 0,
         "budget_denied_cost": 0.0,
-        "budget_requested": 6.0,
+        "budget_requested": 24.0,
         "candidate_approval_events": 0,
-        "curriculum_tasks": 2,
+        "curriculum_tasks": 8,
         "improvement_proposals": 0,
-        "native_solver_primitive_work": 3.0,
-        "native_solver_steps": 3.0,
+        "native_solver_primitive_work": 18.0,
+        "native_solver_steps": 24.0,
         "qualifications": 0,
         "search_attempts": 66,
         "search_declared_primitive_work": 132.0,
-        "serialized_graph_bytes": 289053,
-        "solve_tasks": 2,
-        "thinking_budget_spent": 6.0,
+        "serialized_graph_bytes": 308841,
+        "solve_tasks": 8,
+        "thinking_budget_spent": 24.0,
         "training_evidence_exposures": 8.0,
-        "training_outcomes": 1.0,
-        "training_task_exposures": 2.0,
+        "training_outcomes": 8.0,
+        "training_task_exposures": 8.0,
         "world_receipts": 0
       },
       "invention_only": {
@@ -10820,7 +11212,7 @@
         "qualifications": 0,
         "search_attempts": 132,
         "search_declared_primitive_work": 264.0,
-        "serialized_graph_bytes": 341123,
+        "serialized_graph_bytes": 341452,
         "solve_tasks": 8,
         "thinking_budget_spent": 14.0,
         "training_evidence_exposures": 8.0,
@@ -10865,11 +11257,11 @@
       "search_attempts": false,
       "search_declared_primitive_work": false,
       "serialized_graph_bytes": false,
-      "solve_tasks": false,
+      "solve_tasks": true,
       "thinking_budget_spent": false,
       "training_evidence_exposures": true,
       "training_outcomes": false,
-      "training_task_exposures": false,
+      "training_task_exposures": true,
       "world_receipts": true
     }
   },

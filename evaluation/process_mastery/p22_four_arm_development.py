@@ -143,7 +143,8 @@ def run_p22_four_arm_development(*, family: str,
                     terminal = solve_status == "stuck"
                 else:
                     terminal = solve_status == "stuck" and bool(request_statuses) and all(
-                        status in {"proposal_recorded", "qualified_terminal", "denied"}
+                        status in {"proposal_recorded", "qualified_terminal", "denied",
+                                   "global_attempt_ceiling"}
                         for status in request_statuses)
                 if arm in {"adaptive_only", "full"}:
                     terminal = terminal and curriculum_status == "completed"

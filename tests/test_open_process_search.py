@@ -248,3 +248,26 @@ def test_each_search_request_obeys_its_own_attempt_ceiling():
                for request in requests)
     assert all(len(agent.native.neighbours(request, "has_candidate")) <= 1
                for request in requests)
+
+
+def test_global_attempt_ceiling_terminalizes_funded_requests():
+    agent, _ = _agent(attempts=1,
+        held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    for key, goal in (("global-a", [2, 0, 1, 3]),
+                      ("global-b", [3, 2, 1, 0])):
+        task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
+                                    training_trial_key=key)
+        agent.s.set_attr(task, "split", "training")
+        agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    requests = agent.nodes("OpenProcessSearchRequest")
+    assert len(requests) == 2
+    assert all(agent.attrs(request)["status"] == "global_attempt_ceiling"
+               for request in requests)
+    assert all(agent.attrs(request)["global_ceiling_recorded"] is True
+               for request in requests)
+    before = {request: len(agent.native.neighbours(request, "has_search_attempt"))
+              for request in requests}
+    _tick(agent)
+    assert {request: len(agent.native.neighbours(request, "has_search_attempt"))
+            for request in requests} == before

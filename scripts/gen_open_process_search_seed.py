@@ -414,6 +414,19 @@ def build():
     rules.extend((_recursive_compose_rule(), _recursive_compose_rule(reverse=True)))
     rules.extend((_recursive_unary_rule("inverse"), _recursive_unary_rule("power", 2),
                   _recursive_unary_rule("power", 3), _mint_recursive_unary_rule()))
+    rules.append(rule("ops_close_funded_request_at_global_attempt_ceiling",
+        ONLINE_AREA, 90,
+        "Close a funded search request explicitly when the shared native attempt ceiling prevents further enumeration.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_search_request", "request"]],
+        And(policy_on(), Eq(A("request", "status"), L("funded")),
+            Gt(A("pol", "max_attempts"), L(0.0)),
+            Not(Lt(Count(N("agent", "has_open_process_search_attempt")),
+                   A("pol", "max_attempts"))),
+            Eq(A("request", "global_ceiling_recorded"), L(None))),
+        [["set_attr", "request", "status", "global_attempt_ceiling"],
+         ["set_attr", "request", "global_ceiling_recorded", True]],
+        batch=False))
     return {"id": SEED_ID, "version": "1.0.0",
         "depends_on": ["process_solving", "thinking_budget"],
         "self_load_only": True, "area": OFFLINE_AREA,

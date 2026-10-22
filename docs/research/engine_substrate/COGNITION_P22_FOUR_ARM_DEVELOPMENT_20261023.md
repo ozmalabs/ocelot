@@ -11,8 +11,8 @@ validation or held-out world was read by this runner.
 
 | Family | Unchanged solved | Adaptive-only solved | Invention-only solved | Full solved | Candidate proposals (invention-only / full) |
 |---|---:|---:|---:|---:|---:|
-| D4 v2 | 3/8 | 3/8 | 3/8 | 1/8 | 5 / 1 |
-| Loopover v2 | 1/8 | 1/8 | 1/8 | 0/8 | 0 / 0 |
+| D4 v2 | 3/8 | 3/8 | 3/8 | 3/8 | 5 / 1 |
+| Loopover v2 | 1/8 | 1/8 | 1/8 | 1/8 | 0 / 0 |
 
 These counts are training-panel diagnostics and must not be interpreted as
 generalization or treatment effects. No arm had a candidate approval or a
@@ -21,22 +21,23 @@ budget requests/spend, native solver work, search attempts/work, task and
 outcome counts, and serialized graph size. Consequently, neither equal
 cumulative compute nor an efficiency comparison is established.
 
-The runner exposes an additional integration failure that prevents P22.E2
-freeze. In D4, the full arm completed only 2/8 curriculum tasks; one task
-remained delivered to native search with a funded request and five were never
-dispatched. In Loopover, the full arm completed one task and left another
-delivered with a funded request; six were never dispatched. The Loopover
-invention-only arm also left seven tasks with funded search requests. These
-requests did not reach a recorded native terminal outcome under the bounded
-development loop, so the sequential scheduler could not release the remaining
-curriculum tasks. This is a structural adapter/lifecycle issue, not a negative
-efficacy result. The unchanged and adaptive-only arms did terminalize all eight
-tasks in each family. Search candidates remain unapproved and non-actionable.
+A native settlement rule now marks funded search requests `global_attempt_ceiling`
+after the aggregate native-attempt count reaches the configured limit, and the
+P22 bridge records that status as a terminal `search_attempt_ceiling` outcome.
+This allowed all four arms to terminalize all eight tasks in both families and
+released the sequential curriculum scheduler. It repaired the stranded-request
+lifecycle defect, not the attempt bound: the configured global limit is 64,
+while simultaneous grammar activations yielded 68 and 66 attempts in the D4
+and Loopover full arms, 108 in D4 invention-only, and 132 in Loopover
+invention-only. The exact counts are in the raw records. This overshoot is a
+remaining fixed-compute defect; P22.E2 cannot freeze with these settings. It is
+not a negative efficacy result. Search candidates remain unapproved and
+non-actionable.
 
 Raw records:
 
-- [`p22_four_arm_v2_d4.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_d4.json), SHA-256 `8ccb44e1a38f2d65239eebccfa93077555a73c4956da7299a44d84505b5b021b`.
-- [`p22_four_arm_v2_loopover.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_loopover.json), SHA-256 `fc29d5f7e762f2cc6600bf7695522d82da251ebc6ae8f53e3cd5ff8fa174cb3c`.
+- [`p22_four_arm_v2_d4.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_d4.json), SHA-256 `fbe41ad128b5354b51e25e489aeb032131771b0793628042556c2224cafc631d`.
+- [`p22_four_arm_v2_loopover.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_loopover.json), SHA-256 `24ab3981c21bb701b73f96571bf411d166ce923d879cbe4fde7a72eb1aae945e`.
 
 Reproduce with:
 

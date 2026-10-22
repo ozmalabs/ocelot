@@ -8,6 +8,7 @@ def test_four_arm_development_uses_same_training_world_and_no_approval_side_effe
     assert result["status"] == "DEVELOPMENT_ONLY"
     assert result["split"] == "training"
     assert result["common_worlds"]
+    assert result["all_arms_terminal"]
     assert set(result["arms"]) == {
         "unchanged", "adaptive_only", "invention_only", "full"}
     expected_id = "p22:d4-v2:train:0250"

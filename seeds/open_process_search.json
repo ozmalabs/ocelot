@@ -13693,6 +13693,131 @@
         ]
       ],
       "batch": false
+    },
+    {
+      "name": "ops_close_funded_request_at_global_attempt_ceiling",
+      "area": "process_solving",
+      "order": 90,
+      "latency_class": "background",
+      "comment": "Close a funded search request explicitly when the shared native attempt ceiling prevents further enumeration.",
+      "match": [
+        [
+          "agent",
+          "has_open_process_search_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funded"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_attempts"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Lt",
+              "a": {
+                "type": "Count",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "agent"
+                  },
+                  "edge_type": "has_open_process_search_attempt",
+                  "any_type": false
+                }
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "max_attempts"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "global_ceiling_recorded"
+            },
+            "b": {
+              "type": "Lit",
+              "value": null
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "global_attempt_ceiling"
+        ],
+        [
+          "set_attr",
+          "request",
+          "global_ceiling_recorded",
+          true
+        ]
+      ],
+      "batch": false
     }
   ]
 }

@@ -1065,6 +1065,21 @@
                 }
               },
               {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "global_attempt_ceiling"
+                }
+              },
+              {
                 "type": "Exists",
                 "source": {
                   "type": "Neighbours",
@@ -1206,8 +1221,30 @@
                       "value": "candidate_qualified"
                     },
                     "other": {
-                      "type": "Lit",
-                      "value": "search_completed"
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "request"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "global_attempt_ceiling"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": "search_attempt_ceiling"
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": "search_completed"
+                      }
                     }
                   }
                 }
@@ -1236,52 +1273,12 @@
                   "value": "solved"
                 },
                 "other": {
-                  "type": "IfThenElse",
-                  "cond": {
-                    "type": "Eq",
-                    "a": {
-                      "type": "Attr",
-                      "node": {
-                        "type": "Var",
-                        "name": "request"
-                      },
-                      "key": "status"
-                    },
-                    "b": {
-                      "type": "Lit",
-                      "value": "proposal_recorded"
-                    }
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
                   },
-                  "then": {
-                    "type": "Lit",
-                    "value": "proposal_recorded"
-                  },
-                  "other": {
-                    "type": "IfThenElse",
-                    "cond": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "request"
-                        },
-                        "key": "status"
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": "qualified_terminal"
-                      }
-                    },
-                    "then": {
-                      "type": "Lit",
-                      "value": "qualified_terminal"
-                    },
-                    "other": {
-                      "type": "Lit",
-                      "value": "native_search_completed"
-                    }
-                  }
+                  "key": "status"
                 }
               }
             },
