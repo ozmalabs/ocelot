@@ -778,6 +778,8 @@ COGNITION_ON_SEEDS = (
     "decomposition_consumer",
     "impasse_simulation_bridge",
     "consolidation_scheduler",
+    # P13 staged offline learning and observed-yield strategy recall.
+    "sleep_regime",
     "tolerance_registry",
     "thinking_budget",
     "extended_thinking",
@@ -812,6 +814,8 @@ COGNITION_ON_SEEDS = (
     "invention_round",
     "invariant_miner",
     "process_solving",
+    "library_learning",
+    "strategy_library",
     # P10 goal-directed invention and exact-context strategy replay remain
     # policy-disabled until an explicit cognition-on evaluation enables them.
     "process_lifting",

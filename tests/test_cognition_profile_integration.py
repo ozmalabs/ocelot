@@ -343,6 +343,53 @@ def test_p11_shared_budget():
     agent.close()
 
 
+def test_p13_profile_chain():
+    p13 = {"sleep_regime", "library_learning", "strategy_library"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p13:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for edge_type, node_type in (
+        ("has_sleep_regime_policy", "SleepRegimePolicy"),
+        ("has_library_learning_policy", "LibraryLearningPolicy"),
+        ("has_strategy_library_policy", "StrategyLibraryPolicy"),
+    ):
+        attached = [n for n in agent.inner.neighbours(agent.agent, edge_type)
+                    if agent.s.node(n)["type"] == node_type
+                    and agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(attached) == 1
+
+    agent.close()
+
+
+def test_p13_default_isolation():
+    p13 = {"sleep_regime", "library_learning", "strategy_library"}
+    p13_rules = {item["name"] for sid in p13
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p13.isdisjoint(installed_seeds(default.s))
+    assert p13.isdisjoint(installed_seeds(conversation.s))
+    assert p13_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p13_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p13_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
 def test_p12_profile_chain():
     p12 = {"imitation", "social_process", "process_explanation"}
     agent = boot_cognition_on()

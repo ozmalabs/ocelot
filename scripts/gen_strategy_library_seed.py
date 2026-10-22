@@ -85,16 +85,57 @@ def record_observed_success_rule():
     )
 
 
+def request_recall_budget_rule():
+    eligible = Exists(N("agent", "has_strategy_library_entry"), "candidate",
+                      compatible("candidate"))
+    already = Exists(N("t", "has_strategy_recall_request"), "old",
+                     Eq(A("old", "requester_key"), V("t")))
+    return rule(
+        "sl_request_funded_strategy_recall", ONLINE_AREA, 5,
+        "Request one shared ThinkingBudget debit before weighting or applying any compatible strategy; bind it to this task and its source/model epoch.",
+        [["agent", "has_strategy_library_policy", "pol"],
+         ["agent", "has_thinking_budget", "budget"],
+         ["agent", "has_network_mode_state", "mode"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"]],
+        And(policy_on(), Eq(A("budget", "enabled"), L(1.0)),
+            Eq(A("t", "status"), L("active")),
+            Not(Eq(A("t", "strategy_funding_requested"), L(1))),
+            eligible, Not(already)),
+        [["add_node", "req", "ThinkingBudgetRequest", {
+            "requester_kind": "strategy_library_recall",
+            "requester_key": T(V("t")), "source_key": T(V("t")),
+            "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")),
+            "requested_epoch": T(A("mode", "epoch")),
+            "deadline_epoch": T(Plus(A("mode", "epoch"), L(1))),
+            "cost": T(A("pol", "recall_cost")), "status": "pending",
+        }],
+         ["add_edge", "agent", "has_thinking_budget_request", "req", {}],
+         ["add_edge", "t", "has_strategy_recall_request", "req", {}],
+         ["add_edge", "req", "draws_on_thinking_budget", "budget", {}],
+         ["set_attr", "t", "strategy_funding_requested", 1]],
+        batch=False,
+    )
+
+
 def start_recall_rule():
     choice = _soft_choice()
     return rule(
         "sl_start_soft_weighted_compatible_recall", ONLINE_AREA, 6,
         "Recall among structurally compatible strategies using native SoftWeights over observed yield, gated by context and all source/model/frame/probe epochs; leave cold-start tasks to the bounded solver.",
         [["agent", "has_strategy_library_policy", "pol"],
+         ["agent", "has_network_mode_state", "mode"],
          ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"],
-         ["agent", "has_strategy_library_entry", "entry"]],
+         ["agent", "has_strategy_library_entry", "entry"],
+         ["agent", "has_thinking_budget_request", "req"],
+         ["t", "has_strategy_recall_request", "req"]],
         And(policy_on(), Eq(A("t", "status"), L("active")),
             Not(Eq(A("t", "strategy_recall_attempted"), L(1))),
+            Eq(A("req", "requester_kind"), L("strategy_library_recall")),
+            Eq(A("req", "status"), L("approved")),
+            Eq(A("req", "requested_epoch"), A("mode", "epoch")),
+            Eq(A("req", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("req", "model_epoch"), A("d", "model_epoch")),
             Eq(V("entry"), choice), compatible()),
         [["add_node", "attempt", "StrategyRecallAttempt", {
             "status": "running", "signature_kind": T(A("d", "kind")),
@@ -266,10 +307,52 @@ def fallback_without_compatible_entry_rule():
     )
 
 
+def fallback_after_denied_funding_rule():
+    return rule(
+        "sl_fallback_after_recall_funding_denial", ONLINE_AREA, 12,
+        "If the shared budget denies or expires the recall request, record the denial and continue through the bounded solver without retrying or bypassing the budget.",
+        [["agent", "has_strategy_library_policy", "pol"],
+         ["agent", "has_solver_policy", "solver_pol"],
+         ["agent", "has_solve_task", "t"],
+         ["t", "has_strategy_recall_request", "req"]],
+        And(policy_on(), Eq(A("t", "status"), L("active")),
+            Or(Eq(A("req", "status"), L("denied")),
+               Eq(A("req", "status"), L("canceled"))),
+            Not(Eq(A("t", "strategy_funding_fallback"), L(1)))),
+        [["set_attr", "t", "strategy_funding_fallback", 1],
+         ["set_attr", "t", "status", "active"],
+         ["set_attr", "solver_pol", "enabled", 1.0]],
+    )
+
+
+def fallback_when_budget_disabled_rule():
+    eligible = Exists(N("agent", "has_strategy_library_entry"), "candidate",
+                      compatible("candidate"))
+    return rule(
+        "sl_fallback_when_shared_budget_disabled", ONLINE_AREA, 12,
+        "Do not perform strategy weighting without an enabled shared budget; record the reason and yield to the bounded solver.",
+        [["agent", "has_strategy_library_policy", "pol"],
+         ["agent", "has_thinking_budget", "budget"],
+         ["agent", "has_solver_policy", "solver_pol"],
+         ["agent", "has_solve_task", "t"], ["t", "about_domain", "d"]],
+        And(policy_on(), Eq(A("budget", "enabled"), L(0.0)),
+            Eq(A("t", "status"), L("active")), eligible,
+            Not(Eq(A("t", "strategy_fallback_recorded"), L(1)))),
+        [["add_node", "fallback", "StrategyRecallFallback", {
+            "status": "cold_start", "reason": "shared_budget_disabled",
+            "model_epoch": T(A("d", "model_epoch")), "candidate_work": 0,
+        }],
+         ["add_edge", "agent", "has_strategy_recall_fallback", "fallback", {}],
+         ["add_edge", "t", "has_strategy_recall_fallback", "fallback", {}],
+         ["set_attr", "t", "strategy_fallback_recorded", 1],
+         ["set_attr", "solver_pol", "enabled", 1.0]],
+    )
+
+
 def build_seed():
     return {
         "id": SEED_ID, "version": "1.0.0",
-        "depends_on": ["process_solving"], "self_load_only": True,
+        "depends_on": ["process_solving", "thinking_budget"], "self_load_only": True,
         "area": ONLINE_AREA,
         "description": "Recall structurally compatible graph strategies using observed yield and native per-step application receipts; stale contexts invalidate and failed candidates fall back to bounded search.",
         "microtheory": {"name": SEED_ID,
@@ -277,16 +360,22 @@ def build_seed():
         "nodes": [{"local_id": 0, "type": "StrategyLibraryPolicy", "attrs": {
             "name": "core_strategy_library_policy", "enabled": 0.0,
             "max_entries": 128.0, "max_steps": 32.0, "temperature": 0.5,
+            "recall_cost": 1.0,
         }}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_strategy_library_policy",
                    "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(SEED_ID, [
             ("Agent", "has_strategy_library_policy", "StrategyLibraryPolicy"),
+            ("Agent", "has_thinking_budget", "ThinkingBudget"),
+            ("Agent", "has_network_mode_state", "NetworkModeState"),
+            ("Agent", "has_thinking_budget_request", "ThinkingBudgetRequest"),
+            ("ThinkingBudgetRequest", "draws_on_thinking_budget", "ThinkingBudget"),
             ("Agent", "has_strategy_library_entry", "StrategyLibraryEntry"),
             ("StrategyLibraryEntry", "about_domain", "ProcessDomain"),
             ("StrategyLibraryEntry", "source_task", "SolveTask"),
             ("Agent", "has_strategy_recall_attempt", "StrategyRecallAttempt"),
             ("SolveTask", "has_strategy_recall_attempt", "StrategyRecallAttempt"),
+            ("SolveTask", "has_strategy_recall_request", "ThinkingBudgetRequest"),
             ("SolveTask", "recalls_strategy_entry", "StrategyLibraryEntry"),
             ("StrategyRecallAttempt", "uses_strategy_entry", "StrategyLibraryEntry"),
             ("SolveTask", "has_strategy_application_receipt", "StrategyApplicationReceipt"),
@@ -299,10 +388,12 @@ def build_seed():
         ]),
         "rules": [
             invalidate_changed_distribution_rule(), record_observed_success_rule(),
+            request_recall_budget_rule(),
             start_recall_rule(), apply_recall_step_rule(),
             fail_nonapplicable_step_rule(),
             observe_recall_outcome_rule(True), observe_recall_outcome_rule(False),
             fallback_after_bad_recall_rule(), fallback_without_compatible_entry_rule(),
+            fallback_after_denied_funding_rule(), fallback_when_budget_disabled_rule(),
         ],
     }
 

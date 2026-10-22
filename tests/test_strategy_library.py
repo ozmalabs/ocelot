@@ -51,6 +51,9 @@ def _learn_cycle(agent, name="domain"):
 def test_recall_reduces_candidate_work():
     agent = _agent()
     domain, source, entry = _learn_cycle(agent)
+    budget = next(n for n in agent.nodes("ThinkingBudget")
+                  if agent.attrs(n).get("enabled") == 1.0)
+    remaining_before = agent.attrs(budget)["remaining"]
     cycle = next(p for p in agent.schemas("domain") if agent.attrs(p)["name"] == "cycle")
     initial = [2, 1, 0]
     goal = _apply(agent, cycle, initial)
@@ -65,6 +68,11 @@ def test_recall_reduces_candidate_work():
     assert attrs["candidate_count"] < attrs["cold_start_process_count"]
     assert agent.attrs(unseen)["steps"] == 1
     assert agent.s.neighbours(unseen, "recalls_strategy_entry") == [entry]
+    requests = agent.s.neighbours(unseen, "has_strategy_recall_request")
+    assert len(requests) == 1
+    assert agent.attrs(requests[0])["status"] == "approved"
+    assert agent.attrs(requests[0])["debited_epoch"] == agent.attrs(requests[0])["requested_epoch"]
+    assert agent.attrs(budget)["remaining"] == remaining_before - 1
     assert agent.attrs(domain)["kind"] == agent.attrs(entry)["kind"]
     assert agent.attrs(source)["status"] == "solved"
 
@@ -114,3 +122,20 @@ def test_distribution_change_invalidates():
     _tick(agent)
     assert not agent.s.neighbours(task, "has_strategy_recall_attempt")
     assert len(agent.s.neighbours(task, "has_strategy_recall_fallback")) == 1
+
+
+def test_denied_recall_funding_falls_back_without_retry():
+    agent = _agent()
+    _domain, _source, _entry = _learn_cycle(agent)
+    budget = next(n for n in agent.nodes("ThinkingBudget")
+                  if agent.attrs(n).get("enabled") == 1.0)
+    agent.s.set_attr(budget, "remaining", 0.0)
+    cycle = next(p for p in agent.schemas("domain") if agent.attrs(p)["name"] == "cycle")
+    initial = [2, 1, 0]
+    task = agent.add_solve_task("domain", initial, _apply(agent, cycle, initial))
+    _tick(agent)
+    request = agent.s.neighbours(task, "has_strategy_recall_request")[0]
+    assert agent.attrs(request)["status"] == "denied"
+    assert agent.attrs(task)["strategy_funding_fallback"] == 1
+    assert not agent.s.neighbours(task, "has_strategy_recall_attempt")
+    assert agent.attrs(task)["status"] == "solved"
