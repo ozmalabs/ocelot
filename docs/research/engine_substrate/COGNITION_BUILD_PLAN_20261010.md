@@ -2187,6 +2187,8 @@ The reproducible probe CLI outputs were rerun and matched the archived raw JSON 
 
 **P22.E1 profile integration measurement (2026-10-23):** Three fresh `boot_cognition_on()` runs measured a median 0.2020 s boot, 1,520 graph nodes, 773 exported native rules, and 288,952 bytes of canonical graph JSON. The P22 policies remain disabled in the profile; its shared budget and default/conversation isolation regressions pass. The P22 bundle passes 117 tests. Allocator/resident memory remains unavailable, and these boot measurements do not substitute for cumulative matched-arm resource accounting. The cognition-on causal-chain regression now also mutates the approved operator after one verified receipt and confirms exact approval binding abstains before a second world transition. No held-out tasks or real candidate approvals were used.
 
+**P22.E1 acceptance verification refresh (2026-10-23):** The exact E1 verification bundle (`test_improvement_estimand.py`, `test_independent_improvement.py`, `test_checkpoint_world_adapter.py`, `test_improvement_causal_ablation.py`, `test_cognition_profile_integration.py`) passes 88 tests. This confirms the local native mechanism and profile gates; the full four-arm training adapters and external candidate-specific approvals remain outstanding.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1
