@@ -26,6 +26,7 @@ from evaluation.process_mastery.native_process_execution import (
 from evaluation.process_mastery.observed_sequence_execution import (
     execute_verified_observed_sequence, verify_observed_sequence_candidate,
 )
+from evaluation.process_mastery.explanation_rebuild import verify_rebuilt_composition
 from evaluation.process_mastery.target_learning_worlds import RequestRepairWorld
 from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
 
@@ -1174,6 +1175,67 @@ def test_p20_observed_sequence_candidate_from_incidental_actions():
     assert own_result["status"] == "COMPLETED"
     assert own_world.solved
     assert len(agent.inner.neighbours(candidate, "has_own_trial_receipt")) == 2
+    agent.close()
+
+
+def test_p20_explanation_rebuild_through_cognition_profile():
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "ProcessExplanationPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    primitives = []
+    for event, precondition, token in (("request", "idle", "ask"),
+                                        ("repair", "requested", "fix")):
+        primitive = agent.s.add_node("ProcessPrimitiveVocabulary", {
+            "primitive_id": f"profile-shared-{event}", "semantic_event": event,
+            "public_token": token, "precondition": precondition,
+            "native_effect": ["finite_action", event], "vocabulary_status": "shared",
+            "model_epoch": 8, "frame_epoch": 3})
+        agent.s.add_edge(agent.agent, "has_process_primitive_vocabulary", primitive, {})
+        primitives.append(primitive)
+    explanation_id = "profile-public-request-repair"
+    explanation = agent.s.add_node("ProcessExplanationInput", {
+        "explanation_id": explanation_id, "text": "Ask, then fix after the request.",
+        "language": "en", "parse_status": "parsed", "explanation_kind": "ordered_two_step",
+        "semantic_sequence": ["seq", ["request", "repair"]],
+        "required_preconditions": ["idle", "requested"],
+        "supported_vocabulary": ["ask", "fix"], "model_epoch": 8, "frame_epoch": 3})
+    agent.s.add_edge(agent.agent, "has_process_explanation_input", explanation, {})
+    request = agent.s.add_node("ProcessExplanationRequest", {
+        "explanation_id": explanation_id, "status": "requested"})
+    agent.s.add_edge(agent.agent, "has_process_explanation_request", request, {})
+    funding = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "process_explanation_rebuild", "explanation_id": explanation_id,
+        "source_key": explanation_id, "source_epoch": 1, "operation_id": "profile:rebuild",
+        "status": "approved", "debited_epoch": 1.0, "cost": 1.0})
+    agent.s.add_edge(request, "funded_by", funding, {})
+    budget = agent.inner.neighbours(agent.agent, "has_thinking_budget")[0]
+    agent.s.add_edge(funding, "draws_on_thinking_budget", budget, {})
+    for _ in range(24):
+        if not agent.inner.run_rules(2000):
+            break
+    candidates = _nodes(agent, "RebuiltProcessCandidate")
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert agent.inner.neighbours(candidate, "uses_first_shared_primitive") == [primitives[0]]
+    assert agent.inner.neighbours(candidate, "uses_second_shared_primitive") == [primitives[1]]
+    validation = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "process_rebuild_validation",
+        "candidate_id": agent.s.node(candidate)["attrs"]["candidate_id"],
+        "source_key": "profile:fresh-verify", "source_epoch": 1,
+        "operation_id": "profile:verify", "status": "pending", "cost": 2.0})
+    agent.s.add_edge(agent.agent, "has_thinking_budget_request", validation, {})
+    agent.s.add_edge(candidate, "has_verification_request", validation, {})
+    agent.s.add_edge(validation, "draws_on_thinking_budget", budget, {})
+    for _ in range(16):
+        if not agent.inner.run_rules(2000):
+            break
+    assert agent.s.node(validation)["attrs"]["status"] == "approved"
+    assert agent.s.node(validation)["attrs"]["debited_epoch"] is not None
+    verified = verify_rebuilt_composition(agent, candidate)
+    assert verified["status"] == "VERIFIED"
+    assert agent.s.node(candidate)["attrs"]["status"] == "adopted"
+    assert len([n for n in _nodes(agent, "ProcessSchema")
+                if agent.s.node(n)["attrs"].get("provenance") == "rebuilt_from_explanation"]) == 1
     agent.close()
 
 

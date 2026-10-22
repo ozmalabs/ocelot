@@ -50,6 +50,18 @@
       }
     },
     {
+      "provenance": "seed:process_explanation:Agent:has_thinking_budget_request:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:process_explanation:Agent:has_process_explanation_request:ProcessExplanationRequest",
       "src": {
         "type": "Agent",
@@ -176,6 +188,30 @@
         "var": "src"
       },
       "edge_type": "uses_shared_primitive",
+      "tgt": {
+        "type": "ProcessPrimitiveVocabulary",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:RebuiltProcessCandidate:uses_first_shared_primitive:ProcessPrimitiveVocabulary",
+      "src": {
+        "type": "RebuiltProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "uses_first_shared_primitive",
+      "tgt": {
+        "type": "ProcessPrimitiveVocabulary",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_explanation:RebuiltProcessCandidate:uses_second_shared_primitive:ProcessPrimitiveVocabulary",
+      "src": {
+        "type": "RebuiltProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "uses_second_shared_primitive",
       "tgt": {
         "type": "ProcessPrimitiveVocabulary",
         "var": "tgt"
@@ -958,6 +994,759 @@
           "request",
           "status",
           "candidate_created"
+        ],
+        [
+          "set_attr",
+          "funding",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pe_rebuild_two_step_composition_from_parsed_public_sequence",
+      "area": "process_explanation",
+      "order": 2,
+      "latency_class": "soft_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_explanation_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_process_explanation_input",
+          "input"
+        ],
+        [
+          "ag",
+          "has_process_primitive_vocabulary",
+          "first"
+        ],
+        [
+          "ag",
+          "has_process_primitive_vocabulary",
+          "second"
+        ],
+        [
+          "ag",
+          "has_process_explanation_request",
+          "request"
+        ],
+        [
+          "request",
+          "funded_by",
+          "funding"
+        ],
+        [
+          "funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "parse_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "parsed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ordered_two_step"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "semantic_event"
+            },
+            "b": {
+              "type": "Nth",
+              "items": {
+                "type": "Nth",
+                "items": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "input"
+                  },
+                  "key": "semantic_sequence"
+                },
+                "index": 1
+              },
+              "index": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "semantic_event"
+            },
+            "b": {
+              "type": "Nth",
+              "items": {
+                "type": "Nth",
+                "items": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "input"
+                  },
+                  "key": "semantic_sequence"
+                },
+                "index": 1
+              },
+              "index": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "precondition"
+            },
+            "b": {
+              "type": "Nth",
+              "items": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "required_preconditions"
+              },
+              "index": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "precondition"
+            },
+            "b": {
+              "type": "Nth",
+              "items": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "required_preconditions"
+              },
+              "index": 1
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "public_token"
+            },
+            "container": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "supported_vocabulary"
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "public_token"
+            },
+            "container": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "supported_vocabulary"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "first"
+              },
+              "b": {
+                "type": "Var",
+                "name": "second"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_explanation_rebuild"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_rebuilt_process_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "candidate_id"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "rebuild:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "input"
+                      },
+                      "key": "explanation_id"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_rebuilt_process_candidate",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_candidates"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "RebuiltProcessCandidate",
+          {
+            "candidate_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "rebuild:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "input"
+                    },
+                    "key": "explanation_id"
+                  }
+                ]
+              }
+            },
+            "explanation_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "explanation_id"
+              }
+            },
+            "semantic_event": "ordered_two_step_composition",
+            "action_sequence": {
+              "__term__": {
+                "type": "Nth",
+                "items": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "input"
+                  },
+                  "key": "semantic_sequence"
+                },
+                "index": 1
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "semantic_sequence"
+              }
+            },
+            "required_preconditions": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "required_preconditions"
+              }
+            },
+            "status": "unverified_candidate",
+            "provenance": "parsed_public_explanation",
+            "source_ast_included": false,
+            "source_actor_id_included": false,
+            "source_process_id_included": false,
+            "source_fingerprint_included": false,
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "input"
+                },
+                "key": "frame_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_rebuilt_process_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "from_explanation",
+          "input",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "uses_first_shared_primitive",
+          "first",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "uses_second_shared_primitive",
+          "second",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "candidate_created"
+        ],
+        [
+          "set_attr",
+          "funding",
+          "terminal_status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pe_mark_missing_composition_precondition_unknown",
+      "area": "process_explanation",
+      "order": 2,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_explanation_input",
+          "input"
+        ],
+        [
+          "ag",
+          "has_process_explanation_request",
+          "request"
+        ],
+        [
+          "request",
+          "funded_by",
+          "funding"
+        ],
+        [
+          "funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ordered_two_step"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "parse_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "parsed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_explanation_rebuild"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "explanation_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "input"
+              },
+              "key": "explanation_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Count",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "input"
+                  },
+                  "key": "required_preconditions"
+                }
+              },
+              "b": {
+                "type": "Lit",
+                "value": 2
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "request",
+          "status",
+          "unknown_missing_precondition"
         ],
         [
           "set_attr",
