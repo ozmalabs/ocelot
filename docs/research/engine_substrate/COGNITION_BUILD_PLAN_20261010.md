@@ -67,7 +67,7 @@ All task `Verify cmd` entries below use the repository `.venv/bin/python`. They 
 
 ## Phase 6 — Measured foundation and executable process views
 
-**Entry:** P4/P5 reported results and partial foundation commit `53da7321`. **Status:** implementation and cognition-on integration are complete; preregistration/results remain. TransitionHypothesis execution and physical receipt-backed outcome observation remain explicitly unsupported, so no broad capability claim is authorized.
+**Entry:** P4/P5 reported results and partial foundation commit `53da7321`. **Status:** evidence closeout complete with limits. P6 implementation and cognition-on integration passed focused gates; P6.E2 preregistration and P6.E3 held-out report are frozen. TransitionHypothesis execution, external receipt-backed outcomes, D4 and finite mechanism arms remain unsupported or NOT_RUN; no broad capability claim is authorized.
 
 Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views until their effect evaluation is supported. The PMB baseline profile omits Track I seeds and policies; retain the greedy solver as an explicitly named hand-written comparator.
 
@@ -200,6 +200,8 @@ Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views
 - **Non-goals:** a dummy baseline, depth-shortcut comparator or rescoring old results; treating a human baseline as available without protocol matching.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P6.E2 freeze record (2026-10-22):** `COGNITION_LINEAR_P6_PREREG.md` was committed alone as `f31f17ae` after the development allocation completed. It freezes 200 paired Loopover, D4 and mechanism seeds, 100 malformed/stale/opaque controls, the exact 240 runnable MBPP task IDs, arm limits, hashes, scoring boundary and unsupported D4/mechanism disposition. Development scorecard and analyzer hashes are recorded in the preregistration. Both self-checks and the 59-test focused bundle passed before the freeze.
+
 ### P6.E3 — Run the frozen phase, report results and authorize the next entry
 
 - **ID:** P6.E3
@@ -214,6 +216,8 @@ Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_pmb_execution_contract.py tests/test_process_native_views.py tests/test_track_i_foundation.py tests/test_pmb_program_adapter.py -q -p no:cacheprovider`.
 - **Non-goals:** rerunning/tuning the same holdout; claiming a whole L-level from one mechanism panel.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P6.E3 result record (2026-10-22):** See [`COGNITION_LINEAR_P6_RESULTS.md`](COGNITION_LINEAR_P6_RESULTS.md) for all 1,780 raw-row counts, metrics, hashes, regressions and limitations. The frozen Loopover panel measured 0/200 baseline versus 200/200 Track I on supplied 2×2 processes; the registered MBPP arms were identical at 32/240 held-out passes; controls passed 100/100. D4 and finite mechanism remain NOT_RUN in both arms. The result ledger classifies each criterion and authorizes Phase 7.01 episode-acquisition work only; it closes no L1–L7 level and does not authorize unsupported process effects.
 
 ## Phase 7 — Qualia acquired from episodes and perceptual numerosity
 
@@ -1365,4 +1369,4 @@ P3 rung-1 cache speedup remains failed. P4 C5's incremental-resolution test rema
 
 ## 7. Next executable action
 
-Continue the P6 acceptance audit, then execute P6.E1–E3 in order. Do not restart completed P4/P5 implementation or treat the committed partial I foundation as a completed capability gate. The first phase result must include a measured PMB baseline and an explicit, tested process-support matrix. Every later phase's next action is its first numbered task after the preceding results review.
+Start **P7.01**, then execute the remaining tasks in their printed order. Phase 6's limited evidence is closed in `COGNITION_LINEAR_P6_RESULTS.md`; do not treat NOT_RUN D4/mechanism panels, opaque process kinds, or the small supplied-process Loopover result as completed capability gates. Do not restart completed P4/P5 implementation. Every later phase's next action is its first numbered task after the preceding results review.
