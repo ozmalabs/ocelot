@@ -1,0 +1,1785 @@
+{
+  "id": "process_proof_adoption",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_laws"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "P14.03: proof-carrying process adoption in explicitly registered domains only. Exact current process, law, proof reference and domain identities are required. This gate does not authorize external actions.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessProofAdoptionPolicy",
+      "attrs": {
+        "name": "process_proof_adoption_policy",
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_proof_adoption_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_proof_adoption:has_process_proof_adoption_policy:Agent:ProcessProofAdoptionPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_proof_adoption_policy",
+      "tgt": {
+        "type": "ProcessProofAdoptionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_proof_adoption:requires_proof_for:ProcessProofAdoptionPolicy:ProcessProofRequirement",
+      "src": {
+        "type": "ProcessProofAdoptionPolicy",
+        "var": "src"
+      },
+      "edge_type": "requires_proof_for",
+      "tgt": {
+        "type": "ProcessProofRequirement",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_proof_adoption:applies_to:ProcessProofRequirement:ProcessDomain",
+      "src": {
+        "type": "ProcessProofRequirement",
+        "var": "src"
+      },
+      "edge_type": "applies_to",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_proof_adoption:has_process_schema:Agent:ProcessSchema",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_proof_adoption:has_process_law:Agent:ProcessLaw",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_law",
+      "tgt": {
+        "type": "ProcessLaw",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_proof_adoption:has_proof_reference:ProcessLaw:LawProofReference",
+      "src": {
+        "type": "ProcessLaw",
+        "var": "src"
+      },
+      "edge_type": "has_proof_reference",
+      "tgt": {
+        "type": "LawProofReference",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_proof_adoption:about_process:ProcessLaw:ProcessSchema",
+      "src": {
+        "type": "ProcessLaw",
+        "var": "src"
+      },
+      "edge_type": "about_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ppa_invalidate_changed_domain_epoch",
+      "area": "memory_consolidation",
+      "order": 18,
+      "latency_class": "background",
+      "comment": "A changed family/model/frame epoch invalidates an earlier adoption binding.",
+      "match": [
+        [
+          "agent",
+          "has_process_proof_adoption_policy",
+          "pol"
+        ],
+        [
+          "pol",
+          "requires_proof_for",
+          "req"
+        ],
+        [
+          "req",
+          "applies_to",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "invented"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "proof_adoption_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "proof_adopted_family"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "name"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "proof_adopted_family_digest"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "family_digest"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "proof_adopted_model_digest"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "model_digest"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "proof_adopted_source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "source_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "proof_adopted_model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "key": "proof_adopted_frame_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "frame_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "status",
+          "proof_blocked"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_status",
+          "invalidated"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_reason",
+          "domain_epoch_changed"
+        ]
+      ]
+    },
+    {
+      "name": "ppa_invalidate_changed_process_binding",
+      "area": "memory_consolidation",
+      "order": 19,
+      "latency_class": "background",
+      "comment": "A changed parameter vector or source/model/frame epoch invalidates proof-carrying adoption before the process can remain active.",
+      "match": [
+        [
+          "agent",
+          "has_process_proof_adoption_policy",
+          "pol"
+        ],
+        [
+          "pol",
+          "requires_proof_for",
+          "req"
+        ],
+        [
+          "req",
+          "applies_to",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "invented"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "proof_adoption_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "proof_adopted_params"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "params"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "status",
+          "proof_blocked"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_status",
+          "invalidated"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_reason",
+          "process_parameters_changed"
+        ]
+      ]
+    },
+    {
+      "name": "ppa_adopt_with_current_matching_proof",
+      "area": "memory_consolidation",
+      "order": 20,
+      "latency_class": "background",
+      "comment": "For explicitly registered domains, keep a process active only when its checked law proof is attached to that exact process and matches family/model/process/frame identity, constructor parameters and statement assumptions.",
+      "match": [
+        [
+          "agent",
+          "has_process_proof_adoption_policy",
+          "pol"
+        ],
+        [
+          "pol",
+          "requires_proof_for",
+          "req"
+        ],
+        [
+          "req",
+          "applies_to",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ],
+        [
+          "agent",
+          "has_process_law",
+          "law"
+        ],
+        [
+          "law",
+          "about_process",
+          "s"
+        ],
+        [
+          "law",
+          "has_proof_reference",
+          "proof"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "required"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "required_law"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "law"
+                  },
+                  "key": "claim"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "domain"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "name"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "invented"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "s"
+                  },
+                  "key": "kind"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "permutation"
+                }
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "checked"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "proven"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "claim"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "req"
+                      },
+                      "key": "required_law"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "family"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "name"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "proof_kind"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "native_structural_rule"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "proof_rule"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "parity_commutator_even_v1"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "checked"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "checker"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "process_laws_seed_v1"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "rule"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "parity_commutator_even_v1"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "family"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "name"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "family_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "family_digest"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "model_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "model_digest"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "family_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "process_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "frame_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "process_params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "s"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "statement_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "statement_digest"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proof"
+                      },
+                      "key": "assumptions_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "key": "assumptions_digest"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "status"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "active",
+                "proof_blocked"
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_status",
+          "approved"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_params",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "params"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_family",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_family_digest",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "family_digest"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_model_digest",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_digest"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_source_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "source_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_model_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adopted_frame_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "frame_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_statement_digest",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "statement_digest"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_assumptions_digest",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "law"
+              },
+              "key": "assumptions_digest"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_checker",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proof"
+              },
+              "key": "checker"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "s",
+          "external_action_authorized",
+          0
+        ]
+      ]
+    },
+    {
+      "name": "ppa_block_registered_process_without_current_proof",
+      "area": "memory_consolidation",
+      "order": 21,
+      "latency_class": "background",
+      "comment": "An invented process in a proof-required domain is excluded from active use/adoption until a matching current proof exists.",
+      "match": [
+        [
+          "agent",
+          "has_process_proof_adoption_policy",
+          "pol"
+        ],
+        [
+          "pol",
+          "requires_proof_for",
+          "req"
+        ],
+        [
+          "req",
+          "applies_to",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "s"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "required"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "invented"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "s"
+              },
+              "key": "status"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "active",
+                "proof_blocked"
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "s"
+                },
+                "key": "proof_adoption_status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "invalidated"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_law",
+                "any_type": false
+              },
+              "var_name": "law",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "In",
+                    "member": {
+                      "type": "Var",
+                      "name": "s"
+                    },
+                    "container": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "edge_type": "about_process",
+                      "any_type": false
+                    }
+                  },
+                  {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "law"
+                      },
+                      "edge_type": "has_proof_reference",
+                      "any_type": false
+                    },
+                    "var_name": "proof",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "checked"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "proven"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "claim"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "req"
+                            },
+                            "key": "required_law"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "family"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "name"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "proof_kind"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "native_structural_rule"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "proof_rule"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "parity_commutator_even_v1"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "checked"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "checker"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "process_laws_seed_v1"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "rule"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "parity_commutator_even_v1"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "family"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "name"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "family_digest"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "family_digest"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "model_digest"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "model_digest"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "family_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "source_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "process_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "source_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "model_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "model_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "frame_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "frame_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "process_params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "s"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "statement_digest"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "statement_digest"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "proof"
+                            },
+                            "key": "assumptions_digest"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "law"
+                            },
+                            "key": "assumptions_digest"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "s",
+          "status",
+          "proof_blocked"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_status",
+          "blocked"
+        ],
+        [
+          "set_attr",
+          "s",
+          "proof_adoption_reason",
+          "missing_or_mismatched_current_proof"
+        ]
+      ]
+    }
+  ]
+}

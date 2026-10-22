@@ -1106,7 +1106,7 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 
 ## Phase 14 — Laws proofs and safely authored invention operators
 
-**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.02 complete, P14.03 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
+**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.03 complete, P14.04 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
 
 Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention loop. Earlier processes retain their supported verification scope; proof requirements apply to explicitly proof-admitting domains. Bounded fingerprints do not become proofs. Operator proposals cannot modify criteria, verifier or held-out tests.
 
@@ -1160,6 +1160,8 @@ Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention l
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_proof_adoption.py tests/test_process_laws.py -q -p no:cacheprovider`.
 - **Non-goals:** requiring formal proofs in domains without a sound declared proof model.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P14.03 completion record (2026-10-22):** Added disabled-by-default proof-adoption policy and explicit `ProcessProofRequirement` registration. In a registered domain, invented permutation processes enter `proof_blocked` unless a checked `commutator_even` law and proof reference bind the exact process parameters, family/model digests, statement/assumption digests and source/model/frame epochs. Changed process parameters or domain identity epochs invalidate adoption and remove the process from active use. Domains without a requirement are unaffected. The gate sets external-action authorization to zero and leaves any pending action request untouched. Verification: P14.03 bundle — 13 passed, including no-requirement, wrong-process proof, changed-process invalidation, and external-action separation controls. This supports only the narrow P14.02 parity proof fragment.
 
 ### P14.04 — Author candidate invention operators under frozen criteria
 
