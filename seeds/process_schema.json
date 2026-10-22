@@ -1306,6 +1306,53 @@
                   "key": "order"
                 }
               }
+            },
+            "effect_evaluation": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "CapabilityProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "opaque:no_detached_effect_evaluator"
+                }
+              }
             }
           }
         ],
@@ -1820,6 +1867,53 @@
                   "key": "model_epoch"
                 }
               }
+            },
+            "effect_evaluation": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "opaque:no_detached_effect_evaluator"
+                }
+              }
             }
           }
         ],
@@ -2130,7 +2224,54 @@
                 }
               }
             },
-            "status": "active"
+            "status": "active",
+            "effect_evaluation": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "EmbodiedMotorProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "opaque:model_prediction_is_not_observed_effect"
+                }
+              }
+            }
           }
         ],
         [
@@ -2440,7 +2581,54 @@
                 }
               }
             },
-            "status": "active"
+            "status": "active",
+            "effect_evaluation": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "FamilyProgram"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Lit",
+                  "value": "opaque:no_safe_family_executor"
+                }
+              }
+            }
           }
         ],
         [

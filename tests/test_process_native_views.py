@@ -64,7 +64,7 @@ def test_process_precondition_unknown():
     assert agent.attrs(schema).get("pre") is None
 
 
-def test_program_view_rejects_stale_source_epoch():
+def test_source_epoch_invalidates_view():
     agent, source, schema, _ = _program_agent()
     agent.s.set_attr(source, "source_epoch", 2)
     result = agent.s._inner.evaluate(
@@ -73,6 +73,50 @@ def test_program_view_rejects_stale_source_epoch():
         {"process": schema, "state": {"x": 9}},
     )
     assert result is None
+
+
+def test_capability_view_matches_native():
+    agent, _, _, _ = _program_agent()
+    source = agent.s.add_node("CapabilityProgram", {"order": 2, "model_epoch": 7})
+    agent.run(max_ticks=20)
+    view = next(s for s in agent.schemas("native:CapabilityProgram")
+                if agent.attrs(s).get("realised_by") == source)
+    assert agent.attrs(view)["effect_evaluation"] == "opaque:no_detached_effect_evaluator"
+    result = agent.s._inner.evaluate(
+        {"type": "ProcessApply", "p": {"type": "Var", "name": "process"},
+         "state": {"type": "Var", "name": "state"}},
+        {"process": view, "state": {"capability": "x"}},
+    )
+    assert result is None
+
+
+def test_motor_family_model_view():
+    agent, _, _, _ = _program_agent()
+    motor = agent.s.add_node("EmbodiedMotorProgram", {"model_epoch": 4, "predicted_forward": 1.0})
+    family = agent.s.add_node("FamilyProgram", {"family_epoch": 2, "name": "authored"})
+    agent.run(max_ticks=20)
+    for source, kind, reason in (
+        (motor, "native:EmbodiedMotorProgram", "opaque:model_prediction_is_not_observed_effect"),
+        (family, "native:FamilyProgram", "opaque:no_safe_family_executor"),
+    ):
+        view = next(s for s in agent.schemas(kind) if agent.attrs(s).get("realised_by") == source)
+        assert agent.attrs(view)["effect_evaluation"] == reason
+        result = agent.s._inner.evaluate(
+            {"type": "ProcessApply", "p": {"type": "Var", "name": "process"},
+             "state": {"type": "Var", "name": "state"}},
+            {"process": view, "state": {"state": "start"}},
+        )
+        assert result is None
+
+
+def test_unsupported_model_stays_opaque():
+    agent, _, _, _ = _program_agent()
+    source = agent.s.add_node("EmbodiedMotorProgram", {"model_epoch": 4})
+    agent.run(max_ticks=20)
+    view = next(s for s in agent.schemas("native:EmbodiedMotorProgram")
+                if agent.attrs(s).get("realised_by") == source)
+    assert agent.attrs(view)["post"] is None
+    assert agent.attrs(view)["effect_evaluation"].startswith("opaque:")
 
 
 def test_apply_has_no_external_effect():

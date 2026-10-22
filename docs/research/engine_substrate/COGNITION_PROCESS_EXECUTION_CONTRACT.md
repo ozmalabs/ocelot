@@ -55,3 +55,20 @@ The implementation tasks after this spec must establish, without changing the fr
 - raw scorecards distinguish unsupported, not-run, timeout, failure, and measured outcome and preserve the scorer/agent evidence boundary.
 
 These are mechanism/conformance criteria. Passing them does not establish a human-level PMB capability or close any L1–L7 claim.
+
+## P6.03–P6.04 implementation reconciliation (2026-10-22)
+
+The frozen semantics above remain unchanged. The implementation now delegates a `ProcessSchema` whose `realised_by` source is a single `Program.ir_subgraph` to the existing native `ProgEval` interpreter with a 10,000-step fuel cap and no oracle bindings. It requires a numeric `source_epoch` copied onto the view and equal to the live Program epoch; absent, ambiguous, malformed, or stale roots return `None`. The result is a detached prediction only. `pre=None` remains unknown, and ProcessApply cannot establish that the process is applicable.
+
+The remaining support disposition is explicit:
+
+| Source | P6 implementation status | Evidence boundary |
+|---|---|---|
+| `DimensionGenerator` | Existing exact native apply for supported generator kinds | Compare against `shape_decode`; probe fingerprints remain finite and separately exactness-gated. |
+| `Program` | Native detached `ProgEval` for one versioned reflected IR root | Fuel-bounded, no oracles, no graph mutation; stale epoch fails closed. |
+| `TransitionHypothesis` | `UNSUPPORTED` for ProcessApply | Planner/manifold rules can project supported numeric model fields, but no general finite state-effect executor exists. Model predictions are not observations. |
+| `CapabilityProgram` | `UNSUPPORTED` for ProcessApply | Capability boundary/practice judgments do not describe a detached state effect. |
+| `EmbodiedMotorProgram` | `UNSUPPORTED` for ProcessApply | Motor-composition model predictions do not establish physical outcomes or authorize emission. |
+| `FamilyProgram` | `UNSUPPORTED` for ProcessApply | No safe detached family executor; authorship rules remain the only execution path. |
+
+The view generator carries `source_epoch` for Program and `model_epoch` for transition hypotheses. Capability, motor, and family views expose `effect_evaluation=opaque:<reason>` so a missing evaluator is inspectable rather than mistaken for an identity effect. This reconciliation is limited evidence; it does not close the full six-form view, epoch-refresh, funding, or collision-safe adoption gates.
