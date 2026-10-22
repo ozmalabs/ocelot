@@ -225,7 +225,8 @@ def run(split="development", n=200, self_check=False):
             for arm in ("operators_on", "operators_off", "held_only"):
                 rows.append(control_trial(seed, arm))
     return {"schema": "pmb-scorecard-v1", "metadata": {
-        **provenance(), "split": split, "registered_draw": not self_check,
+        **provenance(), "split": split,
+        "registered_draw": (split == "heldout" and not self_check),
         "n_records": len(rows)}, "records": rows}
 
 
