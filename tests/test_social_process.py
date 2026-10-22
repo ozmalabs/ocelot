@@ -174,6 +174,59 @@ def test_own_grounding_requires_owned_authorized_action_and_matching_sink_receip
     assert agent.s.node(schema)["attrs"]["own_trial_receipt_id"] == "social-own"
 
 
+def test_reward_only_acquisition_requires_rewarded_owned_trial_and_native_validation():
+    agent = _agent()
+    s = agent.s
+    model = s.add_node("ProcessSchema", {
+        "name": "reward-model", "kind": "sequence", "domain": "reward",
+        "operator": "apply", "binding": "increment", "params": ["seq", ["add", [1]]],
+        "status": "active", "source_epoch": 4, "model_epoch": 7,
+        "frame_epoch": 9})
+    s.add_edge(agent.ag, "has_process_schema", model, {})
+    action = s.add_node("ActionRequest", {
+        "request_id": "reward-own-action", "actor_id": "agent-root",
+        "source_epoch": 4, "status": "emitted", "action_key": "apply",
+        "sink_receipt_id": "sink:reward-own"})
+    authorization = s.add_node("ActionAuthorization", {
+        "request_id": "reward-own-action", "source_epoch": 4,
+        "status": "consumed", "action_key": "apply"})
+    s.add_edge(agent.ag, "has_action_request", action, {})
+    s.add_edge(action, "has_action_authorization", authorization, {})
+    feedback = s.add_node("RewardProcessFeedback", {
+        "feedback_id": "reward-feedback-1", "status": "observed",
+        "actual_own_trial": True, "outcome": "rewarded", "reward_value": 1.0,
+        "owner_id": "agent-root", "source_epoch": 4, "model_epoch": 7,
+        "sink_receipt_id": "sink:reward-own"})
+    s.add_edge(agent.ag, "has_reward_process_feedback", feedback, {})
+    s.add_edge(feedback, "uses_process_model", model, {})
+    s.add_edge(feedback, "binds_action_request", action, {})
+    intake = _request(agent, requester_kind="reward_process_acquisition",
+                      source_key="reward-feedback-1", source_epoch=4,
+                      identity_key="feedback_id", identity="reward-feedback-1")
+    _tick(agent)
+    candidates = s.nodes("RewardProcessCandidate")
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert s.node(candidate)["attrs"]["provenance"] == "rewarded_actual_own_trial"
+    validation = _request(agent, requester_kind="reward_process_validation",
+                          source_key="validate:reward-feedback-1", source_epoch=4,
+                          identity_key="candidate_id",
+                          identity=s.node(candidate)["attrs"]["candidate_id"])
+    s.add_edge(candidate, "has_validation_request", validation, {})
+    receipt = s.add_node("RewardProcessVerification", {
+        "candidate_id": s.node(candidate)["attrs"]["candidate_id"],
+        "verification_kind": "native_process_effect", "status": "verified",
+        "exact_effect_match": True, "source_epoch": 4, "model_epoch": 7,
+        "receipt_id": "reward-validation-1"})
+    s.add_edge(candidate, "has_verification", receipt, {})
+    _tick(agent)
+    schemas = s.nodes("RewardProcessSchema")
+    assert len(schemas) == 1
+    assert s.node(schemas[0])["attrs"]["status"] == "verified"
+    assert s.node(candidate)["attrs"]["status"] == "adopted"
+    assert s.node(intake)["attrs"]["terminal_status"] == "completed"
+
+
 def test_wrong_interpretation_counterexample_revises():
     agent = _agent()
     _message, model, _intake = _instruction(agent)
