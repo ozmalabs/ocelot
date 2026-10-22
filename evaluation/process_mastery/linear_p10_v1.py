@@ -224,7 +224,7 @@ def run(*, split: str, n: int = 200, self_check=False):
                 "seed_blocks": {k: {"start": v[0] - 11_000_000 + offset,
                                      "count": v[1] if not self_check else 1}
                                 for k, v in BLOCKS.items()},
-                "unsupported": {"tool_goal": "no registered tool-action world/sink adapter",
+                "limitations": {"tool_goal": "graph-internal simulator only; no external action sink",
                                 "sliding": "state-dependent legal action precondition unsupported",
                                 "baseline": "no Track-I-free native process solver",
                                 "primitive_search": "no receipt-backed transition adapter"},
