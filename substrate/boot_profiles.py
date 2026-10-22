@@ -840,6 +840,7 @@ COGNITION_ON_SEEDS = (
     # P19 bounded expression and opt-in lifted strategy search; both policies
     # remain disabled until a phase-specific evaluation enables them.
     "open_process_search",
+    "open_process_adoption",
     # P11 frame search and exact process transfer remain opt-in at policy level.
     "representation_search",
     "process_transfer",

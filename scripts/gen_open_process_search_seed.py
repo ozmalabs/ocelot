@@ -13,7 +13,7 @@ if str(ROOT / "scripts") not in sys.path:
 from track_i_seed_lib import (  # noqa: E402
     A, And, Count, Eq, Exists, Gt, IfThenElse, L, Lt, N, Not, OFFLINE_AREA,
     ONLINE_AREA, PApply, PCompose, PFingerprint, PInverse, PPower, Plus, T, Times,
-    Vec, is_none, not_none, policy_on, productions, rule,
+    StringConcat, Vec, is_none, not_none, policy_on, productions, rule,
 )
 
 SEED_ID = "open_process_search"
@@ -75,6 +75,8 @@ def _expression_rule(operator, order):
             "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
             "guard_state": T(A("task", "initial_state")), "subgoal_state": T(subgoal),
             "effect_digest": T(PFingerprint(params, A("d", "probes"))),
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending",
             "domain": T(A("d", "name")), "kind": T(A("d", "kind")),
             "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
@@ -103,6 +105,7 @@ def _expression_rule(operator, order):
                        Eq(A("old", "expression_key"), A("attempt", "expression_key"))))),
         [["add_node", "candidate", "OpenProcessCandidate", {
             "expression_key": T(A("attempt", "expression_key")),
+            "expression_digest": T(A("attempt", "expression_digest")),
             "expression_tree": T(A("attempt", "expression_tree")),
             "params": T(A("attempt", "params")),
             "effect_digest": T(A("attempt", "effect_digest")),

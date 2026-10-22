@@ -158,6 +158,9 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
     search_policy = _nodes(agent, "OpenProcessSearchPolicy")
     assert len(search_policy) == 1
     assert agent.s.node(search_policy[0])["attrs"].get("enabled") == 0.0
+    adoption_policy = _nodes(agent, "OpenProcessAdoptionPolicy")
+    assert len(adoption_policy) == 1
+    assert agent.s.node(adoption_policy[0])["attrs"].get("enabled") == 0.0
     strategy_policy = _nodes(agent, "StrategyDiscoveryPolicy")
     assert len(strategy_policy) == 1
     assert agent.s.node(strategy_policy[0])["attrs"].get("allow_lift") == 0.0
