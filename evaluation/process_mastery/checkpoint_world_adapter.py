@@ -108,6 +108,36 @@ def score_unapproved_candidate_on_validation(agent, candidate: int,
             "result_state": result}
 
 
+def score_unapproved_candidate_validation_panel(agent, candidate: int,
+                                                 worlds: list[dict]) -> dict:
+    """Report every outcome for one proposal over a common generated validation panel."""
+    if not worlds:
+        raise ValueError("at least one validation world is required")
+    world_ids = [world.get("world_id") for world in worlds]
+    if any(not world_id for world_id in world_ids) or len(world_ids) != len(set(world_ids)):
+        raise ValueError("validation world IDs must be present and unique")
+    families = {world.get("family") for world in worlds}
+    if len(families) != 1:
+        raise ValueError("one candidate validation panel must use exactly one family")
+    outcomes = [score_unapproved_candidate_on_validation(agent, candidate, world)
+                for world in worlds]
+    attrs = agent.s.node(candidate)["attrs"]
+    payload = {"schema": "p22_unapproved_candidate_validation_panel_v1",
+        "candidate_id": str(candidate), "expression_digest": attrs["expression_digest"],
+        "family": next(iter(families)), "world_ids": world_ids,
+        "scores": [outcome["score"] for outcome in outcomes]}
+    panel_digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    return {"status": "nonactionable_validation_panel_scored",
+        "actionable": False, "approval_created": False,
+        "world_receipts_created": False, "candidate_id": str(candidate),
+        "expression_digest": attrs["expression_digest"],
+        "family": next(iter(families)), "split": "validation",
+        "world_count": len(outcomes), "successes": sum(x["score"] for x in outcomes),
+        "mean_score": sum(x["score"] for x in outcomes) / len(outcomes),
+        "panel_digest": panel_digest, "outcomes": outcomes}
+
+
 @dataclass(frozen=True)
 class CheckpointExpression:
     checkpoint_id: str

@@ -2177,6 +2177,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 **P22 generator and proposal-validation update (2026-10-23):** The combined P22 suite now passes 116 tests. New v2 world generators preserve the v1 candidate packet while providing varied independent-goal development worlds. A read-only verifier scores a digest-attested, training-derived unapproved candidate only against the exact answer-free v2 validation view; it rejects held-out worlds, hidden evaluator fields, guard mismatches, tampered candidates, and candidates already on approval/action paths. This is proposal-generalization support, not an approved checkpoint or a held-out result.
 
+**P22 validation panel reader (2026-10-23):** Added a read-only batch scorer for one unapproved training proposal over a common v2 validation panel. It rejects empty/duplicate IDs and mixed families, verifies each generated answer-free world view, and returns every per-world outcome with a reproducible panel digest. It creates no approval or receipt and chooses no candidate. This develops the evaluation adapter only; it does not replace the four matched learner arms or establish efficacy.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1

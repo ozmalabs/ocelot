@@ -8,6 +8,7 @@ from evaluation.process_mastery.native_process_execution import params_digest
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointWorldAdapter, capture_adopted_checkpoint,
     capture_held_process_checkpoint, score_unapproved_candidate_on_validation,
+    score_unapproved_candidate_validation_panel,
 )
 from evaluation.process_mastery.independent_worlds import (
     agent_view, generate_d4_world, generate_d4_world_v2,
@@ -311,6 +312,16 @@ def test_unapproved_training_candidate_scores_only_on_answer_free_validation_vie
     assert result["approval_created"] is False
     assert result["world_receipt_created"] is False
     assert result["split"] == "validation"
+    panel_worlds = [agent_view(generate_d4_world_v2(split="validation", draw=i))
+                    for i in range(16)]
+    panel = score_unapproved_candidate_validation_panel(agent, candidate, panel_worlds)
+    assert panel["status"] == "nonactionable_validation_panel_scored"
+    assert panel["world_count"] == 16
+    assert panel["successes"] == sum(row["score"] for row in panel["outcomes"])
+    assert len({row["world_id"] for row in panel["outcomes"]}) == 16
+    assert panel["panel_digest"]
+    assert panel["approval_created"] is False
+    assert panel["world_receipts_created"] is False
     assert agent.native.neighbours(candidate, "approved_by_open_process_adoption") == []
     assert agent.native.neighbours(candidate, "has_world_execution_receipt") == []
     try:
