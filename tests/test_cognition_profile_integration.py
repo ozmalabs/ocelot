@@ -1032,6 +1032,79 @@ def test_p8_shared_budget():
     assert enabled[0] in list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
     agent.close()
 
+
+def _p20_add_target_transition(agent, index, after, *, model_epoch=2):
+    s, ag = agent.s, agent.agent
+    common = {"owner_id": "p20-owner", "episode_id": f"p20-episode-{index}",
+              "event_id": f"p20-event-{index}", "source_epoch": 3,
+              "model_epoch": model_epoch, "frame_epoch": 5, "status": "observed"}
+    obs = s.add_node("TransitionObservation", {
+        **common, "object_id": f"widget-{index}", "object_type": "Widget",
+        "action_kind": "warm", "feature_key": "temperature",
+        "before_value": "cold", "after_value": after})
+    action = s.add_node("TransitionActionReceipt", dict(common))
+    outcome = s.add_node("TransitionOutcomeReceipt", dict(common))
+    agent.s.add_edge(ag, "has_transition_observation", obs, {})
+    agent.s.add_edge(obs, "has_action_receipt", action, {})
+    agent.s.add_edge(obs, "has_outcome_receipt", outcome, {})
+
+
+def _p20_learned_profile(after="warm"):
+    agent = boot_cognition_on()
+    for policy in _nodes(agent, "ModelLearningPolicy"):
+        agent.s.set_attr(policy, "enabled", 1.0)
+    _p20_add_target_transition(agent, 1, after)
+    _p20_add_target_transition(agent, 2, after)
+    for _ in range(40):
+        if not agent.inner.run_rules(2000):
+            break
+    query = agent.s.add_node("ProcessPredictionQuery", {
+        "query_id": "p20-unseen-binding", "owner_id": "p20-owner",
+        "object_id": "widget-new", "object_type": "Widget", "action_kind": "warm",
+        "feature_key": "temperature", "before_value": "cold", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5, "status": "pending"})
+    agent.s.add_edge(agent.agent, "has_process_prediction_query", query, {})
+    for _ in range(20):
+        if not agent.inner.run_rules(2000):
+            break
+    predictions = agent.s.nodes("ProcessPrediction")
+    return agent, [agent.s.node(node)["attrs"] for node in predictions]
+
+
+def test_p20_native_causal_chain():
+    agent, predictions = _p20_learned_profile()
+    assert len(agent.s.nodes("ProcessInductionHypothesis")) == 1
+    assert len(predictions) == 1
+    assert predictions[0]["expected_after_value"] == "warm"
+    agent.close()
+
+
+def test_p20_state_perturbation_changes_execution():
+    warm_agent, warm = _p20_learned_profile("warm")
+    hot_agent, hot = _p20_learned_profile("hot")
+    assert warm[0]["expected_after_value"] == "warm"
+    assert hot[0]["expected_after_value"] == "hot"
+    warm_agent.close()
+    hot_agent.close()
+
+
+def test_p20_default_isolation():
+    agent = boot_cognition_on()
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "ModelLearningPolicy"))
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "SocialProcessPolicy"))
+    agent.close()
+
+
+def test_p20_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    assert budgets[0] in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+    agent.close()
+
 def test_p5_stop_at_native_sink():
     from tests.test_response_inhibition_migrated import _native_graph, _request, _tick
     substrate, agent = _native_graph(enabled=True)
