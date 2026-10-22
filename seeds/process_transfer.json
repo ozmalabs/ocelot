@@ -123,6 +123,42 @@
       }
     },
     {
+      "provenance": "seed:process_transfer:transfers_source_schema:RepresentationProposal:ProcessSchema",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "transfers_source_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:transfers_to_domain:RepresentationProposal:ProcessDomain",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "transfers_to_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_transfer:uses_transfer_map:RepresentationProposal:RepresentationMap",
+      "src": {
+        "type": "RepresentationProposal",
+        "var": "src"
+      },
+      "edge_type": "uses_transfer_map",
+      "tgt": {
+        "type": "RepresentationMap",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:process_transfer:has_process_schema:Agent:ProcessSchema",
       "src": {
         "type": "Agent",
@@ -136,6 +172,556 @@
     }
   ],
   "rules": [
+    {
+      "name": "pt_compose_candidate_with_native_process_algebra",
+      "area": "process_transfer",
+      "order": 0,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_process_transfer_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_representation_proposal",
+          "proposal"
+        ],
+        [
+          "proposal",
+          "transfers_source_schema",
+          "source"
+        ],
+        [
+          "proposal",
+          "transfers_to_domain",
+          "target"
+        ],
+        [
+          "proposal",
+          "uses_transfer_map",
+          "map"
+        ],
+        [
+          "ag",
+          "has_thinking_budget_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "adopted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "package_cost_complete"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "is_bijection"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "inverse_verified"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ProcessInverse",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "map"
+                },
+                "key": "forward_map"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "inverse_map"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ProcessInverse",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "map"
+                },
+                "key": "inverse_map"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "forward_map"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "target_frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_transfer"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "debited_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "target"
+              },
+              "key": "probe_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_process_transfer_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "candidate_id"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "candidate_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "->"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "target"
+                      },
+                      "key": "name"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "ProcessTransferCandidate",
+          {
+            "candidate_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "proposal"
+                    },
+                    "key": "candidate_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "->"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "target"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "status": "candidate",
+            "map_direction": "source_to_target",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "target_frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "target_probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "target"
+                },
+                "key": "probe_epoch"
+              }
+            },
+            "search_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "debited_epoch"
+              }
+            },
+            "nonconjugate": false,
+            "wrong_frame": false,
+            "complete_separating_set": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "map"
+                },
+                "key": "complete_separating_set"
+              }
+            },
+            "target_process_name": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "transfer:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "source"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "composed_target_program": {
+              "__term__": {
+                "type": "ProcessCompose",
+                "a": {
+                  "type": "ProcessCompose",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "map"
+                    },
+                    "key": "inverse_map"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "source"
+                    },
+                    "key": "params"
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "map"
+                  },
+                  "key": "forward_map"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_process_transfer_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "maps_source_schema",
+          "source",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "targets_domain",
+          "target",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "uses_frame_map",
+          "map",
+          {}
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "funded_by_request",
+          "request",
+          {}
+        ]
+      ]
+    },
     {
       "name": "pt_adopt_only_fresh_exact_target_verified_candidate",
       "area": "process_transfer",
@@ -324,6 +910,50 @@
             "b": {
               "type": "Lit",
               "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ProcessInverse",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "map"
+                },
+                "key": "forward_map"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "inverse_map"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ProcessInverse",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "map"
+                },
+                "key": "inverse_map"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "forward_map"
             }
           },
           {

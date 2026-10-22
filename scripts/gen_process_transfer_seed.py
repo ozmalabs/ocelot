@@ -17,6 +17,19 @@ def T(v): return {"__term__": v}
 def Eq(a, b): return {"type": "Eq", "a": a, "b": b}
 def And(*xs): return {"type": "And", "items": list(xs)}
 def N(n, e): return {"type": "Neighbours", "node": V(n), "edge_type": e, "any_type": False}
+def Exists(src, var, pred): return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
+def Not(x): return {"type": "Not", "arg": x}
+def Concat(*xs): return {"type": "StringConcat", "parts": list(xs)}
+
+
+def conjugate_term():
+    # Native convention is "a then b", so inverse-map -> source process -> map.
+    inv = {"type": "Attr", "node": V("map"), "key": "inverse_map"}
+    source = {"type": "Attr", "node": V("source"), "key": "params"}
+    forward = {"type": "Attr", "node": V("map"), "key": "forward_map"}
+    return {"type": "ProcessCompose",
+            "a": {"type": "ProcessCompose", "a": inv, "b": source},
+            "b": forward}
 
 
 def build_seed():
@@ -28,6 +41,9 @@ def build_seed():
         ("ProcessTransferCandidate", "uses_frame_map", "RepresentationMap"),
         ("ProcessTransferCandidate", "has_target_verification", "ProcessTransferVerification"),
         ("ProcessTransferCandidate", "funded_by_request", "ThinkingBudgetRequest"),
+        ("RepresentationProposal", "transfers_source_schema", "ProcessSchema"),
+        ("RepresentationProposal", "transfers_to_domain", "ProcessDomain"),
+        ("RepresentationProposal", "uses_transfer_map", "RepresentationMap"),
         ("Agent", "has_process_schema", "ProcessSchema"),
     ]
     rule = {
@@ -50,6 +66,10 @@ def build_seed():
                       Eq(A("candidate", "map_direction"), L("source_to_target")),
                       Eq(A("map", "is_bijection"), L(True)),
                       Eq(A("map", "inverse_verified"), L(True)),
+                      Eq({"type": "ProcessInverse", "a": A("map", "forward_map")},
+                         A("map", "inverse_map")),
+                      Eq({"type": "ProcessInverse", "a": A("map", "inverse_map")},
+                         A("map", "forward_map")),
                       Eq(A("map", "source_epoch"), A("candidate", "source_epoch")),
                       Eq(A("map", "target_frame_epoch"), A("candidate", "target_frame_epoch")),
                       Eq(A("candidate", "source_epoch"), A("source", "source_epoch")),
@@ -79,6 +99,53 @@ def build_seed():
                     ["add_edge", "ag", "has_process_schema", "transferred", {}],
                     ["set_attr", "candidate", "status", "adopted"]]
     }
+    candidate_rule = {
+        "name": "pt_compose_candidate_with_native_process_algebra",
+        "area": AREA, "order": 0, "latency_class": "hard_realtime", "batch": False,
+        "match": [["ag", "has_process_transfer_policy", "pol"],
+                  ["ag", "has_representation_proposal", "proposal"],
+                  ["proposal", "transfers_source_schema", "source"],
+                  ["proposal", "transfers_to_domain", "target"],
+                  ["proposal", "uses_transfer_map", "map"],
+                  ["ag", "has_thinking_budget_request", "request"],
+                  ["request", "draws_on_thinking_budget", "budget"]],
+        "where": And(Eq(A("pol", "enabled"), L(1.0)),
+                      Eq(A("proposal", "status"), L("adopted")),
+                      Eq(A("proposal", "package_cost_complete"), L(True)),
+                      Eq(A("map", "is_bijection"), L(True)),
+                      Eq(A("map", "inverse_verified"), L(True)),
+                      Eq({"type": "ProcessInverse", "a": A("map", "forward_map")},
+                         A("map", "inverse_map")),
+                      Eq({"type": "ProcessInverse", "a": A("map", "inverse_map")},
+                         A("map", "forward_map")),
+                      Eq(A("map", "source_epoch"), A("proposal", "source_epoch")),
+                      Eq(A("map", "target_frame_epoch"), A("proposal", "frame_epoch")),
+                      Eq(A("source", "source_epoch"), A("proposal", "source_epoch")),
+                      Eq(A("source", "model_epoch"), A("proposal", "model_epoch")),
+                      Eq(A("source", "frame_epoch"), A("proposal", "frame_epoch")),
+                      Eq(A("request", "requester_kind"), L("process_transfer")),
+                      Eq(A("request", "status"), L("approved")),
+                      Eq(A("request", "debited_epoch"), A("target", "probe_epoch")),
+                      Not(Exists(N("ag", "has_process_transfer_candidate"), "old",
+                                 Eq(A("old", "candidate_id"),
+                                    Concat(A("proposal", "candidate_id"), L("->"), A("target", "name")))))),
+        "effects": [["add_node", "candidate", "ProcessTransferCandidate", {
+            "candidate_id": T(Concat(A("proposal", "candidate_id"), L("->"), A("target", "name"))),
+            "status": "candidate", "map_direction": "source_to_target",
+            "source_epoch": T(A("proposal", "source_epoch")),
+            "model_epoch": T(A("proposal", "model_epoch")),
+            "target_frame_epoch": T(A("proposal", "frame_epoch")),
+            "target_probe_epoch": T(A("target", "probe_epoch")),
+            "search_epoch": T(A("request", "debited_epoch")),
+            "nonconjugate": False, "wrong_frame": False,
+            "complete_separating_set": T(A("map", "complete_separating_set")),
+            "target_process_name": T(Concat(L("transfer:"), A("source", "name"))),
+            "composed_target_program": T(conjugate_term())}],
+                    ["add_edge", "ag", "has_process_transfer_candidate", "candidate", {}],
+                    ["add_edge", "candidate", "maps_source_schema", "source", {}],
+                    ["add_edge", "candidate", "targets_domain", "target", {}],
+                    ["add_edge", "candidate", "uses_frame_map", "map", {}],
+                    ["add_edge", "candidate", "funded_by_request", "request", {}]]}
     return {"id": "process_transfer", "version": "1.0.0",
             "depends_on": ["process_schema", "process_lifting", "representation_search"],
             "self_load_only": True, "area": AREA,
@@ -92,7 +159,7 @@ def build_seed():
             "productions": [{"provenance": f"seed:{AREA}:{edge}:{src}:{tgt}",
                              "src": {"type": src, "var": "src"}, "edge_type": edge,
                              "tgt": {"type": tgt, "var": "tgt"}} for src, edge, tgt in relations],
-            "rules": [rule]}
+            "rules": [candidate_rule, rule]}
 
 
 def main():

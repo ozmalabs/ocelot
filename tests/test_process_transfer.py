@@ -144,3 +144,41 @@ def test_graph_rule_rejects_wrong_frame_even_with_receipt():
         s.tick(1000)
     assert not [n for n in s.nodes("ProcessSchema")
                 if s.node(n)["attrs"].get("provenance") == "verified_process_transfer"]
+
+
+def test_graph_rule_composes_transfer_candidate_natively():
+    agent = Agent(extra_seeds=("process_transfer",),
+                  policy_overrides={"ProcessTransferPolicy": {"enabled": 1.0}})
+    s, ag = agent.s, agent.ag
+    f, f_inv = [2, 0, 1], [1, 2, 0]
+    source = s.add_node("ProcessSchema", {"name": "source-rot", "kind": "permutation",
+                                          "params": [1, 0, 2], "source_epoch": 2,
+                                          "model_epoch": 1, "frame_epoch": 3})
+    target = s.add_node("ProcessDomain", {"name": "target-domain", "kind": "permutation",
+                                         "probe_epoch": 4})
+    fmap = s.add_node("RepresentationMap", {"forward_map": f, "inverse_map": f_inv,
+                                             "is_bijection": True, "inverse_verified": True,
+                                             "complete_separating_set": True,
+                                             "source_epoch": 2, "target_frame_epoch": 3})
+    proposal = s.add_node("RepresentationProposal", {
+        "candidate_id": "repr-1", "status": "adopted", "package_cost_complete": True,
+        "source_epoch": 2, "model_epoch": 1, "frame_epoch": 3})
+    request = s.add_node("ThinkingBudgetRequest", {"requester_kind": "process_transfer",
+                                                    "status": "approved", "debited_epoch": 4})
+    for node, edge in ((source, "transfers_source_schema"),
+                       (target, "transfers_to_domain"), (fmap, "uses_transfer_map")):
+        s.add_edge(proposal, edge, node, {})
+    s.add_edge(ag, "has_representation_proposal", proposal, {})
+    s.add_edge(ag, "has_thinking_budget_request", request, {})
+    s.add_edge(request, "draws_on_thinking_budget", s.nodes("ThinkingBudget")[0], {})
+    for _ in range(5):
+        s.tick(1000)
+    candidates = list(s.neighbours(ag, "has_process_transfer_candidate"))
+    assert len(candidates) == 1
+    attrs = s.node(candidates[0])["attrs"]
+    assert attrs["composed_target_program"] == [2, 1, 0]
+    out = agent.native.evaluate(
+        {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+         "state": {"type": "Var", "name": "state"}},
+        {"p": attrs["composed_target_program"], "state": [0, 1, 2]})
+    assert out == [2, 1, 0]
