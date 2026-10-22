@@ -6,11 +6,37 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[2]
 ARMS = {"held_operator", "authored_operator"}
 STATUSES = {"NOT_RUN", "UNSUPPORTED", "TIMEOUT", "FAILED", "COMPLETED"}
+PREREG = ROOT / "docs/research/engine_substrate/COGNITION_LINEAR_P14_PREREG.md"
+FROZEN_COMPONENTS = {
+    "Source bundle": "source_bundle_sha256", "P14 runner": "runner_sha256",
+    "Analyzer": "analyzer_sha256", "Cognition-on profile": "profile_sha256",
+    "World adapter": "world_adapter_sha256", "Engine source": "engine_source_sha256",
+    "Native engine binary": "engine_binary_sha256", "P14 protocol bundle": "protocol_bundle_sha256",
+}
 
 
-def analyze(payload):
+def frozen_hashes():
+    if not PREREG.is_file():
+        raise ValueError("frozen P14 preregistration is missing")
+    out = {}
+    for line in PREREG.read_text().splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) != 2 or cells[0] not in FROZEN_COMPONENTS:
+            continue
+        value = cells[1].strip("`")
+        if len(value) == 64 and all(char in "0123456789abcdef" for char in value):
+            out[FROZEN_COMPONENTS[cells[0]]] = value
+    if len(out) != len(FROZEN_COMPONENTS):
+        raise ValueError("P14 preregistration has an incomplete component hash table")
+    return out
+
+
+def analyze(payload, *, verify_fingerprints=True):
     if payload.get("schema") != "pmb-scorecard-v1":
         raise ValueError("expected pmb-scorecard-v1")
     rows = payload.get("records")
@@ -33,6 +59,7 @@ def analyze(payload):
         for group in paired.values())
     world_hash_mismatches = access_hash_mismatches = input_audit_failures = 0
     invariant_failures = status_failures = 0
+    work_accounting_failures = 0
     for group in paired.values():
         world_hash_mismatches += len({r.get("world_sha256") for r in group}) != 1
         access_hash_mismatches += len({r.get("world_access_sha256") for r in group}) != 1
@@ -43,6 +70,9 @@ def analyze(payload):
             or not r.get("world_sha256") or not r.get("world_access_sha256")
             for r in group)
         status_failures += sum(r.get("status") != "COMPLETED" for r in group)
+        work_accounting_failures += sum(
+            int(r.get("agent_work_units", -1)) != (1 if r.get("profile") == "held_operator" else 4)
+            for r in group)
         invariant_failures += sum(int(r.get("invariant_checks_passed", 0)) != 1
                                   for r in group if r.get("profile") == "authored_operator")
         status_by_arm = {r.get("profile"): r for r in group}
@@ -56,7 +86,8 @@ def analyze(payload):
         for r in laws)
     law_missing_checks = sum(
         r.get("expected_status") == "checked" and
-        (r.get("actual_status") != "checked" or r.get("proof_reference_count") != 1 or not r.get("correct"))
+        (r.get("actual_status") != "checked" or r.get("proof_reference_count") != 1
+         or not r.get("proof_binding_valid") or not r.get("correct"))
         for r in laws)
     law_counterexample_failures = sum(
         r.get("expected_status") == "rejected" and not r.get("counterexample_validated") for r in laws)
@@ -68,11 +99,31 @@ def analyze(payload):
     required_candidate_n = 200 if heldout else int(allocation.get("candidate_operator_cases", 0))
     required_law_n = 200 if heldout else int(allocation.get("law_cases", 0))
     required_control_n = 100 if heldout else int(allocation.get("proof_criterion_tampering_controls", 0))
+    expected_law_kinds = Counter({"valid_structural": required_law_n // 2,
+                                  "false_finite_sample": required_law_n // 2})
+    law_kind_counts = Counter(r.get("claim_kind") for r in laws)
     allocation_failures = int(
         len(paired) != required_candidate_n or len(laws) != required_law_n
         or len(controls) != required_control_n or proof_controls != required_control_n // 2
         or criterion_controls != required_control_n // 2
+        or law_kind_counts != expected_law_kinds
         or any(len(group) != 2 for group in paired.values()))
+    if heldout:
+        allocation_failures += int(
+            {r.get("seed") for r in operators} != set(range(14_100_000, 14_100_200))
+            or {r.get("seed") for r in laws} != set(range(14_120_000, 14_120_200))
+            or {r.get("seed") for r in controls} != set(range(14_140_000, 14_140_100)))
+    provenance = payload.get("metadata", {}).get("artifact_provenance", {})
+    provenance_mismatches = (sum(provenance.get(key) != expected
+                                 for key, expected in frozen_hashes().items())
+                             if verify_fingerprints else 0)
+    if verify_fingerprints and not provenance:
+        provenance_mismatches = len(FROZEN_COMPONENTS)
+    input_audit_failures += sum(
+        not r.get("input_audit", {}).get("hidden_truth_label_absent")
+        or not r.get("input_audit", {}).get("answer_fields_absent")
+        for r in laws)
+    action_failures = sum(int(r.get("actions", r.get("world_actions", 0))) != 0 for r in rows)
 
     base_success = sum(bool(r.get("solved")) for r in operators if r.get("profile") == "held_operator")
     authored_success = sum(bool(r.get("solved")) for r in operators if r.get("profile") == "authored_operator")
@@ -87,8 +138,9 @@ def analyze(payload):
                              and development.get("candidate_work", 10**9) <= 32)
     integrity = (missing_or_duplicate_pairs + world_hash_mismatches + access_hash_mismatches
                  + input_audit_failures + invariant_failures + status_failures
+                 + work_accounting_failures
                  + law_false_proofs + law_missing_checks + law_counterexample_failures
-                 + control_failures + allocation_failures)
+                 + control_failures + allocation_failures + provenance_mismatches + action_failures)
     operator_status = "PASS" if integrity == 0 and development_qualified and gain is not None and gain >= 0.20 else "FAIL"
     law_status = "PASS" if not (law_false_proofs + law_missing_checks + law_counterexample_failures + allocation_failures) else "FAIL"
     safety_status = "PASS" if not (control_failures + allocation_failures) else "FAIL"
@@ -116,7 +168,10 @@ def analyze(payload):
         "input_audit_failures": input_audit_failures,
         "invariant_check_failures": invariant_failures,
         "completion_failures": status_failures,
+        "work_accounting_failures": work_accounting_failures,
         "allocation_failures": allocation_failures,
+        "provenance_mismatches": provenance_mismatches,
+        "external_action_failures": action_failures,
         "integrity_failures": integrity,
         "operator_status": operator_status, "law_status": law_status,
         "safety_status": safety_status,
@@ -133,6 +188,7 @@ def _self_check_payload():
         for arm, solved in (("held_operator", False), ("authored_operator", True)):
             rows.append({"status": "COMPLETED", "family": "candidate_operator", "seed": seed,
                          "profile": arm, "solved": solved, "operator_calls": 1,
+                         "agent_work_units": 1 if arm == "held_operator" else 4,
                          "invariant_checks_passed": 1, "world_sha256": world,
                          "world_access_sha256": access,
                          "input_audit": {"answer_fields_absent": True, "hidden_strategy_absent": True,
@@ -141,9 +197,12 @@ def _self_check_payload():
                        (3, "valid_structural"), (4, "false_finite_sample")):
         valid = kind == "valid_structural"
         rows.append({"status": "COMPLETED", "family": "law_claim", "seed": seed,
+                     "claim_kind": kind,
                      "expected_status": "checked" if valid else "rejected",
                      "actual_status": "checked" if valid else "rejected",
                      "proven": int(valid), "proof_reference_count": int(valid), "correct": True,
+                     "proof_binding_valid": True,
+                     "input_audit": {"hidden_truth_label_absent": True, "answer_fields_absent": True},
                      "counterexample_validated": True})
     for seed in range(4):
         rows.append({"status": "COMPLETED", "family": "tampering_control", "seed": seed,
@@ -164,7 +223,7 @@ def main():
     parser.add_argument("--self-check", action="store_true")
     args = parser.parse_args()
     if args.self_check:
-        result = analyze(_self_check_payload())
+        result = analyze(_self_check_payload(), verify_fingerprints=False)
         assert result["integrity_failures"] == 0 and result["operator_status"] == "PASS"
         assert result["law_status"] == result["safety_status"] == "PASS"
         print("linear_p14 analyzer self-check: PASS")
