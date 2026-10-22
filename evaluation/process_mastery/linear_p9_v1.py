@@ -80,8 +80,9 @@ def cycle_for(seed: int):
 
 def _agent(arm: str):
     if arm == "held_only":
-        return Agent(track_i=False, budget={"enabled": 1.0, "remaining": LIMITS["budget"],
-                                             "last_refill_epoch": 0.0})
+        return Agent(track_i=False, extra_seeds=("thinking_budget",),
+                     budget={"enabled": 1.0, "remaining": LIMITS["budget"],
+                             "last_refill_epoch": 0.0})
     policy = {"enabled": 1.0, "max_invented": LIMITS["max_invented"],
               "closure_enabled": 0.0, "offline_enabled": 0.0}
     agent = Agent(track_i=True, policy_overrides={"InventionPolicy": policy},
