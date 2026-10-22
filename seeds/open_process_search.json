@@ -124,6 +124,18 @@
       }
     },
     {
+      "provenance": "seed:open_process_search:extends_search_attempt:OpenProcessSearchAttempt:OpenProcessSearchAttempt",
+      "src": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "src"
+      },
+      "edge_type": "extends_search_attempt",
+      "tgt": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:open_process_search:has_open_process_candidate:Agent:OpenProcessCandidate",
       "src": {
         "type": "Agent",
@@ -995,6 +1007,7 @@
                 }
               }
             },
+            "depth": 1.0,
             "effect_digest": {
               "__term__": {
                 "type": "EffectFingerprint",
@@ -2350,6 +2363,7 @@
                 }
               }
             },
+            "depth": 1.0,
             "effect_digest": {
               "__term__": {
                 "type": "EffectFingerprint",
@@ -3159,6 +3173,7 @@
                 "value": null
               }
             },
+            "depth": 1.0,
             "effect_digest": {
               "__term__": {
                 "type": "EffectFingerprint",
@@ -4269,6 +4284,7 @@
                 "value": null
               }
             },
+            "depth": 1.0,
             "effect_digest": {
               "__term__": {
                 "type": "EffectFingerprint",
@@ -5502,6 +5518,7 @@
                 "value": null
               }
             },
+            "depth": 1.0,
             "effect_digest": {
               "__term__": {
                 "type": "EffectFingerprint",
@@ -6460,6 +6477,2020 @@
           "candidate",
           "derived_from_attempt",
           "attempt",
+          {}
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "ops_record_recursive_compose_expression_then_held_attempt",
+      "area": "process_solving",
+      "order": 24,
+      "latency_class": "background",
+      "comment": "Expand a residual graph-authored expression by one held operand, charging every expansion to the same bounded search ledger.",
+      "match": [
+        [
+          "agent",
+          "has_open_process_search_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "searches_task",
+          "task"
+        ],
+        [
+          "task",
+          "about_domain",
+          "d"
+        ],
+        [
+          "request",
+          "has_search_attempt",
+          "prior"
+        ],
+        [
+          "prior",
+          "about_task",
+          "task"
+        ],
+        [
+          "d",
+          "has_held_process",
+          "a"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funded"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "residual"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "depth"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_depth"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_open_process_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "b": {
+                "type": "Var",
+                "name": "a"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "expression_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "compose["
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "expression_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "|"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "name"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "]"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "attempt",
+          "OpenProcessSearchAttempt",
+          {
+            "expression_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "compose["
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "expression_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "|"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "]"
+                  }
+                ]
+              }
+            },
+            "operator_kind": "compose",
+            "expression_tree": {
+              "__term__": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": "guard"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "initial_state"
+                  },
+                  {
+                    "type": "Vec",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": "subgoal"
+                      },
+                      {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "params"
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      {
+                        "type": "Vec",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": "compose"
+                          },
+                          {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "expr_tree"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": null
+                              }
+                            },
+                            "then": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "name"
+                            },
+                            "other": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "expr_tree"
+                            }
+                          },
+                          {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "expr_tree"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": null
+                              }
+                            },
+                            "then": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "name"
+                            },
+                            "other": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "expr_tree"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "ProcessCompose",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior"
+                  },
+                  "key": "params"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "params"
+                }
+              }
+            },
+            "predicted_state": {
+              "__term__": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "ProcessCompose",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "params"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "params"
+                  }
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "initial_state"
+                }
+              }
+            },
+            "goal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "goal"
+              }
+            },
+            "guard_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "initial_state"
+              }
+            },
+            "subgoal_state": {
+              "__term__": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "initial_state"
+                }
+              }
+            },
+            "depth": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "depth"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "effect_digest": {
+              "__term__": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessCompose",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "params"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "params"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              }
+            },
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending",
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "work_cost": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "work_cost"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "cost"
+                  }
+                ]
+              }
+            },
+            "status": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "unknown"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "params"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "unknown"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "verified"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "residual"
+                    }
+                  }
+                }
+              }
+            },
+            "rank_score": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2000000.0
+                    },
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "work_cost"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "params"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 2000000.0
+                      },
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "work_cost"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        }
+                      ]
+                    },
+                    "other": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        },
+                        {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "work_cost"
+                            },
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "cost"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_search_attempt",
+          "attempt",
+          {}
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_open_process_search_attempt",
+          "attempt",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "about_task",
+          "task",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "extends_search_attempt",
+          "prior",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "uses_parent_process",
+          "a",
+          {}
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "ops_record_recursive_compose_held_then_expression_attempt",
+      "area": "process_solving",
+      "order": 24,
+      "latency_class": "background",
+      "comment": "Expand a residual graph-authored expression by one held operand, charging every expansion to the same bounded search ledger.",
+      "match": [
+        [
+          "agent",
+          "has_open_process_search_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "searches_task",
+          "task"
+        ],
+        [
+          "task",
+          "about_domain",
+          "d"
+        ],
+        [
+          "request",
+          "has_search_attempt",
+          "prior"
+        ],
+        [
+          "prior",
+          "about_task",
+          "task"
+        ],
+        [
+          "d",
+          "has_held_process",
+          "a"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funded"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "residual"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "depth"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_depth"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_open_process_search_attempt",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_attempts"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "b": {
+                "type": "Var",
+                "name": "a"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "has_search_attempt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "expression_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "compose["
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "name"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "|"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "expression_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "]"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "attempt",
+          "OpenProcessSearchAttempt",
+          {
+            "expression_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "compose["
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "name"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "|"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "expression_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "]"
+                  }
+                ]
+              }
+            },
+            "operator_kind": "compose",
+            "expression_tree": {
+              "__term__": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": "guard"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "task"
+                    },
+                    "key": "initial_state"
+                  },
+                  {
+                    "type": "Vec",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": "subgoal"
+                      },
+                      {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "params"
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      {
+                        "type": "Vec",
+                        "items": [
+                          {
+                            "type": "Lit",
+                            "value": "compose"
+                          },
+                          {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "a"
+                                },
+                                "key": "expr_tree"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": null
+                              }
+                            },
+                            "then": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "name"
+                            },
+                            "other": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "expr_tree"
+                            }
+                          },
+                          {
+                            "type": "IfThenElse",
+                            "cond": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "prior"
+                                },
+                                "key": "expr_tree"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": null
+                              }
+                            },
+                            "then": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "name"
+                            },
+                            "other": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "expr_tree"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "ProcessCompose",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "a"
+                  },
+                  "key": "params"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior"
+                  },
+                  "key": "params"
+                }
+              }
+            },
+            "predicted_state": {
+              "__term__": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "ProcessCompose",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "params"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "params"
+                  }
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "initial_state"
+                }
+              }
+            },
+            "goal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "goal"
+              }
+            },
+            "guard_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "initial_state"
+              }
+            },
+            "subgoal_state": {
+              "__term__": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "task"
+                  },
+                  "key": "initial_state"
+                }
+              }
+            },
+            "depth": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "depth"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "effect_digest": {
+              "__term__": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessCompose",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "params"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "params"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              }
+            },
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending",
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "work_cost": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "a"
+                    },
+                    "key": "cost"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "work_cost"
+                  }
+                ]
+              }
+            },
+            "status": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "unknown"
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Lit",
+                    "value": "unknown"
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Lit",
+                      "value": "verified"
+                    },
+                    "other": {
+                      "type": "Lit",
+                      "value": "residual"
+                    }
+                  }
+                }
+              }
+            },
+            "rank_score": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessCompose",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "a"
+                      },
+                      "key": "params"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                },
+                "then": {
+                  "type": "Plus",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 2000000.0
+                    },
+                    {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "work_cost"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "other": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessCompose",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "params"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "initial_state"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": null
+                    }
+                  },
+                  "then": {
+                    "type": "Plus",
+                    "items": [
+                      {
+                        "type": "Lit",
+                        "value": 2000000.0
+                      },
+                      {
+                        "type": "Plus",
+                        "items": [
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "cost"
+                          },
+                          {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "work_cost"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "other": {
+                    "type": "IfThenElse",
+                    "cond": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessApply",
+                        "p": {
+                          "type": "ProcessCompose",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "a"
+                            },
+                            "key": "params"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "state": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "task"
+                          },
+                          "key": "initial_state"
+                        }
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "task"
+                        },
+                        "key": "goal"
+                      }
+                    },
+                    "then": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "a"
+                          },
+                          "key": "cost"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior"
+                          },
+                          "key": "work_cost"
+                        }
+                      ]
+                    },
+                    "other": {
+                      "type": "Plus",
+                      "items": [
+                        {
+                          "type": "Lit",
+                          "value": 1000000.0
+                        },
+                        {
+                          "type": "Plus",
+                          "items": [
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "a"
+                              },
+                              "key": "cost"
+                            },
+                            {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "prior"
+                              },
+                              "key": "work_cost"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_search_attempt",
+          "attempt",
+          {}
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_open_process_search_attempt",
+          "attempt",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "about_task",
+          "task",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "extends_search_attempt",
+          "prior",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "uses_parent_process",
+          "a",
           {}
         ]
       ],

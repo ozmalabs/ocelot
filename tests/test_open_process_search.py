@@ -1,5 +1,6 @@
 """P19 bounded generic expression search over graph-held process evidence."""
 from evaluation.process_mastery.harness import Agent
+from evaluation.process_mastery.native_process_execution import open_process_candidate_digest
 
 
 def _agent(*, attempts=64, held=None):
@@ -125,6 +126,36 @@ def test_both_subgoal_orders_are_evaluated_within_budget():
                and attempt["status"] == "verified" for attempt in attempts)
     candidates = [agent.attrs(n) for n in agent.nodes("OpenProcessCandidate")]
     assert any(candidate["params"] == reverse for candidate in candidates)
+
+
+def test_residual_expression_expands_recursively_with_depth_bound():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]}
+    agent, _ = _agent(held=held)
+    initial = [0, 1, 2, 3]
+    expected = _compose(agent, _compose(agent, held["p"], held["q"]), held["r"])
+    goal = _apply(agent, expected, initial)
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    attempts = [agent.attrs(node) for node in agent.nodes("OpenProcessSearchAttempt")]
+    expanded = [attrs for attrs in attempts if attrs.get("depth", 0) == 2]
+    assert expanded
+    assert any(attrs["status"] == "verified" and attrs["params"] == expected
+               for attrs in expanded)
+    assert all(attrs["depth"] <= 4 for attrs in attempts)
+    assert any(agent.native.neighbours(node, "extends_search_attempt")
+               for node in agent.nodes("OpenProcessSearchAttempt"))
+    candidates = [node for node in agent.nodes("OpenProcessCandidate")
+                  if agent.attrs(node)["params"] == expected]
+    assert candidates
+    candidate = candidates[0]
+    before = open_process_candidate_digest(agent, candidate)
+    attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    ancestors = agent.native.neighbours(attempt, "extends_search_attempt")
+    assert ancestors
+    ancestor_parent = agent.native.neighbours(ancestors[0], "uses_parent_process")[0]
+    agent.s.set_attr(ancestor_parent, "source_digest", "mutated-parent-source")
+    assert open_process_candidate_digest(agent, candidate) != before
 
 
 def test_changed_goal_changes_proposal():

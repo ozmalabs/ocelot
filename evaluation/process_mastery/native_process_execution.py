@@ -35,15 +35,26 @@ def open_process_candidate_digest(agent, candidate) -> str:
     attempts = native.neighbours(candidate, "derived_from_attempt")
     if len(attempts) != 1:
         raise ValueError("candidate must have exactly one derivation attempt")
-    parent_nodes = native.neighbours(attempts[0], "uses_parent_process")
-    parents = {}
-    for node in parent_nodes:
-        parent = _attrs(agent, node)
-        parents[parent.get("name")] = {
-            "source_digest": parent.get("source_digest"),
-            "params": parent.get("params"),
-            "source_epoch": parent.get("source_epoch"),
-        }
+    # Recursive search attempts extend an earlier graph-authored expression.
+    # Walk the complete attempt ancestry so a digest binds every held process
+    # source used by the tree, not only the last operand attached to the leaf.
+    parent_nodes = {}
+    pending, visited = list(attempts), set()
+    while pending:
+        current = pending.pop()
+        if current in visited:
+            continue
+        visited.add(current)
+        for node in native.neighbours(current, "uses_parent_process"):
+            parent_nodes[node] = _attrs(agent, node)
+        pending.extend(native.neighbours(current, "extends_search_attempt"))
+    parents = sorted(({
+        "name": parent.get("name"),
+        "source_digest": parent.get("source_digest"),
+        "params": parent.get("params"),
+        "source_epoch": parent.get("source_epoch"),
+    } for parent in parent_nodes.values()),
+        key=lambda parent: json.dumps(parent, sort_keys=True, separators=(",", ":")))
     payload = {
         "schema": "open_process_expression_v1",
         "expression_key": attrs.get("expression_key"),

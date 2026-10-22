@@ -75,6 +75,7 @@ def _expression_rule(operator, order, *, reverse=False):
             "expression_tree": T(tree), "params": T(params),
             "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
             "guard_state": T(A("task", "initial_state")), "subgoal_state": T(subgoal),
+            "depth": 1.0,
             "effect_digest": T(PFingerprint(params, A("d", "probes"))),
             "expression_digest": "pending_native_expression_attestation",
             "expression_digest_status": "pending",
@@ -134,6 +135,76 @@ def _expression_rule(operator, order, *, reverse=False):
     return [attempt] if reverse else [attempt, mint]
 
 
+def _recursive_compose_rule(*, reverse=False):
+    """Expand a residual expression with one held operand.
+
+    The previous expression remains graph-authored data. Each expansion is a
+    new, budgeted attempt; it is never reconstructed by the host or selected
+    from a candidate label.
+    """
+    if reverse:
+        params = PCompose(A("a", "params"), A("prior", "params"))
+        inner = Vec(L("compose"), _tree("a"), _tree("prior"))
+        key = {"type": "StringConcat", "parts": [L("compose["),
+            A("a", "name"), L("|"), A("prior", "expression_key"), L("]")]}
+        prior_state = PApply(A("prior", "params"), A("task", "initial_state"))
+        work = Plus(A("a", "cost"), A("prior", "work_cost"))
+        orientation = "held_then_expression"
+    else:
+        params = PCompose(A("prior", "params"), A("a", "params"))
+        inner = Vec(L("compose"), _tree("prior"), _tree("a"))
+        key = {"type": "StringConcat", "parts": [L("compose["),
+            A("prior", "expression_key"), L("|"), A("a", "name"), L("]")]}
+        prior_state = PApply(A("prior", "params"), A("task", "initial_state"))
+        work = Plus(A("prior", "work_cost"), A("a", "cost"))
+        orientation = "expression_then_held"
+    applied = PApply(params, A("task", "initial_state"))
+    tree = Vec(L("guard"), A("task", "initial_state"),
+               Vec(L("subgoal"), prior_state, inner))
+    return rule(
+        f"ops_record_recursive_compose_{orientation}_attempt", ONLINE_AREA, 24,
+        "Expand a residual graph-authored expression by one held operand, charging every expansion to the same bounded search ledger.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "searches_task", "task"], ["task", "about_domain", "d"],
+         ["request", "has_search_attempt", "prior"],
+         ["prior", "about_task", "task"], ["d", "has_held_process", "a"]],
+        And(policy_on(), Eq(A("request", "status"), L("funded")),
+            Eq(A("task", "status"), L("stuck")),
+            Eq(A("prior", "status"), L("residual")),
+            Lt(A("prior", "depth"), A("pol", "max_depth")),
+            Lt(Count(N("agent", "has_open_process_search_attempt")),
+               A("pol", "max_attempts")),
+            Not(Eq(V("prior"), V("a"))),
+            Not(Exists(N("request", "has_search_attempt"), "old",
+                       Eq(A("old", "expression_key"), key)))),
+        [["add_node", "attempt", "OpenProcessSearchAttempt", {
+            "expression_key": T(key), "operator_kind": "compose",
+            "expression_tree": T(tree), "params": T(params),
+            "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
+            "guard_state": T(A("task", "initial_state")),
+            "subgoal_state": T(prior_state),
+            "depth": T(Plus(A("prior", "depth"), L(1.0))),
+            "effect_digest": T(PFingerprint(params, A("d", "probes"))),
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending", "domain": T(A("d", "name")),
+            "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")),
+            "frame_epoch": T(A("d", "frame_epoch")), "work_cost": T(work),
+            "status": T(IfThenElse(is_none(params), L("unknown"),
+                IfThenElse(is_none(applied), L("unknown"),
+                    IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))))),
+            "rank_score": T(IfThenElse(is_none(params), Plus(L(2000000.0), work),
+                IfThenElse(is_none(applied), Plus(L(2000000.0), work),
+                    IfThenElse(Eq(applied, A("task", "goal")), work,
+                        Plus(L(1000000.0), work)))))}],
+         ["add_edge", "request", "has_search_attempt", "attempt", {}],
+         ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
+         ["add_edge", "attempt", "about_task", "task", {}],
+         ["add_edge", "attempt", "extends_search_attempt", "prior", {}],
+         ["add_edge", "attempt", "uses_parent_process", "a", {}]], batch=False)
+
+
 def build():
     specs = [
         ("Agent", "has_open_process_search_policy", "OpenProcessSearchPolicy"),
@@ -143,6 +214,7 @@ def build():
         ("Agent", "has_open_process_search_attempt", "OpenProcessSearchAttempt"),
         ("OpenProcessSearchAttempt", "about_task", "SolveTask"),
         ("OpenProcessSearchAttempt", "uses_parent_process", "ProcessSchema"),
+        ("OpenProcessSearchAttempt", "extends_search_attempt", "OpenProcessSearchAttempt"),
         ("Agent", "has_open_process_candidate", "OpenProcessCandidate"),
         ("OpenProcessCandidate", "derived_from_attempt", "OpenProcessSearchAttempt"),
         ("ProcessDomain", "has_held_process", "ProcessSchema"),
@@ -188,6 +260,7 @@ def build():
     rules.extend(_expression_rule("compose", 1, reverse=True))
     for index, operator in enumerate(("inverse", "power2", "power3"), start=2):
         rules.extend(_expression_rule(operator, index))
+    rules.extend((_recursive_compose_rule(), _recursive_compose_rule(reverse=True)))
     return {"id": SEED_ID, "version": "1.0.0",
         "depends_on": ["process_solving", "thinking_budget"],
         "self_load_only": True, "area": OFFLINE_AREA,
