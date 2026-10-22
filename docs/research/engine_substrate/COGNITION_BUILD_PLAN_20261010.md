@@ -1106,7 +1106,7 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 
 ## Phase 14 — Laws proofs and safely authored invention operators
 
-**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.E1 complete, P14.E2 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
+**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.E2 complete, P14.E3 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
 
 Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention loop. Earlier processes retain their supported verification scope; proof requirements apply to explicitly proof-admitting domains. Bounded fingerprints do not become proofs. Operator proposals cannot modify criteria, verifier or held-out tests.
 
@@ -1211,6 +1211,8 @@ Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention l
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_laws.py tests/test_process_proof_adoption.py tests/test_invention_operator_authorship.py -q -p no:cacheprovider`.
 - **Non-goals:** a dummy baseline, depth-shortcut comparator or rescoring old results; treating a human baseline as available without protocol matching.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P14.E2 completion record (2026-10-22):** Added the paired native adapter/analyzer and froze corrected preregistration revision 1 in commit `d288dae2`. The initial freeze `21d9ecda` is explicitly superseded before any held-out run because the analyzer lacked fingerprint/seed enforcement and proof-reference binding audit; no held-out records were run or inspected under that freeze. The registered draw is 200 paired one-call permutation macro tasks, 200 structural/false-finite-sample law claims and 100 proof-reference/criteria tampering controls. Both self-checks pass. Development run (10 paired tasks, 20 law cases, 10 controls) produced candidate 10/10 versus held operator 0/10, 20/20 correct law classifications, 10/10 passed tamper controls, no hash/pair/input/invariant failures; the eight-task development qualification was positive (8/8 vs 0/8) with 8/8 invariant checks and 32/32 work units, and remained `awaiting_human`. No held-out records were used. The prescribed focused regression bundle passes 56 tests. Frozen component hashes are in the corrected preregistration.
 
 ### P14.E3 — Run the frozen phase, report results and authorize the next entry
 
