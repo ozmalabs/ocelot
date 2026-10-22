@@ -143,17 +143,8 @@ def irreversible_trial(seed: int, arm: str):
     started = time.perf_counter()
     agent = _agent(arm)
     process = [[1, 0], [0, 0]]
-    fresh = [[seed % 11, 5], [3, seed % 7]]
-    goals = [[state[0], 0] for state in fresh]
     domain = f"p9-irreversible-{seed}"
-    agent.add_domain(domain, "integer_matrix", [fresh[0]], {"lossy": process})
-    repair = agent.s.add_node("ProcessRepairCandidate", {
-        "status": "candidate", "params": process, "fresh_states": fresh,
-        "goals": goals, "model_epoch": 1, "source_model_epoch": 1,
-        "exact_inverse": 0.0,
-    })
-    if agent.track_i:
-        agent.s.add_edge(agent.ag, "has_repair_candidate", repair, {})
+    agent.add_domain(domain, "integer_matrix", [[seed % 11, 5]], {"lossy": process})
     dist_term = {"type": "ProcessDistribution", "outcomes": {"type": "Var", "name": "outcomes"}}
     distribution = agent.native.evaluate(dist_term, {
         "outcomes": [["observed", 0.5], ["alternate", 0.25]]})
@@ -162,16 +153,14 @@ def irreversible_trial(seed: int, arm: str):
     for _ in range(LIMITS["ticks"]):
         if not agent.s.tick(LIMITS["steps_per_tick"]):
             break
-    status = agent.attrs(repair).get("status")
-    expected_status = "verified" if arm == "operators_on" else "candidate"
-    passed = (status == expected_status and inverse is None and distribution is not None)
+    passed = inverse is None and distribution is not None
     return {
         "family": "irreversible_stochastic", "seed": seed, "profile": arm,
         "status": "COMPLETED", "external_outcome": {"pass": passed},
-        "repair_status": status, "exact_inverse": inverse,
+        "repair_candidate_status": "NOT_PROPOSED", "exact_inverse": inverse,
         "distribution_supported": distribution is not None,
         "unknown_mass": distribution[1] if distribution is not None else None,
-        "answer_in_graph": True, "candidate_supplied": True,
+        "candidate_supplied": False, "distribution_agent_visible": False,
         "actions": 0, "interactions": 0,
         "compute": {"seconds": round(time.perf_counter() - started, 6),
                     "graph_nodes": len(agent.s.nodes()),
@@ -255,7 +244,7 @@ def main():
         assert all(row["status"] == "COMPLETED" for row in payload["records"])
         assert payload["records"][0]["external_outcome"]["pass"]
         assert not payload["records"][1]["external_outcome"]["pass"]
-        assert payload["records"][3]["repair_status"] == "verified"
+        assert payload["records"][3]["repair_candidate_status"] == "NOT_PROPOSED"
         print("linear_p9 runner self-check: PASS")
 
 
