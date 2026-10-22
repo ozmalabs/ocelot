@@ -1,0 +1,1882 @@
+{
+  "id": "process_portfolio",
+  "version": "1.0.0",
+  "depends_on": [
+    "cognitive_areas",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "P15.02: disabled graph-owned portfolio batches, aggregate shared-budget reservation and deterministic native task execution.",
+  "microtheory": {
+    "name": "process_portfolio",
+    "description": "Fund one bounded portfolio batch before its independent partitions execute in the existing deterministic native task pool."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ProcessPortfolioPolicy",
+      "attrs": {
+        "name": "process_portfolio_policy",
+        "enabled": 0.0,
+        "max_workers": 4.0,
+        "max_partitions": 64.0,
+        "max_work_units": 100000.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "CognitiveArea",
+      "attrs": {
+        "name": "process_portfolio",
+        "logical_tick": 0,
+        "desired_workers": 4,
+        "effort": 1,
+        "status": "active"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_portfolio_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_cognitive_area",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:process_portfolio:has_process_portfolio_policy:Agent:ProcessPortfolioPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_portfolio_policy",
+      "tgt": {
+        "type": "ProcessPortfolioPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_portfolio_batch:Agent:ProcessPortfolioBatch",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_portfolio_batch",
+      "tgt": {
+        "type": "ProcessPortfolioBatch",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_work_unit:ProcessPortfolioBatch:ProcessPortfolioWorkUnit",
+      "src": {
+        "type": "ProcessPortfolioBatch",
+        "var": "src"
+      },
+      "edge_type": "has_work_unit",
+      "tgt": {
+        "type": "ProcessPortfolioWorkUnit",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:funded_by:ProcessPortfolioBatch:ThinkingBudgetRequest",
+      "src": {
+        "type": "ProcessPortfolioBatch",
+        "var": "src"
+      },
+      "edge_type": "funded_by",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_cognitive_area:Agent:CognitiveArea",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_cognitive_area",
+      "tgt": {
+        "type": "CognitiveArea",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_native_task:ProcessPortfolioWorkUnit:CognitiveTask",
+      "src": {
+        "type": "ProcessPortfolioWorkUnit",
+        "var": "src"
+      },
+      "edge_type": "has_native_task",
+      "tgt": {
+        "type": "CognitiveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_receipt:ProcessPortfolioWorkUnit:ProcessPortfolioReceipt",
+      "src": {
+        "type": "ProcessPortfolioWorkUnit",
+        "var": "src"
+      },
+      "edge_type": "has_receipt",
+      "tgt": {
+        "type": "ProcessPortfolioReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_process_portfolio_receipt:Agent:ProcessPortfolioReceipt",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_portfolio_receipt",
+      "tgt": {
+        "type": "ProcessPortfolioReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_task:CognitiveArea:CognitiveTask",
+      "src": {
+        "type": "CognitiveArea",
+        "var": "src"
+      },
+      "edge_type": "has_task",
+      "tgt": {
+        "type": "CognitiveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:process_portfolio:has_result:CognitiveTask:TaskResult",
+      "src": {
+        "type": "CognitiveTask",
+        "var": "src"
+      },
+      "edge_type": "has_result",
+      "tgt": {
+        "type": "TaskResult",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pp_apply_bounded_worker_cap_to_native_area",
+      "area": "memory_consolidation",
+      "order": 5,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "The graph policy bounds the existing native cognitive area; available hardware never raises the graph-selected cap.",
+      "match": [
+        [
+          "agent",
+          "has_process_portfolio_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_cognitive_area",
+          "area"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "area"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_portfolio"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_workers"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "area"
+              },
+              "key": "desired_workers"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "area",
+          "desired_workers",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_workers"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "pp_fund_one_bounded_batch_from_shared_budget",
+      "area": "memory_consolidation",
+      "order": 10,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Reserve the sum of all partition costs with one shared-budget request before a batch can run. Only one batch may be active, preventing same-settlement double debit races.",
+      "match": [
+        [
+          "agent",
+          "has_process_portfolio_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "edge_type": "has_work_unit",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_partitions"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Sum",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "edge_type": "has_work_unit",
+                "any_type": false
+              },
+              "var_name": "member",
+              "value": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "member"
+                },
+                "key": "cost"
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "max_work_units"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_portfolio_batch",
+                "any_type": false
+              },
+              "var_name": "active",
+              "predicate": {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "active"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "funding_pending"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "active"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "funded"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "active"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "running"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_portfolio_batch",
+                "any_type": false
+              },
+              "var_name": "earlier",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "earlier"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "proposed"
+                    }
+                  },
+                  {
+                    "type": "Lt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "earlier"
+                      },
+                      "key": "batch_key"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "batch"
+                      },
+                      "key": "batch_key"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "edge_type": "has_work_unit",
+                "any_type": false
+              },
+              "var_name": "cancel",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cancel"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "cancel_requested"
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "edge_type": "funded_by",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "request",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "process_portfolio",
+            "requester_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "batch_key"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "batch_key"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "deadline_epoch"
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Sum",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "batch"
+                  },
+                  "edge_type": "has_work_unit",
+                  "any_type": false
+                },
+                "var_name": "member",
+                "value": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "member"
+                  },
+                  "key": "cost"
+                }
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "batch",
+          "funded_by",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "set_attr",
+          "batch",
+          "status",
+          "funding_pending"
+        ]
+      ]
+    },
+    {
+      "name": "pp_accept_approved_batch",
+      "area": "memory_consolidation",
+      "order": 20,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Only a completely funded batch becomes runnable; the aggregate debit prevents partition workers from overspending independently.",
+      "match": [
+        [
+          "agent",
+          "has_process_portfolio_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "funded_by",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "batch",
+          "status",
+          "funded"
+        ]
+      ]
+    },
+    {
+      "name": "pp_reject_batch_when_shared_budget_denies_it",
+      "area": "memory_consolidation",
+      "order": 21,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "A denied aggregate reservation creates terminal per-partition records and no CognitiveTasks.",
+      "match": [
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "funded_by",
+          "request"
+        ],
+        [
+          "batch",
+          "has_work_unit",
+          "unit"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funding_pending"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "denied"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "unit"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "edge_type": "has_receipt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "ProcessPortfolioReceipt",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "task_key"
+              }
+            },
+            "batch_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "batch_key"
+              }
+            },
+            "partition": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "partition"
+              }
+            },
+            "generation": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "generation"
+              }
+            },
+            "logical_time": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "logical_time"
+              }
+            },
+            "status": "denied",
+            "work_units": 0,
+            "reason": "budget_exhausted"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_portfolio_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "unit",
+          "has_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "set_attr",
+          "unit",
+          "status",
+          "denied"
+        ],
+        [
+          "set_attr",
+          "batch",
+          "status",
+          "denied"
+        ]
+      ]
+    },
+    {
+      "name": "pp_materialize_funded_partitions_as_native_tasks",
+      "area": "memory_consolidation",
+      "order": 30,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Graph rules choose funded partitions; the existing AreaParallel cycle plan executes pure native reductions and folds results by logical task key.",
+      "match": [
+        [
+          "agent",
+          "has_process_portfolio_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "has_work_unit",
+          "unit"
+        ],
+        [
+          "agent",
+          "has_cognitive_area",
+          "area"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "batch"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "funded"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "batch"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "running"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "unit"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "area"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "process_portfolio"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "edge_type": "has_native_task",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "task",
+          "CognitiveTask",
+          {
+            "status": "requested",
+            "kind": "vector_sum",
+            "payload": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "evidence_vector"
+              }
+            },
+            "input_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "logical_time": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "logical_time"
+              }
+            },
+            "area": "process_portfolio",
+            "order": 1,
+            "urgency": 1,
+            "estimated_cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "unit",
+          "has_native_task",
+          "task",
+          {}
+        ],
+        [
+          "add_edge",
+          "area",
+          "has_task",
+          "task",
+          {}
+        ],
+        [
+          "set_attr",
+          "unit",
+          "status",
+          "requested"
+        ],
+        [
+          "set_attr",
+          "batch",
+          "status",
+          "running"
+        ]
+      ]
+    },
+    {
+      "name": "pp_record_completed_native_result_once",
+      "area": "memory_consolidation",
+      "order": 40,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Fold native numeric evidence into graph-owned portfolio records; it does not choose or promote an operator.",
+      "match": [
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "has_work_unit",
+          "unit"
+        ],
+        [
+          "unit",
+          "has_native_task",
+          "task"
+        ],
+        [
+          "task",
+          "has_result",
+          "result"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "unit"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "done"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "edge_type": "has_receipt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "ProcessPortfolioReceipt",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "task_key"
+              }
+            },
+            "batch_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "batch_key"
+              }
+            },
+            "partition": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "partition"
+              }
+            },
+            "generation": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "generation"
+              }
+            },
+            "logical_time": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "logical_time"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "result": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "result"
+                },
+                "key": "output"
+              }
+            },
+            "status": "completed",
+            "work_units": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_portfolio_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "unit",
+          "has_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "set_attr",
+          "unit",
+          "status",
+          "completed"
+        ]
+      ]
+    },
+    {
+      "name": "pp_keep_failed_native_result_as_terminal_receipt",
+      "area": "memory_consolidation",
+      "order": 41,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Failed partitions stay visible and charged; they are never reclassified as successful output.",
+      "match": [
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "has_work_unit",
+          "unit"
+        ],
+        [
+          "unit",
+          "has_native_task",
+          "task"
+        ],
+        [
+          "task",
+          "has_result",
+          "result"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "unit"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "failed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "result"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "failed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "edge_type": "has_receipt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "ProcessPortfolioReceipt",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "task_key"
+              }
+            },
+            "batch_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "batch_key"
+              }
+            },
+            "partition": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "partition"
+              }
+            },
+            "generation": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "generation"
+              }
+            },
+            "logical_time": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "logical_time"
+              }
+            },
+            "result_status": "failed",
+            "error": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "result"
+                },
+                "key": "error"
+              }
+            },
+            "status": "failed",
+            "work_units": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_portfolio_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "unit",
+          "has_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "set_attr",
+          "unit",
+          "status",
+          "failed"
+        ]
+      ]
+    },
+    {
+      "name": "pp_cancel_unstarted_partition_without_erasing_receipts",
+      "area": "memory_consolidation",
+      "order": 25,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Cancellation before funding yields a terminal receipt and never deletes completed sibling receipts.",
+      "match": [
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "has_work_unit",
+          "unit"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cancel_requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "unit"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "cancel_requested"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "edge_type": "has_receipt",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "ProcessPortfolioReceipt",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "task_key"
+              }
+            },
+            "batch_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "key": "batch_key"
+              }
+            },
+            "partition": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "partition"
+              }
+            },
+            "generation": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "generation"
+              }
+            },
+            "logical_time": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "unit"
+                },
+                "key": "logical_time"
+              }
+            },
+            "status": "cancelled",
+            "work_units": 0
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_portfolio_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "unit",
+          "has_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "set_attr",
+          "unit",
+          "status",
+          "cancelled"
+        ]
+      ]
+    },
+    {
+      "name": "pp_close_batch_after_every_partition_is_terminal",
+      "area": "memory_consolidation",
+      "order": 50,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "A batch releases the single-active-batch slot only after every partition has a terminal receipt.",
+      "match": [
+        [
+          "agent",
+          "has_portfolio_batch",
+          "batch"
+        ],
+        [
+          "batch",
+          "has_work_unit",
+          "unit"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "batch"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "running"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "batch"
+                },
+                "edge_type": "has_work_unit",
+                "any_type": false
+              },
+              "var_name": "pending",
+              "predicate": {
+                "type": "Not",
+                "arg": {
+                  "type": "Or",
+                  "items": [
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pending"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "completed"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pending"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "failed"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pending"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "cancelled"
+                      }
+                    },
+                    {
+                      "type": "Eq",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pending"
+                        },
+                        "key": "status"
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": "denied"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "batch",
+          "status",
+          "completed"
+        ]
+      ]
+    }
+  ]
+}

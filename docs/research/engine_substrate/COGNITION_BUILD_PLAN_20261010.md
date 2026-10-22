@@ -1235,7 +1235,7 @@ Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention l
 
 ## Phase 15 — Scaled portfolios self-curriculum and repeated improvement
 
-**Entry:** Phase 14 proof/adoption machinery and approved candidate operator workflow. **Status:** entry authorized by the user's explicit approval of `commutator_square_v1` under `pmb-v1-frozen-criteria`; P15.01 complete, P15.02 next. The runtime graph still needs to materialize that scoped approval before promotion in P15.04. No approval is implied for later candidates; later promotions require a fresh explicit event.
+**Entry:** Phase 14 proof/adoption machinery and approved candidate operator workflow. **Status:** entry authorized by the user's explicit approval of `commutator_square_v1` under `pmb-v1-frozen-criteria`; P15.01–P15.02 complete, P15.03 next. The runtime graph still needs to materialize that scoped approval before promotion in P15.04. No approval is implied for later candidates; later promotions require a fresh explicit event.
 
 Complete remaining I7 work and measure the entire accumulated system. Parallel execution here is a runtime feature with deterministic folding, not permission to run development phases out of order. Self-curriculum chooses training experiences; an external sealed evaluation remains fixed and unavailable to the learner.
 
@@ -1272,6 +1272,8 @@ Complete remaining I7 work and measure the entire accumulated system. Parallel e
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_process_portfolio.py tests/test_thinking_budget_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** multiple independent budgets multiplying approved compute; architecture fork for parallel semantics.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P15.02 completion record (2026-10-22):** Added generated `process_portfolio` policy/seed for graph-authored bounded partition batches. The graph reserves each batch's aggregate cost with one shared `ThinkingBudget` request, admitting only one batch at a time to avoid same-settlement double debits; only approved batches become `CognitiveTask` partitions. The existing `CyclePlan::AreaParallel` and native ordered result fold execute independent `vector_sum` evidence reductions, while graph rules own funding, worker caps, terminal receipts, denial and cancellation state. Policy remains disabled by default. The batch ceiling is 64 partitions and 100,000 aggregate work units, with the cognitive area capped at four workers. No `cognitive_cycle.rs` change was needed because the existing plan already provides bounded worker scheduling and deterministic folding. Verification: P15.02 bundle passes 16 tests, including serial/parallel equivalence, insertion-order-independent fold, within-batch and cross-batch budget exhaustion, cancellation receipt retention, worker-cap enforcement and shared ThinkingBudget regression coverage. P15.03 is next; this infrastructure does not itself establish an improvement in task success.
 
 ### P15.03 — Generate an experience curriculum from verified residual progress
 
