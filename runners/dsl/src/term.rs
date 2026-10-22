@@ -9183,6 +9183,61 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
         TermNode::ProcessApply { p, state } => {
             let pv = evaluate(arena, *p, env, ctx);
             let sv = evaluate(arena, *state, env, ctx);
+            // Program-backed schema views delegate to the one native bounded
+            // interpreter. Resolve only a real reflected IR root; text,
+            // capability, transition, motor, and family records stay opaque.
+            let program = match &pv {
+                Value::Node(schema) if ctx.graph.has_node(*schema) => {
+                    let node = ctx.graph.node(*schema);
+                    let type_name = ctx.interner.resolve(node.type_);
+                    if type_name == "ProcessSchema" {
+                        let source_key = ctx.interner.lookup("realised_by");
+                        source_key
+                            .and_then(|key| node.attrs.get(&key))
+                            .and_then(|v| match v {
+                                Value::Node(source)
+                                    if ctx.graph.has_node(*source)
+                                        && ctx.interner.resolve(ctx.graph.node(*source).type_)
+                                            == "Program" =>
+                                {
+                                    let epoch_key = ctx.interner.lookup("source_epoch")?;
+                                    let source_epoch = ctx.graph.node(*source).attrs.get(&epoch_key)?;
+                                    let versioned = matches!(source_epoch, Value::Int(_) | Value::Float(_));
+                                    (versioned && node.attrs.get(&epoch_key) == Some(source_epoch))
+                                        .then_some(*source)
+                                }
+                                _ => None,
+                            })
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            };
+            if let Some(source) = program {
+                let edge_type = ctx.interner.lookup("ir_subgraph");
+                let roots = edge_type
+                    .map(|et| ctx.graph.out_edges_idx(source, Some(et)))
+                    .unwrap_or_default();
+                let root = if roots.len() == 1 {
+                    Some(ctx.graph.edge(roots[0]).tgt)
+                } else {
+                    None
+                };
+                if let (Some(root), Some(field)) = (root, ctx.interner.lookup("result")) {
+                    let mut program_arena = TermArena::new();
+                    let program_root = program_arena.add(TermNode::Lit { value: Value::Node(root) });
+                    let env_root = program_arena.add(TermNode::Lit { value: sv });
+                    let eval = program_arena.add(TermNode::ProgEval {
+                        prog: program_root,
+                        env: Some(env_root),
+                        oracles: None,
+                        fuel: 10_000,
+                        field,
+                    });
+                    return evaluate(&program_arena, eval, env, ctx);
+                }
+            }
             crate::process_algebra::apply(&pv, &sv, ctx.interner)
         }
         TermNode::EffectSupport { p } => {

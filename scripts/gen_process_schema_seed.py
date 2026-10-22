@@ -262,13 +262,15 @@ def view_rules():
     return [
         view_rule("DimensionGenerator", "generator_step", L(SHAPE_DOMAIN), gen_params),
         view_rule("Program", "program", native("Program"), L(None),
-                  extra={"construction": A("g", "construction")}),
+                  extra={"construction": A("g", "construction"),
+                         "source_epoch": A("g", "source_epoch")}),
         view_rule("CapabilityProgram", "capability", native("CapabilityProgram"), L(None),
                   extra={"order": A("g", "order")}),
         view_rule("TransitionHypothesis", "transition", native("TransitionHypothesis"), L(None),
                   extra={"pre_state_kind": A("g", "source_state_kind"),
                          "action_kind": A("g", "action_kind"),
-                         "post_state_kind": A("g", "successor_state_kind")}),
+                         "post_state_kind": A("g", "successor_state_kind"),
+                         "model_epoch": A("g", "model_epoch")}),
         view_rule("EmbodiedMotorProgram", "motor", native("EmbodiedMotorProgram"), L(None)),
         view_rule("FamilyProgram", "family_program", native("FamilyProgram"), L(None)),
     ]

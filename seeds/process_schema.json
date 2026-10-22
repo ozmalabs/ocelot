@@ -894,6 +894,57 @@
                   "key": "construction"
                 }
               }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "Program"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "source_epoch"
+                }
+              }
             }
           }
         ],
@@ -1716,6 +1767,57 @@
                     "name": "g"
                   },
                   "key": "successor_state_kind"
+                }
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Let",
+                "name": "g",
+                "value": {
+                  "type": "Pick",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "NodesOfType",
+                      "node_type": "TransitionHypothesis"
+                    },
+                    "var_name": "g",
+                    "predicate": {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "NodesOfType",
+                          "node_type": "ProcessSchema"
+                        },
+                        "var_name": "vs",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "vs"
+                            },
+                            "key": "realised_by"
+                          },
+                          "b": {
+                            "type": "Var",
+                            "name": "g"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "body": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "model_epoch"
                 }
               }
             }

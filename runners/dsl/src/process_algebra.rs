@@ -29,9 +29,11 @@
 //!   Composition of mismatched kinds yields a sequence. `["seq"]` is the
 //!   identity.
 //!
-//! Anything else evaluates to `Value::None` (absent): programs, transition
-//! tables, capability and motor programs have no exact effect evaluator
-//! here, and the view rules record that honestly.
+//! Anything else evaluates to `Value::None` (absent): transition tables,
+//! capability and motor programs have no exact effect evaluator here, and
+//! the view rules record that honestly. Program-backed ProcessSchema views
+//! are dispatched separately by the Term evaluator to the existing fueled,
+//! pure `ProgEval` interpreter; this algebra module never interprets programs.
 
 use crate::sym::Interner;
 use crate::value::{cmp_value, SurfaceKind, Value};
