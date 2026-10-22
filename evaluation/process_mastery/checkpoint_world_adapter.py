@@ -8,6 +8,10 @@ import json
 from evaluation.process_mastery.native_process_execution import (
     open_process_candidate_digest, params_digest,
 )
+from evaluation.process_mastery.p22_resource_accounting import (
+    compare_resource_snapshots, resource_snapshot_digest_valid,
+    snapshot_native_resources,
+)
 
 
 @dataclass(frozen=True)
@@ -22,6 +26,7 @@ class CheckpointExpression:
     approval_id: str | None = None
     receipt_id: str | None = None
     cumulative_primitive_work: int | None = None
+    resource_snapshot_json: str | None = None
 
 
 def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
@@ -29,13 +34,22 @@ def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
             or not isinstance(checkpoint.cumulative_primitive_work, int)
             or checkpoint.cumulative_primitive_work < checkpoint.declared_primitive_work):
         return False
+    if not isinstance(checkpoint.resource_snapshot_json, str):
+        return False
+    try:
+        resource_snapshot = json.loads(checkpoint.resource_snapshot_json)
+    except (TypeError, ValueError):
+        return False
+    if not resource_snapshot_digest_valid(resource_snapshot):
+        return False
     if checkpoint.generation == 0:
         payload = {"schema": "p22_native_checkpoint_v1",
             "checkpoint_id": checkpoint.checkpoint_id, "generation": 0,
             "source_digest": checkpoint.expression_digest,
             "params": list(checkpoint.params),
             "primitive_work": checkpoint.declared_primitive_work,
-            "cumulative_primitive_work": checkpoint.cumulative_primitive_work}
+            "cumulative_primitive_work": checkpoint.cumulative_primitive_work,
+            "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"]}
     elif checkpoint.generation > 0 and checkpoint.approval_id and checkpoint.receipt_id:
         payload = {"schema": "p22_native_checkpoint_v1",
             "checkpoint_id": checkpoint.checkpoint_id,
@@ -45,6 +59,7 @@ def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
             "params": list(checkpoint.params),
             "primitive_work": checkpoint.declared_primitive_work,
             "cumulative_primitive_work": checkpoint.cumulative_primitive_work,
+            "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"],
             "approval_id": checkpoint.approval_id,
             "receipt_id": checkpoint.receipt_id}
     else:
@@ -78,15 +93,19 @@ def capture_held_process_checkpoint(agent, process_schema: int, *,
             or attrs.get("source_digest") != params_digest(params)):
         raise ValueError("ancestor process is inactive or has an invalid source digest")
     work = declared_primitive_work
+    resource_snapshot = snapshot_native_resources(agent)
+    resource_json = json.dumps(resource_snapshot, sort_keys=True,
+                               separators=(",", ":"))
     payload = {"schema": "p22_native_checkpoint_v1", "checkpoint_id": checkpoint_id,
         "generation": 0, "source_digest": attrs["source_digest"],
         "params": params, "primitive_work": work,
-        "cumulative_primitive_work": work}
+        "cumulative_primitive_work": work,
+        "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"]}
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
         separators=(",", ":")).encode()).hexdigest()
     return CheckpointExpression(checkpoint_id, "", attrs["source_digest"],
         tuple(params), work, 0, digest,
-        cumulative_primitive_work=work)
+        cumulative_primitive_work=work, resource_snapshot_json=resource_json)
 
 
 def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
@@ -137,16 +156,20 @@ def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
         raise ValueError("checkpoint primitive work must be a nonnegative integer")
     work = declared_primitive_work
     cumulative_work = parent.cumulative_primitive_work + work
+    resource_snapshot = snapshot_native_resources(agent)
+    resource_json = json.dumps(resource_snapshot, sort_keys=True,
+                               separators=(",", ":"))
     payload = {"schema": "p22_native_checkpoint_v1", "checkpoint_id": checkpoint_id,
         "parent_digest": parent.checkpoint_digest, "generation": int(generation),
         "expression_digest": current_digest, "params": params,
         "primitive_work": work, "cumulative_primitive_work": cumulative_work,
+        "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"],
         "approval_id": str(approvals[0]), "receipt_id": str(receipts[0])}
     frozen_digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
         separators=(",", ":")).encode()).hexdigest()
     return CheckpointExpression(checkpoint_id, parent.checkpoint_digest, current_digest,
         tuple(params), work, int(generation), frozen_digest,
-        str(approvals[0]), str(receipts[0]), cumulative_work)
+        str(approvals[0]), str(receipts[0]), cumulative_work, resource_json)
 
 
 class CheckpointWorldAdapter:
@@ -196,7 +219,9 @@ class CheckpointWorldAdapter:
             return {"world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                     "status": "work_denied", "score": None,
                     "primitive_work": work,
-                    "cumulative_primitive_work": cumulative_work}
+                    "cumulative_primitive_work": cumulative_work,
+                    "resource_snapshot": (json.loads(checkpoint.resource_snapshot_json)
+                        if checkpoint.resource_snapshot_json else None)}
         result = self.native.evaluate(
             {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
              "state": {"type": "Var", "name": "state"}},
@@ -207,6 +232,8 @@ class CheckpointWorldAdapter:
                 "status": "scored", "score": int(result == goal_state),
                 "primitive_work": work,
                 "cumulative_primitive_work": cumulative_work,
+                "resource_snapshot": (json.loads(checkpoint.resource_snapshot_json)
+                    if checkpoint.resource_snapshot_json else None),
                 "initial_state": list(initial_state), "goal_state": list(goal_state),
                 "result_state": result}
 
@@ -230,13 +257,21 @@ class CheckpointWorldAdapter:
                                initial_state=world["initial_state"],
                                goal_state=world["goal_state"])
                     for checkpoint in checkpoints]
+            resource_snapshots = {outcome["checkpoint_id"]: outcome["resource_snapshot"]
+                for outcome in pair if outcome["resource_snapshot"] is not None}
+            same_resources = (len(resource_snapshots) == len(pair)
+                and compare_resource_snapshots(resource_snapshots)[
+                    "all_resource_dimensions_match"] if resource_snapshots else
+                self.allow_unattested_fixtures)
             rows.append({"world_id": world["world_id"], "outcomes": pair,
                          "same_world": all(x["world_id"] == world["world_id"] for x in pair),
                          "same_work": len({x["cumulative_primitive_work"]
-                                            for x in pair}) == 1})
+                                            for x in pair}) == 1,
+                         "same_resource_usage": same_resources})
         return {"status": "COMPLETED",
                 "same_worlds": all(row["same_world"] for row in rows),
                 "efficiency_comparable": all(row["same_work"] for row in rows)
+                    and all(row["same_resource_usage"] for row in rows)
                     and all(outcome["status"] == "scored"
                             for row in rows for outcome in row["outcomes"]),
                 "rows": rows}

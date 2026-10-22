@@ -212,6 +212,7 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     assert checkpoint.generation == 1
     assert checkpoint.parent_digest == parent.checkpoint_digest
     assert checkpoint.approval_id is not None and checkpoint.receipt_id is not None
+    assert checkpoint.resource_snapshot_json is not None
     before = checkpoint.checkpoint_digest
     original_params = checkpoint.params
     changed = list(agent.attrs(candidate)["params"])
@@ -221,11 +222,14 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     assert checkpoint.checkpoint_digest == before
     strict_adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8)
     world = {"world_id": "frozen", "initial_state": state, "goal_state": predicted}
-    assert strict_adapter.score(checkpoint, **world)["status"] == "scored"
+    scored = strict_adapter.score(checkpoint, **world)
+    assert scored["status"] == "scored"
+    assert scored["resource_snapshot"]["snapshot_sha256"]
     tampered = CheckpointExpression(checkpoint.checkpoint_id, checkpoint.parent_digest,
         checkpoint.expression_digest, tuple(changed), checkpoint.declared_primitive_work,
         checkpoint.generation, checkpoint.checkpoint_digest, checkpoint.approval_id,
-        checkpoint.receipt_id, checkpoint.cumulative_primitive_work)
+        checkpoint.receipt_id, checkpoint.cumulative_primitive_work,
+        checkpoint.resource_snapshot_json)
     try:
         strict_adapter.score(tampered, **world)
     except ValueError as exc:

@@ -2155,6 +2155,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 **P22.04 record (2026-10-23):** Added [`COGNITION_CAPABILITY_CLOSURE_MATRIX.md`](COGNITION_CAPABILITY_CLOSURE_MATRIX.md) and linked it from PMB v1. It maps all L1–L7 levels to exact phase evidence and leaves each open as failed, not established, or unavailable; human comparisons and unsupported input breadth remain explicit. No level is closed.
 
+**P22 resource-accounting update (2026-10-23):** Each immutable checkpoint now binds parent-linked cumulative primitive work and a digest-verified read-only native graph snapshot. The snapshot records enabled shared ThinkingBudget capacity, remaining and spent values; all node and status counts; search attempts and requests; proposals, qualifications, approval events, world receipts, solve and curriculum tasks, budget denials; and canonical serialized graph bytes. Failed, pending and timed-out statuses remain recorded. Common-world comparisons report whether all recorded dimensions match. This still does not establish training-data exposure, native rule-step or model-call totals, allocator memory or wall-time accounting. Serialized graph bytes measure graph readback size only. Two resource-accounting tests and the P22 regression bundle (103 tests) pass; no P22 held-out evaluation has run.
+
 ### P22.E1 — Integrate the native phase and audit causal dependencies
 
 - **ID:** P22.E1
