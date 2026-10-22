@@ -1106,7 +1106,7 @@ Merge former P6.B2 with I3.2/I3.3. Preserve the existing paced MemoryCycle produ
 
 ## Phase 14 — Laws proofs and safely authored invention operators
 
-**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.03 complete, P14.04 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
+**Entry:** Phase 13 reusable verified processes and measured strategy outcomes. **Status:** in progress; P14.01–P14.04 complete, P14.E1 next. P13's accuracy advantage failed, while cost-accounted library reuse and funded same-shape strategy recall passed; do not infer a sleep retention benefit. Use only P13's verified library schemas/equivalence witnesses, observed strategy entries/application receipts, P1 replay receipts and exact task outcomes. Human comparison is unavailable. Do not close a capability level from this panel.
 
 Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention loop. Earlier processes retain their supported verification scope; proof requirements apply to explicitly proof-admitting domains. Bounded fingerprints do not become proofs. Operator proposals cannot modify criteria, verifier or held-out tests.
 
@@ -1177,6 +1177,8 @@ Complete I4.5 and I7.3 before adopting I7.1 authorship into the live invention l
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_invention_operator_authorship.py tests/test_process_proof_adoption.py -q -p no:cacheprovider`.
 - **Non-goals:** silently mutating the engine/verifier or asking a language model to author the measured operator.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P14.04 completion record (2026-10-22):** Added disabled-by-default graph-authored operator proposals and promotion rules. The bounded `commutator_square_v1` candidate is represented as an expression graph over held `compose` and `commutator` operators; unsupported composition requests fail closed. Only development-split measurements can qualify a candidate, requiring positive yield over its parent, unchanged invariant-check count, zero proof failures and nonnegative work within the cap. Qualification waits for an explicit human approval carrying the frozen criteria digest. Promotion retains both the source candidate and a direct parent-operator rollback edge. The rules do not write verifier, criterion, or evaluation state. Verification: P14.04 bundle — 9 passed. Actual sandbox development and untouched held-out measurement remain P14.E2 requirements; this mechanism test does not claim efficacy.
 
 ### P14.E1 — Integrate the phase and validate the evidence adapter
 
