@@ -2,6 +2,9 @@
 import json
 
 from evaluation.process_mastery.harness import Agent
+from evaluation.process_mastery.representation_cost import (
+    package_description_bits, total_training_bits,
+)
 
 
 def _package_bits(package):
@@ -238,3 +241,36 @@ def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
     assert attrs["training_total_bits"] == 336
     assert attrs["status"] == "candidate"
     assert attrs["heldout_used_for_selection"] is False
+
+
+def test_canonical_cost_counts_mapping_decoder_and_residuals():
+    package = {key: {} for key in (
+        "basis", "grain", "aperture", "latent_schema", "model", "parameters",
+        "forward_map", "inverse_map", "exceptions", "decoder",
+        "retained_residuals", "lost_residuals", "escape_residuals")}
+    minimal = package_description_bits(package)
+    with_map = {**package, "forward_map": {"0": 1, "1": 0},
+                "inverse_map": {"0": 1, "1": 0},
+                "decoder": {"code": "decode"}}
+    assert package_description_bits(with_map) > minimal
+    assert total_training_bits(with_map, [{"id": "r1"}, {"id": "r2"}],
+                               bits_per_record=12) == package_description_bits(with_map) + 24
+
+
+def test_canonical_cost_rejects_incomplete_or_nonfinite_package():
+    package = {key: {} for key in (
+        "basis", "grain", "aperture", "latent_schema", "model", "parameters",
+        "forward_map", "inverse_map", "exceptions", "decoder",
+        "retained_residuals", "lost_residuals", "escape_residuals")}
+    package.pop("decoder")
+    try:
+        package_description_bits(package)
+        assert False, "decoder omission must be rejected"
+    except ValueError:
+        pass
+    package["decoder"] = {"nan": float("nan")}
+    try:
+        package_description_bits(package)
+        assert False, "non-finite costs must be rejected"
+    except ValueError:
+        pass
