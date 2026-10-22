@@ -3365,6 +3365,10 @@ pub enum TermNode {
     ProcessCompose { a: TermIdx, b: TermIdx },
     ProcessInverse { a: TermIdx },
     ProcessApply { p: TermIdx, state: TermIdx },
+    /// Verify a process as a goal-equivalent repair across fresh states.
+    ProcessRepairVerify { p: TermIdx, fresh_states: TermIdx, goals: TermIdx },
+    /// Validate finite `(outcome, probability)` pairs and return `(support, unknown_mass)`.
+    ProcessDistribution { outcomes: TermIdx },
     EffectSupport { p: TermIdx },
     EffectFingerprint { p: TermIdx, probes: TermIdx },
     PermParity { p: TermIdx },
@@ -5148,6 +5152,14 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::ProcessInverse { a } => TermNode::ProcessInverse { a: copy_subtree(src, dst, a) },
         TermNode::ProcessApply { p, state } => TermNode::ProcessApply {
             p: copy_subtree(src, dst, p), state: copy_subtree(src, dst, state),
+        },
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => TermNode::ProcessRepairVerify {
+            p: copy_subtree(src, dst, p),
+            fresh_states: copy_subtree(src, dst, fresh_states),
+            goals: copy_subtree(src, dst, goals),
+        },
+        TermNode::ProcessDistribution { outcomes } => TermNode::ProcessDistribution {
+            outcomes: copy_subtree(src, dst, outcomes),
         },
         TermNode::EffectSupport { p } => TermNode::EffectSupport { p: copy_subtree(src, dst, p) },
         TermNode::EffectFingerprint { p, probes } => TermNode::EffectFingerprint {
@@ -9239,6 +9251,16 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 }
             }
             crate::process_algebra::apply(&pv, &sv, ctx.interner)
+        }
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => {
+            let pv = evaluate(arena, *p, env, ctx);
+            let states = evaluate(arena, *fresh_states, env, ctx);
+            let goals = evaluate(arena, *goals, env, ctx);
+            Value::Bool(crate::process_algebra::verify_repair_values(&pv, &states, &goals, ctx.interner))
+        }
+        TermNode::ProcessDistribution { outcomes } => {
+            let value = evaluate(arena, *outcomes, env, ctx);
+            crate::process_algebra::finite_distribution_value(&value)
         }
         TermNode::EffectSupport { p } => {
             let pv = evaluate(arena, *p, env, ctx);
@@ -15214,6 +15236,10 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::ProcessInverse { a } | TermNode::EffectSupport { p: a }
         | TermNode::PermParity { p: a } | TermNode::MatDet { m: a } => out.push(*a),
         TermNode::ProcessApply { p, state } => out.extend([*p, *state]),
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => {
+            out.extend([*p, *fresh_states, *goals]);
+        }
+        TermNode::ProcessDistribution { outcomes } => out.push(*outcomes),
         TermNode::EffectFingerprint { p, probes } => out.extend([*p, *probes]),
         TermNode::LogQuantum { population, .. } => {
             out.push(*population);

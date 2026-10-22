@@ -499,6 +499,13 @@ pub fn verify_repair(p: &Value, fresh_states: &[Value], goals: &[Value], interne
         })
 }
 
+pub fn verify_repair_values(p: &Value, fresh_states: &Value, goals: &Value, interner: &Interner) -> bool {
+    match (seq_items(fresh_states), seq_items(goals)) {
+        (Some(states), Some(goals)) => verify_repair(p, &states, &goals, interner),
+        _ => false,
+    }
+}
+
 /// Validate an explicitly finite outcome distribution and preserve its
 /// omitted probability as unknown mass. Duplicate outcomes, invalid weights,
 /// and total mass above one are unsupported rather than normalized away.
@@ -515,6 +522,28 @@ pub fn finite_distribution(outcomes: &[(Value, f64)]) -> Option<(Vec<(Value, f64
     }
     if total > 1.0 { return None; }
     Some((outcomes.to_vec(), (1.0 - total).max(0.0)))
+}
+
+/// DSL boundary for finite distributions. Input is a sequence of
+/// `(outcome, probability)` pairs. Output is `(validated_support, unknown_mass)`.
+pub fn finite_distribution_value(value: &Value) -> Value {
+    let Some(items) = seq_items(value) else { return Value::None; };
+    let mut parsed = Vec::with_capacity(items.len());
+    for item in items.iter() {
+        let Some(pair) = seq_items(item) else { return Value::None; };
+        if pair.len() != 2 { return Value::None; }
+        let probability = match &pair[1] {
+            Value::Float(x) => *x,
+            Value::Int(x) => *x as f64,
+            _ => return Value::None,
+        };
+        parsed.push((pair[0].clone(), probability));
+    }
+    let Some((support, unknown_mass)) = finite_distribution(&parsed) else { return Value::None; };
+    let encoded = support.into_iter().map(|(outcome, probability)| {
+        Value::Tuple(Arc::new(smallvec![outcome, Value::Float(probability)]))
+    }).collect::<Vec<_>>();
+    Value::Tuple(Arc::new(smallvec![Value::Tuple(Arc::new(encoded)), Value::Float(unknown_mass)]))
 }
 
 /// `EffectSupport{p}` — how much of the world the process touches: moved
