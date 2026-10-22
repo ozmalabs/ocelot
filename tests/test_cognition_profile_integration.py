@@ -361,6 +361,42 @@ def test_p13_profile_chain():
                     and agent.s.node(n)["attrs"].get("enabled") == 1.0]
         assert len(attached) == 1
 
+    # WorldAdapter.tick services the consolidation request before the sleep
+    # receipt rule; raw rule fixpoint execution alone does not run that adapter.
+    budget = next(n for n in _nodes(agent, "ThinkingBudget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    agent.inner.set_attr(budget, "remaining", 16.0)
+    agent.inner.set_attr(budget, "capacity", 16.0)
+    context = agent.s.add_node("MemoryContext", {"context_key": "p13-profile"})
+    schema = agent.s.add_node("MemorySchema", {"name": "p13-observed-route"})
+    episode = agent.s.add_node("EpisodicEvent", {
+        "event_key": "p13-observed-event", "cue_key": "p13-cue", "epoch": 0.0,
+        "salience": 0.8, "surprise": 0.5, "value": 0.5,
+        "observation_status": "observed", "provenance_kind": "perceived",
+        "state_kind": "world_state", "state_summary": "observed state",
+    })
+    _edge(agent, agent.agent, "experienced_event", episode)
+    _edge(agent, episode, "in_context", context)
+    _edge(agent, episode, "instantiates_schema", schema)
+    for _ in range(8):
+        agent.tick()
+    sample = agent.s.add_node("NetworkModeSample", {
+        "epoch": 1.0, "default_mode_weight": 1.0,
+        "exteroceptive_load": 0.0, "task_demand": 0.0,
+        "interoceptive_urgency": 0.0, "uncertainty": 0.0,
+        "idle_duration": 8.0, "status": "raw",
+    })
+    _edge(agent, agent.agent, "has_network_mode_sample", sample)
+    for _ in range(8):
+        agent.tick()
+    receipts = _nodes(agent, "SleepStageReceipt")
+    assert receipts, "profile tick did not produce the funded P13 replay receipt"
+    replay = next(r for r in receipts if agent.s.node(r)["attrs"].get("stage") == "replay")
+    replay_attrs = agent.s.node(replay)["attrs"]
+    assert replay_attrs["observation_status"] == "not_observed"
+    assert replay_attrs["provenance_kind"] == "offline_sleep_stage"
+    request = list(agent.inner.neighbours(replay, "funded_by_request"))[0]
+    assert agent.s.node(request)["attrs"]["status"] == "serviced"
     agent.close()
 
 
