@@ -26,7 +26,7 @@ def _finite_nonnegative(attrs: dict, key: str, *, kind: str, node_id) -> float:
     return float(value)
 
 
-def snapshot_native_resources(agent) -> dict:
+def snapshot_native_resources(agent, *, runtime_counters: dict | None = None) -> dict:
     """Measure cumulative graph and shared-budget usage without filtering outcomes.
 
     `serialized_graph_bytes` is the canonical JSON size of the graph readback;
@@ -39,6 +39,16 @@ def snapshot_native_resources(agent) -> dict:
     root = getattr(agent, "agent", None) or getattr(agent, "ag", None)
     if store is None or native is None or root is None:
         raise TypeError("agent must expose native graph store and root")
+    measured_runtime = None
+    if runtime_counters is not None:
+        if not isinstance(runtime_counters, dict):
+            raise TypeError("runtime counters must be a mapping")
+        measured_runtime = {}
+        for key in ("native_rule_steps", "native_model_calls"):
+            value = runtime_counters.get(key)
+            if (isinstance(value, bool) or not isinstance(value, int) or value < 0):
+                raise ValueError(f"runtime counter {key} must be a nonnegative integer")
+            measured_runtime[key] = value
 
     budget_ids = native.neighbours(root, "has_thinking_budget")
     budgets = [store.node(node)["attrs"] for node in budget_ids
@@ -115,6 +125,7 @@ def snapshot_native_resources(agent) -> dict:
                             for name in sorted(set(_RESOURCE_KINDS.values()))},
         "cumulative_resources": {name: float(value) for name, value
                                   in sorted(cumulative.items())},
+        "runtime_counters": measured_runtime,
         "thinking_budget_capacity": float(capacity),
         "thinking_budget_remaining": float(remaining),
         "thinking_budget_spent": float(capacity - remaining),
@@ -150,12 +161,18 @@ def compare_resource_snapshots(snapshots: dict[str, dict]) -> dict:
             "serialized_graph_bytes": snapshot["serialized_graph_bytes"],
             **{key: snapshot.get("cumulative_resources", {}).get(key, 0.0)
                for key in cumulative_dimensions},
+            **{key: (snapshot.get("runtime_counters") or {}).get(key)
+               for key in ("native_rule_steps", "native_model_calls")},
         }
     common = set.intersection(*(set(vector) for vector in vectors.values()))
-    matched = {key: len({vector[key] for vector in vectors.values()}) == 1
+    matched = {key: (None not in {vector[key] for vector in vectors.values()}
+                     and len({vector[key] for vector in vectors.values()}) == 1)
                for key in sorted(common)}
+    unavailable = sorted(key for key in common
+        if any(vector[key] is None for vector in vectors.values()))
     return {"arms": vectors, "matched": matched,
             "all_resource_dimensions_match": all(matched.values()),
+            "unavailable_dimensions": unavailable,
             "failure_statuses_retained": True}
 
 

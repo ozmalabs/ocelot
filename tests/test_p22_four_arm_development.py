@@ -17,6 +17,10 @@ def test_four_arm_development_uses_same_training_world_and_no_approval_side_effe
         assert all(row["split"] == "training" for row in data["training_tasks"])
         assert data["approval_count"] == 0
         assert data["world_receipt_count"] == 0
+        assert data["resource_snapshot"]["runtime_counters"][
+            "native_rule_steps"] > 0
+        assert data["resource_snapshot"]["runtime_counters"][
+            "native_model_calls"] == 0
     assert result["arms"]["adaptive_only"]["training_tasks"][0][
         "curriculum_status"] == "completed"
     assert result["arms"]["full"]["training_tasks"][0][

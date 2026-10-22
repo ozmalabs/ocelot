@@ -108,8 +108,12 @@ def run_p22_four_arm_development(*, family: str,
             agent.s.set_attr(curriculum_policy, "max_tasks", float(len(worlds)))
             _add_task_inputs(agent, arm, domain_name, domain, worlds)
 
+            native_rule_steps = 0
+            rule_rounds = 0
             for _ in range(max_rule_rounds):
                 fired = agent.inner.run_rules(20_000)
+                rule_rounds += 1
+                native_rule_steps += fired
                 pending = [candidate for candidate in agent.s.nodes("OpenProcessCandidate")
                     if agent.s.node(candidate)["attrs"].get(
                         "expression_digest") == "pending_native_expression_attestation"]
@@ -181,7 +185,10 @@ def run_p22_four_arm_development(*, family: str,
                 "curriculum_outcomes": curriculum_outcomes,
                 "approval_count": len(agent.s.nodes("OpenProcessAdoptionApproval")),
                 "world_receipt_count": len(agent.s.nodes("OpenProcessWorldReceipt")),
-                "resource_snapshot": snapshot_native_resources(agent)}
+                "rule_rounds": rule_rounds,
+                "resource_snapshot": snapshot_native_resources(agent,
+                    runtime_counters={"native_rule_steps": native_rule_steps,
+                                      "native_model_calls": 0})}
         finally:
             agent.close()
 

@@ -14,6 +14,18 @@ validation or held-out world was read by this runner.
 | D4 v2 | 3/8 | 3/8 | 3/8 | 3/8 | 5 / 1 |
 | Loopover v2 | 1/8 | 1/8 | 1/8 | 1/8 | 0 / 0 |
 
+The runner also records successful native graph-rule progress firings in its
+digest-bound resource snapshot (this is not match-enumeration count): D4 used
+9/67/24/96 for unchanged/adaptive/invention/full; Loopover used
+16/109/29/138. This counter is an additional work denominator, not a claim
+that resource matching has passed. The graph-native runner made zero external
+model calls. Allocator memory and wall-time measurement remain unavailable in
+this runner.
+
+Resource comparison treats unmeasured runtime counters as unavailable rather
+than as zero. This matters for older snapshots that predate rule-step
+instrumentation; they cannot pass an exact resource-match check by omission.
+
 These counts are training-panel diagnostics and must not be interpreted as
 generalization or treatment effects. No arm had a candidate approval or a
 world receipt. The resource comparator correctly reports mismatches across
@@ -36,8 +48,8 @@ non-actionable.
 
 Raw records:
 
-- [`p22_four_arm_v2_d4.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_d4.json), SHA-256 `fbe41ad128b5354b51e25e489aeb032131771b0793628042556c2224cafc631d`.
-- [`p22_four_arm_v2_loopover.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_loopover.json), SHA-256 `24ab3981c21bb701b73f96571bf411d166ce923d879cbe4fde7a72eb1aae945e`.
+- [`p22_four_arm_v2_d4.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_d4.json), SHA-256 `e40ee1f3e7ddd879c14a8f58077427f515983285263c47649495633eadd2283a`.
+- [`p22_four_arm_v2_loopover.json`](../../../evaluation/process_mastery/results/p22_four_arm_v2_loopover.json), SHA-256 `a04006fbc62c892285927ca6066e82ba53377473ac5c7d014a468dc59af407c4`.
 
 Reproduce with:
 
