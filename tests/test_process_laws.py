@@ -78,6 +78,12 @@ def _commutator_case(*, family="permutation_fixture", status="conjecture",
     })
     agent.s.add_edge(agent.ag, "has_process_law_candidate", law, {})
     agent.s.add_edge(law, "about_process", schema, {})
+    if counterexample_count:
+        counterexample = agent.s.add_node("LawCounterexample", {
+            "validated": 1, "source": "native_process_outcome",
+            "observed_value": "even", "claimed_value": "odd",
+        })
+        agent.s.add_edge(law, "has_counterexample", counterexample, {})
     return agent, domain, law
 
 

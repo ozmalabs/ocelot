@@ -809,6 +809,11 @@
           "agent",
           "has_process_law_candidate",
           "law"
+        ],
+        [
+          "law",
+          "has_counterexample",
+          "ce"
         ]
       ],
       "where": {
@@ -857,6 +862,21 @@
             "b": {
               "type": "Lit",
               "value": "finite_sample"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ce"
+              },
+              "key": "validated"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1
             }
           },
           {
