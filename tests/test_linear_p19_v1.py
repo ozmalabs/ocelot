@@ -61,3 +61,14 @@ def test_p19_invention_requires_candidate_scoped_approval_before_world_execution
     assert result["unseen_binding_strategy"]["binding_changed"]
     assert result["unseen_binding_strategy"]["goal_changed"]
     assert result["unseen_binding_strategy"]["solved"]
+
+
+def test_p19_analyzer_fails_closed_when_matched_rows_or_controls_are_missing():
+    from evaluation.process_mastery.analyze_linear_p19_v1 import analyze
+
+    result = analyze({"trials": [], "controls": [],
+                      "provenance": {"runtime_attestation": {"status": "ATTESTED"}}})
+    assert result["status"] == "FAIL"
+    assert result["primary"]["status"] == "NOT_ESTABLISHED"
+    assert any(failure["kind"] == "missing_matched_arm_rows"
+               for failure in result["audit"]["failures"])

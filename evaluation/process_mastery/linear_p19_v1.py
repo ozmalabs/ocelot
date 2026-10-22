@@ -2,9 +2,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+from collections import Counter
 from pathlib import Path
 import random
+import re
+import subprocess
 import sys
 import time
 
@@ -21,9 +25,12 @@ from evaluation.process_mastery.native_process_execution import (
     execute_open_process_candidate,
     params_digest,
 )
+from evaluation.process_mastery.runtime_attestation import attest
 from substrate.boot_profiles import boot_cognition_on
+import substrate_rs
 
 PHASE = "linear-p19-v1"
+ARMS = ("invention_discovery", "measured_greedy", "native_primitive_search")
 BASE_SEED = 29_000_000  # 10m + phase 19 * 1m; disjoint P19 split/control blocks below
 HELDOUT_OFFSET = 200_000
 CONTROL_OFFSET = 100_000
@@ -36,6 +43,66 @@ MAX_DEPTH = 5
 MAX_PATH_ARRIVALS = 10_000
 MAX_NATIVE_TICKS = 64
 MAX_NATIVE_STEPS = 10_000
+PROVENANCE_FILES = (
+    "evaluation/process_mastery/linear_p19_v1.py",
+    "evaluation/process_mastery/analyze_linear_p19_v1.py",
+    "evaluation/process_mastery/linear_p19_worlds.py",
+    "evaluation/process_mastery/native_primitive_search.py",
+    "evaluation/process_mastery/native_process_execution.py",
+    "evaluation/process_mastery/runtime_attestation.py",
+    "evaluation/process_mastery/scorecard.py",
+    "scripts/gen_open_process_search_seed.py", "seeds/open_process_search.json",
+    "scripts/gen_open_process_adoption_seed.py", "seeds/open_process_adoption.json",
+    "scripts/gen_strategy_discovery_seed.py", "seeds/strategy_discovery.json",
+    "scripts/gen_cognition_planner_seed.py", "seeds/cognition_planner.json",
+    "scripts/gen_thinking_budget_seed.py", "seeds/thinking_budget.json",
+    "substrate/boot_profiles.py", "seeds/cognition_on_params.json",
+    "docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md",
+    "docs/research/engine_substrate/COGNITION_NATIVE_EVIDENCE_CONTRACT.md",
+    "runners/dsl/python/substrate_rs/__init__.py",
+    "runners/dsl/python/substrate_rs/_native.build.json",
+    "runners/dsl/Cargo.toml", "runners/dsl/pyproject.toml", "runners/dsl/uv.lock",
+    "runners/dsl/src/process_algebra.rs", "runners/dsl/src/term.rs",
+    "runners/dsl/src/cognitive_cycle.rs",
+)
+
+
+def provenance():
+    """Bind P19 runner, profile, world and the exact loaded native artifact."""
+    source = hashlib.sha256()
+    file_hashes = {}
+    for relative in PROVENANCE_FILES:
+        data = (ROOT / relative).read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        file_hashes[relative] = digest
+        source.update(relative.encode() + b"\0" + data + b"\0")
+    package_dir = Path(substrate_rs.__file__).resolve().parent
+    extension = Path(substrate_rs._native.__file__).resolve()
+    receipt = package_dir / "_native.build.json"
+    bundle = lambda paths: hashlib.sha256(json.dumps(
+        [(path, file_hashes[path]) for path in paths], sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    profile_files = ("substrate/boot_profiles.py", "seeds/cognition_on_params.json")
+    world_files = ("evaluation/process_mastery/linear_p19_worlds.py",
+                   "evaluation/process_mastery/native_primitive_search.py")
+    return {"phase": PHASE,
+        "runner_sha256": file_hashes["evaluation/process_mastery/linear_p19_v1.py"],
+        "analyzer_sha256": file_hashes["evaluation/process_mastery/analyze_linear_p19_v1.py"],
+        "source_bundle_sha256": source.hexdigest(),
+        "source_file_sha256": file_hashes,
+        "git_commit": subprocess.check_output(["git", "rev-parse", "HEAD"],
+            cwd=ROOT, text=True).strip(),
+        "wrapper_sha256": hashlib.sha256(Path(substrate_rs.__file__).read_bytes()).hexdigest(),
+        "loaded_extension_path": str(extension),
+        "loaded_extension_sha256": hashlib.sha256(extension.read_bytes()).hexdigest(),
+        "build_receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest(),
+        "runtime_attestation": attest(package=substrate_rs, build_receipt=receipt,
+                                      require_clean=True),
+        "profile_sha256": bundle(profile_files), "world_adapter_sha256": bundle(world_files),
+        "dependency_closure_sha256": bundle(("runners/dsl/Cargo.toml",
+            "runners/dsl/pyproject.toml", "runners/dsl/uv.lock",
+            "runners/dsl/python/substrate_rs/_native.build.json")),
+        "python": sys.version.split()[0]}
 
 
 def allocation(split: str):
@@ -95,6 +162,7 @@ def run_greedy(task, world, *, primitive_cap=PRIMITIVE_CAP,
     solved = tuple(world.state) == tuple(world.goal)
     return {"status": "COMPLETED" if solved else "UNSOLVED", "solved": solved,
             "primitives": primitives, "model_queries": queries, "receipts": receipts,
+            "receipt_verified": all(world.verify_receipt(receipt) for receipt in receipts),
             "task_seconds": time.perf_counter() - started}
 
 
@@ -129,6 +197,7 @@ def run_native_primitive(task, world, *, primitive_cap=PRIMITIVE_CAP,
     solved = tuple(world.state) == tuple(world.goal)
     return {"status": "COMPLETED" if solved else "UNSOLVED", "solved": solved,
             "primitives": primitives, "model_queries": queries, "receipts": receipts,
+            "receipt_verified": all(world.verify_receipt(receipt) for receipt in receipts),
             "task_seconds": time.perf_counter() - started}
 
 
@@ -146,6 +215,11 @@ def _settle(agent):
         if agent.inner.run_rules(MAX_NATIVE_STEPS) == 0:
             return
     raise RuntimeError("P19 invention graph failed to reach a fixpoint")
+
+
+def _attempt_status_counts(agent):
+    return dict(Counter(agent.s.node(node)["attrs"].get("status", "unknown")
+                        for node in _graph_nodes(agent, "OpenProcessSearchAttempt")))
 
 
 def run_invention(task, world, *, approval_provider=None,
@@ -214,6 +288,7 @@ def run_invention(task, world, *, approval_provider=None,
         if len(candidates) != 1:
             return {"status": "NO_CANDIDATE" if not candidates else "AMBIGUOUS_CANDIDATE",
                     "candidate_count": len(candidates), "attempt_count": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
+                    "attempt_status_counts": _attempt_status_counts(agent),
                     "task_seconds": time.perf_counter() - started}
         candidate = candidates[0]
         digest = attest_open_process_candidate(agent, candidate)
@@ -227,6 +302,7 @@ def run_invention(task, world, *, approval_provider=None,
             return {"status": "AWAITING_CANDIDATE_APPROVAL", "candidate_digest": digest,
                     "candidate": approval_context,
                     "attempt_count": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
+                    "attempt_status_counts": _attempt_status_counts(agent),
                     "approval_source": approval_source,
                     "task_seconds": time.perf_counter() - started}
         approval = agent.s.add_node("OpenProcessAdoptionApproval", {
@@ -280,10 +356,13 @@ def run_invention(task, world, *, approval_provider=None,
             "primitives": len(result.get("receipt", {}).get("applied_actions", [])),
             "model_queries": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
             "receipts": [result["receipt"]] if result.get("receipt") else [],
+            "receipt_verified": bool(result.get("receipt")
+                                      and world.verify_receipt(result["receipt"])),
             "candidate_digest": digest, "expression_key": attrs["expression_key"],
             "approval_source": approval_source,
             "execution_reason": result.get("reason"),
             "attempt_count": len(_graph_nodes(agent, "OpenProcessSearchAttempt")),
+            "attempt_status_counts": _attempt_status_counts(agent),
             "strategy_learned_from_receipt": len(strategies) == 1,
             "unseen_binding_strategy": strategy_reuse,
             "task_seconds": time.perf_counter() - started}
@@ -326,6 +405,9 @@ def run_trial(family: str, task_kind: str, seed: int, arm: str, *,
         raise ValueError(f"unsupported P19 comparator arm: {arm}")
     return {"phase": PHASE, "family": family, "task_kind": task_kind,
             "seed": int(seed), "arm": arm, "world_sha256": world.task_digest(task),
+            "input_audit": {"hidden_witness_absent": "witness" not in task
+                            and "solution" not in task,
+                            "goal_action_absent": "goal_action" not in task},
             **result}
 
 
@@ -336,6 +418,7 @@ def run_control(kind: str, seed: int):
         world.goal = (2, 2, 2, 2)
         if any(tuple(state) == world.goal for state in world.transition_graph()["states"]):
             raise RuntimeError("impossible-goal control is reachable")
+        task["goal_state"] = list(world.goal)
     elif kind == "illegal_action":
         receipt = world.transition_sequence(("not_a_primitive",))
         if receipt.get("status") != "rejected" or tuple(world.state) != before:
@@ -348,6 +431,7 @@ def run_control(kind: str, seed: int):
         raise ValueError(f"unsupported P19 control: {kind}")
     return {"kind": kind, "seed": seed, "status": "PASS",
             "state_unchanged": tuple(world.state) == before,
+            "goal_reachable": False if kind == "impossible_goal" else None,
             "world_sha256": world.task_digest(task)}
 
 
@@ -383,7 +467,69 @@ def self_check():
     return {"phase": PHASE, "status": "PASS", "development_cases": cases,
             "allocation_counts": {"tasks": len(allocation("development")["tasks"]),
                                   "controls": len(allocation("development")["controls"])},
-            "controls": controls}
+            "controls": controls, "provenance": provenance()}
+
+
+def _frozen_record(preregistration: Path):
+    text = preregistration.read_text()
+    match = re.search(r"^P19_FREEZE_JSON: (\{.*\})$", text, re.MULTILINE)
+    if not match:
+        raise RuntimeError("P19 preregistration has no machine-readable freeze record")
+    return json.loads(match.group(1))
+
+
+def _verify_preregistration(preregistration: Path):
+    relative = str(preregistration.resolve().relative_to(ROOT))
+    dirty = subprocess.check_output(["git", "status", "--porcelain", "--", relative],
+                                    cwd=ROOT, text=True)
+    if dirty:
+        raise RuntimeError("P19 preregistration must be committed before held-out access")
+    changed = subprocess.check_output(["git", "diff-tree", "--no-commit-id", "--name-only",
+        "-r", "HEAD"], cwd=ROOT, text=True).splitlines()
+    if changed != [relative]:
+        raise RuntimeError("the immediately preceding commit must contain only the P19 preregistration")
+    frozen = _frozen_record(preregistration)
+    current = provenance()
+    for key in ("runner_sha256", "analyzer_sha256", "source_bundle_sha256", "wrapper_sha256",
+                "loaded_extension_sha256", "build_receipt_sha256", "profile_sha256",
+                "world_adapter_sha256", "dependency_closure_sha256"):
+        if frozen.get(key) != current.get(key):
+            raise RuntimeError(f"P19 preregistration provenance mismatch: {key}")
+    runtime = current["runtime_attestation"]
+    if runtime.get("status") != "ATTESTED" or runtime.get("issues"):
+        raise RuntimeError("P19 held-out execution requires an attested native runtime")
+    return current
+
+
+def run_heldout(*, preregistration: Path, approval_manifest: Path | None = None):
+    current_provenance = _verify_preregistration(preregistration)
+    approvals = {}
+    if approval_manifest:
+        payload = json.loads(approval_manifest.read_text())
+        approvals = payload.get("approvals", {})
+        if not isinstance(approvals, dict):
+            raise ValueError("approval manifest must contain an approvals object")
+    rows = []
+    for item in allocation("heldout")["tasks"]:
+        for arm in ARMS:
+            provider = None
+            source = "no_candidate_specific_approval"
+            if arm == "invention_discovery":
+                prefix = f"{item['family']}/{item['task_kind']}/{item['seed']}/"
+                def provider(candidate, prefix=prefix):
+                    record = approvals.get(prefix + candidate["expression_digest"])
+                    return isinstance(record, dict) and record.get("approved") is True \
+                        and record.get("approval_kind") == "human"
+                source = "candidate_specific_approval_manifest"
+            rows.append(run_trial(item["family"], item["task_kind"], item["seed"], arm,
+                approval_provider=provider, approval_source=source))
+    controls = [run_control(item["kind"], item["seed"])
+                for item in allocation("heldout")["controls"]]
+    return {"schema": "p19-scorecard-v1", "phase": PHASE, "split": "heldout",
+        "allocations": allocation("heldout"), "arms": list(ARMS),
+        "limits": {"primitive_cap": PRIMITIVE_CAP, "model_query_cap": MODEL_QUERY_CAP,
+                   "max_depth": MAX_DEPTH, "max_path_arrivals": MAX_PATH_ARRIVALS},
+        "trials": rows, "controls": controls, "provenance": current_provenance}
 
 
 def main():
@@ -391,13 +537,16 @@ def main():
     parser.add_argument("--self-check", action="store_true")
     parser.add_argument("--split", choices=("development", "heldout"))
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--preregistration", type=Path)
+    parser.add_argument("--approval-manifest", type=Path)
     args = parser.parse_args()
     if args.self_check:
         result = self_check()
     elif args.split:
-        # Sealed allocation access is intentionally unavailable until a
-        # standalone preregistration has been committed and verified.
-        raise SystemExit("P19 split execution is disabled until preregistration freeze")
+        if args.split != "heldout" or args.preregistration is None:
+            raise SystemExit("P19 held-out access requires --preregistration")
+        result = run_heldout(preregistration=args.preregistration,
+                             approval_manifest=args.approval_manifest)
     else:
         parser.error("select --self-check or --split")
     encoded = json.dumps(result, sort_keys=True, indent=2, default=list)
