@@ -426,6 +426,130 @@ def test_p13_shared_budget():
     agent.close()
 
 
+def test_p14_profile_chain():
+    p14 = {"process_laws", "process_proof_adoption", "invention_operator_authorship"}
+    boot_started = time.perf_counter()
+    agent = boot_cognition_on()
+    boot_seconds = time.perf_counter() - boot_started
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p14:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("ProcessLawsPolicy", "ProcessProofAdoptionPolicy",
+                      "InventionOperatorAuthorshipPolicy"):
+        active = [n for n in _nodes(agent, node_type)
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(active) == 1
+
+    # Exercise actual graph rules: a composition request mints its expression graph,
+    # while a registered proof-required domain blocks a process without proof.
+    request = agent.s.add_node("OperatorCompositionRequest", {
+        "name": "p14-profile-request", "status": "draft",
+        "recipe": "commutator_square", "left_operator": "commutator",
+        "right_operator": "commutator", "candidate_name": "commutator_square_v1",
+    })
+    _edge(agent, agent.agent, "has_operator_composition_request", request)
+    domain = agent.s.add_node("ProcessDomain", {
+        "name": "p14-proof-domain", "kind": "permutation", "source_epoch": 0,
+        "model_epoch": 0, "frame_epoch": 0, "family_digest": "p14-family",
+        "model_digest": "p14-model", "probes": [[0, 1, 2]],
+    })
+    _edge(agent, agent.agent, "has_process_domain", domain)
+    held_a = agent.s.add_node("ProcessSchema", {
+        "name": "held-a", "kind": "permutation", "domain": "p14-proof-domain",
+        "status": "active", "provenance": "held", "params": [1, 2, 0],
+    })
+    held_b = agent.s.add_node("ProcessSchema", {
+        "name": "held-b", "kind": "permutation", "domain": "p14-proof-domain",
+        "status": "active", "provenance": "held", "params": [0, 2, 1],
+    })
+    _edge(agent, agent.agent, "has_process_schema", held_a)
+    _edge(agent, agent.agent, "has_process_schema", held_b)
+    from scripts.track_i_seed_lib import A as _A, PCommutator as _PCommutator
+    exact_params = agent.inner.evaluate(_PCommutator(_A("a", "params"), _A("b", "params")),
+                                        {"a": held_a, "b": held_b})
+    proved_process = agent.s.add_node("ProcessSchema", {
+        "name": "p14-commutator", "kind": "permutation", "domain": "p14-proof-domain",
+        "status": "active", "invented": 1, "operator": "commutator",
+        "params": exact_params, "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+    })
+    _edge(agent, agent.agent, "has_process_schema", proved_process)
+    _edge(agent, domain, "has_invented_process", proved_process)
+    _edge(agent, proved_process, "has_arg0", held_a)
+    _edge(agent, proved_process, "has_arg1", held_b)
+    law = agent.s.add_node("ProcessLaw", {
+        "claim": "commutator_even", "status": "conjecture", "proven": 0,
+        "family": "p14-proof-domain", "family_digest": "p14-family",
+        "family_epoch": 0, "process_epoch": 0, "model_digest": "p14-model",
+        "model_epoch": 0, "frame_epoch": 0,
+        "statement_digest": "4e3f9f19059a7254dbc8b885e464eccf69cec770eec50cb43a4d89e01415adb2",
+        "assumptions_digest": "d055b01ab1e76e1190f7b04e01fe250ab42f5ce6ccc24eaf4dfd84263ec96077",
+        "assumptions": "permutation_group;parity_homomorphism_Z2;operator_semantics_v1",
+        "evidence_kind": "structural_derivation", "counterexample_count": 0,
+    })
+    _edge(agent, agent.agent, "has_process_law_candidate", law)
+    _edge(agent, law, "about_process", proved_process)
+    process = agent.s.add_node("ProcessSchema", {
+        "name": "p14-unproved-process", "kind": "permutation",
+        "domain": "p14-proof-domain", "status": "active", "invented": 1,
+        "params": [1, 0, 2],
+    })
+    _edge(agent, agent.agent, "has_process_schema", process)
+    policy = next(n for n in _nodes(agent, "ProcessProofAdoptionPolicy")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    requirement = agent.s.add_node("ProcessProofRequirement", {
+        "name": "p14-proof-requirement", "required": 1,
+        "required_law": "commutator_even",
+    })
+    _edge(agent, policy, "requires_proof_for", requirement)
+    _edge(agent, requirement, "applies_to", domain)
+    _p4_tick(agent)
+    candidates = [n for n in _nodes(agent, "CandidateOperator")
+                  if agent.s.node(n)["attrs"].get("name") == "commutator_square_v1"]
+    assert len(candidates) == 1
+    assert agent.s.node(request)["attrs"]["status"] == "built"
+    assert agent.s.node(process)["attrs"]["status"] == "proof_blocked"
+    assert agent.s.node(law)["attrs"]["status"] == "checked"
+    proof = agent.inner.neighbours(law, "has_proof_reference")[0]
+    assert agent.s.node(proof)["attrs"]["checker"] == "process_laws_seed_v1"
+    assert agent.s.node(proof)["attrs"]["process_params"] == agent.s.node(proved_process)["attrs"]["params"]
+    assert agent.s.node(proved_process)["attrs"]["proof_adoption_status"] == "approved"
+
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    graph = agent.inner.graph_to_dict()
+    serialized_bytes = len(json.dumps(graph, sort_keys=True).encode("utf-8"))
+    assert boot_seconds > 0 and serialized_bytes > 0 and graph["nodes"]
+    agent.close()
+
+
+def test_p14_default_isolation():
+    p14 = {"process_laws", "process_proof_adoption", "invention_operator_authorship"}
+    p14_rules = {item["name"] for sid in p14 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p14.isdisjoint(installed_seeds(default.s))
+    assert p14.isdisjoint(installed_seeds(conversation.s))
+    assert p14_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p14_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p14_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
 def test_p12_profile_chain():
     p12 = {"imitation", "social_process", "process_explanation"}
     agent = boot_cognition_on()

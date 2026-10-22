@@ -33,7 +33,7 @@ def test_operator_cannot_edit_verifier():
 
 def test_human_gate_not_bypassed():
     text = _contract()
-    assert "requires the existing human approval gate" in text
+    assert "requires the explicit human approval event with the frozen criteria digest" in text
     assert "policies remain disabled by default" in text
     assert "held-out results remain untouched" in text
 

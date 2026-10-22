@@ -56,6 +56,18 @@
       }
     },
     {
+      "provenance": "seed:process_laws:has_process_law:Agent:ProcessLaw",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_law",
+      "tgt": {
+        "type": "ProcessLaw",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:process_laws:about_process:ProcessLaw:ProcessSchema",
       "src": {
         "type": "ProcessLaw",
@@ -651,6 +663,13 @@
           "law",
           "proven",
           1
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_law",
+          "law",
+          {}
         ],
         [
           "add_node",

@@ -25,6 +25,7 @@ def build():
     specs = [
         ("Agent", "has_process_laws_policy", "ProcessLawsPolicy"),
         ("Agent", "has_process_law_candidate", "ProcessLaw"),
+        ("Agent", "has_process_law", "ProcessLaw"),
         ("ProcessLaw", "about_process", "ProcessSchema"),
         ("ProcessLaw", "has_proof_reference", "LawProofReference"),
         ("ProcessLaw", "has_counterexample", "LawCounterexample"),
@@ -72,6 +73,7 @@ def build():
          ["set_attr", "law", "proof_kind", "native_structural_rule"],
          ["set_attr", "law", "proof_rule", "parity_commutator_even_v1"],
          ["set_attr", "law", "proven", 1],
+         ["add_edge", "agent", "has_process_law", "law", {}],
          ["add_node", "proof", "LawProofReference", {
              "rule": "parity_commutator_even_v1",
              "statement": "commutator_even",

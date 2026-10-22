@@ -816,6 +816,11 @@ COGNITION_ON_SEEDS = (
     "process_solving",
     "library_learning",
     "strategy_library",
+    # P14 bounded law proofs, registered-domain proof adoption, and
+    # graph-authored operator proposals. Their domain/action gates stay explicit.
+    "process_laws",
+    "process_proof_adoption",
+    "invention_operator_authorship",
     # P10 goal-directed invention and exact-context strategy replay remain
     # policy-disabled until an explicit cognition-on evaluation enables them.
     "process_lifting",

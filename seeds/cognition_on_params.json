@@ -234,6 +234,35 @@
         "temperature": 0.5,
         "recall_cost": 1.0
       }
+    },
+    {
+      "local_id": 19,
+      "type": "ProcessLawsPolicy",
+      "attrs": {
+        "name": "cognition_on_process_laws",
+        "enabled": 1.0,
+        "supported_fragment": "permutation_commutator_parity_v1"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "ProcessProofAdoptionPolicy",
+      "attrs": {
+        "name": "cognition_on_process_proof_adoption",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "InventionOperatorAuthorshipPolicy",
+      "attrs": {
+        "name": "cognition_on_invention_operator_authorship",
+        "enabled": 1.0,
+        "max_expression_nodes": 7,
+        "max_resource_work": 32,
+        "frozen_criteria_digest": "pmb-v1-frozen-criteria",
+        "human_gate": 1
+      }
     }
   ],
   "edges": [
@@ -407,6 +436,36 @@
       "tgt": {
         "local": 18
       }
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_laws_policy",
+      "tgt": {
+        "local": 19
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_proof_adoption_policy",
+      "tgt": {
+        "local": 20
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator_authorship_policy",
+      "tgt": {
+        "local": 21
+      },
+      "attrs": {}
     }
   ],
   "productions": [
@@ -456,6 +515,42 @@
       "tgt": {
         "type": "HeldEmotionParams",
         "var": "ep"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-laws",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_process_laws_policy",
+      "tgt": {
+        "type": "ProcessLawsPolicy",
+        "var": "policy"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-proof-adoption",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_process_proof_adoption_policy",
+      "tgt": {
+        "type": "ProcessProofAdoptionPolicy",
+        "var": "policy"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-operator-authorship",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_invention_operator_authorship_policy",
+      "tgt": {
+        "type": "InventionOperatorAuthorshipPolicy",
+        "var": "policy"
       }
     }
   ],
