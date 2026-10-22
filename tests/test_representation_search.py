@@ -287,6 +287,51 @@ def test_graph_rule_verifies_training_cost_and_discrimination_before_selection()
     assert s.node(failing)["attrs"]["status"] == "candidate"
 
 
+def test_graph_owned_training_select_then_heldout_adoption_chain():
+    agent = Agent(extra_seeds=("representation_search",),
+                  policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}})
+    s, ag = agent.s, agent.ag
+    req = s.add_node("RepresentationSearchRequest", {"owner_id": "owner-e",
+        "source_epoch": 1, "model_epoch": 2, "frame_epoch": 3,
+        "training_split_id": "train-e", "candidate_cap": 16,
+        "operation_id": "op-e", "search_epoch": 7, "status": "funding_pending"})
+    s.add_edge(ag, "has_representation_search_request", req, {})
+    fund = s.add_node("ThinkingBudgetRequest", {"requester_kind": "representation_search",
+        "status": "approved", "debited_epoch": 7, "operation_id": "op-e"})
+    s.add_edge(req, "funded_by_request", fund, {})
+    proposal = s.add_node("RepresentationProposal", {"candidate_id": "candidate-e",
+        "status": "candidate", "owner_id": "owner-e", "source_epoch": 1,
+        "model_epoch": 2, "frame_epoch": 3, "training_split_id": "train-e",
+        "candidate_cap": 16, "package_cost_complete": True,
+        "heldout_used_for_selection": False, "forced_frame_preserved": True,
+        "package_bits": 90, "next_frame_epoch": 4,
+        "source_frame_id": "frame-3", "target_frame_id": "frame-4"})
+    dev = s.add_node("RepresentationDevelopmentValidation", {
+        "candidate_id": "candidate-e", "status": "scored_frozen_training",
+        "training_split_id": "train-e", "training_model_epoch": 2,
+        "package_bits": 90, "residual_bits": 10, "total_bits": 100,
+        "discriminating_rows": 5, "heldout_used": False})
+    heldout = s.add_node("RepresentationHeldoutValidation", {
+        "candidate_id": "candidate-e", "status": "scored_frozen_heldout",
+        "training_model_epoch": 2, "heldout_used_for_selection": False,
+        "refit_on_heldout": False, "exceptions_added": False,
+        "target_effect_verified": True, "wrong_frame_acceptance": False,
+        "solve_loss_pp": 1.0, "candidate_total_bits": 95,
+        "baseline_total_bits": 120})
+    s.add_edge(req, "has_candidate_proposal", proposal, {})
+    s.add_edge(ag, "has_representation_proposal", proposal, {})
+    s.add_edge(proposal, "has_development_validation", dev, {})
+    s.add_edge(proposal, "has_heldout_validation", heldout, {})
+    for _ in range(8):
+        s.tick(1000)
+    attrs = s.node(proposal)["attrs"]
+    assert attrs["status"] == "adopted"
+    assert attrs["training_total_bits"] == 100
+    assert attrs["adopted_frame_epoch"] == 4
+    assert attrs["transition_from_frame"] == "frame-3"
+    assert attrs["transition_to_frame"] == "frame-4"
+
+
 def test_graph_rule_mints_candidate_from_acquired_transform_evidence():
     agent = Agent(extra_seeds=("representation_search",),
                   policy_overrides={"RepresentationSearchPolicy": {"enabled": 1.0}},
