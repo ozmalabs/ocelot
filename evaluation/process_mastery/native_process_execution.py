@@ -10,6 +10,13 @@ def _attrs(agent, nid):
     return agent.s.node(nid)["attrs"]
 
 
+def _native(agent):
+    native = getattr(agent, "native", None) or getattr(agent, "inner", None)
+    if native is None:
+        raise TypeError("agent must expose a native substrate handle")
+    return native
+
+
 def params_digest(value) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"),
                                     default=str).encode()).hexdigest()
@@ -24,10 +31,11 @@ def open_process_candidate_digest(agent, candidate) -> str:
     evidence epochs.
     """
     attrs = _attrs(agent, candidate)
-    attempts = agent.native.neighbours(candidate, "derived_from_attempt")
+    native = _native(agent)
+    attempts = native.neighbours(candidate, "derived_from_attempt")
     if len(attempts) != 1:
         raise ValueError("candidate must have exactly one derivation attempt")
-    parent_nodes = agent.native.neighbours(attempts[0], "uses_parent_process")
+    parent_nodes = native.neighbours(attempts[0], "uses_parent_process")
     parents = {}
     for node in parent_nodes:
         parent = _attrs(agent, node)
@@ -56,6 +64,13 @@ def attest_open_process_candidate(agent, candidate) -> str:
     """Persist a verifier-side digest receipt for a graph-minted candidate."""
     digest = open_process_candidate_digest(agent, candidate)
     attrs = _attrs(agent, candidate)
+    existing = _native(agent).neighbours(candidate, "has_expression_digest_receipt")
+    if existing:
+        if (len(existing) == 1
+                and _attrs(agent, existing[0]).get("status") == "verified"
+                and _attrs(agent, existing[0]).get("expression_digest") == digest):
+            return digest
+        raise ValueError("candidate already has a conflicting expression digest receipt")
     agent.s.set_attr(candidate, "expression_digest", digest)
     agent.s.set_attr(candidate, "expression_digest_status", "verified")
     receipt = agent.s.add_node("OpenProcessDigestReceipt", {
@@ -63,7 +78,7 @@ def attest_open_process_candidate(agent, candidate) -> str:
         "expression_digest": digest, "effect_digest": attrs.get("effect_digest"),
         "domain": attrs.get("domain"),
     })
-    agent.s.add_edge(candidate, "has_expression_digest_receipt", receipt, {})
+    _native(agent).add_edge(candidate, "has_expression_digest_receipt", receipt, {})
     return digest
 
 
@@ -226,14 +241,15 @@ def execute_open_process_candidate(agent, candidate, *, state,
     records the world receipt; it does not choose or rebuild an expression.
     """
     attrs = _attrs(agent, candidate)
+    native = _native(agent)
     if attrs.get("status") != "adopted_candidate" or attrs.get("adoption_status") != "approved":
         return {"status": "ABSTAIN", "reason": "candidate_not_adopted"}
-    digest_receipts = agent.native.neighbours(candidate, "has_expression_digest_receipt")
+    digest_receipts = native.neighbours(candidate, "has_expression_digest_receipt")
     if (len(digest_receipts) != 1
             or _attrs(agent, digest_receipts[0]).get("status") != "verified"
             or _attrs(agent, digest_receipts[0]).get("expression_digest") != attrs.get("expression_digest")):
         return {"status": "ABSTAIN", "reason": "missing_or_ambiguous_expression_digest_receipt"}
-    approvals = agent.native.neighbours(candidate, "approved_by_open_process_adoption")
+    approvals = native.neighbours(candidate, "approved_by_open_process_adoption")
     if len(approvals) != 1:
         return {"status": "ABSTAIN", "reason": "missing_or_ambiguous_adoption_approval"}
     approval = _attrs(agent, approvals[0])
@@ -250,7 +266,8 @@ def execute_open_process_candidate(agent, candidate, *, state,
             or attrs.get("params") != attrs.get("adopted_params")
             or attrs.get("guard_state") != attrs.get("adopted_guard_state")):
         return {"status": "ABSTAIN", "reason": "adopted_expression_binding_changed"}
-    domains = agent.nodes("ProcessDomain", name=attrs.get("domain"))
+    domains = [nid for nid in agent.s.nodes("ProcessDomain")
+               if _attrs(agent, nid).get("name") == attrs.get("domain")]
     if len(domains) != 1:
         return {"status": "ABSTAIN", "reason": "missing_or_ambiguous_process_domain"}
     domain = _attrs(agent, domains[0])
@@ -264,7 +281,7 @@ def execute_open_process_candidate(agent, candidate, *, state,
     if state != attrs.get("guard_state"):
         return {"status": "ABSTAIN", "reason": "candidate_guard_not_satisfied"}
     probes = domain.get("probes")
-    actual_effect = agent.native.evaluate(
+    actual_effect = native.evaluate(
         {"type": "EffectFingerprint", "p": {"type": "Var", "name": "p"},
          "probes": {"type": "Var", "name": "probes"}},
         {"p": attrs.get("params"), "probes": probes})
@@ -275,19 +292,20 @@ def execute_open_process_candidate(agent, candidate, *, state,
         agent.s.set_attr(candidate, "adoption_status", "invalidated")
         agent.s.set_attr(candidate, "invalidation_reason", "native_effect_digest_changed")
         return {"status": "ABSTAIN", "reason": "native_effect_digest_changed"}
-    predicted = agent.native.evaluate(
+    predicted = native.evaluate(
         {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
          "state": {"type": "Var", "name": "state"}},
         {"p": attrs.get("params"), "state": state})
     if predicted is None:
         return {"status": "ABSTAIN", "reason": "native_process_precondition_failed"}
     proposal = {"candidate_id": candidate, "expression_digest": attrs["expression_digest"],
-                "domain": attrs["domain"], "state": state, "predicted_state": predicted,
+                "domain": attrs["domain"], "state": state, "action": attrs["params"],
+                "predicted_state": predicted,
                 "params_digest": params_digest(attrs["params"]),
                 "adoption_approval_id": approvals[0]}
     if not authorize(proposal):
         return {"status": "DENIED", "proposal": proposal}
-    world_receipt = world_transition(predicted)
+    world_receipt = world_transition(attrs["params"])
     if not isinstance(world_receipt, dict) or world_receipt.get("observed_state") is None:
         return {"status": "FAILED", "reason": "missing_world_receipt", "proposal": proposal}
     observed = world_receipt["observed_state"]
@@ -301,7 +319,7 @@ def execute_open_process_candidate(agent, candidate, *, state,
         "requested_state": state, "predicted_state": predicted,
         "observed_state": observed,
     })
-    agent.s.add_edge(candidate, "has_world_execution_receipt", receipt, {})
+    native.add_edge(candidate, "has_world_execution_receipt", receipt, {})
     if result != "verified":
         return {"status": "FAILED", "reason": "world_result_contradicts_native_prediction",
                 "proposal": proposal, "receipt": world_receipt, "evidence_node": receipt}

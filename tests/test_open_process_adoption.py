@@ -127,10 +127,15 @@ def test_unapproved_candidate_cannot_reach_world_and_receipt_binds_strategy():
     _approve(agent, candidate)
     _tick(agent)
     initial = agent.attrs(candidate)["guard_state"]
+    def simulate_world(action):
+        observed = [None] * len(initial)
+        for source, destination in enumerate(action):
+            observed[destination] = initial[source]
+        return {"observed_state": observed}
     result = execute_open_process_candidate(agent, candidate, state=initial,
         authorize=lambda proposal: proposal["expression_digest"] ==
             agent.attrs(candidate)["expression_digest"],
-        world_transition=lambda action: calls.append(action) or {"observed_state": action})
+                world_transition=lambda action: calls.append(action) or simulate_world(action))
     assert result["status"] == "COMPLETED"
     assert result["receipt"]["observed_state"] == result["proposal"]["predicted_state"]
     receipt_nodes = agent.native.neighbours(candidate, "has_world_execution_receipt")

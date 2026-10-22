@@ -20,6 +20,9 @@ from substrate.boot_profiles import (COGNITION_ON_SEEDS, boot_cognition_on,
                                      load_conversation_seed_profile)
 from substrate.seed_loader import manifest_for
 from substrate.world_adapter import WorldAdapter
+from evaluation.process_mastery.native_process_execution import (
+    attest_open_process_candidate, execute_open_process_candidate, params_digest,
+)
 from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
 
 
@@ -42,6 +45,13 @@ def _p4_tick(agent):
         if not agent.inner.run_rules(10000):
             return
     raise AssertionError("P4 cognition-on graph did not reach a fixpoint")
+
+
+def _p19_tick(agent):
+    for _ in range(64):
+        if not agent.inner.run_rules(10000):
+            return
+    raise AssertionError("P19 cognition-on graph did not reach a fixpoint")
 
 
 def _p4_regular_window(agent, window_id="profile-denial", epoch=4.0):
@@ -95,6 +105,138 @@ def test_default_world_adapter_loads_none_of_cognition_on_seeds():
                 assert rule["name"] not in exported_rule_names, (
                     f"Default boot unexpectedly installed rule {rule['name']!r} from {sid}"
                 )
+
+
+def test_p19_default_isolation():
+    world = WorldAdapter()
+    try:
+        loaded = set(installed_seeds(world.s).keys())
+        assert "open_process_search" not in loaded
+        assert "open_process_adoption" not in loaded
+    finally:
+        world.close()
+
+
+def test_p19_shared_budget():
+    world = boot_cognition_on()
+    try:
+        budgets = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+        assert len(budgets) == 1
+        assert world.s.node(budgets[0])["attrs"].get("enabled") == 1.0
+        for requester_kind in ("open_process_search",):
+            policies = [n for n in _nodes(world, "ThinkingBudgetRequest")
+                        if world.s.node(n)["attrs"].get("requester_kind") == requester_kind]
+            assert not policies
+    finally:
+        world.close()
+
+
+def test_p19_native_causal_chain_and_perturbation_abstention():
+    """Cognition-on graph proposal crosses approval and the world receipt boundary."""
+    agent = boot_cognition_on()
+    try:
+        native, root, store = agent.inner, agent.agent, agent.s
+        for policy_type in ("OpenProcessSearchPolicy", "OpenProcessAdoptionPolicy"):
+            for node in _nodes(agent, policy_type):
+                native.set_attr(node, "enabled", 1.0)
+        for node in _nodes(agent, "ProcessSchemaPolicy"):
+            native.set_attr(node, "enabled", 0.0)
+        budgets = list(native.neighbours(root, "has_thinking_budget"))
+        assert len(budgets) == 1
+        native.set_attr(budgets[0], "enabled", 1.0)
+        native.set_attr(budgets[0], "remaining", 100.0)
+        native.set_attr(budgets[0], "capacity", 100.0)
+
+        domain = store.add_node("ProcessDomain", {
+            "name": "p19-profile", "kind": "permutation",
+            "probes": [[0, 1, 2, 3]], "source_epoch": 0.0,
+            "model_epoch": 0.0, "frame_epoch": 0.0,
+        })
+        _edge(agent, root, "has_process_domain", domain)
+        held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
+        schemas = []
+        for name, params in held.items():
+            schema = store.add_node("ProcessSchema", {
+                "name": name, "kind": "permutation", "domain_kind": "permutation",
+                "domain": "p19-profile", "params": params, "cost": 1.0,
+                "source_digest": params_digest(params), "source_epoch": 0.0,
+                "model_epoch": 0.0, "frame_epoch": 0.0, "status": "active",
+            })
+            _edge(agent, root, "has_process_schema", schema)
+            _edge(agent, domain, "has_held_process", schema)
+            schemas.append(schema)
+        goal = native.evaluate(
+            {"type": "ProcessApply",
+             "p": {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+                   "b": {"type": "Var", "name": "b"}},
+             "state": {"type": "Var", "name": "state"}},
+            {"a": held["p"], "b": held["q"], "state": [0, 1, 2, 3]})
+        task = store.add_node("SolveTask", {
+            "domain": "p19-profile", "initial_state": [0, 1, 2, 3],
+            "state": [0, 1, 2, 3], "object_count": 4.0,
+            "goal": goal, "status": "stuck", "trace": [], "steps": 0,
+            "moves": 0.0, "stuck_count": 1,
+        })
+        _edge(agent, root, "has_solve_task", task)
+        _edge(agent, task, "about_domain", domain)
+        _p19_tick(agent)
+        search_budget_requests = [n for n in _nodes(agent, "ThinkingBudgetRequest")
+            if store.node(n)["attrs"].get("requester_kind") == "open_process_search"]
+        assert len(search_budget_requests) == 1
+        search_budget_request = search_budget_requests[0]
+        assert store.node(search_budget_request)["attrs"].get("status") == "approved"
+        assert list(native.neighbours(search_budget_request, "draws_on_thinking_budget")) == budgets
+        assert store.node(search_budget_request)["attrs"].get("cost") == 2.0
+        candidates = _nodes(agent, "OpenProcessCandidate")
+        assert candidates
+        candidate = next(c for c in candidates if store.node(c)["attrs"].get("params") ==
+                         native.evaluate({"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+                                          "b": {"type": "Var", "name": "b"}},
+                                         {"a": held["p"], "b": held["q"]}))
+        digest = attest_open_process_candidate(agent, candidate)
+        attrs = store.node(candidate)["attrs"]
+        approval = store.add_node("OpenProcessAdoptionApproval", {
+            "status": "approved", "approval_kind": "human",
+            "expression_digest": digest, "expression_key": attrs["expression_key"],
+            "expression_tree": attrs["expression_tree"], "effect_digest": attrs["effect_digest"],
+            "params": attrs["params"], "guard_state": attrs["guard_state"],
+            "domain": attrs["domain"], "source_epoch": attrs["source_epoch"],
+            "model_epoch": attrs["model_epoch"], "frame_epoch": attrs["frame_epoch"],
+        })
+        _edge(agent, root, "has_open_process_adoption_approval", approval)
+        _edge(agent, approval, "approves_open_process_candidate", candidate)
+        _p19_tick(agent)
+        assert store.node(candidate)["attrs"]["status"] == "adopted_candidate"
+
+        world_state = [0, 1, 2, 3]
+        calls = []
+
+        def world_transition(action):
+            observed = [None] * len(world_state)
+            for source, destination in enumerate(action):
+                observed[destination] = world_state[source]
+            world_state[:] = observed
+            calls.append(action)
+            return {"observed_state": list(world_state)}
+
+        result = execute_open_process_candidate(agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: proposal["expression_digest"] == digest,
+            world_transition=world_transition)
+        assert result["status"] == "COMPLETED"
+        assert result["receipt"]["observed_state"] == goal
+        receipts = list(native.neighbours(candidate, "has_world_execution_receipt"))
+        assert len(receipts) == 1
+        assert store.node(receipts[0])["attrs"]["status"] == "verified"
+        assert len(calls) == 1
+
+        # A changed binding cannot trigger another world transition.
+        native.set_attr(domain, "model_epoch", 1.0)
+        blocked = execute_open_process_candidate(agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: True, world_transition=world_transition)
+        assert blocked["status"] == "ABSTAIN"
+        assert len(calls) == 1
+    finally:
+        agent.close()
 
 
 def test_cognition_on_profile_boots_and_attaches_enabled_params():

@@ -857,7 +857,13 @@ def boot_cognition_on():
     """Boot a WorldAdapter with CORE_SEEDS + COGNITION_ON_SEEDS enabled."""
     from substrate.world_adapter import WorldAdapter
 
-    return WorldAdapter(seeds=CORE_SEEDS + COGNITION_ON_SEEDS)
+    world = WorldAdapter(seeds=CORE_SEEDS + COGNITION_ON_SEEDS)
+    budgets = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+    if len(budgets) != 1:
+        world.close()
+        raise RuntimeError(f"cognition-on profile requires one shared ThinkingBudget, found {len(budgets)}")
+    world.inner.set_attr(budgets[0], "enabled", 1.0)
+    return world
 
 
 __all__ = ["COGNITION_ON_SEEDS", "CONVERSATION_RUNTIME_MODULES",
