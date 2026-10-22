@@ -1,6 +1,6 @@
 # Cognition build — single linear execution plan
 
-**Reconciled:** 2026-10-22 against clean HEAD `a43b08fc` (`Merge P4 and complete P5 cognition substrate work`), including Track I foundation commit `53da7321`.
+**Reconciled:** 2026-10-22 against clean HEAD `b320adf1` (`Add P11 representation and process transfer gates`), including Track I foundation commit `53da7321`.
 
 This is the **sole execution order** for the cognition build and former Track I. Phases 0–5 are completed implementation/reporting cycles with the limits below. Continue with Phase 6, then execute Phases 7–15 in order. Former P6 and I0–I7 work is integrated here; there is no parallel Track I schedule. Original IDs are retained in the coverage table and task headings so existing code, tests and results remain traceable.
 
@@ -736,7 +736,7 @@ Remove the scheduling cycle in the old roadmap: I3.4 needs I5.1, so goal regress
 
 ## Phase 11 — Representation invention and cross-domain transfer
 
-**Entry:** Phase 10 lifted schemas and goal-directed invention; Phase 7 acquired qualia. **Status:** in progress; P11.01 semantic contract and acceptance passed.
+**Entry:** Phase 10 lifted schemas and goal-directed invention; Phase 7 acquired qualia. **Status:** in progress; P11.01 semantic contract, P11.02 bounded representation-selection policy, P11.03 conservative target-transfer gate, P11.04 D4 provenance adapter and P11.E1 profile integration implemented. P11.E2–E3 remain open; end-to-end transfer benefit is not established.
 
 Use acquired distinctions and current observer/frame contracts to propose and test representations. P4 D5 proved candidate-work savings on two generated families, not general transfer; P4 C5 measured no resolution advantage. This phase tests new domain pairs and evidence-backed frame choice.
 
@@ -758,6 +758,8 @@ Use acquired distinctions and current observer/frame contracts to propose and te
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
 **P11.01 semantic freeze (2026-10-22):** [`COGNITION_REPRESENTATION_SEARCH_CONTRACT.md`](COGNITION_REPRESENTATION_SEARCH_CONTRACT.md) freezes representation identity, full canonical package cost, training/held-out split boundaries, forced-frame preservation, bidirectional map verification and exact-conjugation requirements. Map/decoder/exception/residual costs cannot be omitted, and held-out data can reject adoption but cannot select a proposal. Verification: `tests/test_representation_search.py tests/test_cognition_aperture_migrated.py` — 13 passed.
+
+**P11.02–P11.E1 mechanism record (2026-10-22):** commit `b320adf1` adds graph-owned bounded/funded representation selection, full-cost and epoch/frame acceptance gates, exact target-verified process-transfer gating, opt-in cognition-on profile integration, and a PMB D4 adapter with explicit ARC/LS20 unsupported status. Focused verification: `tests/test_representation_search.py tests/test_process_transfer.py tests/test_cognition_profile_integration.py tests/test_pmb_grid_transfer.py` — 48 passed. The process-map/property checks are reference tests and the policies load in Rust, but no registered end-to-end transfer comparison has run; no benefit or capability level is inferred from these checks. P11.E2 must still establish usable development adapters for all comparator arms before preregistration.
 
 ### P11.02 — Search and verify alternative representations
 
