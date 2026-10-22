@@ -519,6 +519,8 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 - **Non-goals:** hard-coding a puzzle-specific parity-fix policy in Python.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
+**P9.03 implementation record (2026-10-22):** Added live graph acceptance for parity walls, an odd held breaker, partial-probe nonproof, and the no-breaker impasse. The tests exposed repeated wall reminting after an unbreakable result; the miner now suppresses duplicate parity walls per task and the seed was regenerated. A breaker is selected from held odd permutations and applied by the graph. This establishes the finite permutation parity case only; determinant and conserved-count families remain unsupported. Focused verification: 14 passed (`tests/test_invariant_walls.py tests/test_process_invention.py`).
+
 ### P9.04 — Evaluate irreversible repair and stochastic effects natively
 
 - **ID:** P9.04

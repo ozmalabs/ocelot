@@ -82,7 +82,8 @@ def wall_rules():
         ["t", "about_domain", "d"],
         ["agent", "has_invariant_candidate", "inv"],
     ]
-    open_wall = Exists(N("t", "explained_by_wall"), "ow", Eq(A("ow", "status"), L("open")))
+    existing_wall = Exists(N("t", "explained_by_wall"), "ow",
+                           Eq(A("ow", "invariant"), L("perm_parity")))
     breakers = Filter(N("d", "has_held_process"), "h",
                       And(Eq(A("h", "status"), L("active")), Eq(A("h", "parity"), L(1))))
     breaker = Argmin(breakers, "h", A("h", "cost"))
@@ -101,7 +102,8 @@ def wall_rules():
              And(policy_on(), Eq(A("t", "status"), L("stuck")), Eq(A("inv", "name"), L("perm_parity")),
                  Eq(A("d", "kind"), L("permutation")), family_preserves_parity(),
                  Not(Eq(PParity(A("t", "state")), PParity(A("t", "goal")))),
-                 Lt(Count(N("t", "explained_by_wall")), A("pol", "max_walls")), Not(open_wall)),
+                 Lt(Count(N("t", "explained_by_wall")), A("pol", "max_walls")),
+                 Not(existing_wall)),
              [
                  ["add_node", "w", "WallExplanation", {
                      "invariant": "perm_parity",
