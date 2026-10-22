@@ -17,6 +17,10 @@ def test_development_runner_includes_target_social_and_structural_panels():
         "fresh", "mapped_source", "mismatched_source"}
     assert {row["arm"] for row in result["social_acquisition"]["records"]} == {
         "observation", "demonstration", "instruction", "reward_only"}
+    assert len(result["explanation_rebuild"]["records"]) == 2
+    assert all(row["fidelity_match"] and row["counterexample_rejected"]
+               and not row["receiver_source_leakage"]
+               for row in result["explanation_rebuild"]["records"])
     assert len(result["structural_controls"]) == 4
     assert result["structural_status"] == "PASS"
 
@@ -35,7 +39,9 @@ def test_development_analyzer_rejects_missing_arm_and_false_control():
     changed = copy.deepcopy(payload)
     changed["social_acquisition"]["records"].pop()
     changed["structural_controls"][0]["false_candidate_count"] = 1
+    changed["explanation_rebuild"]["records"][0]["fidelity_match"] = False
     rejected = analyze(changed)
     assert rejected["status"] == "FAIL"
     assert any("social_allocation_mismatch" in item for item in rejected["failures"])
     assert any("control_failure" in item for item in rejected["failures"])
+    assert any("explanation_failure" in item for item in rejected["failures"])

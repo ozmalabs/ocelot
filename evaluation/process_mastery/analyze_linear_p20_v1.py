@@ -97,10 +97,32 @@ def analyze(payload):
     if social.get("status") != "development_only" or target.get("status") != "development_only":
         failures.append("panel_status_mismatch")
 
+    explanations = payload.get("explanation_rebuild", {})
+    explanation_rows = explanations.get("records", [])
+    expected_explanations = payload.get("allocation", {}).get("explanation_streams")
+    if (explanations.get("status") != "development_only"
+            or len(explanation_rows) != expected_explanations):
+        failures.append("explanation_allocation_mismatch")
+    for row in explanation_rows:
+        if (row.get("status") != "verified_and_adopted"
+                or row.get("fidelity_match") is not True
+                or row.get("counterexample_rejected") is not True
+                or row.get("adopted_process_count") != 1
+                or row.get("source_ast_included") is not False
+                or row.get("receiver_source_leakage") is not False
+                or row.get("semantic_steps") != 2
+                or row.get("fresh_world_actions") != 2
+                or row.get("source_budget_debits") != 1
+                or row.get("receiver_budget_debits") != 2
+                or row.get("source_graph_bytes", 0) <= 0
+                or row.get("receiver_graph_bytes", 0) <= 0):
+            failures.append(f"explanation_failure:{row.get('trial_id')}")
+
     return {
         "phase": "linear-p20-v1", "status": "PASS" if not failures else "FAIL",
         "evidence_class": "DEVELOPMENT_ONLY", "primary_status": "NOT_ESTIMATED",
         "counts": {"target_rows": len(target_rows), "social_rows": len(social_rows),
+                   "explanation_rows": len(explanation_rows),
                    "controls": len(controls), "target_by_pair_arm": {
                        f"{pair}/{arm}": target_counts[(pair, arm)]
                        for pair in sorted(expected_pairs) for arm in sorted(TARGET_ARMS)},
