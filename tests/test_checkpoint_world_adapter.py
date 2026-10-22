@@ -181,6 +181,41 @@ def test_loopover_goal_matches_native_process_composition():
     assert len(world["initial_state"]) == 9
 
 
+def test_development_world_panels_are_not_at_common_solver_ceiling():
+    # This is a development-only ceiling audit. It shows only that the fixed
+    # world generators do not make every task trivial for the unchanged native
+    # solver; it makes no claim about adaptive or invented-process benefit.
+    from evaluation.process_mastery.harness import Agent
+
+    observed = {}
+    for family, generator in (("d4", generate_d4_world),
+                              ("loopover", generate_loopover_world)):
+        agent = Agent(track_i=False, extra_seeds=("process_solving",))
+        try:
+            for policy in agent.nodes("SolverPolicy"):
+                agent.s.set_attr(policy, "enabled", 1.0)
+            tasks = []
+            for draw in range(32):
+                world = generator(split="train", draw=draw)
+                domain_name = f"p22-ceiling-audit:{family}:{draw:04d}"
+                domain = agent.add_domain(domain_name, "permutation",
+                    [world["initial_state"]], world["held_processes"])
+                for schema in agent.nodes("ProcessSchema"):
+                    if agent.attrs(schema).get("domain") == domain_name:
+                        agent.s.add_edge(domain, "has_held_process", schema, {})
+                tasks.append(agent.add_solve_task(domain_name,
+                    world["initial_state"], world["goal_state"]))
+            result = agent.run(max_ticks=300)
+            assert result["quiescent"]
+            statuses = [agent.attrs(task)["status"] for task in tasks]
+            assert all(status in {"solved", "stuck"} for status in statuses)
+            assert any(status != "solved" for status in statuses)
+            observed[family] = sum(status == "solved" for status in statuses)
+        finally:
+            del agent
+    assert observed == {"d4": 0, "loopover": 11}
+
+
 def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     agent = _adoption_agent()
     candidate = _candidate(agent)
