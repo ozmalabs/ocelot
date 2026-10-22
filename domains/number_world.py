@@ -129,3 +129,43 @@ def number_world_handle(world: NumberWorld, agent) -> dict:
         "apply_action": apply_action,
         "interpret_acts_on": interpret_acts_on,
     }
+
+
+def perceptual_scene_attrs(*, scene_id: str, owner_id: str, source_epoch: int,
+                           frame_epoch: int, mode: str, scene_regions: int,
+                           occupied_area: float | None = None,
+                           density_signal: float | None = None,
+                           area_uncertainty: float | None = None,
+                           density_uncertainty: float | None = None,
+                           individuation_status: str | None = None) -> dict:
+    """Build the mechanical perceptual input record without exposing a scorer count.
+
+    Small-set inputs reference individually segmented objects separately in the
+    graph. Aggregate inputs carry only sensor measurements and their uncertainty.
+    This adapter validates shape and bounds; it makes no comparison decision.
+    """
+    import math
+
+    if mode not in ("small", "aggregate"):
+        raise ValueError("mode must be 'small' or 'aggregate'")
+    if not 0 <= scene_regions <= 4096:
+        raise ValueError("scene region count exceeds the ingestion bound")
+    if not scene_id or not owner_id or source_epoch < 0 or frame_epoch < 0:
+        raise ValueError("scene identity and epochs must be valid")
+    attrs = {"scene_id": scene_id, "owner_id": owner_id,
+             "source_epoch": source_epoch, "frame_epoch": frame_epoch,
+             "mode": mode, "status": "observed", "scene_regions": scene_regions}
+    if mode == "small":
+        if individuation_status not in ("clear", "ambiguous"):
+            raise ValueError("small-set input requires clear or ambiguous individuation")
+        attrs["individuation_status"] = individuation_status
+    else:
+        measurements = {"occupied_area": occupied_area, "density_signal": density_signal,
+                       "area_uncertainty": area_uncertainty,
+                       "density_uncertainty": density_uncertainty}
+        if any(value is None or not math.isfinite(float(value)) or float(value) < 0
+               for value in measurements.values()):
+            raise ValueError("aggregate measurements and uncertainty must be finite and nonnegative")
+        attrs.update({key: float(value) for key, value in measurements.items()})
+    assert "exact_count" not in attrs and "hidden_count" not in attrs
+    return attrs

@@ -787,6 +787,9 @@ COGNITION_ON_SEEDS = (
     # until an explicit task enables them; installing them here tests closure.
     "qualia_shape_mint",
     "cognition_signature",
+    "experience_signature",
+    "qualia_acquisition",
+    "numerosity",
     "similarity_recall",
     "cognition_aperture",
     "temporal_escalation",

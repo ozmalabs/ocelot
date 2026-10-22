@@ -266,6 +266,46 @@ def test_p6_shared_budget():
     agent.close()
 
 
+
+def test_p7_profile_chain():
+    p7 = {"experience_signature", "qualia_acquisition", "numerosity"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p7:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    for node_type in ("ExperienceSignaturePolicy", "QualiaAcquisitionPolicy", "NumerosityPolicy"):
+        policy_nodes = _nodes(agent, node_type)
+        assert policy_nodes
+        assert all(agent.s.node(node)["attrs"].get("enabled") == 0.0
+                   for node in policy_nodes)
+    agent.close()
+
+
+def test_p7_default_isolation():
+    p7 = {"experience_signature", "qualia_acquisition", "numerosity"}
+    names = {r["name"] for sid in p7 for r in manifest_for(sid).get("rules", ())
+             if isinstance(r, dict) and r.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert names.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert names.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p7_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    assert budgets[0] in list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(_nodes(agent, "NumerosityPolicy")) == 1
+    assert agent.s.node(_nodes(agent, "NumerosityPolicy")[0])["attrs"]["enabled"] == 0.0
+    agent.close()
+
 def test_p5_stop_at_native_sink():
     from tests.test_response_inhibition_migrated import _native_graph, _request, _tick
     substrate, agent = _native_graph(enabled=True)
