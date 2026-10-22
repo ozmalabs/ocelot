@@ -221,7 +221,7 @@ Finish I0 and I1 without rebuilding landed algebra. Preserve opaque native views
 
 ## Phase 7 — Qualia acquired from episodes and perceptual numerosity
 
-**Entry:** Phase 6 executable supported views and actual baseline arms. **Status:** planned.
+**Entry:** Phase 6 executable supported views and actual baseline arms. **Status:** in progress; P7.01 semantics frozen, implementation and registered evaluation remain.
 
 Explicitly close the developmental gap discussed in this session. Existing P4 schemas, numeric signatures and receipt-backed recall are infrastructure. Acquire distinctions and significance from episodes and preserve contradictory outcomes; do not import a table of qualia or ask fixtures to supply the target dimension name. Include the former P6.D7 task here.
 
@@ -241,6 +241,8 @@ Explicitly close the developmental gap discussed in this session. Existing P4 sc
 - **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_qualia_dimension_compensation_migrated.py -q -p no:cacheprovider`.
 - **Non-goals:** equating a schema declaration or hard-coded valence with acquired qualia.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
+
+**P7.01 semantic freeze (2026-10-22):** `COGNITION_QUALIA_ACQUISITION_CONTRACT.md` freezes owner/source/epoch identity, label-free evidence ingress, finer-grain versus new-dimension rules, three-episode recurrence, two fresh-context validations, contradiction/revision semantics, live-versus-standing significance, funding bounds, and terminal states. The four named acceptance cases are present as explicitly skipped placeholders until P7.03 supplies graph-rule behavior; they are not counted as passing tests. Existing compensation contract verification passed 6 tests.
 
 ### P7.02 — Ingest episode evidence and produce non-Shape native signatures
 
