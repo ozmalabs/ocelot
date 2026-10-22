@@ -726,6 +726,7 @@ def test_p14_shared_budget():
 
 def test_p15_profile_chain():
     p15 = {"process_portfolio", "process_curriculum", "recursive_process_improvement"}
+    p21 = {"curriculum_learning_bridge"}
     boot_started = time.perf_counter()
     agent = boot_cognition_on()
     boot_seconds = time.perf_counter() - boot_started
@@ -737,11 +738,18 @@ def test_p15_profile_chain():
         for item in manifest_for(sid).get("rules", ()):
             if isinstance(item, dict) and item.get("name"):
                 assert item["name"] in exported, item["name"]
+    for item in manifest_for("curriculum_learning_bridge").get("rules", ()):
+        if isinstance(item, dict) and item.get("name"):
+            assert item["name"] in exported, item["name"]
     for ptype in ("ProcessPortfolioPolicy", "ProcessCurriculumPolicy",
                   "RecursiveProcessImprovementPolicy"):
         policy = _nodes(agent, ptype)
         assert len(policy) == 1
         assert agent.s.node(policy[0])["attrs"].get("enabled") == 0.0
+    bridge_policy = _nodes(agent, "CurriculumLearningBridgePolicy")
+    assert len(bridge_policy) == 1
+    assert agent.s.node(bridge_policy[0])["attrs"].get("enabled") == 0.0
+    assert p21.issubset(set(COGNITION_ON_SEEDS))
 
     # Turn on only curriculum for this profile-native event. Its task must be
     # created from the observed training transition through native rules.
@@ -789,13 +797,16 @@ def test_p15_profile_chain():
 
 def test_p15_default_isolation():
     p15 = {"process_portfolio", "process_curriculum", "recursive_process_improvement"}
+    p21 = {"curriculum_learning_bridge"}
     p15_rules = {item["name"] for sid in p15 for item in manifest_for(sid).get("rules", ())
                  if isinstance(item, dict) and item.get("name")}
+    p15_rules |= {item["name"] for item in manifest_for("curriculum_learning_bridge").get("rules", ())
+                  if isinstance(item, dict) and item.get("name")}
     default = WorldAdapter()
     conversation = WorldAdapter(seeds=())
     load_conversation_seed_profile(conversation)
-    assert p15.isdisjoint(installed_seeds(default.s))
-    assert p15.isdisjoint(installed_seeds(conversation.s))
+    assert (p15 | p21).isdisjoint(installed_seeds(default.s))
+    assert (p15 | p21).isdisjoint(installed_seeds(conversation.s))
     assert p15_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
     assert p15_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
     default.close()
@@ -815,6 +826,9 @@ def test_p15_shared_budget():
         policy = _nodes(agent, ptype)[0]
         assert agent.s.node(policy)["attrs"]["enabled"] == 0.0
         assert policy in agent.inner.neighbours(agent.agent, edge)
+    bridge = _nodes(agent, "CurriculumLearningBridgePolicy")[0]
+    assert agent.s.node(bridge)["attrs"]["enabled"] == 0.0
+    assert bridge in agent.inner.neighbours(agent.agent, "has_curriculum_learning_bridge_policy")
     agent.close()
 
 

@@ -832,6 +832,7 @@ COGNITION_ON_SEEDS = (
     # the approval/budget-gated recursive operator generation lifecycle.
     "process_portfolio",
     "process_curriculum",
+    "curriculum_learning_bridge",
     "recursive_process_improvement",
     # P16 graph-selected expression requests; policy and emission stay gated.
     "native_process_execution",

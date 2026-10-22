@@ -39,9 +39,9 @@ class NativeTargetLearner:
     """Fresh empty graph plus the P8 receipt-bound effect learner."""
 
     def __init__(self, *, owner_id="target-owner", budget=100.0, enabled=True,
-                 transfer_enabled=False):
+                 transfer_enabled=False, agent=None):
         self.owner_id = owner_id
-        self.agent = Agent(
+        self.agent = agent or Agent(
             extra_seeds=("process_induction", "target_learning"), track_i=False,
             policy_overrides={"ModelLearningPolicy": {"enabled": float(enabled)},
                               "TargetLearningPolicy": {"enabled": float(transfer_enabled)}},
