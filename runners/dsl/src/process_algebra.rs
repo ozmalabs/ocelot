@@ -38,6 +38,7 @@
 use crate::sym::Interner;
 use crate::value::{cmp_value, SurfaceKind, Value};
 use smallvec::SmallVec;
+use smallvec::smallvec;
 use std::sync::Arc;
 
 #[derive(Clone, Debug)]
@@ -501,7 +502,7 @@ pub fn verify_repair(p: &Value, fresh_states: &[Value], goals: &[Value], interne
 
 pub fn verify_repair_values(p: &Value, fresh_states: &Value, goals: &Value, interner: &Interner) -> bool {
     match (seq_items(fresh_states), seq_items(goals)) {
-        (Some(states), Some(goals)) => verify_repair(p, &states, &goals, interner),
+        (Some(states), Some(goals)) => verify_repair(p, states.as_ref(), goals.as_ref(), interner),
         _ => false,
     }
 }
@@ -543,6 +544,7 @@ pub fn finite_distribution_value(value: &Value) -> Value {
     let encoded = support.into_iter().map(|(outcome, probability)| {
         Value::Tuple(Arc::new(smallvec![outcome, Value::Float(probability)]))
     }).collect::<Vec<_>>();
+    let encoded: SmallVec<[Value; 4]> = encoded.into_iter().collect();
     Value::Tuple(Arc::new(smallvec![Value::Tuple(Arc::new(encoded)), Value::Float(unknown_mass)]))
 }
 

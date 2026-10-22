@@ -47,7 +47,7 @@ if str(ROOT / "scripts") not in sys.path:
 from track_i_seed_lib import (  # noqa: E402
     A, And, Count, Div, Eq, Exists, Filter, FilterList, Gt, Gte, IfThenElse, In, L,
     Let, Lt, Lte, MapList, Max, N, NodesWhere, Not, Nth, OFFLINE_AREA, Or, PCommutator,
-    PCompose, PConjugate, PFingerprint, PInverse, PPower, PSupport, Plus, SoftWeights,
+    PCompose, PConjugate, PFingerprint, PInverse, PPower, PRepairVerify, PSupport, Plus, SoftWeights,
     StringConcat, Sum, T, Times, V, Vec, ZERO, is_none, not_none, policy_on, productions,
     rule,
 )
@@ -422,6 +422,27 @@ def strategy_rules():
     ]
 
 
+def repair_rules():
+    verify = PRepairVerify(A("c", "params"), A("c", "fresh_states"), A("c", "goals"))
+    return [
+        rule("ir_repair_candidate_verify", OFFLINE_AREA, 60,
+             "Verify a declared goal-equivalent repair on its fresh states; it remains separate from exact inverse.",
+             [["agent", "has_invention_policy", "pol"], ["agent", "has_repair_candidate", "c"]],
+             And(policy_on(), Eq(A("c", "status"), L("candidate")),
+                 Eq(A("c", "model_epoch"), A("c", "source_model_epoch")),
+                 Eq(verify, L(True))),
+             [["set_attr", "c", "status", "verified"],
+              ["set_attr", "c", "verified_model_epoch", T(A("c", "model_epoch"))],
+              ["set_attr", "c", "verification_receipt", "fresh_goal_states_exact"]]),
+        rule("ir_repair_epoch_stale", OFFLINE_AREA, 61,
+             "Invalidate a verified repair when its source model epoch changes.",
+             [["agent", "has_invention_policy", "pol"], ["agent", "has_repair_candidate", "c"]],
+             And(policy_on(), Eq(A("c", "status"), L("verified")),
+                 Not(Eq(A("c", "model_epoch"), A("c", "verified_model_epoch")))),
+             [["set_attr", "c", "status", "stale"]]),
+    ]
+
+
 def build():
     rules = open_round_rules() + funding_rules()
     order = 0
@@ -436,6 +457,7 @@ def build():
     rules += [order_law_rule(k) for k in range(2, 7)]
     rules += [commute_law_rule(), conjugation_inverts_law_rule()]
     rules += strategy_rules()
+    rules += repair_rules()
     specs = [
         ("Agent", "has_invention_policy", "InventionPolicy"),
         ("Agent", "has_invention_round", "InventionRound"),
@@ -450,6 +472,7 @@ def build():
         ("Agent", "has_process_law", "ProcessLaw"),
         ("ProcessLaw", "about_process", "ProcessSchema"),
         ("Agent", "has_strategy_record", "StrategyRecord"),
+        ("Agent", "has_repair_candidate", "ProcessRepairCandidate"),
         ("Agent", "has_tolerance", "Tolerance"),
         ("Tolerance", "governs_policy", "InventionPolicy"),
     ]

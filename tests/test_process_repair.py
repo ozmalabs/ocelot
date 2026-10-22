@@ -14,10 +14,18 @@ def test_repair_candidate_reverified_on_fresh_states():
     add_one = ["add", [1]]
     fresh = [[0], [4]]
     goals = [[1], [5]]
-    receipts = [_apply(agent, add_one, state) for state in fresh]
-    assert receipts == goals
-    # Native transition evaluation is available; graph-level candidate
-    # adoption and epoch invalidation remain unimplemented in this phase.
+    verified = agent.native.evaluate(
+        {"type": "ProcessRepairVerify", "p": {"type": "Var", "name": "p"},
+         "fresh_states": {"type": "Var", "name": "fresh"},
+         "goals": {"type": "Var", "name": "goals"}},
+        {"p": add_one, "fresh": fresh, "goals": goals})
+    assert verified is True
+    rejected = agent.native.evaluate(
+        {"type": "ProcessRepairVerify", "p": {"type": "Var", "name": "p"},
+         "fresh_states": {"type": "Var", "name": "fresh"},
+         "goals": {"type": "Var", "name": "goals"}},
+        {"p": add_one, "fresh": fresh, "goals": [[1], [4]]})
+    assert rejected is False
     assert _apply(agent, add_one, [8]) == [9]
 
 
@@ -33,20 +41,27 @@ def test_no_repair_does_not_invent_inverse():
 
 def test_distribution_support_retained():
     agent = Agent(track_i=False)
-    # No distribution DSL term or graph adapter exists yet. Unknown remains
-    # unknown instead of being collapsed into a deterministic process.
+    result = agent.native.evaluate(
+        {"type": "ProcessDistribution", "outcomes": {"type": "Var", "name": "outcomes"}},
+        {"outcomes": [["outcome-a", 0.25], ["outcome-b", 0.5]]})
+    assert result == ((("outcome-a", 0.25), ("outcome-b", 0.5)), 0.25)
     assert agent.native.evaluate(
-        {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
-         "state": {"type": "Var", "name": "state"}},
-        {"p": ["stochastic", [["outcome-a", 0.25], ["outcome-b", 0.5]]],
-         "state": [0]}) is None
+        {"type": "ProcessDistribution", "outcomes": {"type": "Var", "name": "outcomes"}},
+        {"outcomes": [["outcome-a", 0.7], ["outcome-b", 0.4]]}) is None
 
 
 def test_model_epoch_invalidates_repair():
-    agent = Agent(track_i=False)
-    stale_process = agent.s.add_node("ProcessSchema", {
-        "kind": "permutation", "params": [1, 0], "effect_evaluation": "opaque:stale_model",
-        "model_epoch": 8, "verified_model_epoch": 7,
+    agent = Agent(track_i=True, policy_overrides={"InventionPolicy": {"enabled": 1.0, "offline_enabled": 0.0}})
+    repair = agent.s.add_node("ProcessRepairCandidate", {
+        "status": "candidate", "model_epoch": 7, "source_model_epoch": 7,
+        "params": ["add", [1]], "fresh_states": [[0], [4]], "goals": [[1], [5]],
     })
-    assert agent.attrs(stale_process)["model_epoch"] != agent.attrs(stale_process)["verified_model_epoch"]
-    assert agent.attrs(stale_process)["effect_evaluation"] == "opaque:stale_model"
+    agent.s.add_edge(agent.ag, "has_repair_candidate", repair, {})
+    for _ in range(3):
+        agent.s.tick(1000)
+    assert agent.attrs(repair)["status"] == "verified"
+    assert agent.attrs(repair)["verified_model_epoch"] == 7
+    agent.s.set_attr(repair, "model_epoch", 8)
+    for _ in range(3):
+        agent.s.tick(1000)
+    assert agent.attrs(repair)["status"] == "stale"

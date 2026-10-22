@@ -267,6 +267,18 @@
       }
     },
     {
+      "provenance": "seed:invention_round:has_repair_candidate:Agent:ProcessRepairCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_repair_candidate",
+      "tgt": {
+        "type": "ProcessRepairCandidate",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:invention_round:has_tolerance:Agent:Tolerance",
       "src": {
         "type": "Agent",
@@ -9300,6 +9312,226 @@
         ]
       ],
       "batch": true
+    },
+    {
+      "name": "ir_repair_candidate_verify",
+      "area": "memory_consolidation",
+      "order": 60,
+      "latency_class": "background",
+      "comment": "Verify a declared goal-equivalent repair on its fresh states; it remains separate from exact inverse.",
+      "match": [
+        [
+          "agent",
+          "has_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_repair_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "source_model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ProcessRepairVerify",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "params"
+              },
+              "fresh_states": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "fresh_states"
+              },
+              "goals": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "goals"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "status",
+          "verified"
+        ],
+        [
+          "set_attr",
+          "c",
+          "verified_model_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "model_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "c",
+          "verification_receipt",
+          "fresh_goal_states_exact"
+        ]
+      ]
+    },
+    {
+      "name": "ir_repair_epoch_stale",
+      "area": "memory_consolidation",
+      "order": 61,
+      "latency_class": "background",
+      "comment": "Invalidate a verified repair when its source model epoch changes.",
+      "match": [
+        [
+          "agent",
+          "has_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_repair_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "model_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "verified_model_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "status",
+          "stale"
+        ]
+      ]
     }
   ]
 }

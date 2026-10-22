@@ -266,6 +266,41 @@ def test_p6_shared_budget():
     agent.close()
 
 
+def test_p9_profile_chain():
+    p9 = {"invention_round", "invariant_miner"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p9:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    assert "ir_repair_candidate_verify" in exported
+    assert "ir_repair_epoch_stale" in exported
+    agent.close()
+
+
+def test_p9_default_isolation():
+    p9_rules = {r["name"] for sid in {"invention_round", "invariant_miner"}
+                for r in manifest_for(sid).get("rules", ())
+                if isinstance(r, dict) and r.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p9_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p9_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p9_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    assert set(budgets).issubset(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    agent.close()
+
+
 
 def test_p7_profile_chain():
     p7 = {"experience_signature", "qualia_acquisition", "numerosity"}

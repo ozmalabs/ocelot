@@ -227,6 +227,15 @@ def PApply(p, state):
     return {"type": "ProcessApply", "p": p, "state": state}
 
 
+def PRepairVerify(p, fresh_states, goals):
+    return {"type": "ProcessRepairVerify", "p": p,
+            "fresh_states": fresh_states, "goals": goals}
+
+
+def PDistribution(outcomes):
+    return {"type": "ProcessDistribution", "outcomes": outcomes}
+
+
 def PSupport(p):
     return {"type": "EffectSupport", "p": p}
 

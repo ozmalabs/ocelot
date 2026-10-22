@@ -466,7 +466,7 @@ Complete I4.1–I4.3 using observed state/action/consequence traces. A simple ex
 
 ## Phase 9 — Verified invention and invariant walls
 
-**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** in progress; P9.01 frozen, P9.02 and P9.03 complete, P9.04 partial (graph/DSL integration outstanding).
+**Entry:** Phase 8 supported learned/held process effects and intervention model. **Status:** implementation and runtime integration complete through P9.E1; evaluation freeze and held-out reporting remain.
 
 Finish committed I2 seed behavior with honest effect semantics. Exact inverses, repair-to-equivalence, and distributional outcomes are different contracts. Invention and wall explanations can be tested here without claiming the no-hand-written-strategy solve gate; that gate follows Phase 10.
 
@@ -536,7 +536,9 @@ Finish committed I2 seed behavior with honest effect semantics. Exact inverses, 
 - **Non-goals:** pretending noisy effects have an exact fingerprint; unrestricted probabilistic program inference.
 - **Done when:** the specific acceptance is established and §5 has no new regressions; specs are frozen before their implementation. Record unsupported or failed capability criteria without changing them after the draw.
 
-**P9.04 partial record (2026-10-22):** `process_algebra.rs` now has native pure helpers that verify a declared exact goal criterion across nonempty fresh states and validate finite distributions while retaining unknown mass; Rust unit tests cover passing/failing repairs, duplicate outcomes, excessive mass and unknown support. The helper tests pass, and the extension was rebuilt through `scripts/engine_build.sh --lib-only`. The current DSL has no term dispatch for these helpers, and no graph lifecycle re-verifies repair candidates or invalidates them on model-epoch change. Therefore `test_repair_candidate_reverified`, `test_distribution_support_retained` and `test_model_epoch_invalidates_repair` are NOT_ESTABLISHED end-to-end; stochastic and repair adoption remain unsupported. `tests/test_process_repair.py` records those boundary limits. Phase 9 remains open and does not authorize Phase 10 yet.
+**P9.04 implementation record (2026-10-22):** Added native `ProcessRepairVerify` and `ProcessDistribution` terms through evaluator, JSON/reflection, and metadata in the plan's staged ≤3-file Rust commits (`bebcadb6`, `af74abcc`, `55bc59ea`). The repair term requires nonempty fresh states and exact declared goal outputs; it is independent of `ProcessInverse`. The distribution term retains typed support and unknown mass and rejects duplicates, invalid weights, and total mass above one. Invention-round graph rules verify candidate repair records against fresh states and invalidate them on model-epoch change. These are explicit finite evaluator semantics, not a learned probabilistic world model; empirical calibration and distribution induction remain unsupported. Native process algebra Rust tests: 5 passed; focused Python bundle: 47 passed, 1 skipped. The native extension was rebuilt and provenance verified.
+
+**P9.E1 integration record (2026-10-22):** The cognition-on profile already explicitly loads `invention_round` and `invariant_miner`; added assertions for both repair lifecycle rules, default/conversation isolation and the single enabled shared budget. The focused phase/profile bundle passed 41 tests. P9 remains open pending E2 preregistration and E3 held-out results.
 
 ### P9.E1 — Integrate the phase and validate the evidence adapter
 
