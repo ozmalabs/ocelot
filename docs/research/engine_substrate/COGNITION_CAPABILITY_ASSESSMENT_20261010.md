@@ -695,3 +695,8 @@ An order-complete Loopover transfer probe on distinct draws 0700/0701 exercised
 all three placements of an acquired candidate around two held processes. All
 420 independent-goal trials were residual and no candidate qualified. This
 does not establish Loopover transfer or change any L1–L7 disposition.
+
+A four-goal follow-up on fresh Loopover draws 0702–0705 applied the same
+order-complete grammar to three independent goals. All 1,260 one-step and
+two-step trials were residual; no candidate qualified. This adds no
+independent-goal capability evidence and does not change any L1–L7 disposition.
