@@ -151,16 +151,19 @@ same world across arms, respect the shared primitive-work and native-rule
 progress ceilings, and report every contract resource dimension; 0/40 have
 exact realized-resource equality, so they support development capability
 comparisons only. They do not establish per-field frozen resource ceilings for
-the final 24-checkpoint panel or the full multi-generation lineages. The D4 and
-Loopover invention-only requests and a D4 full-arm request await exact approval
-for generation one. Nine additional invention/full transitions will remain
-after these three are approved and verified. Exact realized resource equality
+the final 24-checkpoint panel or the full multi-generation lineages. The D4
+and Loopover invention-only requests and the D4 full-arm request for generation
+one have each been approved and consumed once, with 12 reviewer-reported
+seconds; their receipts and generation-one checkpoints verify. These complete
+3 of 12 invention/full descendants. Loopover full-arm still lacks a qualified
+generation-one candidate, and nine further invention/full transitions remain,
+each requiring its own approval. Exact realized resource equality
 is not a freeze prerequisite after the feasibility amendment; measured resource
 coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen
 because the 24-checkpoint descendant manifest and per-checkpoint measured
 resource/ceiling manifest are incomplete, and candidate-specific decisions
-remain pending. No held-out allocation may be accessed.
+remain for the nine future transitions. No held-out allocation may be accessed.
 
 At commit `d390d58383a48eb48a13a8da1e9206dc0a64ebe6`, the current native
 provenance audit is `ATTESTED` with no issues after the 2026-10-24

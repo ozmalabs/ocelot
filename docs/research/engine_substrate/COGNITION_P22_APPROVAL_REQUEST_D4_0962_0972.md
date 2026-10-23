@@ -1,6 +1,12 @@
 # P22 candidate-specific simulated-adoption request: D4 0962/0972
 
-**Status: awaiting exact user approval. No action has been taken.**
+**Status: consumed.** The user approved the exact digest with 12
+reviewer-reported seconds. Approval `#11844` and verified receipt `#12059`
+produced generation-one checkpoint `p22-d4-g1-2d2cb9ecda29`, digest
+`6fabe1c4d1bdaaafa5015c0ac3e4d43cc5759c380445be0df60420d8ac6550c8`.
+The raw result is `p22_approved_candidate_d4_0962_0972.json`, SHA-256
+`50e54f9b6decd864abab66d3138be9b8c91c949b7379da0ae13823d838a988b4`.
+This request authorizes no later action.
 
 This packet requests exactly one D4 training-simulator transition for
 candidate `#1908`, followed by a conditional generation-one checkpoint if the

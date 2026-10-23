@@ -897,13 +897,15 @@ self-checks pass, and the runner confirms `heldout_accessed=false`.
 
 The P22 preregistration remains `DRAFT — NOT FROZEN`: the 24-checkpoint
 multi-generation manifest and per-checkpoint resource-ceiling record are
-incomplete. Three registered-root generation-one candidate requests await
-their own exact decisions (D4 invention-only `#1908`, Loopover invention-only
-`#6542`, and D4 full-arm `#1541`); nine later invention/full transitions
-would remain after those actions. The previously approved D4 identity
-candidate `#6731` already consumed its one-shot authorization and is outside
-these registered roots. No held-out world has been constructed or scored, no
-efficacy claim is established, and L1–L7 dispositions remain unchanged.
+incomplete. Registered-root generation-one requests D4 invention-only `#1908`,
+Loopover invention-only `#6542`, and D4 full-arm `#1541` were each approved
+and consumed exactly once with 12 reviewer-reported seconds. Verified receipts
+and valid generation-one checkpoints were recorded; these fulfill 3 of 12
+invention/full descendants. Nine later transitions remain, each requiring its
+own approval. Loopover full-arm still lacks a qualified generation-one
+candidate. The earlier D4 identity candidate `#6731` is outside these roots.
+No held-out world has been constructed or scored, no efficacy claim is
+established, and L1–L7 dispositions remain unchanged.
 
 At P22 implementation commit `d390d58383a48eb48a13a8da1e9206dc0a64ebe6`,
 the current native provenance recomputation reports `ATTESTED` with no issues:
@@ -915,16 +917,16 @@ and build receipt `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047a
 The final preregistration freeze must recompute and bind provenance again after
 all implementation changes.
 
-A new read-only regression audits all three pending registered-root candidate
-packets, checking their exact parent bindings, source/replay hashes,
-qualification witnesses, empty validation allocations, zero prior actions,
-and unclaimed one-shot output paths. The P22 development-probe CLI module now
-passes 13 tests. This strengthens authorization-packet integrity only; none of
-the three approvals has been granted or executed, and no capability disposition
-or held-out status changes.
+The registered-root regression now audits the three consumed candidate
+requests against their source/replay hashes, parent digests, qualification
+witnesses, 12-second approval records, verified receipts, single-transition
+counts, and valid child checkpoint digest and parent links. Validation and
+held-out allocations remain empty. The updated P22 E2 acceptance bundle
+passes 74 tests; runner and analyzer self-checks pass with no held-out access.
+These actions do not change capability dispositions or held-out status.
 
 The combined P22 E2 estimand/proposal/adoption/checkpoint/ablation/analyzer
-bundle and registered-root packet audit passes 74 tests. The prior runner and
-analyzer self-checks remain passing with no held-out access. This is mechanism
-and authorization-integrity evidence only; P22 efficacy and L1–L7 dispositions
+bundle and updated registered-root consumed-result audit pass 74 tests. Runner
+and analyzer self-checks pass with no held-out access. This is mechanism and
+authorization-integrity evidence only; P22 efficacy and L1–L7 dispositions
 remain unchanged.

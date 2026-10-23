@@ -7,7 +7,8 @@ from dataclasses import asdict
 from pathlib import Path
 
 import pytest
-from evaluation.process_mastery.checkpoint_world_adapter import CheckpointExpression
+from evaluation.process_mastery.checkpoint_world_adapter import (
+    CheckpointExpression, CheckpointWorldAdapter)
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/run_p22_development_probe.py"
@@ -197,7 +198,10 @@ def test_registered_full_root_request_binds_measured_replay_and_novel_child():
     assert request["training_draws"] == [985, 986, 987, 988]
     assert request["validation_draws"] == []
     assert request["candidate_transfer_depth"] == 3
-    assert not (ROOT / request["output_path"]).exists()
+    result = json.loads((ROOT / request["output_path"]).read_text(
+        encoding="utf-8"))
+    assert result["simulated_adoption"]["approval_status"] == "consumed"
+    assert result["simulated_adoption"]["receipt_status"] == "verified"
 
     parent = CLI._parent_checkpoint_from_binding(request)
     binding = request["approval_binding"]
@@ -253,16 +257,18 @@ def test_registered_full_root_request_binds_measured_replay_and_novel_child():
     "COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0951_0954.json",
     "COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.json",
 ])
-def test_current_registered_root_approval_packets_are_bound_and_unclaimed(
+def test_registered_root_approval_packets_consumed_into_exact_children(
         request_name):
     request_path = ROOT / "docs/research/engine_substrate" / request_name
-    request = json.loads(request_path.read_text(encoding="utf-8"))
+    request_raw = request_path.read_bytes()
+    request = json.loads(request_raw)
     binding = request["approval_binding"]
 
     assert request["status"] == "awaiting_exact_user_approval"
     assert request["training_goal_relation"] == "distinct"
     assert request["validation_draws"] == []
-    assert not (ROOT / request["output_path"]).exists()
+    result_path = ROOT / request["output_path"]
+    assert result_path.exists()
     parent = CLI._parent_checkpoint_from_binding(request)
     assert parent.generation == 0
     assert parent.checkpoint_digest == binding["parent_checkpoint_digest"]
@@ -286,3 +292,26 @@ def test_current_registered_root_approval_packets_are_bound_and_unclaimed(
             if row["qualification_id"] == binding["qualification_id"])
         assert qualification["training_trial_keys"] == binding[
             "training_trial_keys"]
+
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    adoption = result["simulated_adoption"]
+    checkpoint = adoption["child_checkpoint"]
+    checkpoint_value = CheckpointExpression(**(checkpoint | {
+        "params": tuple(checkpoint["params"])}))
+    authorization = result["candidate_approval_authorization"]
+    assert result["status"] == "COMPLETED"
+    assert result["approval_count"] == result["world_receipt_count"] == 1
+    assert authorization["expression_digest"] == binding["expression_digest"]
+    assert authorization["human_review_seconds"] == 12.0
+    assert authorization["human_review_cost_source"] == "reviewer_self_report"
+    assert authorization["binding_document_sha256"] == hashlib.sha256(
+        request_raw).hexdigest()
+    assert adoption["approval_status"] == "consumed"
+    assert adoption["receipt_status"] == "verified"
+    assert adoption["world_transition_count"] == 1
+    assert adoption["receipt"]["world_id"] == binding["training_trial_keys"][0]
+    assert checkpoint["generation"] == 1
+    assert checkpoint["parent_digest"] == parent.checkpoint_digest
+    assert CheckpointWorldAdapter._checkpoint_digest_valid(checkpoint_value)
+    assert result["validation_world_ids"] == []
+    assert not result.get("heldout_world_ids")

@@ -1,6 +1,12 @@
 # P22 candidate-specific simulated-adoption request: Loopover 0951–0954
 
-**Status: awaiting exact user approval. No action has been taken.**
+**Status: consumed.** The user approved the exact digest with 12
+reviewer-reported seconds. Approval `#21562` and verified receipt `#21565`
+produced generation-one checkpoint `p22-loopover-g1-2638da0f23ae`, digest
+`c91670f7a91ba3d9f958f865dc85c4d4596d852a8a97c0e99e1f8d3d7b925057`.
+The raw result is `p22_approved_candidate_loopover_0951_0953.json`, SHA-256
+`f1b709141893c88975ebc09356e81ea28873a2638c634c05e8e784b2aaf5dbb9`.
+This request authorizes no later action.
 
 This packet requests exactly one training-simulator transition for Loopover
 candidate `#6542`, followed by a conditional generation-one checkpoint if the
