@@ -555,3 +555,5 @@ descendant or efficacy evidence; P22 lineage, freeze, and held-out gates and
 all L1–L7 dispositions remain open.
 
 The P22 runner now has a direct freeze-order regression: when standalone freeze verification fails, both held-out world generators remain unreachable. The focused suite passes 52 tests and runner/analyzer self-checks pass. This strengthens the held-out access guard only; it does not satisfy the pending candidate authorization, resource matching, preregistration, or registered held-out evaluation gates. No P22 held-out world was accessed, and L1–L7 dispositions remain unchanged.
+
+The candidate-bound adoption mechanism and resource accounting were re-verified on the current checkout (24 tests passed). The synthetic test fixture exercises one exact approval, guarded simulator transition, verified receipt, reviewer-time charge, and parent-linked child checkpoint. It does not approve or execute the pending live candidate request; P22 descendant-lineage and evaluation gates remain open.
