@@ -1051,3 +1051,23 @@ raw artifact
 [`p22_candidate_probe_loopover_0566_0567.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0566_0567.json)
 has SHA-256 `c792a40b44f0cfe9e30ec325d17d2ed235b1a9dbf7e4158f8e3a20845193543d`.
 Draws 0564–0567 are consumed training-only development data.
+
+## D4 identity candidate action (2026-10-23)
+
+The exact candidate `#6731` was approved with digest
+`1e3590935d290140171bd81f966a1dcc336e72278231d844b6411f7a2286f9b4` and
+reviewer-reported review time of 12 seconds. The one-shot CLI verified the
+request hash and restored generation-one parent before consuming human
+approval `#16727`. It performed exactly one guarded transition on training draw
+0562 and returned verified receipt `#16730`; the observed state remained
+`[0,1,2,3]`, matching the candidate's identity effect. The conditional child
+checkpoint `p22-d4-g2-1e3590935d29` is generation 2, digest
+`5799cb611c33a58de30c2590bbaa5f294794f0a9f9705707454072645bb694fc`, and links
+to parent digest
+`f3d6c15ac7f9187cef0e4c7ca21f3615958955565101a891fbc8796c997e6ed6`.
+Cumulative primitive work is 107,073. The raw result
+[`p22_approved_candidate_d4_0562_0563.json`](../../../evaluation/process_mastery/results/p22_approved_candidate_d4_0562_0563.json)
+has SHA-256 `8c6e6392c47a7f9fb8f212df0bc747df3a88a02fc8d190358e0841082d41bd25`
+and remains outside version control. This authorized action extends the D4
+lineage by one generation but cannot count as improvement. No validation or
+held-out world was accessed, and this approval authorizes no further action.
