@@ -1124,6 +1124,24 @@ has SHA-256 `f7a3312131002cd7dead4b469fb56e5f68a2887361e7709ebe2346a8ec968fd1`.
 This higher-ceiling fresh pair still provides no qualified Loopover
 generation-one candidate. Draws 0568/0569 are consumed training-only data.
 
+## Corrected-ceiling D4 generation-two continuation (2026-10-23)
+
+After fixing the restored per-request ceiling, the D4 generation-two parent was
+continued on fresh distinct draws 0576/0577. The result confirms the requested
+and actual limits now agree: both requests used `max_attempts=20,000` and
+exhausted that limit, with both tasks stuck. Three candidate records were
+present; candidate `#16750` (`flip_r` composed with the identity, digest
+`75c8a4559ab843b8154bc031dab1f527d18f39595e9fc9f0c6f3c0b9d7a63b73`) had only
+residual trials on the new draws, and no candidate qualified across them.
+Approval/receipt totals of two are inherited from the generation-two parent;
+there was no new approval, transition or receipt, and no validation/held-out
+access. The raw artifact
+[`p22_candidate_continuation_d4_0576_0577.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0576_0577.json)
+has SHA-256 `e2a9013ad48fa3cc2acc6a7c8e41d174ea92635a9732e0b367b0fe598705a49a`.
+The generation-three candidate gate remains unmet. A further D4 pair 0582/0583
+is running at the 30,000 per-request ceiling; Loopover 0580/0581 is also in
+progress.
+
 After the restored-ceiling correction, all 10 tests in
 `tests/test_p22_development.py` pass. The P22 runner self-check passes and
 reports `heldout_accessed=false`; its lineage-tamper controls reject the
