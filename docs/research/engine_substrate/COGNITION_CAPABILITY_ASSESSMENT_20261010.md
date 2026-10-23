@@ -643,3 +643,8 @@ A read-only same-world Loopover checkpoint panel on draws 0659–0662 scored the
 four generation-zero arms at 1/4 each. Resource instrumentation was complete,
 but observed resource equality failed. The result is development-only and
 supports no efficacy or efficiency claim.
+
+The D4 same-world development checkpoint panel on draws 0664–0667 gave all
+four generation-zero arms identical per-world outcomes (3/4 solved). Observed
+resource equality failed on one world; no efficacy, efficiency, or capability
+level is established.

@@ -127,3 +127,8 @@ A four-arm same-world Loopover development checkpoint panel on draws
 Resource accounting was complete, but actual resources did not match, so the
 panel establishes neither comparative efficacy nor efficiency; held-out
 capability evidence remains open.
+
+The D4 same-world development checkpoint panel on draws 0664–0667 yielded
+identical per-world scores across four generation-zero arms (3/4 solved).
+Resource instrumentation was complete, but work differed sharply on one
+failed world, so it supports no efficiency claim or capability closure.

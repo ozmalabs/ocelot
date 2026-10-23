@@ -1421,3 +1421,18 @@ panel is development-only, not an efficacy estimate. Raw artifact
 [`p22_checkpoint_panel_loopover_0659_0662.json`](../../../evaluation/process_mastery/results/p22_checkpoint_panel_loopover_0659_0662.json)
 has SHA-256 `a326b1ad58f874a74e8a7c25825dd0011d903378e9ce5fe8cbed40c1483cafac`.
 The run had no held-out access.
+
+## D4 same-world checkpoint panel (2026-10-23)
+
+The four generation-zero D4 arm checkpoints were restored in isolated workers
+and scored on fresh training draws 0664–0667 under common 30,000 cumulative
+primitive-work and 20,000 native-rule-progress ceilings. Every arm scored
+identically on every world and solved 3/4. All budgets were respected and all
+resource dimensions were measured, but actual resource matching failed on draw
+0665: full and invention each used 206 cumulative primitive units while
+unchanged and adaptive used 2. The panel therefore reports
+`resource_matched=false` and `efficiency_comparable=false`; it is development
+evidence, not an efficacy estimate. Raw artifact
+[`p22_checkpoint_panel_d4_0664_0667.json`](../../../evaluation/process_mastery/results/p22_checkpoint_panel_d4_0664_0667.json)
+has SHA-256 `0fdca8d7ad50d9bbb2fd9dd29a3687785062df2d5d5a9fb9a1245902f4f159d6`.
+No held-out data was accessed.
