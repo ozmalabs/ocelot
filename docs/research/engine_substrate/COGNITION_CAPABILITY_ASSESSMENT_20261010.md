@@ -573,3 +573,5 @@ The earlier exact D4 and Loopover simulated adoptions establish verified actions
 A complete recursive inventory of retained P22 result artifacts found no generation-greater-than-zero checkpoint snapshots. Existing development outcomes retain generation-zero roots and scoring reports; historical adoption receipts cannot reconstruct the missing native graph snapshots. Descendant lineage remains unestablished.
 
 The approval CLI parses and hashes the same binding bytes; its two rejection-path tests pass. Updated source-bundle SHA-256 is `8aafcbf1e7e2f16f1b11287b2fbd54d7b75d9fd12fca64bdc04cbf3020429c6f`, with native runtime still attested and clean. No adoption was executed.
+
+The candidate-action CLI durably reserves its one-shot output before any probe work; interrupted attempts cannot be retried under the same request. Three CLI guard tests pass. Native runtime remains attested with no issues; updated P22 source-bundle SHA-256 is `080c96bfb05da93064ab8d5d88d36464be8fac8c8dcb64fc39f6607802a463f2`. No action was run.
