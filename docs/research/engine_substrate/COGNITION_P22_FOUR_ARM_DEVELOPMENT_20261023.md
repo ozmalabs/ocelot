@@ -1578,3 +1578,23 @@ has SHA-256 `37276ef26615c1dd50a0d7919e0a81b753ac61e727dd9afc4d784f255595929d`
 and decompresses to that raw digest. Draws 0692/0693 are consumed
 training-only data; the rotated source produced a different candidate but no
 qualified Loopover descendant.
+
+## Second rotated-source transfer probe (2026-10-23)
+
+Fresh pairwise-distinct Loopover training goals 0694/0695 used transfer depth
+2 and 10,000 attempts per task. Both tasks remained stuck. Candidate `#10761`
+(digest `ec771adfec77c25484a4d94ef870b5980d35b1ca5a76fc5c543f02ca2fc93c89`,
+effect `[[1,8,2,3,4,5,6,7,0]]`) had 24 residual one-step and 132 residual
+two-step trials on the second goal; it did not qualify. The run reserved
+20,000 attempts, created no approvals or receipts, and accessed no validation
+or held-out worlds.
+
+Runtime was 339.686 seconds, with 26 native rule steps, 1,047,400,448 bytes
+peak RSS, 20,768 graph nodes, 101,008 edges and 2,996,267,572 native term
+evaluations. Raw JSON SHA-256 is
+`ef819f5161fe2c04124b766c4fcbaae1140f94c17619ca4314f225194ce6fc2c`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0694_0695_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0694_0695_two_step.json.gz)
+has SHA-256 `1c691650d8d3a3886dfb3ba42e01a9fa074c95d6fc92d51cbdfd49c46b8aac8d`
+and decompresses to that raw digest. Draws 0694/0695 are consumed. This new
+source expression also failed to qualify on its independent training goal.
