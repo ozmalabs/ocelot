@@ -54,6 +54,13 @@ family. Their split-specific world IDs and seeds come from
 `linear_p22_v1.allocation()` and must be frozen by hash; do not reuse an ID or
 seed across families or splits.
 
+Current allocation audit: 1,600 world IDs and 1,600 seeds are unique across
+both families and all four splits; each family/split has 200 worlds. The
+canonical base allocation SHA-256 is
+`ab8571b0d83c27b5704002910fd50dc7fa1022a3445287da6717f72ae28fc454`. This is
+not the final freeze hash: the freeze adds the verified ancestor checkpoint
+digests and all resource ceilings before hashing the complete analysis plan.
+
 ## Resource and integrity criteria
 
 The efficacy panel is efficiency-comparable only when every member of
