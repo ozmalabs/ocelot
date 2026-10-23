@@ -672,3 +672,8 @@ Loopover goals (draws 0682–0689), producing 1,092 residual transfer trials for
 one candidate and no qualification. All eight training tasks remained stuck
 after 80,000 reserved attempts. This larger panel still produced no Loopover
 descendant or efficacy estimate; it does not change any L1–L7 disposition.
+
+A rotated Loopover source-goal probe on fresh draws 0690/0691 produced no
+candidate on its first task after 20,000 reserved attempts. This proposal
+generation miss adds no transfer or capability evidence; all L1–L7
+dispositions remain unchanged.

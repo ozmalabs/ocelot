@@ -1538,3 +1538,21 @@ has SHA-256 `999070499e348746c11799e98e7cff1ef879d099fc64718641412812aac0aa2e`
 and decompresses to the raw digest. Draws 0682–0689 are consumed training-only
 data. The larger panel still produced no Loopover generation-one candidate or
 efficacy result.
+
+## Alternate-source proposal probe (2026-10-23)
+
+Fresh pairwise-distinct Loopover training draws 0690/0691 used transfer depth
+2 and 10,000 attempts per task. Both tasks remained stuck; the source task on
+draw 0690 produced no candidate (`NO_CANDIDATE_FIRST_TRIAL`). The probe
+reserved 20,000 attempts, created no approval or receipt, and accessed no
+validation or held-out worlds. Runtime was 138.517 seconds, with 21 native
+rule steps, 1,040,207,872 bytes peak RSS, 20,765 graph nodes, 100,713 edges
+and 1,273,376,617 native term evaluations.
+
+Raw JSON SHA-256 is
+`db28bf9ff5ba62600e5ea170762e9204579130dbde44c029a1c05bf939bf1f13`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0690_0691_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0690_0691_two_step.json.gz)
+has SHA-256 `704c76b31f3a49da352d1184a4ff438669f71830dd0358857a0a92972609b59c`
+and decompresses to that raw digest. Draws 0690/0691 are consumed. This is a
+proposal-generation miss, not a qualification failure or efficacy result.
