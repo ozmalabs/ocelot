@@ -1393,3 +1393,15 @@ and held-out allocations were empty. Raw result
 has SHA-256 `a2a9d36048c23c86a552c4f9058d3d81fd67c44a6f8c21d9d3f64f681073c51f`.
 Draws 0643–0650 are consumed. Loopover still has no generation-one
 descendant or registered efficacy estimate.
+
+## Loopover eight-goal 60-tick diagnostic (2026-10-23)
+
+Fresh distinct goals 0651–0658 were searched with 60 rule-processing ticks,
+10,000 attempts per task, and the full 80,000-attempt global ceiling. The
+runner returned `NO_CANDIDATE_FIRST_TRIAL`: two candidates were minted, but
+neither received an independent-goal trial. Both remained unqualified. No
+approval, receipt, validation, or held-out access occurred. Raw artifact
+[`p22_training_panel_loopover_0651_0658_ticks60.json`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0651_0658_ticks60.json)
+has SHA-256 `81c9bbba9773c2742e8becd0f6eda5c4b2c1bcb48ee7b624a33d26c01378f138`.
+Draws 0651–0658 are consumed. Increasing rule-processing ticks did not
+produce a Loopover generation-one candidate.

@@ -633,3 +633,8 @@ The Loopover eight-goal follow-up on draws 0643–0650 again produced no
 independent-goal-qualified candidate after 80,000 attempts; all 168 transfer
 trials were residual. This is additional negative development evidence, not a
 held-out result, and does not change any capability disposition.
+
+A fresh eight-goal Loopover diagnostic with 60 rule-processing ticks (draws
+0651–0658) exhausted the 80,000-attempt ceiling. Two candidates were minted,
+but neither received a first independent-goal trial. This adds no lineage or
+capability evidence and leaves the disposition unchanged.

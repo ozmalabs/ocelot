@@ -117,3 +117,7 @@ The Loopover eight-goal follow-up on 0643–0650 exhausted 80,000 attempts.
 Candidate `#10761` had 168 residual transfer trials across seven distinct
 training goals and did not qualify. Loopover lineage and P22 held-out evidence
 remain unavailable; no capability disposition changes.
+
+The fresh Loopover 60-tick eight-goal panel on 0651–0658 exhausted 80,000
+attempts without a first independent-goal candidate trial. It yields no
+Loopover descendant or capability change; P22 held-out gates remain open.
