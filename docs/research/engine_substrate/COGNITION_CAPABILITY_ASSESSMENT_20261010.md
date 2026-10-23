@@ -902,8 +902,11 @@ Loopover invention-only `#6542`, and D4 full-arm `#1541` were each approved
 and consumed exactly once with 12 reviewer-reported seconds. Verified receipts
 and valid generation-one checkpoints were recorded; these fulfill 3 of 12
 invention/full descendants. Nine later transitions remain, each requiring its
-own approval. Loopover full-arm still lacks a qualified generation-one
-candidate. The earlier D4 identity candidate `#6731` is outside these roots.
+own approval. A D4 invention-only g1 continuation produced candidate `#9458`
+and qualification `#15851` on training witnesses 0960/0818; an exact replay
+matched them, and its one-action request awaits exact approval. Loopover
+full-arm still lacks a qualified generation-one candidate. The earlier D4
+identity candidate `#6731` is outside these roots.
 No held-out world has been constructed or scored, no efficacy claim is
 established, and L1–L7 dispositions remain unchanged.
 
@@ -945,3 +948,8 @@ A higher-budget Loopover full-root panel on fresh distinct training worlds 0812�
 
 
 The highest-bounded Loopover full-root search used 90,000 attempts, 120 ticks, and three fresh distinct training worlds 0815–0817; it found no candidate on any goal. The run measured 47 native rule steps, 2,564.122 seconds wall-time and 937,930,752-byte peak RSS, with zero approvals/receipts, empty validation allocation, no held-out worlds, and complete native-rule identity coverage. This further confirms the current full-root proposal-search setup has not produced a qualified generation-one candidate.
+
+
+The D4 invention-only generation-one continuation on draws 0818–0821 reproduced candidate `#9458` (digest `84854777d0e3b48f447ecd04236a794eff39a46546edb3f19e47f506492ce66a`) and qualification `#15851` across distinct training worlds 0960/0818; an exact replay reproduced both. The verified transfer child is novel relative to the registered parent's active effects. The candidate-specific request is prepared and unclaimed; no further approval, receipt, checkpoint, validation or held-out world was created. The updated P22 E2 acceptance bundle passes 75 tests, including 14 tests in
+the focused development-probe CLI module; the runner and analyzer self-checks
+remain passing with `heldout_accessed=false`.

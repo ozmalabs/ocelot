@@ -256,42 +256,56 @@ def test_registered_full_root_request_binds_measured_replay_and_novel_child():
     "COGNITION_P22_APPROVAL_REQUEST_D4_0962_0972.json",
     "COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0951_0954.json",
     "COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.json",
+    "COGNITION_P22_APPROVAL_REQUEST_D4_G1_0818_0821.json",
 ])
-def test_registered_root_approval_packets_consumed_into_exact_children(
+def test_registered_root_approval_packets_match_their_exact_states(
         request_name):
     request_path = ROOT / "docs/research/engine_substrate" / request_name
     request_raw = request_path.read_bytes()
     request = json.loads(request_raw)
     binding = request["approval_binding"]
 
-    assert request["status"] == "awaiting_exact_user_approval"
+    assert request["status"] in {
+        "awaiting_exact_user_approval", "consumed_by_verified_action"}
     assert request["training_goal_relation"] == "distinct"
     assert request["validation_draws"] == []
     result_path = ROOT / request["output_path"]
-    assert result_path.exists()
+    expect_consumed = "_G1_" not in request_name
+    assert result_path.exists() == expect_consumed
     parent = CLI._parent_checkpoint_from_binding(request)
-    assert parent.generation == 0
+    assert parent.generation == (1 if "_G1_" in request_name else 0)
     assert parent.checkpoint_digest == binding["parent_checkpoint_digest"]
     assert binding["status"] == "unapproved_candidate"
     assert binding["expression_digest"]
     assert binding["qualification_id"]
     assert len(set(binding["training_trial_keys"])) == 2
 
+    replay_signatures = []
     for prefix in ("source", "replay"):
         raw = (ROOT / request[f"{prefix}_artifact_path"]).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == request[
             f"{prefix}_artifact_sha256"]
         artifact = json.loads(raw)
         assert artifact["status"] == "COMPLETED"
-        assert artifact["approval_count"] == 0
-        assert artifact["world_receipt_count"] == 0
+        inherited_actions = parent.generation
+        assert artifact["approval_count"] == inherited_actions
+        assert artifact["world_receipt_count"] == inherited_actions
         assert artifact["validation_world_ids"] == []
         candidate = next(row for row in artifact["candidates"]
             if row["expression_digest"] == binding["expression_digest"])
         qualification = next(row for row in candidate["qualifications"]
             if row["qualification_id"] == binding["qualification_id"])
-        assert qualification["training_trial_keys"] == binding[
-            "training_trial_keys"]
+        assert sorted(qualification["training_trial_keys"]) == sorted(
+            binding["training_trial_keys"])
+        replay_signatures.append((candidate["candidate_id"],
+            candidate["params"], qualification["qualification_id"],
+            qualification["kind"], qualification["attempt_ids"],
+            sorted(qualification["training_trial_keys"])))
+    assert replay_signatures[0] == replay_signatures[1]
+
+    if not expect_consumed:
+        assert request["status"] == "awaiting_exact_user_approval"
+        return
 
     result = json.loads(result_path.read_text(encoding="utf-8"))
     adoption = result["simulated_adoption"]
@@ -300,7 +314,8 @@ def test_registered_root_approval_packets_consumed_into_exact_children(
         "params": tuple(checkpoint["params"])}))
     authorization = result["candidate_approval_authorization"]
     assert result["status"] == "COMPLETED"
-    assert result["approval_count"] == result["world_receipt_count"] == 1
+    assert result["approval_count"] == result["world_receipt_count"] == (
+        parent.generation + 1)
     assert authorization["expression_digest"] == binding["expression_digest"]
     assert authorization["human_review_seconds"] == 12.0
     assert authorization["human_review_cost_source"] == "reviewer_self_report"
@@ -309,8 +324,10 @@ def test_registered_root_approval_packets_consumed_into_exact_children(
     assert adoption["approval_status"] == "consumed"
     assert adoption["receipt_status"] == "verified"
     assert adoption["world_transition_count"] == 1
-    assert adoption["receipt"]["world_id"] == binding["training_trial_keys"][0]
-    assert checkpoint["generation"] == 1
+    assert adoption["receipt"]["world_id"] == (
+        f"p22:{request['family']}-v2:train:{request['training_draws'][0]:04d}")
+    assert adoption["receipt"]["world_id"] in binding["training_trial_keys"]
+    assert checkpoint["generation"] == parent.generation + 1
     assert checkpoint["parent_digest"] == parent.checkpoint_digest
     assert CheckpointWorldAdapter._checkpoint_digest_valid(checkpoint_value)
     assert result["validation_world_ids"] == []
