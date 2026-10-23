@@ -942,3 +942,6 @@ A third fresh Loopover full-root panel on distinct training worlds 0808–0811 a
 
 
 A higher-budget Loopover full-root panel on fresh distinct training worlds 0812–0814 used 100 search ticks, 20,000 attempts per request, and a 60,000 global ceiling. Candidate `#21545` received 10,824 independent-goal trials, all residual, with zero qualification. The panel reserved 60,000 attempts, recorded 54 native rule steps, 860.849 seconds wall-time, 937,930,752-byte peak RSS, zero approvals/receipts, and empty validation allocation; no held-out world was constructed. Native rule identity coverage is complete. Loopover full-arm generation one remains unqualified.
+
+
+The highest-bounded Loopover full-root search used 90,000 attempts, 120 ticks, and three fresh distinct training worlds 0815–0817; it found no candidate on any goal. The run measured 47 native rule steps, 2,564.122 seconds wall-time and 937,930,752-byte peak RSS, with zero approvals/receipts, empty validation allocation, no held-out worlds, and complete native-rule identity coverage. This further confirms the current full-root proposal-search setup has not produced a qualified generation-one candidate.
