@@ -1342,3 +1342,40 @@ The focused `tests/test_p22_development.py` and
 fixtures. The analyzer self-check passes all nine negative and positive
 controls, including missing/partial/mismatched resource sources. These checks
 do not interpret any continuation as an efficacy result.
+
+## D4 five-goal generation-two continuation (2026-10-23)
+
+The first fresh set, draws 0629–0634, failed the distinct-goal preflight because
+0629 and 0632 both generated `[2,0,3,1]`. It stopped before learner boot and
+reserved zero search attempts. Its explicit consumed-draw record is
+[`p22_training_panel_preflight_d4_0629_0634.json`](../../../evaluation/process_mastery/results/p22_training_panel_preflight_d4_0629_0634.json),
+SHA-256 `83233e380a974db74b956ff2dff471632ebea8bad887f2adaaa6f041dd393581`.
+
+The next five fresh draws, 0635–0639, generated five distinct D4 goals. The
+runner restored parent checkpoint `p22-d4-g2-1e3590935d29` (generation 2,
+digest `5799cb611c33a58de30c2590bbaa5f294794f0a9f9705707454072645bb694fc`)
+and reserved 10,000 attempts for each task, 50,000 total, under the 120,000
+global ceiling. All five tasks ended stuck. Candidate `#26693`, digest
+`211bacf1856f917926bfff4811ff2e08d76d3f0deac3d803a898a2d5c02cc958`, has
+effect `[[1,0,3,2]]` and qualified twice: qualification `#66758` on draws
+0635/0637 and `#66759` on 0635/0638. The second qualification is not included
+in the pending candidate-specific approval.
+
+No new approval or receipt was created; totals of two each are inherited from
+the parent. Validation and held-out allocations are empty. Raw result
+[`p22_training_panel_continuation_d4_0635_0639.json`](../../../evaluation/process_mastery/results/p22_training_panel_continuation_d4_0635_0639.json)
+has SHA-256 `da014e9efc9e9522d15920bc5bb131424963269f359accab7e663086316fa81a`.
+The exact request
+[`COGNITION_P22_APPROVAL_REQUEST_D4_0635_0639.md`](COGNITION_P22_APPROVAL_REQUEST_D4_0635_0639.md)
+binds qualification `#66758`, its two training witnesses, the complete
+candidate expression and effect, the parent artifact/checkpoint digests, and
+the one-shot output path. It is awaiting explicit user approval and reviewer
+seconds. The proposed transition is non-identity, but it is only a lineage
+action and is not efficacy evidence.
+
+The adoption verifier previously required exactly one qualification record
+for a candidate, which rejected candidates with multiple valid independent
+goal pairs. It now accepts an exact `qualification_id` and checks only that
+record's witness keys; ambiguous approvals without that identifier still
+fail closed. Unit regressions cover explicit selection, ambiguity, and
+witness mismatch. The focused development and CLI regression suite passed: 20 tests in 213.80 seconds, including the existing single-qualification guarded-adoption path and the new ambiguous-qualification controls.

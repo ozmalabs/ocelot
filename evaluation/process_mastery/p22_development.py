@@ -55,6 +55,32 @@ def _digest(value) -> str:
         separators=(",", ":"), default=list).encode("utf-8")).hexdigest()
 
 
+def _select_approved_qualification(qualifications: list[dict],
+                                  binding: dict) -> dict:
+    """Resolve one exact training qualification for a candidate approval."""
+    requested_id = binding.get("qualification_id")
+    if requested_id is None:
+        if len(qualifications) != 1:
+            raise RuntimeError(
+                "candidate with multiple qualifications requires an exact qualification_id")
+        selected = qualifications[0]
+    else:
+        if not isinstance(requested_id, str) or not requested_id:
+            raise RuntimeError("qualification_id must be a nonempty string")
+        matches = [qualification for qualification in qualifications
+                   if qualification.get("qualification_id") == requested_id]
+        if len(matches) != 1:
+            raise RuntimeError("qualification_id does not identify one qualified record")
+        selected = matches[0]
+    witnesses = selected.get("training_trial_keys")
+    expected = binding.get("training_trial_keys")
+    if (not isinstance(witnesses, list) or not isinstance(expected, list)
+            or sorted(set(witnesses)) != sorted(expected)
+            or len(expected) != len(set(expected))):
+        raise RuntimeError("candidate qualification witnesses differ from approval")
+    return selected
+
+
 def run_p22_training_proposal_probe(*, family: str,
                                     training_draws: tuple[int, ...],
                                     validation_draws: tuple[int, ...],
@@ -343,14 +369,17 @@ def run_p22_training_proposal_probe(*, family: str,
                 if agent.native.neighbours(proposal, "proposes_native_candidate") == [candidate]
                 for q in agent.native.neighbours(proposal, "has_native_qualification")
                 if agent.attrs(q).get("status") == "qualified_for_candidate_specific_approval"]
-            witness_keys = sorted(key for q in quals
-                for attempt in agent.native.neighbours(q, "counts_native_trial")
-                for task in agent.native.neighbours(attempt, "about_task")
-                if agent.attrs(task).get("split") == "training"
-                for key in [agent.attrs(task).get("training_trial_key")])
-            expected_witnesses = sorted(approved_candidate_binding["training_trial_keys"])
-            if sorted(set(witness_keys)) != expected_witnesses or len(quals) != 1:
-                raise RuntimeError("candidate qualification witnesses differ from approval")
+            qualification_records = [{
+                "qualification_id": str(q),
+                "training_trial_keys": sorted(key
+                    for attempt in agent.native.neighbours(q, "counts_native_trial")
+                    for task in agent.native.neighbours(attempt, "about_task")
+                    if agent.attrs(task).get("split") == "training"
+                    for key in [agent.attrs(task).get("training_trial_key")]),
+            } for q in quals]
+            selected_qualification = _select_approved_qualification(
+                qualification_records, approved_candidate_binding)
+            expected_witnesses = sorted(selected_qualification["training_trial_keys"])
             if root_checkpoint is None:
                 raise RuntimeError("approved candidate capture requires a measured parent checkpoint")
             approval_context = {key: attrs[key] for key in exact_fields}
@@ -399,6 +428,7 @@ def run_p22_training_proposal_probe(*, family: str,
             approval_attrs = (agent.attrs(approval_nodes[0])
                               if len(approval_nodes) == 1 else {})
             simulated_adoption = {"candidate_id": str(candidate),
+                "qualification_id": selected_qualification["qualification_id"],
                 "expression_digest": expected_digest,
                 "training_trial_keys": expected_witnesses,
                 "approval_id": (str(approval_nodes[0])

@@ -105,3 +105,10 @@ Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out
 prerequisites remain open.
+
+A later D4 generation-two training continuation (draws 0635–0639) found a
+non-identity candidate with two independent-goal qualification records. Its
+candidate-specific adoption request is pending exact approval. The result
+adds training qualification evidence only; it does not add a checkpoint
+descendant, held-out evidence, an efficacy estimate, or a capability-level
+disposition. P22.E2–E3 remain open.

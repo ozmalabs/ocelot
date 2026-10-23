@@ -1,6 +1,7 @@
 import json
 
 from evaluation.process_mastery.p22_development import (
+    _select_approved_qualification,
     run_p22_training_proposal_probe,
 )
 from evaluation.process_mastery.p22_resource_accounting import (
@@ -335,3 +336,32 @@ def test_approved_candidate_checkpoint_capture_rejects_validation_worlds():
             approved_candidate_binding={"family": "d4",
                 "expression_digest": "8a737c4d9d27d7e97233ddbc57921fb661e088a65fecce23eea884b7a8753788",
                 "human_review_seconds": 1})
+
+
+def test_candidate_approval_selects_one_exact_qualification_from_multiple():
+    qualifications = [
+        {"qualification_id": "#66758", "training_trial_keys": [
+            "p22:d4-v2:train:0635", "p22:d4-v2:train:0637"]},
+        {"qualification_id": "#66759", "training_trial_keys": [
+            "p22:d4-v2:train:0635", "p22:d4-v2:train:0638"]},
+    ]
+    selected = _select_approved_qualification(qualifications, {
+        "qualification_id": "#66758",
+        "training_trial_keys": [
+            "p22:d4-v2:train:0635", "p22:d4-v2:train:0637"],
+    })
+    assert selected["qualification_id"] == "#66758"
+
+
+def test_candidate_approval_requires_exact_qualification_when_ambiguous():
+    import pytest
+    qualifications = [
+        {"qualification_id": "#1", "training_trial_keys": ["a", "b"]},
+        {"qualification_id": "#2", "training_trial_keys": ["a", "c"]},
+    ]
+    with pytest.raises(RuntimeError, match="requires an exact qualification_id"):
+        _select_approved_qualification(qualifications, {
+            "training_trial_keys": ["a", "b"]})
+    with pytest.raises(RuntimeError, match="witnesses differ"):
+        _select_approved_qualification(qualifications, {
+            "qualification_id": "#1", "training_trial_keys": ["a", "c"]})
