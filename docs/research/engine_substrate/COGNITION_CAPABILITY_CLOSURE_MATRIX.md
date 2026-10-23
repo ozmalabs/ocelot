@@ -121,3 +121,9 @@ remain unavailable; no capability disposition changes.
 The fresh Loopover 60-tick eight-goal panel on 0651–0658 exhausted 80,000
 attempts without a first independent-goal candidate trial. It yields no
 Loopover descendant or capability change; P22 held-out gates remain open.
+
+A four-arm same-world Loopover development checkpoint panel on draws
+0659–0662 gave each generation-zero arm 1/4 solves under common ceilings.
+Resource accounting was complete, but actual resources did not match, so the
+panel establishes neither comparative efficacy nor efficiency; held-out
+capability evidence remains open.

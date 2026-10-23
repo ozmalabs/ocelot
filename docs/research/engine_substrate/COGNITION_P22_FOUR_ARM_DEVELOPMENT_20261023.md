@@ -1405,3 +1405,19 @@ approval, receipt, validation, or held-out access occurred. Raw artifact
 has SHA-256 `81c9bbba9773c2742e8becd0f6eda5c4b2c1bcb48ee7b624a33d26c01378f138`.
 Draws 0651–0658 are consumed. Increasing rule-processing ticks did not
 produce a Loopover generation-one candidate.
+
+## Loopover same-world checkpoint panel (2026-10-23)
+
+The registered generation-zero `unchanged`, `adaptive_only`, `invention_only`,
+and `full` checkpoints were restored in isolated workers and scored on four
+fresh training worlds, draws 0659–0662. All cells used the same world IDs and
+30,000 cumulative primitive-work / 20,000 native-rule-progress ceilings.
+Every arm solved 1/4 worlds. Budget compliance and all contract resource
+measurements passed, but observed resource matching did not: actual cumulative
+primitive work differed on three of four worlds, and budget, search,
+curriculum, graph-size, rule-step and runtime costs also varied. The evaluator
+returned `resource_matched=false` and `efficiency_comparable=false`; this
+panel is development-only, not an efficacy estimate. Raw artifact
+[`p22_checkpoint_panel_loopover_0659_0662.json`](../../../evaluation/process_mastery/results/p22_checkpoint_panel_loopover_0659_0662.json)
+has SHA-256 `a326b1ad58f874a74e8a7c25825dd0011d903378e9ce5fe8cbed40c1483cafac`.
+The run had no held-out access.

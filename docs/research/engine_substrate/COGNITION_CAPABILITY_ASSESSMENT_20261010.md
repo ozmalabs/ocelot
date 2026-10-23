@@ -638,3 +638,8 @@ A fresh eight-goal Loopover diagnostic with 60 rule-processing ticks (draws
 0651–0658) exhausted the 80,000-attempt ceiling. Two candidates were minted,
 but neither received a first independent-goal trial. This adds no lineage or
 capability evidence and leaves the disposition unchanged.
+
+A read-only same-world Loopover checkpoint panel on draws 0659–0662 scored the
+four generation-zero arms at 1/4 each. Resource instrumentation was complete,
+but observed resource equality failed. The result is development-only and
+supports no efficacy or efficiency claim.
