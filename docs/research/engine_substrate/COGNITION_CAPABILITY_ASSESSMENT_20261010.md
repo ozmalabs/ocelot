@@ -501,3 +501,15 @@ per-rule work digests, but their actual vectors remain unmatched and neither
 supports an efficiency comparison. The isolated panels are one training task
 per family with no effect evidence, and approved descendant lineages remain
 absent. P22 preregistration/held-out status and L1–L7 closures are unchanged.
+
+The first isolated checkpoint outcomes are now marked preliminary and
+superseded: their evaluator directly created `SolveTask`, bypassing the
+restored native curriculum policy in adaptive arms. The corrected evaluator
+submits the same curriculum evidence to each arm and lets enabled native
+curriculum rules create and dispatch the task. On a fresh common D4 training
+draw, all four arms solve 1/1; on a fresh common Loopover training draw, all
+four solve 0/1. All contract dimensions and work digests verify, while actual
+resource vectors remain unmatched. These are single-world training plumbing
+checks only. They establish neither adaptive benefit nor learner efficacy;
+approved descendant lineages, resource matching, preregistration, and held-out
+results remain open, as do every L1–L7 closure.

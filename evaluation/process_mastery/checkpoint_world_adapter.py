@@ -730,7 +730,7 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         store.set_attr(solver_policy, "max_steps", float(solver_step_allowance))
         baseline_approvals = len(store.nodes("OpenProcessAdoptionApproval"))
         baseline_receipts = len(store.nodes("OpenProcessWorldReceipt"))
-        task_key = f"p22-checkpoint-eval:{world_id}"
+        task_key = f"p22:{world['family']}:{world['draw']:04d}"
         graph_nodes = json.loads(checkpoint.native_graph_snapshot_json)["nodes"]
         domain_names = [node.get("attrs", {}).get("domain") for node in graph_nodes
             if node.get("type") == "ProcessSchema"
@@ -775,17 +775,38 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
             store.add_edge(root, "has_process_schema", schema, {})
             store.add_edge(domain, "has_held_process", schema, {})
         if any(store.node(node)["attrs"].get("task_key") == task_key
-               for node in store.nodes("SolveTask")):
+               for node in store.nodes("ProcessCurriculumEvidence")):
             raise ValueError("checkpoint graph already contains this evaluation task identity")
-        task = store.add_node("SolveTask", {
-            "task_key": task_key, "domain": domain_name,
-            "initial_state": list(initial_state), "state": list(initial_state),
-            "goal": list(goal_state), "object_count": float(len(params)),
-            "status": "active", "trace": [], "steps": 0, "moves": 0.0,
-            "stuck_count": 0, "split": "training",
-            "training_trial_key": world_id})
-        store.add_edge(root, "has_solve_task", task, {})
-        store.add_edge(task, "about_domain", domain, {})
+        evidence = store.add_node("ProcessCurriculumEvidence", {
+            "evidence_key": task_key, "source_kind": "registered_training_pool",
+            "source_id": world_id, "task_kind": "process_composition",
+            "action_kind": "apply", "object_type": "Permutation",
+            "feature_key": "permutation", "before_value": list(initial_state),
+            "domain": domain_name, "initial_state": list(initial_state),
+            "goal": list(goal_state), "source_epoch": 0, "model_epoch": 0,
+            "frame_epoch": 0, "status": "eligible", "split": "training",
+            "expected_outcome": "unknown", "sealed_labels_present": False,
+            "fixed_rank": 0.0, "random_rank": 0.0})
+        store.add_edge(root, "has_process_curriculum_evidence", evidence, {})
+        curriculum_policies = store.nodes("ProcessCurriculumPolicy")
+        if len(curriculum_policies) != 1:
+            raise ValueError("checkpoint learner requires exactly one native curriculum policy")
+        curriculum_enabled = (store.node(curriculum_policies[0])["attrs"].get(
+            "enabled") == 1.0)
+        if curriculum_enabled:
+            existing_curriculum_tasks = len(store.nodes("ProcessCurriculumTask"))
+            store.set_attr(curriculum_policies[0], "max_tasks",
+                           float(existing_curriculum_tasks + 1))
+        else:
+            task = store.add_node("SolveTask", {
+                "task_key": task_key, "training_trial_key": world_id,
+                "domain": domain_name, "initial_state": list(initial_state),
+                "state": list(initial_state), "goal": list(goal_state),
+                "object_count": float(len(params)), "status": "active",
+                "trace": [], "steps": 0, "moves": 0.0, "stuck_count": 0,
+                "split": "training"})
+            store.add_edge(root, "has_solve_task", task, {})
+            store.add_edge(task, "about_domain", domain, {})
         fired_total = 0
         rounds = 0
         quiescent = False
@@ -805,7 +826,12 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
             if fired == 0:
                 quiescent = True
                 break
-        attrs = store.node(task)["attrs"]
+        task_matches = [node for node in store.nodes("SolveTask")
+                        if store.node(node)["attrs"].get("task_key") == task_key]
+        if len(task_matches) > 1:
+            raise RuntimeError("native curriculum duplicated the evaluation solve task")
+        task_attrs = (store.node(task_matches[0])["attrs"]
+                      if task_matches else {"status": "not_dispatched"})
         wall_time = time.perf_counter() - started
         increment_rule_work = rule_capture.finish()
         rule_capture = None
@@ -847,14 +873,14 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         if cumulative_primitive_work < checkpoint.cumulative_primitive_work:
             raise ValueError("restored learner resource totals regress checkpoint primitive work")
         primitive_budget_respected = cumulative_primitive_work <= cumulative_primitive_ceiling
-        terminal = attrs.get("status") in {"solved", "stuck"}
+        terminal = task_attrs.get("status") in {"solved", "stuck"}
         status = ("PRIMITIVE_BUDGET_OVERRUN" if not primitive_budget_respected else
             "RULE_PROGRESS_LIMIT_OVERRUN" if not rule_progress_limit_respected else
             "COMPLETED" if terminal else "RULE_BUDGET_EXHAUSTED")
         return {"status": status,
                 "world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
-                "task_status": attrs.get("status"),
-                "score": int(attrs.get("status") == "solved"),
+                "task_status": task_attrs.get("status"),
+                "score": int(task_attrs.get("status") == "solved"),
                 "native_rule_steps": fired_total,
                 "native_rule_progress_ceiling": native_rule_progress_ceiling,
                 "rule_progress_limit_respected": rule_progress_limit_respected,

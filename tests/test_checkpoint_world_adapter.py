@@ -575,3 +575,43 @@ def test_four_restored_checkpoints_share_registered_world_and_rule_ceiling():
                and result["arms"][arm]["world_receipts_added"] == 0
                for arm in checkpoints)
     assert not result["efficacy_established"]
+
+
+def test_restored_adaptive_checkpoint_uses_native_curriculum_evidence_path():
+    from substrate.boot_profiles import boot_cognition_on
+
+    world = agent_view(generate_d4_world_v2(split="train", draw=15))
+    source = boot_cognition_on()
+    for policy_type in ("SolverPolicy", "ProcessSchemaPolicy",
+                        "ProcessCurriculumPolicy",
+                        "IndependentImprovementCurriculumBridgePolicy"):
+        for policy in source.s.nodes(policy_type):
+            source.s.set_attr(policy, "enabled", 1.0)
+            if policy_type == "ProcessCurriculumPolicy":
+                source.s.set_attr(policy, "selector_mode", "residual")
+                source.s.set_attr(policy, "max_tasks", 1.0)
+    domain = source.s.add_node("ProcessDomain", {"name": "adaptive-checkpoint",
+        "kind": "permutation", "domain_kind": "permutation",
+        "probes": [world["initial_state"]], "source_epoch": 0, "model_epoch": 0,
+        "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_domain", domain, {})
+    params = world["held_processes"]["rot90"]
+    schema = source.s.add_node("ProcessSchema", {"name": "rot90",
+        "kind": "permutation", "domain": "adaptive-checkpoint",
+        "domain_kind": "permutation", "params": params,
+        "source_digest": params_digest(params), "status": "active",
+        "provenance": "held", "cost": 1.0, "owner_agent": source.agent,
+        "invariants": [], "source_epoch": 0, "model_epoch": 0,
+        "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_schema", schema, {})
+    source.s.add_edge(domain, "has_held_process", schema, {})
+    checkpoint = capture_held_process_checkpoint(source, schema,
+        checkpoint_id="adaptive-curriculum-root")
+
+    result = score_restored_checkpoint_task(checkpoint, world=world,
+        agent_factory=boot_cognition_on)
+    assert result["task_status"] == "solved"
+    resources = result["resource_snapshot"]
+    assert resources["resource_counts"]["curriculum_tasks"] == 1
+    assert resources["cumulative_resources"]["training_evidence_exposures"] == 1
+    assert result["approval_events_added"] == result["world_receipts_added"] == 0
