@@ -51,3 +51,15 @@ its decompressed raw SHA-256 is
 `f3b1bf771b45e2d1c9d73eaa9efd667f8c0f7f670cbfbb82f1c4e6f94099d614`. The
 output path is
 `evaluation/process_mastery/results/p22_approved_candidate_d4_0718_0721.json`.
+
+## Read-only request reconstruction check
+
+Before requesting this approval, the exact generation-two parent and training
+draws were replayed with no approval flags. The replay reconstructed
+`#16750`, this expression digest, qualification `#56758` and witnesses 0718
+and 0719. It added no approval or receipt and accessed no validation worlds.
+The compressed replay is
+[`p22_candidate_approval_replay_d4_0718_0721.json.gz`](../../../evaluation/process_mastery/results/p22_candidate_approval_replay_d4_0718_0721.json.gz),
+SHA-256 `db3a6176f5e0e29ecb3eec8da184db62f38e40706a343fc86048f2ff25d57647`;
+its decompressed raw SHA-256 is
+`21738f213e8c269b8db67b0a797b0fea6d3eeda37f24ed3b828ad1e0c4f95746`.

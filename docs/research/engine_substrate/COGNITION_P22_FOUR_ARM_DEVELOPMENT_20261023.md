@@ -1723,3 +1723,10 @@ it qualified on three independent-goal pairs rather than two. The
 candidate-specific request for `#16750` is recorded in
 [`COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.md`](COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.md);
 the prior request is marked superseded. No adoption has been performed.
+
+The exact generation-two parent and 0718–0721 training draws were replayed
+without approval flags before submission. Candidate `#16750`, qualification
+`#56758`, and witnesses 0718/0719 reproduced exactly; the replay added no
+approval or receipt and used no validation worlds. Compressed replay SHA-256
+is `db3a6176f5e0e29ecb3eec8da184db62f38e40706a343fc86048f2ff25d57647`
+(raw SHA-256 `21738f213e8c269b8db67b0a797b0fea6d3eeda37f24ed3b828ad1e0c4f95746`).
