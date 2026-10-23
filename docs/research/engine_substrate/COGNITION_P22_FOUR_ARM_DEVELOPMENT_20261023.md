@@ -1123,3 +1123,10 @@ The raw artifact
 has SHA-256 `f7a3312131002cd7dead4b469fb56e5f68a2887361e7709ebe2346a8ec968fd1`.
 This higher-ceiling fresh pair still provides no qualified Loopover
 generation-one candidate. Draws 0568/0569 are consumed training-only data.
+
+After the restored-ceiling correction, all 10 tests in
+`tests/test_p22_development.py` pass. The P22 runner self-check passes and
+reports `heldout_accessed=false`; its lineage-tamper controls reject the
+mutated fixtures. The analyzer self-check passes all nine negative and
+positive controls, including missing/partial/mismatched resource sources.
+The development continuation on fresh D4 draws 0576/0577 remains in progress.
