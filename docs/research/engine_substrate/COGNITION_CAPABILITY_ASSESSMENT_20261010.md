@@ -871,6 +871,12 @@ reproduced for D4 and Loopover; no action or held-out allocation is present.
 Both still require exact user approval, so capability dispositions remain
 unchanged.
 
+The P16 v2, P17 v2, and P18–P21 raw result and analyzer files remain present
+in `/tmp`; recomputed hashes for all 12 files match the frozen ledgers. The
+rejected P16 v1 and P17 v1 raw inputs also match their recorded hashes and
+remain excluded from interpretation. This read-only integrity audit changes
+no outcomes or L1–L7 dispositions.
+
 The held-out runner also rejects a committed preregistration draft with no
 machine-readable freeze before constructing a learner or any evaluation world.
 The focused runner module passes 7 tests. This confirms the current protocol
