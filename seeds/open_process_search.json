@@ -11516,6 +11516,61 @@
                           "type": "Neighbours",
                           "node": {
                             "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
+                        },
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "candidate_trial"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
                             "name": "agent"
                           },
                           "edge_type": "has_open_process_candidate",
@@ -11951,39 +12006,99 @@
                 },
                 "var_name": "eligible",
                 "predicate": {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Exists",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_open_process_candidate",
-                      "any_type": false
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_open_process_candidate",
+                          "any_type": false
+                        },
+                        "var_name": "old",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "old"
+                            },
+                            "key": "expression_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "eligible"
+                            },
+                            "key": "expression_key"
+                          }
+                        }
+                      }
                     },
-                    "var_name": "old",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "old"
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
                         },
-                        "key": "expression_key"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "eligible"
-                        },
-                        "key": "expression_key"
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               },
               "var_name": "best",
@@ -13529,39 +13644,99 @@
                 },
                 "var_name": "eligible",
                 "predicate": {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Exists",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_open_process_candidate",
-                      "any_type": false
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_open_process_candidate",
+                          "any_type": false
+                        },
+                        "var_name": "old",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "old"
+                            },
+                            "key": "expression_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "eligible"
+                            },
+                            "key": "expression_key"
+                          }
+                        }
+                      }
                     },
-                    "var_name": "old",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "old"
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
                         },
-                        "key": "expression_key"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "eligible"
-                        },
-                        "key": "expression_key"
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               },
               "var_name": "best",
@@ -15937,39 +16112,99 @@
                 },
                 "var_name": "eligible",
                 "predicate": {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Exists",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_open_process_candidate",
-                      "any_type": false
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_open_process_candidate",
+                          "any_type": false
+                        },
+                        "var_name": "old",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "old"
+                            },
+                            "key": "expression_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "eligible"
+                            },
+                            "key": "expression_key"
+                          }
+                        }
+                      }
                     },
-                    "var_name": "old",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "old"
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
                         },
-                        "key": "expression_key"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "eligible"
-                        },
-                        "key": "expression_key"
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               },
               "var_name": "best",
@@ -17337,39 +17572,99 @@
                 },
                 "var_name": "eligible",
                 "predicate": {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Exists",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_open_process_candidate",
-                      "any_type": false
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_open_process_candidate",
+                          "any_type": false
+                        },
+                        "var_name": "old",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "old"
+                            },
+                            "key": "expression_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "eligible"
+                            },
+                            "key": "expression_key"
+                          }
+                        }
+                      }
                     },
-                    "var_name": "old",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "old"
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
                         },
-                        "key": "expression_key"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "eligible"
-                        },
-                        "key": "expression_key"
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               },
               "var_name": "best",
@@ -18836,39 +19131,99 @@
                 },
                 "var_name": "eligible",
                 "predicate": {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Exists",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_open_process_candidate",
-                      "any_type": false
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_open_process_candidate",
+                          "any_type": false
+                        },
+                        "var_name": "old",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "old"
+                            },
+                            "key": "expression_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "eligible"
+                            },
+                            "key": "expression_key"
+                          }
+                        }
+                      }
                     },
-                    "var_name": "old",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "old"
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
                         },
-                        "key": "expression_key"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "eligible"
-                        },
-                        "key": "expression_key"
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               },
               "var_name": "best",
@@ -24863,39 +25218,99 @@
                 },
                 "var_name": "eligible",
                 "predicate": {
-                  "type": "Not",
-                  "arg": {
-                    "type": "Exists",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_open_process_candidate",
-                      "any_type": false
+                  "type": "And",
+                  "items": [
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_open_process_candidate",
+                          "any_type": false
+                        },
+                        "var_name": "old",
+                        "predicate": {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "old"
+                            },
+                            "key": "expression_key"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "eligible"
+                            },
+                            "key": "expression_key"
+                          }
+                        }
+                      }
                     },
-                    "var_name": "old",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "old"
+                    {
+                      "type": "Not",
+                      "arg": {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "edge_type": "has_held_process",
+                          "any_type": false
                         },
-                        "key": "expression_key"
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "eligible"
-                        },
-                        "key": "expression_key"
+                        "var_name": "held_process",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "status"
+                              },
+                              "b": {
+                                "type": "Lit",
+                                "value": "active"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "held_process"
+                                },
+                                "key": "params"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "params"
+                              }
+                            }
+                          ]
+                        }
                       }
                     }
-                  }
+                  ]
                 }
               },
               "var_name": "best",

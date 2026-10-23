@@ -85,6 +85,17 @@ def test_new_effect_drives_search():
     _verify_new_effect_drives_search()
 
 
+def test_search_does_not_mint_an_already_held_effect():
+    held_params = [1, 0, 2, 3]
+    agent, _ = _agent(held={"held": held_params})
+    goal = _apply(agent, held_params, [0, 1, 2, 3])
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    assert not any(agent.attrs(candidate)["params"] == held_params
+                   for candidate in agent.nodes("OpenProcessCandidate"))
+
+
 def test_renaming_parents_does_not_change_expression_choice():
     results = []
     for held in ({"source-a": [1, 0, 2, 3], "source-b": [0, 2, 1, 3]},
@@ -361,7 +372,7 @@ def test_three_held_process_transfer_checks_all_candidate_positions():
     held = {
         "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
         "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
-        "t": [2, 0, 1, 3],
+        "t": [3, 2, 1, 0],
     }
     initial = [0, 1, 2, 3]
     for candidate_position in range(4):

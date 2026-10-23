@@ -189,7 +189,8 @@ def main() -> int:
                 parser.error("parent checkpoint generation is invalid")
         for field, actual in (("per_request_attempt_ceiling", args.per_request_attempt_ceiling),
                               ("global_attempt_ceiling", args.global_attempt_ceiling),
-                              ("search_ticks", args.search_ticks)):
+                              ("search_ticks", args.search_ticks),
+                              ("candidate_transfer_depth", args.candidate_transfer_depth)):
             if field in authorization_document:
                 bound = authorization_document[field]
                 if (isinstance(bound, bool) or not isinstance(bound, int)

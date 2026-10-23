@@ -803,3 +803,16 @@ approved-adopted processes; the regression and affected P22 suite pass. This
 closes the duplicate-effect qualification defect, not the Loopover lineage
 gate. No checkpoint lineage, preregistration or held-out result has been
 added, and L1–L7 dispositions remain unchanged.
+
+Candidate minting was then tightened to skip verified effects already held
+in the active domain, before a duplicate can occupy the request's one
+candidate slot. The search regression and affected runner, qualification,
+development and CLI bundle pass 52 tests. On fresh registered-root training
+draws 0951–0954, Loopover candidate `#6542` has a novel effect and two
+independent-goal qualifications; exact replay reproduced both. A
+[candidate-specific request](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0951_0954.md)
+for one simulated transition and conditional g1 checkpoint is awaiting exact
+approval. No action, validation allocation or
+held-out access has occurred. This supplies a qualified training proposal,
+not a checkpoint lineage or efficacy evidence; P22.E2–E3 and L1–L7
+dispositions remain open.

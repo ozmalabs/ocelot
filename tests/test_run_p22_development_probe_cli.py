@@ -75,6 +75,22 @@ def test_parent_checkpoint_binding_hash_is_checked_before_one_shot_claim(tmp_pat
     assert not output.exists()
 
 
+def test_approval_cli_rejects_candidate_transfer_depth_mismatch(tmp_path):
+    output = tmp_path / "candidate.json"
+    binding_path = _temporary_binding(output, tmp_path / "binding.json")
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    binding["candidate_transfer_depth"] = 3
+    binding["approval_binding"]["candidate_transfer_depth"] = 3
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+    command = _command(output, binding_path,
+        "--candidate-transfer-depth", "2", "--execute-approved-adoption")
+    result = subprocess.run(command, cwd=ROOT, capture_output=True,
+                            text=True, check=False)
+    assert result.returncode != 0
+    assert "candidate_transfer_depth differs" in result.stderr
+    assert not output.exists()
+
+
 def test_parent_checkpoint_binding_resolves_exact_record_and_digest(tmp_path,
                                                                     monkeypatch):
     monkeypatch.setattr(CLI, "ROOT", tmp_path)
