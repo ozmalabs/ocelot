@@ -1827,3 +1827,17 @@ All six pairwise resource comparisons between unchanged and adaptive-only
 miss exact matching; native rule work, training exposure counts and training
 data bytes differ. This is partial lineage evidence and does not satisfy the
 P22 resource-match gate.
+
+## Registered full-root D4 repeat qualification panel (2026-10-24)
+
+Fresh training draws 0981–0984 restored the registered full-arm g0 checkpoint
+`fa79f67d5ea71d15f5b70f43efd2c2047af3c84b9258b25c61a0d97d84bf8b7b`. All
+four tasks remained stuck after 9,208 reserved attempts. Candidate `#1867`
+(digest
+`84854777d0e3b48f447ecd04236a794eff39a46546edb3f19e47f506492ce66a`) repeats
+the expression previously recorded as `#9396`; its six independent-goal
+trials on 0982–0984 were residual, with no qualification. There were no
+approvals, receipts, validation worlds, or held-out accesses. The raw artifact
+[`p22_training_panel_registered_root_full_d4_0981_0984_novel.json`](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_full_d4_0981_0984_novel.json)
+has SHA-256
+`7a81a117072460372b0d6003a36c1665c86ba9ac8497c2987f25601426689048`.
