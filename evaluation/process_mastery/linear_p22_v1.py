@@ -216,6 +216,16 @@ def _index_manifest(manifest: dict) -> tuple[dict, dict]:
                     or not CheckpointWorldAdapter._checkpoint_digest_valid(root)):
                 raise ValueError(f"invalid generation-zero ancestor checkpoint: {key}")
             roots[key] = root
+    for family in FAMILIES:
+        family_roots = [roots[f"{family}:{arm}"] for arm in ARMS]
+        ancestor_identities = {(root.expression_digest, root.params)
+                               for root in family_roots}
+        if len(ancestor_identities) != 1:
+            raise ValueError(
+                f"P22 arms do not share one generation-zero ancestor process: {family}")
+        if any(root.parent_digest or root.approval_id or root.receipt_id
+               for root in family_roots):
+            raise ValueError(f"generation-zero ancestor carries lineage action evidence: {family}")
     for row in records:
         if not isinstance(row, dict) or set(row) != {"family", "arm", "generation", "checkpoint"}:
             raise ValueError("malformed P22 lineage record")

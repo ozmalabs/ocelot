@@ -1,6 +1,12 @@
 # P22 candidate-specific simulated-adoption request: D4 0718–0721
 
-**Status: awaiting exact user approval. No action has been taken.**
+**Status: superseded. No action was taken. Do not authorize this request.**
+
+The lineage audit found that this candidate was generated from an identity
+generation-zero root, while the P22 four-arm D4 ancestor already has the same
+non-identity effect as the candidate. This request cannot extend the frozen
+P22 ancestor lineage and is invalid for that purpose. A new candidate must be
+qualified from the exact common P22 ancestor before another request is made.
 
 This request covers exactly one guarded D4 training-simulator transition for
 candidate `#16750`, followed by capture of its generation-three checkpoint
@@ -29,23 +35,15 @@ panel. The selected pair is bound exactly; the other two pairs are not part of
 this authorization. This simulator action and conditional checkpoint would
 extend lineage only and would not demonstrate improvement.
 
-To authorize exactly this transition and its conditional generation-three
-checkpoint, reply with the digest and reviewer-reported time, for example:
-
-`approve 75c8a4559ab843b8154bc031dab1f527d18f39595e9fc9f0c6f3c0b9d7a63b73; review_seconds=12`
-
-The duration will be recorded as `reviewer_self_report`; it will not be
-inferred.
+The machine request has status `superseded`; the guarded CLI rejects it. Its
+digest cannot authorize a transition.
 
 ## Reproducible execution binding
 
 The machine request is
 [`COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.json`](COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.json)
-(SHA-256 `d0c4c0c689921f3398929757c13ede68dab5ef623d50b44f43f3a0a6ce7d92fb`).
-The guarded CLI will restore and hash-check the generation-two checkpoint,
-reconstruct the candidate and its bound depth-two qualification from the fresh
-training draws, reserve the one-shot output path, and execute only after the
-exact approval is supplied. The source artifact is
+(SHA-256 `3ed0e8a2a76e91767ea1909a351e590c598192473ca6a34187a87abdce71f312`).
+The request is superseded and the guarded CLI rejects it. The source artifact is
 [`p22_training_panel_continuation_d4_0718_0721.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_continuation_d4_0718_0721.json.gz);
 its decompressed raw SHA-256 is
 `f3b1bf771b45e2d1c9d73eaa9efd667f8c0f7f670cbfbb82f1c4e6f94099d614`. The

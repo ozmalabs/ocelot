@@ -722,16 +722,17 @@ unchanged.
 The current P22 E2 acceptance recheck passes 58 tests, and the runner/analyzer
 self-checks pass with no held-out access. The standalone freeze and complete
 24-checkpoint manifest are still absent. Candidate `#16750` remains
-unapproved: a later approval response referred to the already-consumed
-identity candidate `#6731`, so it cannot authorize another transition. These
-checks establish runner readiness only; no capability level changes and no
-held-out result is available.
+unapproved. Its request was superseded after an ancestor audit showed its
+generation-two parent did not descend from the registered P22 D4 arm root.
+These checks establish runner readiness only; no capability level changes
+and no held-out result is available.
 
 A fresh Loopover panel on draws 0726–0729 produced candidate `#10761`, which
 qualified on two independent-goal pairs. Its exact request binds the 0726/0727
 pair and one guarded training transition; the 0726/0728 qualification is
-outside that request. No action or checkpoint has been created, and the
-request is awaiting exact approval. The panel used the full 40,000-attempt
+outside that request. The request was superseded after an ancestor audit
+showed its generation-zero root did not match the registered P22 Loopover
+arm root. No action or checkpoint has been created. The panel used the full 40,000-attempt
 training ceiling and produced no validation or held-out evidence. This adds a
 qualified proposal, not Loopover transfer efficacy; L1–L7 remain unchanged.
 
@@ -740,3 +741,15 @@ A read-only replay of the same Loopover allocation reproduced candidate
 or receipt and accessed no validation or held-out worlds. This strengthens
 the reproducibility of the pending action request only; all capability-level
 dispositions remain unchanged.
+
+The development continuation runner now resumes from the exact family-specific
+generation-zero roots registered in the four-arm snapshots. A D4 root
+continuation on fresh training draws 0900/0901 completed with one candidate,
+2,437 cumulative reserved attempts and zero approvals or receipts. A Loopover
+root continuation on the same fresh draw IDs correctly restored the registered
+root but found no first-trial candidate and reserved zero attempts. Neither
+run allocated validation or held-out worlds. These smoke-scale continuations
+fix the root/domain integration and provide no qualified descendant or
+improvement evidence. The full common-ancestor lineages, standalone
+preregistration and 24-checkpoint manifest remain absent; P22.E2–E3 and all
+L1–L7 dispositions remain open.

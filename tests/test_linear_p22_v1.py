@@ -116,6 +116,16 @@ def test_manifest_accepts_approved_improvement_and_passive_control_lineages():
                     records.append({"family": family, "arm": arm,
                         "generation": generation, "checkpoint": asdict(checkpoint)})
                     parent = checkpoint
+        agent.add_domain("d4-alternate", "permutation",
+            [[0, 1, 2, 3]], {"alternate": [0, 2, 1, 3]})
+        alternate_root = capture_held_process_checkpoint(agent,
+            agent.schemas("d4-alternate")[0], checkpoint_id="d4:full:wrong-g0")
+        mismatched_roots = dict(roots)
+        mismatched_roots["d4:full"] = asdict(alternate_root)
+        with pytest.raises(ValueError,
+                           match="do not share one generation-zero ancestor process: d4"):
+            _index_manifest({"schema": "p22_checkpoint_manifest_v1",
+                "ancestors": mismatched_roots, "lineages": records})
         indexed_roots, indexed_lineages = _index_manifest({
             "schema": "p22_checkpoint_manifest_v1", "ancestors": roots,
             "lineages": records})

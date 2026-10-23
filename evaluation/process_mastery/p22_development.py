@@ -266,15 +266,18 @@ def run_p22_training_proposal_probe(*, family: str,
         if measure_native_rule_work:
             rule_capture = NativeRuleWorkCapture(agent.native).start()
         if parent_checkpoint is None:
-            domain = agent.add_domain("p22-development", "permutation",
+            domain_name = "p22-development"
+            domain = agent.add_domain(domain_name, "permutation",
                 [training_worlds[0]["initial_state"]], held)
         else:
             domains = [node for node in agent.nodes("ProcessDomain")
-                if agent.attrs(node).get("name") == "p22-development"]
+                if agent.attrs(node).get("name") == f"p22-development-{family}"]
             if len(domains) != 1:
-                raise RuntimeError("restored checkpoint must contain one development domain")
+                raise RuntimeError(
+                    "restored checkpoint must contain one family-specific development domain")
             domain = domains[0]
-            agent.domains["p22-development"] = domain
+            domain_name = agent.attrs(domain).get("name")
+            agent.domains[domain_name] = domain
             prior_training_ids = {agent.attrs(task).get("training_trial_key")
                 for task in agent.nodes("SolveTask")
                 if agent.attrs(task).get("split") == "training"}
@@ -282,7 +285,7 @@ def run_p22_training_proposal_probe(*, family: str,
                                                for world in training_worlds):
                 raise ValueError("continuation training worlds overlap prior lineage exposure")
         for schema in agent.nodes("ProcessSchema"):
-            if agent.attrs(schema).get("domain") == "p22-development":
+            if agent.attrs(schema).get("domain") == domain_name:
                 agent.s.add_edge(domain, "has_held_process", schema, {})
         agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
         agent.native.load_seed_manifest(manifest_for("independent_improvement"), agent.ag)
@@ -295,7 +298,7 @@ def run_p22_training_proposal_probe(*, family: str,
         first_trial_candidate_missing = False
         training_task_rows = []
         for trial, world in enumerate(training_worlds, start=1):
-            task = agent.add_solve_task("p22-development", world["initial_state"],
+            task = agent.add_solve_task(domain_name, world["initial_state"],
                 world["goal_state"], training_trial_key=world["world_id"],
                 split="training")
             # The task pool contains an observed impasse so this probe begins
@@ -345,7 +348,7 @@ def run_p22_training_proposal_probe(*, family: str,
             identity = agent.s.add_node("ProcessSchema", {
                 "name": f"p22-{family}-generation-zero-identity",
                 "kind": "permutation", "domain_kind": "permutation",
-                "domain": "p22-development", "params": identity_params,
+                "domain": domain_name, "params": identity_params,
                 "source_digest": params_digest(identity_params), "cost": 1.0,
                 "status": "active", "provenance": "p22_generation_zero_ancestor",
                 "invariants": [], "source_epoch": 0, "model_epoch": 0,

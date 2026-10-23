@@ -1,6 +1,12 @@
 # P22 candidate-specific simulated-adoption request: Loopover 0726–0729
 
-**Status: awaiting exact user approval. No action has been taken.**
+**Status: superseded. No action was taken. Do not authorize this request.**
+
+The lineage audit found that this candidate was generated from an identity
+generation-zero root, while the P22 four-arm Loopover ancestor has a different
+non-identity process. This request cannot extend the frozen P22 ancestor
+lineage and is invalid for that purpose. A new candidate must be qualified
+from the exact common P22 ancestor before another request is made.
 
 This request covers exactly one guarded Loopover training-simulator transition
 for candidate `#10761`, followed by capture of its generation-one checkpoint
@@ -26,19 +32,14 @@ pairs. The selected pair is bound exactly; the other qualification is not part
 of this authorization. The simulator action and conditional checkpoint would
 extend a lineage only and would not demonstrate improvement.
 
-To authorize exactly this transition and its conditional generation-one
-checkpoint, reply with the digest and reviewer-reported time, for example:
-
-`approve 0738c7336573a8a5ea914f9475dd0cc789007556a0c89f0527ecf740c449d80c; review_seconds=12`
-
-The duration will be recorded as `reviewer_self_report`; it will not be
-inferred.
+The machine request has status `superseded`; the guarded CLI rejects it. Its
+digest cannot authorize a transition.
 
 ## Reproducible execution binding
 
 The machine request is
 [`COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0726_0729.json`](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0726_0729.json),
-SHA-256 `0a7f3d5382eb7e351bbdca77e562b7a0c7840761a59eaefe8b26b2f27a004d07`.
+SHA-256 `1517a589ff9dc89610c0492532bb0e94baf76500182afb4dad16def1f0ecddf2`.
 It binds depth-three transfer, the 10,000 per-request and 40,000 global
 training ceilings, the 30 search ticks, the four distinct training draws, the
 selected qualification and the single output path
@@ -49,8 +50,8 @@ The compressed source artifact is
 SHA-256 `b7360f2ca4c25af12f3cf8c2451b60ce33452dade8e27eaba52b6069b1c2b844`;
 its decompressed raw SHA-256 is
 `0338b3be46c8f4944c5963fe04c390764d38e5af8e4aec5bd4a74d412d820c6d`.
-The guarded CLI reconstructs the candidate from these training draws and
-requires this exact digest and reviewer-reported time before the one action.
+The request is superseded and the guarded CLI rejects it. The read-only replay
+below verifies its candidate binding only; it does not authorize an action.
 
 ## Read-only request reconstruction check
 
