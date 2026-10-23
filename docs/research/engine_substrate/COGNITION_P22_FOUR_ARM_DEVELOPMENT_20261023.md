@@ -1071,3 +1071,55 @@ has SHA-256 `8c6e6392c47a7f9fb8f212df0bc747df3a88a02fc8d190358e0841082d41bd25`
 and remains outside version control. This authorized action extends the D4
 lineage by one generation but cannot count as improvement. No validation or
 held-out world was accessed, and this approval authorizes no further action.
+
+## D4 generation-two continuation (2026-10-23)
+
+An attempted pair on draws 0570/0571 was rejected by the distinct-goal
+preflight because both generated the same goal. The rejection occurred before
+learner boot or native search and is preserved in
+[`p22_candidate_continuation_d4_0570_0571_preflight.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0570_0571_preflight.json),
+SHA-256 `54d73db5463edca2133111a5b4f367a1299c1b1cb79b087d42d37684329d47ac`.
+Those draws are not reused.
+
+The digest-valid generation-two D4 checkpoint was restored for distinct
+training draws 0572/0573. The graph ceiling was explicitly raised from the
+inherited 60,000 to 120,000 without resetting the parent's 15,946 reserved
+attempts; although the probe requested a 10,000 per-request ceiling and
+measured native rule work, inspection found restored requests still used the
+parent's 5,000 cap. Both tasks terminalized stuck after 5,000 attempts each.
+Three candidate records were present, but none qualified on the new training goals. The two
+approvals and receipts in the graph are inherited from the parent; no new
+approval, action, receipt, validation world or held-out world was created.
+Artifact [`p22_candidate_continuation_d4_0572_0573.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0572_0573.json)
+has SHA-256 `e8cf05934a774824fbfbcce73d246b285717a155235a291f08beec74f6efe018`.
+The D4 generation-two lineage therefore has no generation-three candidate
+from this pair. Draws 0570–0573 are consumed training-only development data.
+
+A second fresh pair 0574/0575 requested 20,000 attempts per request from the
+same parent. It exposed the same restored-policy bug: both new requests still
+had the inherited 5,000 maximum, both tasks ended stuck, and four candidates
+were recorded without qualification on either new goal. Raw artifact
+[`p22_candidate_continuation_d4_0574_0575.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0574_0575.json)
+has SHA-256 `69cbf546dfd86f6783200b782519e0d981f3d1c7ffb5463026ca31d0cd4e82a7`.
+These two continuations are ceiling-censored diagnostics, not evidence against
+the higher requested budgets. The continuation code now reapplies the bound
+per-request ceiling after restoring the checkpoint, reports each native
+request's actual `max_attempts`, and has a regression proving a restored
+request takes the new ceiling. That regression passes. A fresh pair 0576/0577
+is running under the corrected code; it uses no validation or held-out worlds.
+
+## High-ceiling Loopover generation-zero probe (2026-10-23)
+
+A fresh distinct-goal Loopover probe on draws 0568/0569 completed at a
+30,000-attempt per-request ceiling (90,000 global ceiling). It recorded one
+candidate, `#30830`, digest
+`20db63f2bf032030ffc2293e3361aeb58d4b7a9e3d887f4b34429054ba475da8`; the
+candidate had zero independent-goal qualification witnesses. Both tasks
+terminalized stuck after 30,000 attempts, and the runner returned
+`NO_CANDIDATE_FIRST_TRIAL` because the first training task produced no
+candidate. No approval, receipt, validation or held-out world was created.
+The raw artifact
+[`p22_candidate_probe_loopover_0568_0569.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0568_0569.json)
+has SHA-256 `f7a3312131002cd7dead4b469fb56e5f68a2887361e7709ebe2346a8ec968fd1`.
+This higher-ceiling fresh pair still provides no qualified Loopover
+generation-one candidate. Draws 0568/0569 are consumed training-only data.

@@ -186,6 +186,11 @@ def run_p22_training_proposal_probe(*, family: str,
         # reset attempts already charged in the restored graph.
         agent.s.set_attr(search_policies[0], "max_attempts",
                          float(global_attempt_ceiling))
+        # Checkpoint restoration replaces the policy with its parent snapshot,
+        # so restore the caller-bound per-request ceiling too. Leaving the
+        # parent's value here silently ignored higher continuation ceilings.
+        agent.s.set_attr(search_policies[0], "max_attempts_per_request",
+                         float(per_request_attempt_ceiling))
         if measure_native_rule_work:
             rule_capture = NativeRuleWorkCapture(agent.native).start()
         if parent_checkpoint is None:
@@ -244,6 +249,7 @@ def run_p22_training_proposal_probe(*, family: str,
                 "task_status": agent.attrs(task).get("status"),
                 "search_requests": [{
                     "status": agent.attrs(request).get("status"),
+                    "max_attempts": agent.attrs(request).get("max_attempts"),
                     "attempt_count": len(agent.native.neighbours(
                         request, "has_search_attempt")),
                     "reserved_attempts": agent.attrs(request).get("attempts_reserved"),
@@ -597,6 +603,7 @@ def run_p22_training_proposal_probe(*, family: str,
                 "task_goals": [agent.attrs(task).get("goal")
                     for task in agent.native.neighbours(request, "searches_task")],
                 "attempt_count": len(agent.native.neighbours(request, "has_search_attempt")),
+                "max_attempts": agent.attrs(request).get("max_attempts"),
                 "reserved_attempts": agent.attrs(request).get("attempts_reserved"),
             } for request in agent.nodes("OpenProcessSearchRequest")],
             "candidate_independent_goal_trials": {

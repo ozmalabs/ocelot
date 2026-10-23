@@ -84,7 +84,7 @@ def test_training_probe_continues_restored_checkpoint_with_cumulative_rule_work(
 
     result = run_p22_training_proposal_probe(family=family,
         training_draws=(286, 287), training_goal_relation="distinct",
-        validation_draws=(), search_ticks=1, per_request_attempt_ceiling=1,
+        validation_draws=(), search_ticks=1, per_request_attempt_ceiling=2,
         global_attempt_ceiling=40000, measure_native_rule_work=True,
         parent_checkpoint=parent)
     snapshot = result["resource_snapshot"]
@@ -102,6 +102,10 @@ def test_training_probe_continues_restored_checkpoint_with_cumulative_rule_work(
     assert result["inherited_global_attempt_ceiling"] == 30000.0
     assert result["global_attempt_ceiling"] == 40000
     assert snapshot["runtime_counters"]["search_attempts_reserved"] < 40000
+    request_caps = [request["max_attempts"]
+        for row in result["training_task_rows"]
+        for request in row["search_requests"]]
+    assert request_caps and set(request_caps) == {2.0}
 
 
 def test_v2_native_training_proposals_are_qualified_and_scored_nonactionably():
