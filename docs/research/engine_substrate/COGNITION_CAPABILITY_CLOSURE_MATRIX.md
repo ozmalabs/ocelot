@@ -156,3 +156,9 @@ fails the novelty gate; no approval was requested. The 0973–0976 preflight
 rejected duplicate goals before learner boot. Neither result adds a descendant
 or changes any level disposition. See the build plan entry and four-arm report
 for artifact hashes.
+
+P22 now has structurally valid unchanged-arm g1–g3 checkpoint captures for
+both families. They preserve the exact root process and declare zero added
+work, with no new training exposure. Adaptive-only descendants, approved
+invention/full descendants, exact resource matching and the registered
+held-out comparison remain absent; capability dispositions are unchanged.

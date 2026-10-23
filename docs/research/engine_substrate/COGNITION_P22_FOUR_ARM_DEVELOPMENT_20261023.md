@@ -1792,3 +1792,17 @@ recorded effect `[[1,3,0,2]]` equals active root process `rot90`, so the
 candidate fails the novelty criterion and received no approval packet.
 Derived candidate `#6121` did not qualify. This search adds no checkpoint
 descendant or improvement evidence.
+
+## Unchanged-arm passive checkpoint descendants (2026-10-24)
+
+Restored the registered unchanged generation-zero checkpoint for D4 and
+Loopover and captured generation-one through generation-three checkpoints with
+`capture_passive_checkpoint`. Independent validation confirms all six
+checkpoint digests, resource snapshots, family root hashes, process digests,
+parameters and sequential parent links. Each declares zero added primitive
+work and carries no approval or receipt. The raw artifact is
+[`p22_passive_unchanged_lineages_0520.json`](../../../evaluation/process_mastery/results/p22_passive_unchanged_lineages_0520.json),
+SHA-256 `98f2494659a73b3de2bfc8a61bab25f97182e17cd30c162fa8a821f1bc77b0c9`.
+These captures are structural no-op controls and have no new training
+exposures. They do not satisfy adaptive-only descendant requirements or the
+resource-matched development gate; no held-out worlds were accessed.
