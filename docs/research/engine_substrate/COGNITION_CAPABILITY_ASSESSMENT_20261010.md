@@ -831,3 +831,14 @@ qualifications under this stricter rule and exact replay; its separate
 awaiting exact approval. No candidate has been actioned, and neither family
 has validation or held-out evidence. This adds no P22 efficacy result and
 leaves L1–L7 dispositions unchanged.
+
+A new D4 training panel then found a valid transfer witness for the same
+source expression as the superseded request. Candidate `#1908` qualified on
+distinct goals 0962/0972, and its verified child effect `[2,0,3,1]` is absent
+from both active root processes. Exact replay reproduced qualification
+`#11843`. The [replacement D4 request](COGNITION_P22_APPROVAL_REQUEST_D4_0962_0972.md)
+selects only this new witness; the older 0955/0957 audit remains superseded.
+The new request and the Loopover request each require exact candidate-specific
+approval for one training transition and conditional g1 capture. Neither has
+been actioned; both remain training-only with no validation or held-out
+evidence. L1–L7 dispositions remain unchanged.

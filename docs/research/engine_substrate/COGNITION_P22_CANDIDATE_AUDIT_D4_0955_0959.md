@@ -1,6 +1,6 @@
 # P22 candidate-specific request audit: D4 0955–0959
 
-**Status: superseded. No action has been taken. Do not authorize this candidate.**
+**Status: superseded. No action has been taken. Do not use this request.**
 
 Candidate `#1908` has a standalone effect absent from the registered D4 root,
 but the only recorded independent-goal witness is not useful improvement
@@ -21,6 +21,8 @@ its raw SHA-256 is `12d014e3af958b889c1706cbf6d87853c6b8540ed5df9ca4856995492a7b
 
 The output path `evaluation/process_mastery/results/p22_approved_candidate_d4_0955_0957.json`
 remains unused. The machine request has status `superseded`; the guarded CLI
-rejects it. Do not authorize the old digest.
+rejects it. A separate request now selects qualification `#11843` and witnesses
+0962/0972 for the same expression; only that current packet can authorize an
+action.
 
-Machine record: [`COGNITION_P22_APPROVAL_REQUEST_D4_0955_0959.json`](COGNITION_P22_APPROVAL_REQUEST_D4_0955_0959.json).
+Machine audit record: [`COGNITION_P22_CANDIDATE_AUDIT_D4_0955_0959.json`](COGNITION_P22_CANDIDATE_AUDIT_D4_0955_0959.json).
