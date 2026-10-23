@@ -1245,6 +1245,31 @@ has SHA-256 `c7796ed1acf60d1b7614fbb24f1c66e707790ab3ec8e43f9c8fad2e20f347901`.
 Draws 0596/0597 are consumed training-only data. Loopover still has no
 approved generation-one descendant.
 
+## Reproducible training-only continuation CLI (2026-10-23)
+
+The development CLI now accepts a parent result artifact, a checkpoint record
+path and an exact checkpoint digest as a separate training-only continuation
+binding. It verifies that the artifact is repository-local, binds its SHA-256
+and the checkpoint identity into the output, requires distinct training goals
+with no validation worlds, and rejects any combination with candidate
+approval flags. The affected CLI tests and `tests/test_p22_development.py`
+pass 16 tests.
+
+An end-to-end low-budget smoke restored D4 checkpoint
+`p22-d4-g2-1e3590935d29` on draws 0600/0601. The one-attempt global limit was
+already consumed by the restored graph, so both new requests created zero
+attempts; approval and receipt totals remained the parent's two each, with no
+validation or held-out access. This verifies source binding and restoration,
+not search efficacy. Raw smoke artifact
+[`p22_candidate_continuation_cli_smoke_d4_0600_0601.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_cli_smoke_d4_0600_0601.json)
+has SHA-256 `979c16de4d5242aae0678ea95dbb35cd0a8926c575b34933f9ed19cc28bac850`.
+
+The first smoke pair 0598/0599 was rejected before learner boot because both
+draws generated the same goal. It created no search attempts, approvals,
+receipts, validation or held-out exposures. Its explicit consumed-draw record
+[`p22_candidate_continuation_cli_preflight_d4_0598_0599.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_cli_preflight_d4_0598_0599.json)
+has SHA-256 `89aa8390bf9a071039f60539e73384506655bb67bca124d375999be7962e7667`.
+
 ## Repeated D4 generation-two continuation (2026-10-23)
 
 The same digest-valid generation-two parent was restored on fresh distinct

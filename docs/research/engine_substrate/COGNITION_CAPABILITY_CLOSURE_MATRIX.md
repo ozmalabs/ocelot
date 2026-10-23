@@ -83,6 +83,11 @@ Loopover draws 0596/0597 used 60 rule-processing ticks but still produced no
 independently qualified candidate. The 24 funded second-goal trials were all
 residual. This adds no approved Loopover descendant or capability disposition.
 
+The training-only continuation CLI now verifies the parent artifact hash and
+checkpoint digest without requiring or consuming an adoption approval. Its
+smoke restored the D4 generation-two parent but performed zero new search
+attempts under the one-attempt test ceiling; this does not change P22 gates.
+
 Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out

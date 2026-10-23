@@ -103,6 +103,33 @@ def test_parent_checkpoint_binding_resolves_exact_record_and_digest(tmp_path,
         CLI._parent_checkpoint_from_binding(spec)
 
 
+def test_training_continuation_parent_is_bound_to_artifact_and_record(tmp_path,
+                                                                      monkeypatch):
+    monkeypatch.setattr(CLI, "ROOT", tmp_path)
+    checkpoint = CheckpointExpression("parent-g2", "root-digest", "expr-digest",
+        (0, 1, 2, 3), 0, generation=2, checkpoint_digest="parent-digest",
+        approval_id="approval", receipt_id="receipt", cumulative_primitive_work=10,
+        resource_snapshot_json="{}", native_graph_snapshot_json="{}")
+    artifact = tmp_path / "continuation.json"
+    artifact.write_text(json.dumps({"parent_checkpoint": asdict(checkpoint)}),
+                        encoding="utf-8")
+    monkeypatch.setattr(CLI.CheckpointWorldAdapter,
+        "_checkpoint_digest_valid", staticmethod(lambda value: value is not None))
+
+    loaded, binding = CLI._continuation_parent_from_artifact(
+        artifact, ["parent_checkpoint"], "parent-digest")
+
+    assert loaded.checkpoint_id == "parent-g2"
+    assert loaded.generation == 2
+    assert binding["artifact_path"] == "continuation.json"
+    assert binding["record_path"] == ["parent_checkpoint"]
+    assert binding["checkpoint_digest"] == "parent-digest"
+
+    with pytest.raises(ValueError, match="parent checkpoint digest"):
+        CLI._continuation_parent_from_artifact(
+            artifact, ["parent_checkpoint"], "wrong-digest")
+
+
 def test_approved_adoption_attempt_output_is_durable_one_shot_claim(tmp_path):
     output = tmp_path / "attempt.json"
     CLI._claim_approval_output(output, approved_digest=DIGEST,

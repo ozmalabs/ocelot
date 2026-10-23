@@ -613,3 +613,5 @@ D4 continuation from the digest-valid generation-two checkpoint on distinct draw
 A repeated D4 continuation on fresh draws 0594/0595 also ended stuck at 30,000 attempts per request. Its identity candidate had residual trials only on the second goal, leaving the generation-three gate unmet. No capability disposition changes.
 
 Loopover draws 0596/0597 used 60 rule-processing ticks at the 30,000-per-request ceiling. The sole candidate had 24 funded residual trials on the second goal, with no independent-goal qualification. Increasing ticks did not change the qualification outcome in this diagnostic; Loopover remains without an approved descendant.
+
+The development CLI now supports an artifact-hash- and checkpoint-digest-bound training-only continuation without adoption approval. Its 16-test focused regression bundle passes, and a low-budget end-to-end smoke restored the D4 generation-two checkpoint with no new action, receipt, validation, or held-out access. This improves reproducibility only; capability dispositions remain open.

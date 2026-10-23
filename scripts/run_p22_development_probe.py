@@ -77,6 +77,34 @@ def _parent_checkpoint_from_binding(document: dict) -> CheckpointExpression | No
     return parent
 
 
+def _continuation_parent_from_artifact(artifact: Path,
+                                       record_path: list[str],
+                                       checkpoint_digest: str
+                                       ) -> tuple[CheckpointExpression, dict]:
+    """Load a digest-bound parent for a training-only continuation."""
+    path = artifact.resolve()
+    try:
+        relative_path = path.relative_to(ROOT.resolve()).as_posix()
+    except ValueError as exc:
+        raise ValueError("continuation parent artifact must be inside the repository") from exc
+    raw = path.read_bytes()
+    artifact_sha256 = hashlib.sha256(raw).hexdigest()
+    spec = {"parent_checkpoint": {
+        "artifact_path": relative_path,
+        "artifact_sha256": artifact_sha256,
+        "record_path": record_path,
+        "checkpoint_digest": checkpoint_digest}}
+    parent = _parent_checkpoint_from_binding(spec)
+    if parent is None:
+        raise ValueError("continuation parent checkpoint is missing")
+    binding = {"schema": "p22_training_continuation_parent_v1",
+        "artifact_path": relative_path, "artifact_sha256": artifact_sha256,
+        "record_path": record_path, "checkpoint_id": parent.checkpoint_id,
+        "checkpoint_digest": parent.checkpoint_digest,
+        "generation": parent.generation}
+    return parent, binding
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--family", choices=("d4", "loopover"), required=True)
@@ -101,6 +129,12 @@ def main() -> int:
         help="reviewer self-reported time spent reviewing this exact candidate, in seconds")
     parser.add_argument("--execute-approved-adoption", action="store_true",
         help="execute the one candidate-bound guarded simulated adoption")
+    parser.add_argument("--continuation-parent-artifact", type=Path,
+        help="digest-verified checkpoint result artifact for a training-only continuation")
+    parser.add_argument("--continuation-parent-record-path", nargs="+",
+        help="object keys locating the parent checkpoint inside its result artifact")
+    parser.add_argument("--continuation-parent-digest",
+        help="exact checkpoint digest expected inside the continuation parent artifact")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.validation_count < 0 or args.validation_start < 0 \
@@ -109,8 +143,14 @@ def main() -> int:
     approval_flags_used = (args.approved_candidate_binding is not None
         or args.approve_digest is not None or args.review_seconds is not None
         or args.execute_approved_adoption)
+    continuation_flags_used = (args.continuation_parent_artifact is not None
+        or args.continuation_parent_record_path is not None
+        or args.continuation_parent_digest is not None)
+    if approval_flags_used and continuation_flags_used:
+        parser.error("candidate adoption and training-only continuation bindings cannot be combined")
     approved_binding = None
     parent_checkpoint = None
+    continuation_binding = None
     authorization_document_sha256 = None
     if approval_flags_used:
         if (args.approved_candidate_binding is None or args.approve_digest is None
@@ -174,6 +214,22 @@ def main() -> int:
         approved_binding["human_review_seconds"] = args.review_seconds
         authorization_document_sha256 = hashlib.sha256(
             authorization_document_bytes).hexdigest()
+    elif continuation_flags_used:
+        if (args.continuation_parent_artifact is None
+                or args.continuation_parent_record_path is None
+                or args.continuation_parent_digest is None):
+            parser.error("training-only continuation requires parent artifact, record path, and exact checkpoint digest")
+        if args.validation_count != 0 or args.training_goal_relation != "distinct":
+            parser.error("parent checkpoint continuation is restricted to distinct-goal training-only probes")
+        if args.output is None or args.output.exists():
+            parser.error("parent checkpoint continuation requires a new --output path")
+        try:
+            parent_checkpoint, continuation_binding = _continuation_parent_from_artifact(
+                args.continuation_parent_artifact,
+                args.continuation_parent_record_path,
+                args.continuation_parent_digest)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            parser.error(f"invalid training-only continuation parent: {exc}")
     elif args.output is not None and args.output.exists():
         parser.error("refusing to overwrite an existing development probe artifact")
     if approved_binding is not None:
@@ -194,7 +250,8 @@ def main() -> int:
         global_attempt_ceiling=args.global_attempt_ceiling,
         search_ticks=args.search_ticks,
         measure_native_rule_work=(args.measure_native_rule_work
-                                  or approved_binding is not None),
+                                  or approved_binding is not None
+                                  or parent_checkpoint is not None),
         approved_candidate_binding=approved_binding,
         parent_checkpoint=parent_checkpoint)
     if approved_binding is not None:
@@ -203,6 +260,12 @@ def main() -> int:
             "human_review_seconds": args.review_seconds,
             "human_review_cost_source": "reviewer_self_report",
             "binding_document_sha256": authorization_document_sha256}
+    if continuation_binding is not None:
+        result["training_continuation_binding"] = {
+            **continuation_binding, "family": args.family,
+            "training_draws": args.training_draws,
+            "training_goal_relation": args.training_goal_relation,
+            "validation_draws": []}
     encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.write_text(encoded, encoding="utf-8")
