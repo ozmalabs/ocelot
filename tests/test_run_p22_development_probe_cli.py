@@ -186,3 +186,63 @@ def test_approved_adoption_attempt_output_is_durable_one_shot_claim(tmp_path):
         CLI._claim_approval_output(output, approved_digest=DIGEST,
             review_seconds=0.5, binding_document_sha256="a" * 64)
     assert output.read_bytes() == before
+
+
+def test_registered_full_root_request_binds_measured_replay_and_novel_child():
+    request_path = ROOT / (
+        "docs/research/engine_substrate/"
+        "COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.json")
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    assert request["status"] == "awaiting_exact_user_approval"
+    assert request["training_draws"] == [985, 986, 987, 988]
+    assert request["validation_draws"] == []
+    assert request["candidate_transfer_depth"] == 3
+    assert not (ROOT / request["output_path"]).exists()
+
+    parent = CLI._parent_checkpoint_from_binding(request)
+    binding = request["approval_binding"]
+    assert parent.checkpoint_id == "p22-d4-full-g0"
+    assert parent.checkpoint_digest == binding["parent_checkpoint_digest"]
+    graph = json.loads(parent.native_graph_snapshot_json)
+    active_effects = set()
+    for node in graph["nodes"]:
+        attrs = node.get("attrs", {})
+        if (node.get("type") == "ProcessSchema"
+                and attrs.get("status") == "active"
+                and attrs.get("provenance") == "world_affordance"):
+            params = attrs.get("params", [])
+            if isinstance(params, dict):
+                params = params["__list__"]
+            active_effects.add(tuple(params))
+    assert active_effects == {(1, 3, 0, 2), (2, 3, 0, 1)}
+    assert binding["expression_digest"] == (
+        "15ab127dc160101ea078c7eea5b91b5339bc4ca6a73a20048c5facb27656b651")
+    assert binding["qualification_id"] == "#12259"
+    assert binding["training_trial_keys"] == [
+        "p22:d4-v2:train:0985", "p22:d4-v2:train:0986"]
+
+    artifacts = {}
+    for prefix in ("source", "replay"):
+        artifact_path = ROOT / request[f"{prefix}_artifact_path"]
+        raw = artifact_path.read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == request[
+            f"{prefix}_artifact_sha256"]
+        artifacts[prefix] = json.loads(raw)
+    assert artifacts["replay"]["native_rule_work"][
+        "rule_identity_coverage"] == "COMPLETE"
+    for artifact in artifacts.values():
+        candidate = next(row for row in artifact["candidates"]
+            if row["expression_digest"] == binding["expression_digest"])
+        qualification = next(row for row in candidate["qualifications"]
+            if row["qualification_id"] == binding["qualification_id"])
+        assert qualification["training_trial_keys"] == binding[
+            "training_trial_keys"]
+        child_trial = next(row for row in candidate["independent_goal_trials"]
+            if row["attempt_id"] == qualification["attempt_ids"][1])
+        child = next(row for row in artifact["candidates"]
+            if row["candidate_id"] == child_trial["derived_candidate_ids"][0])
+        assert tuple(child["approval_binding"]["params"]) not in active_effects
+        assert tuple(candidate["approval_binding"]["params"]) not in active_effects
+        assert artifact["approval_count"] == 0
+        assert artifact["world_receipt_count"] == 0
+        assert artifact["validation_world_ids"] == []

@@ -1859,3 +1859,10 @@ The [candidate-specific full-arm D4 request](COGNITION_P22_APPROVAL_REQUEST_D4_F
 binds qualification `#12259` and the registered full-arm generation-zero
 parent to one training transition and conditional g1 checkpoint. It awaits
 exact user approval. No transition or checkpoint was created.
+
+The full-root approval packet now binds a replay captured with complete native
+rule-work identity coverage; its candidate, qualification records, and witness
+pairs match the uninstrumented source panel. The CLI regression checks both
+artifact hashes, the full-root parent, selected witness pair, source/child
+novelty, zero action evidence, and the unused output path. The focused CLI
+module passes 10 tests. No adoption was executed.
