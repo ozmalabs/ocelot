@@ -15,26 +15,35 @@ SPEC.loader.exec_module(CLI)
 DIGEST = "badd1251ee4eb9c779233a3631b307d68ec6e34da40daeb993f8c0be0641d255"
 
 
-def _command(output: Path, *extra: str) -> list[str]:
+def _command(output: Path, binding: Path, *extra: str) -> list[str]:
     return [sys.executable, str(SCRIPT), "--family", "d4", "--training-draws",
         "406", "407", "--training-goal-relation", "distinct",
         "--validation-start", "0", "--validation-count", "0",
-        "--approved-candidate-binding", str(BINDING), "--approve-digest", DIGEST,
+        "--approved-candidate-binding", str(binding), "--approve-digest", DIGEST,
         "--review-seconds", "0.5", "--output", str(output), *extra]
 
 
-def test_approval_cli_requires_explicit_execution_flag():
-    output = ROOT / "evaluation/process_mastery/results/p22_approved_candidate_d4_0406_0407.json"
-    result = subprocess.run(_command(output), cwd=ROOT, capture_output=True,
+def _temporary_binding(output: Path, binding_path: Path) -> Path:
+    binding = json.loads(BINDING.read_text(encoding="utf-8"))
+    binding["output_path"] = str(output)
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+    return binding_path
+
+
+def test_approval_cli_requires_explicit_execution_flag(tmp_path):
+    output = tmp_path / "candidate.json"
+    binding = _temporary_binding(output, tmp_path / "binding.json")
+    result = subprocess.run(_command(output, binding), cwd=ROOT, capture_output=True,
                             text=True, check=False)
     assert result.returncode != 0
     assert "--execute-approved-adoption" in result.stderr
     assert not output.exists()
 
 
-def test_approval_cli_rejects_digest_mismatch_before_probe_or_output():
-    output = ROOT / "evaluation/process_mastery/results/p22_approved_candidate_d4_0406_0407.json"
-    command = _command(output, "--execute-approved-adoption")
+def test_approval_cli_rejects_digest_mismatch_before_probe_or_output(tmp_path):
+    output = tmp_path / "candidate.json"
+    binding = _temporary_binding(output, tmp_path / "binding.json")
+    command = _command(output, binding, "--execute-approved-adoption")
     command[command.index("--approve-digest") + 1] = "0" * 64
     result = subprocess.run(command, cwd=ROOT, capture_output=True,
                             text=True, check=False)

@@ -954,3 +954,30 @@ with one resource mismatch and verifies `NOT_ESTABLISHED` / `CAPABILITY_ONLY`.
 The focused P22 suite passes 53 tests; runner and analyzer self-checks pass.
 No registered held-out allocation was accessed. This tightens claim
 classification and does not create approved lineages or efficacy evidence.
+
+## D4 candidate-specific adoption and generation-one checkpoint (2026-10-23)
+
+The reviewer approved only expression digest
+`badd1251ee4eb9c779233a3631b307d68ec6e34da40daeb993f8c0be0641d255` and
+reported 12 seconds of review. The guarded CLI reconstructed candidate `#1089`
+from distinct training draws 0406/0407, verified its binding, consumed one
+human approval (`#6708`), executed one guarded transition on training world
+`p22:d4-v2:train:0406`, and verified receipt `#6710`. The observed state was
+`[2,0,3,1]`. It captured generation-one checkpoint
+`p22-d4-g1-badd1251ee4e` with digest
+`f3d6c15ac7f9187cef0e4c7ca21f3615958955565101a891fbc8796c997e6ed6`, linked
+to generation-zero digest
+`e80842b7932ce9bbcc326254c6844caf64ec6fc0ac8600d62f89d5f088ca52cf`.
+Independent validation confirms both immutable digests, the parent link, and
+consecutive generation numbering. Cumulative primitive work increased from
+47,676 to 47,677. The artifact contains no validation worlds and its SHA-256
+is `7435894f1b65c8c62d0d7b401f0db73f1513372ee24f66dd2c01b552aafcab9b`.
+
+The candidate-specific authorization is exhausted. It permits no later
+generation, Loopover action, preregistration, or held-out allocation. This is
+one D4 lineage edge only and does not establish learning efficacy or satisfy
+the cross-family three-generation panel. The complete focused bundle produced
+95 passing tests and two failures caused by CLI tests that assumed the fixed
+one-shot result path remained unused. Those tests now create temporary
+request-bound paths; the CLI module passes 3/3. Runner and analyzer
+self-checks pass, and no held-out world was accessed.

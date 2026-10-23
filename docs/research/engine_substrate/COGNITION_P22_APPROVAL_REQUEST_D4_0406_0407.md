@@ -1,6 +1,6 @@
 # P22 candidate-specific simulated-adoption request: D4 0406/0407
 
-**Status: awaiting exact user approval; no approval or action has been created.**
+**Status: consumed on 2026-10-23; the one authorized action completed.**
 
 This request covers one guarded simulator transition for the candidate below,
 then capture of its generation-1 checkpoint only if the native receipt
@@ -45,7 +45,7 @@ would remain incomplete.
 
 ## Reproducible execution binding
 
-The machine-readable candidate binding is [`COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json`](COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json), SHA-256 `176035d013ba82192655b5461bfa45e7cbba2b5ed34a11eeb973940db5f8bc93`. It contains the exact candidate binding and registered training draws, but no reviewer duration. After explicit approval of the digest above and a reviewer-reported duration, execute only this training-only guarded transition with:
+The machine-readable candidate binding is [`COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json`](COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json), SHA-256 `176035d013ba82192655b5461bfa45e7cbba2b5ed34a11eeb973940db5f8bc93`. Its bytes are preserved because that exact file hash is part of the consumed authorization record. The one authorized training-only guarded transition was executed with the command below, substituting the approved review duration:
 
 ```sh
 OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python scripts/run_p22_development_probe.py \
@@ -57,4 +57,4 @@ OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python scripts/run_p22_development_probe.
   --output evaluation/process_mastery/results/p22_approved_candidate_d4_0406_0407.json
 ```
 
-Replace `REVIEWER_REPORTED_SECONDS` only with the duration explicitly supplied by the reviewer. The command rejects missing authorization fields, a mismatched digest, non-training-only settings, or an output path other than the one bound into the request. The CLI durably reserves that path before running any proposal or action work; success replaces the marker with the result, while an interrupted attempt leaves the marker and cannot be retried. Its CLI guard tests pass. This command is prepared for a future authorized action; it has not been run and creates no approval, receipt, or checkpoint by itself.
+The CLI rejects missing authorization fields, a mismatched digest, non-training-only settings, or an output path other than the one bound into the request. It durably reserves the path before proposal or action work; this consumed request cannot be retried. The result is [`p22_approved_candidate_d4_0406_0407.json`](../../../evaluation/process_mastery/results/p22_approved_candidate_d4_0406_0407.json), SHA-256 `7435894f1b65c8c62d0d7b401f0db73f1513372ee24f66dd2c01b552aafcab9b`. It records reviewer self-report `12` seconds, one consumed human approval (`#6708`), one guarded transition, and one verified receipt (`#6710`) on training world `p22:d4-v2:train:0406`. The resulting state is `[2,0,3,1]`. The generation-zero ancestor digest is `e80842b7932ce9bbcc326254c6844caf64ec6fc0ac8600d62f89d5f088ca52cf`; the conditional generation-one child is `p22-d4-g1-badd1251ee4e`, digest `f3d6c15ac7f9187cef0e4c7ca21f3615958955565101a891fbc8796c997e6ed6`, linked to that ancestor with cumulative primitive work `47,677` (one transition beyond `47,676`). Both checkpoint digests and the parent link verify. The run used only training draws 0406/0407 and no validation worlds. This authorizes no later generation, Loopover adoption, preregistration, or held-out access.
