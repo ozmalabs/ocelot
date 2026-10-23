@@ -882,11 +882,25 @@ machine-readable freeze before constructing a learner or any evaluation world.
 The focused runner module passes 7 tests. This confirms the current protocol
 draft cannot access held-out data and does not alter the evidence dispositions.
 
-The two pending registered-root requests bind to the D4 and Loopover
-`invention_only` generation-zero parents. If approved, they provide only the
-two invention-only generation-one descendants. The 24-checkpoint panel still
-requires ten further arm-specific approved transitions for the remaining
-invention-only/full generations, plus 12 passive descendant captures for the
-unchanged/adaptive-only controls. No registered descendant manifest or
-resource-matched panel exists; P22 efficacy and L1–L7 dispositions remain
-open.
+P22's resource feasibility protocol was corrected before any preregistration
+freeze or held-out access. Exact equality of realized resource vectors is now
+required only for efficiency comparisons; the capability estimand uses common
+worlds and frozen per-field ceilings, retains all measured work, and reports
+`CAPABILITY_ONLY` when realized costs differ. The analyzer and draft
+preregistration implement this distinction. Across six retained four-arm root
+panels (40 training-world rows), all rows use common worlds, respect the shared
+primitive-work and native-rule-progress ceilings, and measure every contract
+resource dimension; none has exact realized-resource equality. These are
+capability-only development comparisons, not held-out results. The focused
+P22 estimand/checkpoint/analyzer bundle passes 41 tests, analyzer and runner
+self-checks pass, and the runner confirms `heldout_accessed=false`.
+
+The P22 preregistration remains `DRAFT — NOT FROZEN`: the 24-checkpoint
+multi-generation manifest and per-checkpoint resource-ceiling record are
+incomplete. Three registered-root generation-one candidate requests await
+their own exact decisions (D4 invention-only `#1908`, Loopover invention-only
+`#6542`, and D4 full-arm `#1541`); nine later invention/full transitions
+would remain after those actions. The previously approved D4 identity
+candidate `#6731` already consumed its one-shot authorization and is outside
+these registered roots. No held-out world has been constructed or scored, no
+efficacy claim is established, and L1–L7 dispositions remain unchanged.
