@@ -778,3 +778,11 @@ qualifications. No approval, receipt, validation allocation or held-out
 access occurred. A candidate-specific request now awaits approval; until a
 verified descendant checkpoint exists, no P22 efficacy or capability result
 can be claimed and L1–L7 remain unchanged.
+
+Two Loopover continuations from its registered invention-only root used fresh
+four-goal panels after solver isolation was corrected. Both spent the full
+40,000-attempt ceiling and produced one proposal each, with zero independent-
+goal qualifications. No Loopover adoption request was prepared. The D4
+candidate request does not change any capability disposition; cross-family
+lineages, preregistration and held-out evaluation remain incomplete, and
+L1–L7 remain unchanged.
