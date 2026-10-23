@@ -80,7 +80,8 @@ def _worker(payload: dict) -> dict:
             cumulative_primitive_ceiling=payload["cumulative_primitive_ceiling"],
             native_rule_progress_ceiling=payload["native_rule_progress_ceiling"],
             allow_heldout_evaluation=payload.get(
-                "allow_heldout_evaluation", False))
+                "allow_heldout_evaluation", False),
+            scoring_policy_profile=payload.get("scoring_policy_profile"))
     except BaseException:
         if agent is not None:
             agent.close()
@@ -97,7 +98,8 @@ def _worker(payload: dict) -> dict:
 def score_checkpoint_world_isolated(checkpoint: dict, world: dict, *,
                                     cumulative_primitive_ceiling: int,
                                     native_rule_progress_ceiling: int,
-                                    allow_heldout_evaluation: bool = False) -> dict:
+                                    allow_heldout_evaluation: bool = False,
+                                    scoring_policy_profile: str | None = None) -> dict:
     """Run one restored checkpoint/world cell in a fresh native learner process."""
     if not isinstance(checkpoint, dict) or not _checkpoint_digest_valid(
             CheckpointExpression(**checkpoint)):
@@ -107,7 +109,8 @@ def score_checkpoint_world_isolated(checkpoint: dict, world: dict, *,
     payload = {"checkpoint": checkpoint, "world": world,
         "cumulative_primitive_ceiling": cumulative_primitive_ceiling,
         "native_rule_progress_ceiling": native_rule_progress_ceiling,
-        "allow_heldout_evaluation": allow_heldout_evaluation}
+        "allow_heldout_evaluation": allow_heldout_evaluation,
+        "scoring_policy_profile": scoring_policy_profile}
     completed = subprocess.run([sys.executable, "-m",
         "evaluation.process_mastery.p22_checkpoint_panel", "--worker"],
         input=json.dumps(payload, sort_keys=True), capture_output=True,
@@ -166,7 +169,8 @@ def run_isolated_checkpoint_panel(checkpoints: dict[str, dict], worlds: list[dic
             outcome = score_checkpoint_world_isolated(checkpoint, world,
                 cumulative_primitive_ceiling=cumulative_primitive_ceiling,
                 native_rule_progress_ceiling=native_rule_progress_ceiling,
-                allow_heldout_evaluation=False)
+                allow_heldout_evaluation=False,
+                scoring_policy_profile="p22_frozen_process_scoring_v1")
             outcomes[arm] = outcome
             arm_outcomes[arm].append(outcome)
         resources = compare_resource_snapshots({arm: outcome["resource_snapshot"]
@@ -182,6 +186,7 @@ def run_isolated_checkpoint_panel(checkpoints: dict[str, dict], worlds: list[dic
                 "rule_progress_limit_respected"] for outcome in outcomes.values()),
             "resource_comparison": resources})
     return {"status": "DEVELOPMENT_ONLY", "split": "training",
+        "scoring_policy_profile": "p22_frozen_process_scoring_v1",
         "world_ids": [world["world_id"] for world in worlds],
         "cumulative_primitive_ceiling": cumulative_primitive_ceiling,
         "native_rule_progress_ceiling": native_rule_progress_ceiling,

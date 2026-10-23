@@ -18,7 +18,8 @@
       "attrs": {
         "name": "core_solver_policy",
         "enabled": 0.0,
-        "max_steps": 400.0
+        "max_steps": 400.0,
+        "max_primitive_work": 1000000000.0
       }
     }
   ],
@@ -1180,6 +1181,38 @@
                 "name": "hd"
               }
             }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "moves"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "selected_cost"
+                }
+              ]
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_primitive_work"
+            }
           }
         ]
       },
@@ -1314,6 +1347,110 @@
         ]
       ],
       "batch": false
+    },
+    {
+      "name": "sv_work_budget_exhausted",
+      "area": "process_solving",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "Stop before applying a selected process whose declared primitive cost exceeds the remaining work budget.",
+      "match": [
+        [
+          "agent",
+          "has_solver_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "selected"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "moves"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "selected_cost"
+                }
+              ]
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_primitive_work"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "status",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": "budget_exhausted"
+            }
+          }
+        ]
+      ]
     },
     {
       "name": "sv_solved",

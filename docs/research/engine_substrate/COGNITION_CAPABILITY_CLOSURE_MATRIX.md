@@ -132,3 +132,10 @@ The D4 same-world development checkpoint panel on draws 0664–0667 yielded
 identical per-world scores across four generation-zero arms (3/4 solved).
 Resource instrumentation was complete, but work differed sharply on one
 failed world, so it supports no efficiency claim or capability closure.
+
+A corrected frozen-profile comparison of the D4 generation-one and
+generation-two checkpoints on four fresh training goals produced identical
+per-world outcomes (2/4 each) within the cumulative work ceiling. The child
+carried substantially higher accumulated work; this is no improvement and no
+efficiency result. Earlier over-budget scoring attempts are excluded from
+inference and retained with hashes in the P22 development report.

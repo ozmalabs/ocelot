@@ -648,3 +648,10 @@ The D4 same-world development checkpoint panel on draws 0664–0667 gave all
 four generation-zero arms identical per-world outcomes (3/4 solved). Observed
 resource equality failed on one world; no efficacy, efficiency, or capability
 level is established.
+
+The exact D4 generation-one/generation-two lineage pair scored 2/4 on the same
+four fresh training worlds under the corrected frozen native scoring profile;
+per-world scores were identical. The child had higher cumulative historical
+work. This establishes no improvement or efficiency claim and is not
+held-out evidence. The initial budget-control failure was fixed and excluded
+from interpretation.

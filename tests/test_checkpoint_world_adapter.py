@@ -530,6 +530,80 @@ def test_restored_checkpoint_runs_fresh_task_through_native_learner():
             cumulative_primitive_ceiling=1)
 
 
+def test_shared_scoring_profile_enables_fixed_solver_for_lineage_checkpoint():
+    from substrate.boot_profiles import boot_cognition_on
+
+    world = agent_view(generate_d4_world_v2(split="train", draw=15))
+    source = boot_cognition_on()
+    try:
+        domain = source.s.add_node("ProcessDomain", {"name": "lineage-root",
+            "kind": "permutation", "domain_kind": "permutation",
+            "probes": [world["initial_state"]], "source_epoch": 0,
+            "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
+        source.s.add_edge(source.agent, "has_process_domain", domain, {})
+        params = world["held_processes"]["rot90"]
+        schema = source.s.add_node("ProcessSchema", {
+            "name": "rot90", "kind": "permutation", "domain": "lineage-root",
+            "domain_kind": "permutation", "params": params,
+            "source_digest": params_digest(params), "status": "active",
+            "provenance": "held", "cost": 1.0, "owner_agent": source.agent,
+            "invariants": [], "source_epoch": 0, "model_epoch": 0,
+            "frame_epoch": 0, "probe_epoch": 0})
+        source.s.add_edge(source.agent, "has_process_schema", schema, {})
+        source.s.add_edge(domain, "has_held_process", schema, {})
+        checkpoint = capture_held_process_checkpoint(source, schema,
+            checkpoint_id="lineage-root-disabled-solver")
+        digest = checkpoint.checkpoint_digest
+    finally:
+        source.close()
+
+    result = score_restored_checkpoint_task(checkpoint, world=world,
+        agent_factory=boot_cognition_on,
+        scoring_policy_profile="p22_frozen_process_scoring_v1")
+    assert result["status"] == "COMPLETED"
+    assert result["score"] == 1
+    assert result["scoring_policy_profile"] == "p22_frozen_process_scoring_v1"
+    assert result["disabled_scoring_policies"]["OpenProcessSearchPolicy"] >= 1
+    assert result["disabled_scoring_policies"]["OpenProcessAdoptionPolicy"] >= 1
+    assert checkpoint.checkpoint_digest == digest
+
+
+def test_restored_checkpoint_stops_before_unaffordable_primitive_action():
+    from substrate.boot_profiles import boot_cognition_on
+
+    world = agent_view(generate_d4_world_v2(split="train", draw=15))
+    source = boot_cognition_on()
+    try:
+        domain = source.s.add_node("ProcessDomain", {"name": "work-budget-root",
+            "kind": "permutation", "domain_kind": "permutation",
+            "probes": [world["initial_state"]], "source_epoch": 0,
+            "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
+        source.s.add_edge(source.agent, "has_process_domain", domain, {})
+        params = world["held_processes"]["rot90"]
+        schema = source.s.add_node("ProcessSchema", {
+            "name": "rot90", "kind": "permutation", "domain": "work-budget-root",
+            "domain_kind": "permutation", "params": params,
+            "source_digest": params_digest(params), "status": "active",
+            "provenance": "held", "cost": 10.0, "owner_agent": source.agent,
+            "invariants": [], "source_epoch": 0, "model_epoch": 0,
+            "frame_epoch": 0, "probe_epoch": 0})
+        source.s.add_edge(source.agent, "has_process_schema", schema, {})
+        source.s.add_edge(domain, "has_held_process", schema, {})
+        checkpoint = capture_held_process_checkpoint(source, schema,
+            checkpoint_id="work-budget-root")
+    finally:
+        source.close()
+
+    result = score_restored_checkpoint_task(checkpoint, world=world,
+        agent_factory=boot_cognition_on, cumulative_primitive_ceiling=1,
+        scoring_policy_profile="p22_frozen_process_scoring_v1")
+    assert result["status"] == "COMPLETED"
+    assert result["task_status"] == "budget_exhausted"
+    assert result["score"] == 0
+    assert result["primitive_budget_respected"]
+    assert result["cumulative_primitive_work"] <= 1
+
+
 def test_heldout_learner_scoring_keeps_assigned_world_out_of_training(monkeypatch):
     from substrate.boot_profiles import boot_cognition_on
     from evaluation.process_mastery import checkpoint_world_adapter as adapter_module

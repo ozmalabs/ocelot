@@ -1436,3 +1436,31 @@ evidence, not an efficacy estimate. Raw artifact
 [`p22_checkpoint_panel_d4_0664_0667.json`](../../../evaluation/process_mastery/results/p22_checkpoint_panel_d4_0664_0667.json)
 has SHA-256 `0fdca8d7ad50d9bbb2fd9dd29a3687785062df2d5d5a9fb9a1245902f4f159d6`.
 No held-out data was accessed.
+
+## D4 frozen lineage checkpoint comparison (2026-10-23)
+
+The exact generation-one parent `p22-d4-g1-badd1251ee4e` and generation-two
+child `p22-d4-g2-1e3590935d29` were scored on four fresh pairwise-distinct
+D4 training goals (draws 0668, 0669, 0670, 0672). The first pass exposed that
+the restored child could continue its in-checkpoint open-process search and
+exceed the 120,000 cumulative primitive ceiling on two cells. Both invalid
+records remain preserved at
+[`p22_lineage_pair_d4_0668_0672.json`](../../../evaluation/process_mastery/results/p22_lineage_pair_d4_0668_0672.json)
+(SHA-256 `58bac3ecb82c57257835128e367a27f84da129b400e3f01ee7fd1ad3f85e9dd0`)
+and
+[`p22_lineage_pair_d4_0668_0672_budget_guard_v2.json`](../../../evaluation/process_mastery/results/p22_lineage_pair_d4_0668_0672_budget_guard_v2.json)
+(SHA-256 `a51cc590efcefa63dd5ef25b5620858f30c59f0fd481c96b61f529b34f47f9d4`).
+
+The corrected `p22_frozen_process_scoring_v1` profile enables the same native
+solver/schema executor for each checkpoint and turns off checkpoint-side
+search, adoption, independent-improvement, and curriculum policies. The native
+solver now checks the selected process's declared primitive cost against the
+remaining ceiling before changing task state. The corrected run kept every
+cell within budget and scored both checkpoints at 2/4, with identical
+per-world scores `[1,0,1,0]`. Cumulative primitive totals were 47,678/47,678/
+47,678/47,677 for the parent and 107,075/107,075/107,075/107,074 for the
+child; the difference reflects accumulated lineage work. This records no
+observed score gain and is not an efficiency comparison. Raw corrected result
+[`p22_lineage_pair_d4_0668_0672_frozen_v3.json`](../../../evaluation/process_mastery/results/p22_lineage_pair_d4_0668_0672_frozen_v3.json)
+has SHA-256 `bafa4acc05af36bb927ea9258ab208c6b275f5a29c235ff6eb7e1b3bcb1253eb`.
+No validation or held-out world was accessed.

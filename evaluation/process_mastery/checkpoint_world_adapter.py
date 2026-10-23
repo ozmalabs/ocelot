@@ -662,7 +662,8 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
                                   agent_factory,
                                   cumulative_primitive_ceiling: int = 30_000,
                                   native_rule_progress_ceiling: int = 20_000,
-                                  allow_heldout_evaluation: bool = False) -> dict:
+                                  allow_heldout_evaluation: bool = False,
+                                  scoring_policy_profile: str | None = None) -> dict:
     """Run a fresh native learner graph restored from a checkpoint on one task.
 
     This is a development continuation primitive, distinct from the finite
@@ -678,6 +679,8 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         raise ValueError("a registered world view is required")
     if not isinstance(allow_heldout_evaluation, bool):
         raise ValueError("held-out evaluation flag must be boolean")
+    if scoring_policy_profile not in {None, "p22_frozen_process_scoring_v1"}:
+        raise ValueError("unsupported checkpoint scoring policy profile")
     generators = {
         "pmb_generated_d4_corner_v2": generate_d4_world_v2,
         "pmb_generated_loopover_v2": generate_loopover_world_v2,
@@ -719,6 +722,7 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
 
     agent = agent_factory()
     rule_capture = None
+    disabled_scoring_policies = {}
     try:
         restore_native_checkpoint_graph(agent, checkpoint)
         native = getattr(agent, "inner", None) or getattr(agent, "native", None)
@@ -730,11 +734,30 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         if len(solver_policies) != 1:
             raise ValueError("checkpoint learner requires exactly one native SolverPolicy")
         solver_policy = solver_policies[0]
+        schema_policies = store.nodes("ProcessSchemaPolicy")
+        if scoring_policy_profile == "p22_frozen_process_scoring_v1":
+            if len(schema_policies) != 1:
+                raise ValueError("frozen P22 scoring requires exactly one native ProcessSchemaPolicy")
+            # Fixed execution policies belong to the evaluation harness.
+            # Enabling them and disabling checkpoint-side learning/adoption
+            # after restore leaves immutable checkpoint bytes untouched.
+            store.set_attr(solver_policy, "enabled", 1.0)
+            store.set_attr(schema_policies[0], "enabled", 1.0)
+            for policy_type in ("OpenProcessSearchPolicy",
+                    "OpenProcessAdoptionPolicy", "IndependentImprovementPolicy",
+                    "IndependentImprovementCurriculumBridgePolicy",
+                    "ProcessCurriculumPolicy"):
+                policies = store.nodes(policy_type)
+                disabled_scoring_policies[policy_type] = len(policies)
+                for policy in policies:
+                    store.set_attr(policy, "enabled", 0.0)
         if store.node(solver_policy)["attrs"].get("enabled") != 1.0:
             raise ValueError("checkpoint learner SolverPolicy must be explicitly enabled")
         solver_step_allowance = (cumulative_primitive_ceiling
                                  - checkpoint.cumulative_primitive_work)
         store.set_attr(solver_policy, "max_steps", float(solver_step_allowance))
+        store.set_attr(solver_policy, "max_primitive_work",
+                       float(solver_step_allowance))
         baseline_approvals = len(store.nodes("OpenProcessAdoptionApproval"))
         baseline_receipts = len(store.nodes("OpenProcessWorldReceipt"))
         task_key = f"p22:{world['family']}:{split}:{world['draw']:04d}"
@@ -797,10 +820,13 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
                 "fixed_rank": 0.0, "random_rank": 0.0})
             store.add_edge(root, "has_process_curriculum_evidence", evidence, {})
             curriculum_policies = store.nodes("ProcessCurriculumPolicy")
-            if len(curriculum_policies) != 1:
-                raise ValueError("checkpoint learner requires exactly one native curriculum policy")
-            curriculum_enabled = (store.node(curriculum_policies[0])["attrs"].get(
-                "enabled") == 1.0)
+            if len(curriculum_policies) > 1:
+                raise ValueError("checkpoint learner has duplicate native curriculum policies")
+            # Some native lineage snapshots were captured before curriculum
+            # policy became part of the scoring profile. Absence is equivalent
+            # to the disabled policy path: dispatch the ordinary SolveTask.
+            curriculum_enabled = (len(curriculum_policies) == 1
+                and store.node(curriculum_policies[0])["attrs"].get("enabled") == 1.0)
             if curriculum_enabled:
                 existing_curriculum_tasks = len(store.nodes("ProcessCurriculumTask"))
                 store.set_attr(curriculum_policies[0], "max_tasks",
@@ -898,13 +924,16 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         if cumulative_primitive_work < checkpoint.cumulative_primitive_work:
             raise ValueError("restored learner resource totals regress checkpoint primitive work")
         primitive_budget_respected = cumulative_primitive_work <= cumulative_primitive_ceiling
-        terminal = task_attrs.get("status") in {"solved", "stuck"}
+        terminal = task_attrs.get("status") in {
+            "solved", "stuck", "budget_exhausted"}
         status = ("PRIMITIVE_BUDGET_OVERRUN" if not primitive_budget_respected else
             "RULE_PROGRESS_LIMIT_OVERRUN" if not rule_progress_limit_respected else
             "COMPLETED" if terminal else "RULE_BUDGET_EXHAUSTED")
         return {"status": status,
                 "world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                 "split": split,
+                "scoring_policy_profile": scoring_policy_profile or "checkpoint_bound",
+                "disabled_scoring_policies": disabled_scoring_policies,
                 "task_status": task_attrs.get("status"),
                 "score": int(task_attrs.get("status") == "solved"),
                 "native_rule_steps": fired_total,
