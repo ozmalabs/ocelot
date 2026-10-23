@@ -739,8 +739,9 @@ qualified proposal, not Loopover transfer efficacy; L1–L7 remain unchanged.
 A read-only replay of the same Loopover allocation reproduced candidate
 `#10761`, both qualifications and their exact witnesses. It added no approval
 or receipt and accessed no validation or held-out worlds. This strengthens
-the reproducibility of the pending action request only; all capability-level
-dispositions remain unchanged.
+the reproducibility of the candidate proposal only; its request was later
+superseded by the common-ancestor audit. All capability-level dispositions
+remain unchanged.
 
 The development continuation runner now resumes from the exact family-specific
 generation-zero roots registered in the four-arm snapshots. A D4 root
@@ -753,3 +754,13 @@ fix the root/domain integration and provide no qualified descendant or
 improvement evidence. The full common-ancestor lineages, standalone
 preregistration and 24-checkpoint manifest remain absent; P22.E2–E3 and all
 L1–L7 dispositions remain open.
+
+Further correct-root diagnostics found no qualified descendant. D4 draws
+0910–0914 produced two later unqualified proposals after the first two tasks
+were budget-exhausted. D4 draws 0915–0918 produced one candidate on the first
+task, but it had zero independent-goal qualifications; the remaining tasks
+were budget-exhausted or solved by the ancestor. Loopover draws 0902–0905
+produced no search attempts or candidates because every task was
+budget-exhausted. These training-only results had no approvals, receipts,
+validation allocations or held-out access. They leave candidate-specific
+lineage creation and P22.E2–E3 open; L1–L7 dispositions do not change.
