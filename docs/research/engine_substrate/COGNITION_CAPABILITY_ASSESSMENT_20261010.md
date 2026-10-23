@@ -914,3 +914,11 @@ loaded extension `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac
 and build receipt `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66`.
 The final preregistration freeze must recompute and bind provenance again after
 all implementation changes.
+
+A new read-only regression audits all three pending registered-root candidate
+packets, checking their exact parent bindings, source/replay hashes,
+qualification witnesses, empty validation allocations, zero prior actions,
+and unclaimed one-shot output paths. The P22 development-probe CLI module now
+passes 13 tests. This strengthens authorization-packet integrity only; none of
+the three approvals has been granted or executed, and no capability disposition
+or held-out status changes.

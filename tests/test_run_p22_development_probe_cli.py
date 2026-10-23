@@ -246,3 +246,43 @@ def test_registered_full_root_request_binds_measured_replay_and_novel_child():
         assert artifact["approval_count"] == 0
         assert artifact["world_receipt_count"] == 0
         assert artifact["validation_world_ids"] == []
+
+
+@pytest.mark.parametrize("request_name", [
+    "COGNITION_P22_APPROVAL_REQUEST_D4_0962_0972.json",
+    "COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0951_0954.json",
+    "COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.json",
+])
+def test_current_registered_root_approval_packets_are_bound_and_unclaimed(
+        request_name):
+    request_path = ROOT / "docs/research/engine_substrate" / request_name
+    request = json.loads(request_path.read_text(encoding="utf-8"))
+    binding = request["approval_binding"]
+
+    assert request["status"] == "awaiting_exact_user_approval"
+    assert request["training_goal_relation"] == "distinct"
+    assert request["validation_draws"] == []
+    assert not (ROOT / request["output_path"]).exists()
+    parent = CLI._parent_checkpoint_from_binding(request)
+    assert parent.generation == 0
+    assert parent.checkpoint_digest == binding["parent_checkpoint_digest"]
+    assert binding["status"] == "unapproved_candidate"
+    assert binding["expression_digest"]
+    assert binding["qualification_id"]
+    assert len(set(binding["training_trial_keys"])) == 2
+
+    for prefix in ("source", "replay"):
+        raw = (ROOT / request[f"{prefix}_artifact_path"]).read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == request[
+            f"{prefix}_artifact_sha256"]
+        artifact = json.loads(raw)
+        assert artifact["status"] == "COMPLETED"
+        assert artifact["approval_count"] == 0
+        assert artifact["world_receipt_count"] == 0
+        assert artifact["validation_world_ids"] == []
+        candidate = next(row for row in artifact["candidates"]
+            if row["expression_digest"] == binding["expression_digest"])
+        qualification = next(row for row in candidate["qualifications"]
+            if row["qualification_id"] == binding["qualification_id"])
+        assert qualification["training_trial_keys"] == binding[
+            "training_trial_keys"]
