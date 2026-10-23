@@ -341,7 +341,7 @@ def run_p22_training_proposal_probe(*, family: str,
             if sorted(set(witness_keys)) != expected_witnesses or len(quals) != 1:
                 raise RuntimeError("candidate qualification witnesses differ from approval")
             if root_checkpoint is None:
-                raise RuntimeError("approved candidate capture requires a measured generation-zero checkpoint")
+                raise RuntimeError("approved candidate capture requires a measured parent checkpoint")
             approval_context = {key: attrs[key] for key in exact_fields}
             approval = agent.s.add_node("OpenProcessAdoptionApproval", {
                 "status": "approved", "approval_kind": "human",
@@ -439,7 +439,11 @@ def run_p22_training_proposal_probe(*, family: str,
             adoption_resource_snapshot = final_snapshot
             simulated_adoption["parent_checkpoint"] = asdict(root_checkpoint)
             simulated_adoption["child_checkpoint"] = asdict(generation_one)
-            simulated_adoption["generation_one_checkpoint"] = asdict(generation_one)
+            simulated_adoption[f"generation_{child_generation}_checkpoint"] = asdict(
+                generation_one)
+            if child_generation == 1:
+                simulated_adoption["generation_one_checkpoint"] = asdict(
+                    generation_one)
             if root_checkpoint.generation == 0:
                 simulated_adoption["generation_zero_ancestor"] = asdict(root_checkpoint)
 

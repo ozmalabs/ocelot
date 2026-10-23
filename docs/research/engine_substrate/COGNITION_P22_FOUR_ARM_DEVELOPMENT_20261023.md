@@ -1015,3 +1015,39 @@ has SHA-256
 Draws 0560/0561 are consumed for development. The one-action D4 authorization
 is exhausted, so any later generation requires a new candidate-specific
 approval.
+
+## D4 generation-two candidate and restored-parent approval path (2026-10-23)
+
+A second D4 continuation from the same generation-one checkpoint on fresh
+distinct training draws 0562/0563 produced candidate `#6731`, digest
+`1e3590935d290140171bd81f966a1dcc336e72278231d844b6411f7a2286f9b4`. Its
+native qualification records witnesses on both draws, but its exact effect is
+the identity permutation `[[0,1,2,3]]`. It is therefore a qualified but
+non-improving candidate; no adoption, approval, receipt, or generation-two
+checkpoint was created. The graph's one approval and receipt are inherited
+from the generation-one parent. The training-only probe artifact has SHA-256
+`f068f8ab759f78c3d38bfe994f8c0c9c65a1fadf530b09804450dbba0594a27a`.
+
+The candidate's exact request is recorded in
+[`COGNITION_P22_APPROVAL_REQUEST_D4_0562_0563.md`](COGNITION_P22_APPROVAL_REQUEST_D4_0562_0563.md).
+It asks for one identity-effect transition and conditional generation-two
+checkpoint only, and states that the result cannot count as improvement. The
+machine binding fixes the generation-one parent artifact SHA-256, checkpoint
+digest, training trials, and search ceilings. The guarded CLI now loads that
+parent record from its hashed artifact, verifies its complete checkpoint
+digest and graph snapshot, and refuses any changed parent or ceilings before
+claiming the one-shot output. A negative-digest CLI probe confirms the parent
+is loaded and verified before rejection; the target output remains unclaimed.
+
+The Loopover continuation of the 0554/0555 root on fresh draws 0564/0565 also
+left its candidate unqualified, with no approval or receipt. Its artifact
+[`p22_candidate_continuation_loopover_0564_0565.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_loopover_0564_0565.json)
+has SHA-256 `5d1b41f73548634f8074652a0c1ae0300b71542d4c72970cf94eaebe1b976e15`.
+No validation worlds were accessed. A further fresh Loopover pair 0566/0567
+produced one candidate, digest
+`72450d51db7b385f4fff8d68e3989a512873b9c52b88b76a52e28f6fc9c14ae5`, but it
+remained unqualified with residual outcomes, no approval, and no receipt. Its
+raw artifact
+[`p22_candidate_probe_loopover_0566_0567.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0566_0567.json)
+has SHA-256 `c792a40b44f0cfe9e30ec325d17d2ed235b1a9dbf7e4158f8e3a20845193543d`.
+Draws 0564–0567 are consumed training-only development data.

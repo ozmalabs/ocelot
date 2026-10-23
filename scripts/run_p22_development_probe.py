@@ -15,6 +15,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from evaluation.process_mastery.p22_development import run_p22_training_proposal_probe
+from evaluation.process_mastery.checkpoint_world_adapter import (
+    CheckpointExpression, CheckpointWorldAdapter,
+)
 
 
 def _claim_approval_output(path: Path, *, approved_digest: str,
@@ -30,6 +33,48 @@ def _claim_approval_output(path: Path, *, approved_digest: str,
         stream.write(json.dumps(marker, sort_keys=True) + "\n")
         stream.flush()
         os.fsync(stream.fileno())
+
+
+def _parent_checkpoint_from_binding(document: dict) -> CheckpointExpression | None:
+    """Load and verify an optional exact parent checkpoint source from a request."""
+    spec = document.get("parent_checkpoint")
+    if spec is None:
+        return None
+    required = {"artifact_path", "artifact_sha256", "record_path",
+                "checkpoint_digest"}
+    if not isinstance(spec, dict) or set(spec) != required:
+        raise ValueError("parent checkpoint binding has an invalid schema")
+    artifact_path = spec["artifact_path"]
+    if not isinstance(artifact_path, str):
+        raise ValueError("parent checkpoint artifact path must be a string")
+    path = (ROOT / artifact_path).resolve()
+    try:
+        path.relative_to(ROOT.resolve())
+    except ValueError as exc:
+        raise ValueError("parent checkpoint artifact must be inside the repository") from exc
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != spec["artifact_sha256"]:
+        raise ValueError("parent checkpoint artifact hash differs from the approval binding")
+    source = json.loads(raw)
+    record_path = spec["record_path"]
+    if (not isinstance(record_path, list) or not record_path
+            or any(not isinstance(key, str) for key in record_path)):
+        raise ValueError("parent checkpoint record path must be a nonempty string list")
+    record = source
+    for key in record_path:
+        if not isinstance(record, dict) or key not in record:
+            raise ValueError("parent checkpoint record path is absent from its artifact")
+        record = record[key]
+    if not isinstance(record, dict):
+        raise ValueError("parent checkpoint record must be an object")
+    fields = set(CheckpointExpression.__dataclass_fields__)
+    if set(record) != fields:
+        raise ValueError("parent checkpoint record fields do not match the native schema")
+    parent = CheckpointExpression(**(record | {"params": tuple(record["params"])}))
+    if (parent.checkpoint_digest != spec["checkpoint_digest"]
+            or not CheckpointWorldAdapter._checkpoint_digest_valid(parent)):
+        raise ValueError("parent checkpoint digest or immutable snapshot is invalid")
+    return parent
 
 
 def main() -> int:
@@ -65,6 +110,7 @@ def main() -> int:
         or args.approve_digest is not None or args.review_seconds is not None
         or args.execute_approved_adoption)
     approved_binding = None
+    parent_checkpoint = None
     authorization_document_sha256 = None
     if approval_flags_used:
         if (args.approved_candidate_binding is None or args.approve_digest is None
@@ -91,10 +137,33 @@ def main() -> int:
                 or not isinstance(authorization_document.get("output_path"), str)
                 or not isinstance(authorization_document.get("approval_binding"), dict)):
             parser.error("candidate binding document does not match this training-only request")
+        try:
+            parent_checkpoint = _parent_checkpoint_from_binding(authorization_document)
+        except (OSError, json.JSONDecodeError, TypeError, ValueError) as exc:
+            parser.error(f"invalid parent checkpoint binding: {exc}")
+        if parent_checkpoint is not None:
+            if parent_checkpoint.generation < 0:
+                parser.error("parent checkpoint generation is invalid")
+        for field, actual in (("per_request_attempt_ceiling", args.per_request_attempt_ceiling),
+                              ("global_attempt_ceiling", args.global_attempt_ceiling),
+                              ("search_ticks", args.search_ticks)):
+            if field in authorization_document:
+                bound = authorization_document[field]
+                if (isinstance(bound, bool) or not isinstance(bound, int)
+                        or bound != actual):
+                    parser.error(f"{field} differs from the candidate approval request")
         expected_output = (ROOT / authorization_document["output_path"]).resolve()
         if args.output.resolve() != expected_output:
             parser.error("candidate adoption output path must match the bound request output")
         approved_binding = dict(authorization_document["approval_binding"])
+        parent_spec = authorization_document.get("parent_checkpoint")
+        if parent_checkpoint is not None:
+            if (not isinstance(parent_spec, dict)
+                    or approved_binding.get("parent_checkpoint_digest")
+                       != parent_checkpoint.checkpoint_digest):
+                parser.error("candidate binding does not name the exact parent checkpoint")
+        elif "parent_checkpoint_digest" in approved_binding:
+            parser.error("candidate binding requires an unavailable parent checkpoint")
         digest = approved_binding.get("expression_digest")
         if (not isinstance(digest, str) or digest != args.approve_digest
                 or approved_binding.get("family") != args.family
@@ -126,7 +195,8 @@ def main() -> int:
         search_ticks=args.search_ticks,
         measure_native_rule_work=(args.measure_native_rule_work
                                   or approved_binding is not None),
-        approved_candidate_binding=approved_binding)
+        approved_candidate_binding=approved_binding,
+        parent_checkpoint=parent_checkpoint)
     if approved_binding is not None:
         result["candidate_approval_authorization"] = {
             "expression_digest": args.approve_digest,
