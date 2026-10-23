@@ -71,9 +71,10 @@ def _worker(payload: dict) -> dict:
     checkpoint = CheckpointExpression(**payload["checkpoint"])
     if not _checkpoint_digest_valid(checkpoint):
         raise ValueError("worker received an unattested checkpoint")
-    agent = boot_cognition_on()
     started = time.perf_counter()
+    agent = None
     try:
+        agent = boot_cognition_on()
         outcome = score_restored_checkpoint_task(checkpoint,
             world=payload["world"], agent_factory=lambda: agent,
             cumulative_primitive_ceiling=payload["cumulative_primitive_ceiling"],
@@ -81,7 +82,8 @@ def _worker(payload: dict) -> dict:
             allow_heldout_evaluation=payload.get(
                 "allow_heldout_evaluation", False))
     except BaseException:
-        agent.close()
+        if agent is not None:
+            agent.close()
         raise
     wall_seconds = time.perf_counter() - started
     peak_rss_bytes = _rss_bytes()
