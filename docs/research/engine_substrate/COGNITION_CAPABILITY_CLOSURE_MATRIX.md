@@ -69,3 +69,8 @@ Loopover training draws 0588/0589 used the full 60,000 global attempt ceiling
 without an independently qualified candidate. Candidate `#30761` had only
 residual second-goal trials. The Loopover generation-one gate and all P22
 held-out prerequisites remain open.
+
+Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
+still yielded no qualified candidate. Candidate `#827` had 24 funded residual
+trials on its second goal. This adds no approved descendant; P22 held-out
+prerequisites remain open.

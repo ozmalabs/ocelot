@@ -605,3 +605,5 @@ The Loopover probes on 0584/0585 and 0586/0587 were interrupted before a native 
 D4 continuation on distinct draws 0582/0583 used the corrected 30,000-attempt request ceiling but still produced no candidate qualified on both goals. The raw evidence is retained; no new approval, action, validation or held-out access occurred. D4 generation three remains unavailable, so the cross-family multi-generation criterion and capability dispositions remain open.
 
 Loopover draws 0588/0589 exhausted their 30,000-per-request, 60,000-global training-search ceilings without a candidate independently qualifying across both goals. Candidate `#30761` had residual trials only on the second draw. This adds no approved Loopover descendant and changes no capability disposition; fresh training draws at a higher global ceiling are the next development probe.
+
+The follow-up on draws 0590/0591 used the runner's maximum 120,000 global ceiling and again produced no qualified candidate. Candidate `#827` had 24 funded but residual trials on the second goal. Loopover still has no approved descendant, and no capability disposition changes.
