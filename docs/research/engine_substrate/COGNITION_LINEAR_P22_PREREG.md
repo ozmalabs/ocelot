@@ -72,10 +72,11 @@ family. Their split-specific world IDs and seeds come from
 `linear_p22_v1.allocation()` and must be frozen by hash; do not reuse an ID or
 seed across families or splits.
 
-Current allocation audit: 1,600 world IDs and 1,600 seeds are unique across
-both families and all four splits; each family/split has 200 worlds. The
+Current allocation audit: all 1,600 world IDs match generated world
+identities, and all 1,600 seeds are unique across both families and all four
+splits; each family/split has 200 worlds. The
 canonical base allocation SHA-256 is
-`ab8571b0d83c27b5704002910fd50dc7fa1022a3445287da6717f72ae28fc454`. This is
+`eb95801e0bd62b0702f559948611b791f256ad9e6dc0a59e9c7805fab68b6f22`. This is
 not the final freeze hash: the freeze adds the verified ancestor checkpoint
 digests and all resource ceilings before hashing the complete analysis plan.
 
@@ -144,9 +145,9 @@ final freeze must recompute and bind them after all implementation changes.
 
 | Provenance item | SHA-256 |
 |---|---|
-| Runner | `e5b4640ec1fc5ceb56fb8115f68bcfba7508c8fcab2569855806dccf169d0924` |
+| Runner | `14f911f6bbf8083a080eab868b77350b9c028f26b8f2e8d92dafebb228866ec7` |
 | Analyzer | `dd737d2bbf2561b2d3279e205ad64c11c809d3c6e227b3b0345fe0bf64cf26af` |
-| Source bundle | `5abae7e7ca8ea8a12c6a5ad2258957a010ffa40859454a83b4c38012a9d01b82` |
+| Source bundle | `6a94207da61a315bb370878cd30909a7e24bb4925f3127078773819c2aa61e24` |
 | Python wrapper | `b149923864fd6e5c786906b57929b73d42aa42284cceff200383fd8c1d60e9e5` |
 | Loaded native extension | `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07` |
 | Native build receipt | `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66` |

@@ -105,11 +105,11 @@ def _commit() -> str:
 
 def allocation() -> dict:
     """Build the fixed four-split v2 allocation without materializing labels."""
-    ids = {split: {family: [
-        f"p22:{family}-v2:{split}:{draw:04d}" for draw in draws]
-        for family in FAMILIES} for split, draws in SPLIT_DRAWS.items()}
     split_names = {"training": "train", "selection": "selection",
                    "validation": "validation", "heldout": "heldout"}
+    ids = {split: {family: [
+        f"p22:{family}-v2:{split_names[split]}:{draw:04d}" for draw in draws]
+        for family in FAMILIES} for split, draws in SPLIT_DRAWS.items()}
     family_codes = {"d4": 4, "loopover": 3}
     seeds = {split: {family: [p22_seed(family_code=family_codes[family],
         split=split_names[split], draw=draw) for draw in draws]

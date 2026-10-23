@@ -21,6 +21,26 @@ from evaluation.process_mastery.generators import SPLITS
 
 def test_allocation_uses_complete_disjoint_split_namespaces():
     plan = allocation()
+    from evaluation.process_mastery.independent_worlds import (
+        generate_d4_world_v2, generate_loopover_world_v2,
+    )
+    generators = {"d4": generate_d4_world_v2,
+                  "loopover": generate_loopover_world_v2}
+    split_ids = {
+        "heldout": "world_ids_by_family",
+        "validation": "validation_world_ids_by_family",
+        "selection": "selection_world_ids_by_family",
+        "training": "training_world_ids_by_family",
+    }
+    split_names = {"training": "train", "selection": "selection",
+                   "validation": "validation", "heldout": "heldout"}
+    split_draw = {"training": 600, "selection": 0,
+                  "validation": 600, "heldout": 0}
+    for split, key in split_ids.items():
+        for family, generator in generators.items():
+            generated = generator(split=split_names[split],
+                                   draw=split_draw[split])
+            assert plan[key][family][0] == generated["world_id"]
     for family in FAMILIES:
         panels = [plan[key][family] for key in (
             "world_ids_by_family", "validation_world_ids_by_family",

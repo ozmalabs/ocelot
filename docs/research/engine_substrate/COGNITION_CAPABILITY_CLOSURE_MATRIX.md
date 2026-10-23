@@ -170,3 +170,6 @@ exposures and verified three-generation parent chains on training draws
 invention/full descendants, complete four-arm resource-matched development
 panel and held-out comparison are still missing. Capability dispositions
 remain unchanged.
+
+
+The P22 allocation audit corrected its training world IDs to match the generator's `train` namespace. All 1,600 allocation IDs and 1,600 seeds now verify across the four splits; this is an integrity correction and does not change any capability disposition.
