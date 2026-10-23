@@ -10,10 +10,33 @@ No L1–L7 level closes from the evidence below. “Failed” means the register
 | L4 Transfer | Faster target learning after source exposure than matched fresh and mismatched controls | **Failed** | P20 mapped-source minus fresh normalized AUC was −0.333 against +0.20; mismatched-source was 0.500, fresh 0.500, mapped 0.167. The transfer-benefit hypothesis is unsupported. See `COGNITION_LINEAR_P20_RESULTS.md`. |
 | L5 Invent for goals | Novel tool effects and improved total descriptions, with verified grounding | **Not established** | P14's finite commutator macro solved its one-call S4 panel, with four declared work units versus one for the held process. It does not establish broad tool invention or the required total-description improvement across independent goals. Human comparison is unavailable. |
 | L6 Acquire socially | Own-trial observation/instruction/demonstration benefit over reward-only at equal evidence opportunity | **Failed for registered advantage; mechanisms bounded** | P12's social advantage was 0 pp against ≥20 pp. P20 showed 200/200 observation, demonstration and instruction verification/execution and 200/200 reward-only abstention, but these are bounded mechanism outcomes and do not reverse P12's failed comparison or establish general social learning. |
-| L7 Specific beyond-human result | A separately registered human advantage or ≥3-generation approved graph-authored improvement trend | **Unavailable / not established** | No matched human source exists. P15's trend criterion was `NOT_ESTABLISHED` because of separation; P22 has not run a multi-generation independent-goal held-out evaluation. Approval events remain candidate-specific and do not imply unconstrained autonomy. |
+| L7 Specific beyond-human result | A separately registered human advantage or ≥3-generation approved graph-authored improvement trend | **Unavailable / not established** | No matched human source exists. P15's trend criterion was `NOT_ESTABLISHED` because of separation. P22 now has one development-only common-world ancestor/adopted-child control with scores 0/1, but no three-generation independent-goal held-out evaluation. Approval events remain candidate-specific and do not imply unconstrained autonomy. See [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md). |
 
 ## Input breadth and open consumers
 
 Evidence is restricted to declared generated permutation/process, D4 grid-corner, thermal-transition, latch, and bounded language/explanation adapters. The new P22 Loopover and D4 generators are development mechanisms only; they do not yet provide an approved multi-generation held-out comparison. External ARC/LS20 input remains unsupported without a registered ingestion, split, scoring and licensing path. Raw perception, irregular-time world streams, open-world causal/mechanism discovery, long-horizon motor skill acquisition, and broad language understanding lack the required native consumer plus held-out evidence. Graph presence or a passing mechanism fixture does not count as coverage.
 
 The next evidence needed is a complete P22 protocol with independent goal generation, generic non-actionable proposals, separately qualified native checkpoints, exact approval events for every newly promoted expression, common-world causal ablations, and fixed work ceilings. Until those gates and a valid held-out result pass, all seven levels remain open.
+
+## P22 candidate-specific action evidence update (2026-10-23)
+
+After exact user approval, D4 candidate `#752` and Loopover candidate `#5761`
+were each reconstructed from training-only worlds, adopted through the native
+approval rule, and executed once in the registered finite simulator. Both
+receipts verified; the raw candidate bindings, consumed approval IDs, receipt
+IDs and hashes are recorded in
+[`COGNITION_P22_V2_CANDIDATE_APPROVALS_20261023.md`](COGNITION_P22_V2_CANDIDATE_APPROVALS_20261023.md).
+This closes the single-action authorization check for those candidates. It
+does not provide three-generation lineages, matched four-arm outcomes,
+complete cumulative resource measurement, or held-out evidence. Further
+candidate adoptions, including later generations, remain separately gated.
+
+## P22 native checkpoint ablation update (2026-10-23)
+
+The strict checkpoint scorer resolves the process from its digest-bound native
+graph, and the development ablation compares an actual captured ancestor with
+its exact approved child on one shared training-derived control world. The
+ancestor scores 0 and the adopted child scores 1; the P22.03 verification
+command passes 27 tests. This is path-dependence evidence for that task only,
+not an independent-goal learning effect or capability closure. P22.E2/E3 and
+all L1–L7 dispositions remain unchanged.

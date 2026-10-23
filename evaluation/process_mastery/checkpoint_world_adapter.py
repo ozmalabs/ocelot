@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
+import math
 
 from evaluation.process_mastery.native_process_execution import (
     open_process_candidate_digest, params_digest,
@@ -13,7 +14,8 @@ from evaluation.process_mastery.independent_worlds import (
     generate_loopover_world, generate_loopover_world_v2,
 )
 from evaluation.process_mastery.p22_resource_accounting import (
-    compare_resource_snapshots, resource_snapshot_digest_valid,
+    compare_resource_snapshots, native_rule_work_digest_valid,
+    resource_snapshot_digest_valid,
     snapshot_native_resources,
 )
 
@@ -133,6 +135,7 @@ def score_unapproved_candidate_validation_panel(agent, candidate: int,
         "world_receipts_created": False, "candidate_id": str(candidate),
         "expression_digest": attrs["expression_digest"],
         "family": next(iter(families)), "split": "validation",
+        "world_ids": world_ids,
         "world_count": len(outcomes), "successes": sum(x["score"] for x in outcomes),
         "mean_score": sum(x["score"] for x in outcomes) / len(outcomes),
         "panel_digest": panel_digest, "outcomes": outcomes}
@@ -151,6 +154,129 @@ class CheckpointExpression:
     receipt_id: str | None = None
     cumulative_primitive_work: int | None = None
     resource_snapshot_json: str | None = None
+    # Complete graph state captured alongside the compact resource summary.
+    # The latter is sufficient for accounting, but cannot restore a learner's
+    # active portfolio or provenance graph for a later generation.
+    native_graph_snapshot_json: str | None = None
+
+
+def _native_graph_snapshot(agent) -> str:
+    native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+    if native is None:
+        raise TypeError("agent must expose a native substrate")
+    graph = native.graph_to_dict()
+    return json.dumps(graph, sort_keys=True, separators=(",", ":"), default=str)
+
+
+def _native_graph_snapshot_digest(snapshot_json: str | None) -> str | None:
+    if not isinstance(snapshot_json, str):
+        return None
+    try:
+        graph = json.loads(snapshot_json)
+    except (TypeError, ValueError):
+        return None
+    canonical = json.dumps(graph, sort_keys=True, separators=(",", ":"), default=str)
+    if canonical != snapshot_json:
+        return None
+    return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+def _native_graph_contains_expression(snapshot_json: str, expression_digest: str,
+                                     params: tuple[int, ...], generation: int) -> bool:
+    try:
+        graph = json.loads(snapshot_json)
+        nodes = graph["nodes"]
+    except (TypeError, ValueError, KeyError):
+        return False
+    expected_params = list(params)
+    for node in nodes:
+        if not isinstance(node, dict) or not isinstance(node.get("attrs"), dict):
+            continue
+        attrs = node["attrs"]
+        graph_params = attrs.get("params")
+        if isinstance(graph_params, dict) and set(graph_params) == {"__list__"}:
+            graph_params = graph_params["__list__"]
+        if node.get("type") == "ProcessSchema":
+            if (attrs.get("status") == "active"
+                    and attrs.get("source_digest") == expression_digest
+                    and graph_params == expected_params):
+                return True
+        if generation > 0 and node.get("type") == "OpenProcessCandidate":
+            if (attrs.get("status") == "adopted_candidate"
+                    and attrs.get("adoption_status") == "approved"
+                    and attrs.get("adopted_expression_digest") == expression_digest
+                    and graph_params == expected_params):
+                return True
+    return False
+
+
+def _checkpoint_graph_params(checkpoint: CheckpointExpression) -> tuple[int, ...]:
+    """Resolve the scored process from the checkpoint's immutable native graph.
+
+    ``CheckpointExpression.params`` is retained as a compact manifest field,
+    but it is not the source of truth for a strict evaluation. Generation zero
+    resolves an active ProcessSchema; descendants resolve their approved,
+    adopted candidate. A graph with no matching process, or one whose stored
+    process disagrees with the manifest, is not scoreable.
+    """
+    if checkpoint.native_graph_snapshot_json is None:
+        raise ValueError("checkpoint has no native graph process")
+    try:
+        graph = json.loads(checkpoint.native_graph_snapshot_json)
+        nodes = graph["nodes"]
+    except (TypeError, ValueError, KeyError) as exc:
+        raise ValueError("checkpoint native graph is malformed") from exc
+    matches = []
+    for node in nodes:
+        if not isinstance(node, dict) or not isinstance(node.get("attrs"), dict):
+            continue
+        kind, attrs = node.get("type"), node["attrs"]
+        if checkpoint.generation == 0 or checkpoint.receipt_id is None:
+            # Passive controls preserve the ancestor expression without an
+            # adoption receipt, even after advancing the checkpoint generation.
+            matches_expression = (kind == "ProcessSchema"
+                and attrs.get("status") == "active"
+                and attrs.get("source_digest") == checkpoint.expression_digest)
+        else:
+            matches_expression = (kind == "OpenProcessCandidate"
+                and attrs.get("status") == "adopted_candidate"
+                and attrs.get("adoption_status") == "approved"
+                and attrs.get("adopted_expression_digest") == checkpoint.expression_digest)
+        if not matches_expression:
+            continue
+        params = attrs.get("params")
+        if isinstance(params, dict) and set(params) == {"__list__"}:
+            params = params["__list__"]
+        if (isinstance(params, list)
+                and all(not isinstance(value, bool) and isinstance(value, int)
+                        for value in params)):
+            matches.append(tuple(params))
+    if not matches or any(params != tuple(checkpoint.params) for params in matches):
+        raise ValueError("checkpoint native graph process does not match its manifest")
+    return matches[0]
+
+
+def restore_native_checkpoint_graph(agent, checkpoint: CheckpointExpression) -> str:
+    """Restore a captured graph into a freshly booted agent and verify identity.
+
+    Seed/rule loading belongs to the normal agent boot path. This function
+    restores only the checkpointed native graph state, then checks an exact
+    canonical round trip before the caller resumes native execution.
+    """
+    if not _checkpoint_digest_valid(checkpoint):
+        raise ValueError("cannot restore an unattested native checkpoint")
+    if checkpoint.native_graph_snapshot_json is None:
+        raise ValueError("checkpoint is missing its immutable native graph snapshot")
+    native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+    if native is None:
+        raise TypeError("agent must expose a native substrate")
+    graph = json.loads(checkpoint.native_graph_snapshot_json)
+    native.graph_from_dict(graph)
+    restored = json.dumps(native.graph_to_dict(), sort_keys=True,
+                          separators=(",", ":"), default=str)
+    if restored != checkpoint.native_graph_snapshot_json:
+        raise ValueError("restored native checkpoint graph differs from its snapshot")
+    return _native_graph_snapshot_digest(restored)
 
 
 def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
@@ -166,6 +292,14 @@ def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
         return False
     if not resource_snapshot_digest_valid(resource_snapshot):
         return False
+    graph_snapshot_digest = _native_graph_snapshot_digest(
+        checkpoint.native_graph_snapshot_json)
+    if checkpoint.native_graph_snapshot_json is not None and graph_snapshot_digest is None:
+        return False
+    if (graph_snapshot_digest is not None and not _native_graph_contains_expression(
+            checkpoint.native_graph_snapshot_json, checkpoint.expression_digest,
+            checkpoint.params, checkpoint.generation)):
+        return False
     if checkpoint.generation == 0:
         payload = {"schema": "p22_native_checkpoint_v1",
             "checkpoint_id": checkpoint.checkpoint_id, "generation": 0,
@@ -174,7 +308,9 @@ def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
             "primitive_work": checkpoint.declared_primitive_work,
             "cumulative_primitive_work": checkpoint.cumulative_primitive_work,
             "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"]}
-    elif checkpoint.generation > 0 and checkpoint.approval_id and checkpoint.receipt_id:
+        if graph_snapshot_digest is not None:
+            payload["native_graph_snapshot_sha256"] = graph_snapshot_digest
+    elif checkpoint.generation > 0:
         payload = {"schema": "p22_native_checkpoint_v1",
             "checkpoint_id": checkpoint.checkpoint_id,
             "parent_digest": checkpoint.parent_digest,
@@ -183,9 +319,14 @@ def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
             "params": list(checkpoint.params),
             "primitive_work": checkpoint.declared_primitive_work,
             "cumulative_primitive_work": checkpoint.cumulative_primitive_work,
-            "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"],
-            "approval_id": checkpoint.approval_id,
-            "receipt_id": checkpoint.receipt_id}
+            "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"]}
+        if graph_snapshot_digest is not None:
+            payload["native_graph_snapshot_sha256"] = graph_snapshot_digest
+        if checkpoint.approval_id and checkpoint.receipt_id:
+            payload["approval_id"] = checkpoint.approval_id
+            payload["receipt_id"] = checkpoint.receipt_id
+        elif checkpoint.approval_id or checkpoint.receipt_id:
+            return False
     else:
         return False
     expected = hashlib.sha256(json.dumps(payload, sort_keys=True,
@@ -193,10 +334,55 @@ def _checkpoint_digest_valid(checkpoint: CheckpointExpression) -> bool:
     return checkpoint.checkpoint_digest == expected
 
 
+def _validate_descendant_runtime_counters(parent: CheckpointExpression,
+                                          runtime_counters: dict | None,
+                                          native_rule_work: dict | None = None) -> None:
+    """Prevent a descendant snapshot from dropping/regressing cumulative work."""
+    if not parent.resource_snapshot_json:
+        return
+    parent_snapshot = json.loads(parent.resource_snapshot_json)
+    previous = parent_snapshot.get("runtime_counters")
+    if previous is not None:
+        if not isinstance(runtime_counters, dict):
+            raise ValueError("descendant checkpoint must retain cumulative runtime counters")
+        for key in ("native_rule_steps", "native_model_calls",
+                    "search_attempts_reserved", "process_peak_rss_bytes"):
+            if key not in previous:
+                continue
+            value = runtime_counters.get(key)
+            if (isinstance(value, bool) or not isinstance(value, int)
+                    or value < previous[key]):
+                raise ValueError(f"descendant checkpoint runtime counter regressed: {key}")
+        if "wall_time_seconds" in previous:
+            value = runtime_counters.get("wall_time_seconds")
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not math.isfinite(value)
+                    or value < previous["wall_time_seconds"]):
+                raise ValueError("descendant checkpoint runtime counter regressed: wall_time_seconds")
+    previous_rule_work = parent_snapshot.get("native_rule_work")
+    if previous_rule_work is not None:
+        if native_rule_work is None or not native_rule_work_digest_valid(native_rule_work):
+            raise ValueError("descendant checkpoint must retain cumulative native rule work")
+        prior_totals = previous_rule_work.get("totals_by_metric", {})
+        current_totals = native_rule_work.get("totals_by_metric", {})
+        for key, prior in prior_totals.items():
+            current = current_totals.get(key)
+            if (isinstance(current, bool) or not isinstance(current, int)
+                    or current < prior):
+                raise ValueError(f"descendant checkpoint native rule work regressed: {key}")
+
+
 def capture_held_process_checkpoint(agent, process_schema: int, *,
                                     checkpoint_id: str,
-                                    declared_primitive_work: int = 0) -> CheckpointExpression:
-    """Create generation-zero parent evidence from an active native process source."""
+                                    declared_primitive_work: int = 0,
+                                    runtime_counters: dict | None = None,
+                                    native_rule_work: dict | None = None) -> CheckpointExpression:
+    """Create generation-zero evidence and bind any measured runtime counters.
+
+    Callers that track cumulative native work should pass those measured
+    counters here and to every descendant capture. The immutable resource
+    snapshot then carries the counters into checkpoint scoring/comparison.
+    """
     native = getattr(agent, "inner", None) or getattr(agent, "native", None)
     store = getattr(agent, "s", None)
     if native is None or store is None:
@@ -217,24 +403,77 @@ def capture_held_process_checkpoint(agent, process_schema: int, *,
             or attrs.get("source_digest") != params_digest(params)):
         raise ValueError("ancestor process is inactive or has an invalid source digest")
     work = declared_primitive_work
-    resource_snapshot = snapshot_native_resources(agent)
+    resource_snapshot = snapshot_native_resources(agent,
+        runtime_counters=runtime_counters, native_rule_work=native_rule_work)
     resource_json = json.dumps(resource_snapshot, sort_keys=True,
                                separators=(",", ":"))
+    graph_json = _native_graph_snapshot(agent)
     payload = {"schema": "p22_native_checkpoint_v1", "checkpoint_id": checkpoint_id,
         "generation": 0, "source_digest": attrs["source_digest"],
         "params": params, "primitive_work": work,
         "cumulative_primitive_work": work,
-        "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"]}
+        "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"],
+        "native_graph_snapshot_sha256": _native_graph_snapshot_digest(graph_json)}
     digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
         separators=(",", ":")).encode()).hexdigest()
     return CheckpointExpression(checkpoint_id, "", attrs["source_digest"],
         tuple(params), work, 0, digest,
-        cumulative_primitive_work=work, resource_snapshot_json=resource_json)
+        cumulative_primitive_work=work, resource_snapshot_json=resource_json,
+        native_graph_snapshot_json=graph_json)
+
+
+def capture_passive_checkpoint(agent, *, checkpoint_id: str,
+                               parent: CheckpointExpression, generation: int,
+                               declared_primitive_work: int,
+                               runtime_counters: dict | None = None,
+                               native_rule_work: dict | None = None) -> CheckpointExpression:
+    """Record a no-adoption descendant while preserving its exact expression.
+
+    This supports unchanged and adaptive-only evaluation arms. It creates no
+    approval, candidate adoption, or world-action receipt.
+    """
+    if (not checkpoint_id or not _checkpoint_digest_valid(parent)
+            or generation < 1 or generation != parent.generation + 1):
+        raise ValueError("passive checkpoint must extend its frozen parent by one generation")
+    if (isinstance(declared_primitive_work, bool)
+            or not isinstance(declared_primitive_work, int)
+            or declared_primitive_work < 0):
+        raise ValueError("checkpoint primitive work must be a nonnegative integer")
+    native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+    store = getattr(agent, "s", None)
+    if native is None or store is None:
+        raise TypeError("agent must expose native substrate and graph store")
+    work = declared_primitive_work
+    cumulative_work = parent.cumulative_primitive_work + work
+    _validate_descendant_runtime_counters(parent, runtime_counters,
+                                          native_rule_work)
+    resource_snapshot = snapshot_native_resources(agent,
+        runtime_counters=runtime_counters, native_rule_work=native_rule_work)
+    resource_json = json.dumps(resource_snapshot, sort_keys=True,
+                               separators=(",", ":"))
+    graph_json = _native_graph_snapshot(agent)
+    params = list(parent.params)
+    payload = {"schema": "p22_native_checkpoint_v1",
+        "checkpoint_id": checkpoint_id, "parent_digest": parent.checkpoint_digest,
+        "generation": int(generation), "expression_digest": parent.expression_digest,
+        "params": params, "primitive_work": work,
+        "cumulative_primitive_work": cumulative_work,
+        "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"],
+        "native_graph_snapshot_sha256": _native_graph_snapshot_digest(graph_json)}
+    frozen_digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
+        separators=(",", ":")).encode()).hexdigest()
+    return CheckpointExpression(checkpoint_id, parent.checkpoint_digest,
+        parent.expression_digest, parent.params, work, int(generation),
+        frozen_digest, cumulative_primitive_work=cumulative_work,
+        resource_snapshot_json=resource_json,
+        native_graph_snapshot_json=graph_json)
 
 
 def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
                                parent: CheckpointExpression, generation: int,
-                               declared_primitive_work: int) -> CheckpointExpression:
+                               declared_primitive_work: int,
+                               runtime_counters: dict | None = None,
+                               native_rule_work: dict | None = None) -> CheckpointExpression:
     """Freeze an adopted candidate only after its exact approval and world receipt.
 
     This captures graph-authored expression provenance into an immutable value;
@@ -280,20 +519,25 @@ def capture_adopted_checkpoint(agent, candidate: int, *, checkpoint_id: str,
         raise ValueError("checkpoint primitive work must be a nonnegative integer")
     work = declared_primitive_work
     cumulative_work = parent.cumulative_primitive_work + work
-    resource_snapshot = snapshot_native_resources(agent)
+    _validate_descendant_runtime_counters(parent, runtime_counters,
+                                          native_rule_work)
+    resource_snapshot = snapshot_native_resources(agent,
+        runtime_counters=runtime_counters, native_rule_work=native_rule_work)
     resource_json = json.dumps(resource_snapshot, sort_keys=True,
                                separators=(",", ":"))
+    graph_json = _native_graph_snapshot(agent)
     payload = {"schema": "p22_native_checkpoint_v1", "checkpoint_id": checkpoint_id,
         "parent_digest": parent.checkpoint_digest, "generation": int(generation),
         "expression_digest": current_digest, "params": params,
         "primitive_work": work, "cumulative_primitive_work": cumulative_work,
         "resource_snapshot_sha256": resource_snapshot["snapshot_sha256"],
+        "native_graph_snapshot_sha256": _native_graph_snapshot_digest(graph_json),
         "approval_id": str(approvals[0]), "receipt_id": str(receipts[0])}
     frozen_digest = hashlib.sha256(json.dumps(payload, sort_keys=True,
         separators=(",", ":")).encode()).hexdigest()
     return CheckpointExpression(checkpoint_id, parent.checkpoint_digest, current_digest,
         tuple(params), work, int(generation), frozen_digest,
-        str(approvals[0]), str(receipts[0]), cumulative_work, resource_json)
+        str(approvals[0]), str(receipts[0]), cumulative_work, resource_json, graph_json)
 
 
 class CheckpointWorldAdapter:
@@ -339,6 +583,9 @@ class CheckpointWorldAdapter:
         if (not self._checkpoint_digest_valid(checkpoint)
                 and not self.allow_unattested_fixtures):
             raise ValueError("checkpoint is not an intact attested native snapshot")
+        if (checkpoint.native_graph_snapshot_json is None
+                and not self.allow_unattested_fixtures):
+            raise ValueError("checkpoint is missing its immutable native graph snapshot")
         if cumulative_work > self.primitive_work_ceiling:
             return {"world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                     "status": "work_denied", "score": None,
@@ -346,14 +593,21 @@ class CheckpointWorldAdapter:
                     "cumulative_primitive_work": cumulative_work,
                     "resource_snapshot": (json.loads(checkpoint.resource_snapshot_json)
                         if checkpoint.resource_snapshot_json else None)}
+        execution_params = (tuple(checkpoint.params)
+            if checkpoint.native_graph_snapshot_json is None
+            and self.allow_unattested_fixtures
+            else _checkpoint_graph_params(checkpoint))
         result = self.native.evaluate(
             {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
              "state": {"type": "Var", "name": "state"}},
-            {"p": list(checkpoint.params), "state": list(initial_state)})
+            {"p": list(execution_params), "state": list(initial_state)})
         return {"world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                 "parent_digest": checkpoint.parent_digest,
                 "expression_digest": checkpoint.expression_digest,
                 "status": "scored", "score": int(result == goal_state),
+                "execution_source": ("native_checkpoint_graph"
+                    if checkpoint.native_graph_snapshot_json is not None
+                    else "development_fixture_params"),
                 "primitive_work": work,
                 "cumulative_primitive_work": cumulative_work,
                 "resource_snapshot": (json.loads(checkpoint.resource_snapshot_json)

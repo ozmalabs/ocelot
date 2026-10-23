@@ -18,7 +18,9 @@
 //! The raster RESOLUTION is the only number a hole-counter needs, and it is NOT chosen here.
 //! It falls out of the ink's own sampling:
 //!
-//!     cell = (total within-stroke arc length) / (total number of inter-sample steps)
+//! ```text
+//! cell = (total within-stroke arc length) / (total number of inter-sample steps)
+//! ```
 //!
 //! i.e. the MEAN INTER-SAMPLE ARC STEP — the resolution at which the pen was actually recorded.
 //! This is the frame/continuum invariant's own identifiability guard applied verbatim (CLAUDE.md

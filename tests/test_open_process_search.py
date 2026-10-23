@@ -246,6 +246,9 @@ def test_each_search_request_obeys_its_own_attempt_ceiling():
     assert all(agent.attrs(request)["max_attempts"] == 3.0 for request in requests)
     assert all(len(agent.native.neighbours(request, "has_search_attempt")) <= 3
                for request in requests)
+    assert all(agent.attrs(request)["attempts_reserved"] ==
+               float(len(agent.native.neighbours(request, "has_search_attempt")))
+               for request in requests)
     assert all(len(agent.native.neighbours(request, "has_candidate")) <= 1
                for request in requests)
 
@@ -253,6 +256,11 @@ def test_each_search_request_obeys_its_own_attempt_ceiling():
 def test_global_attempt_ceiling_terminalizes_funded_requests():
     agent, _ = _agent(attempts=1,
         held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    compose_rule = next(rule for rule in agent.native.export_rules()
+                        if rule["name"] == "ops_record_compose_attempt")
+    assert compose_rule["effects"][0][0] == "add_node_with_counters"
+    assert compose_rule["effects"][0][4:6] == ["pol", "attempts_reserved"]
+    assert compose_rule["effects"][0][7:9] == ["request", "attempts_reserved"]
     for key, goal in (("global-a", [2, 0, 1, 3]),
                       ("global-b", [3, 2, 1, 0])):
         task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
@@ -262,6 +270,14 @@ def test_global_attempt_ceiling_terminalizes_funded_requests():
     _tick(agent)
     requests = agent.nodes("OpenProcessSearchRequest")
     assert len(requests) == 2
+    attempts = agent.nodes("OpenProcessSearchAttempt")
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    assert len(attempts) == 1
+    assert agent.attrs(policy)["attempts_reserved"] == float(len(attempts))
+    assert sum(agent.attrs(request)["attempts_reserved"] for request in requests) == 1.0
+    assert all(agent.attrs(request)["attempts_reserved"] ==
+               float(len(agent.native.neighbours(request, "has_search_attempt")))
+               for request in requests)
     assert all(agent.attrs(request)["status"] == "global_attempt_ceiling"
                for request in requests)
     assert all(agent.attrs(request)["global_ceiling_recorded"] is True
@@ -271,3 +287,18 @@ def test_global_attempt_ceiling_terminalizes_funded_requests():
     _tick(agent)
     assert {request: len(agent.native.neighbours(request, "has_search_attempt"))
             for request in requests} == before
+    checkpoint = agent.native.graph_to_dict()
+    restored, _ = _agent(attempts=1,
+        held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    restored.native.graph_from_dict(checkpoint)
+    restored_policy = restored.nodes("OpenProcessSearchPolicy")[0]
+    assert restored.attrs(restored_policy)["attempts_reserved"] == 1.0
+    assert len(restored.nodes("OpenProcessSearchAttempt")) == 1
+    restored_requests = restored.nodes("OpenProcessSearchRequest")
+    assert sum(restored.attrs(request)["attempts_reserved"]
+               for request in restored_requests) == 1.0
+    assert all(restored.attrs(request)["attempts_reserved"] ==
+               float(len(restored.native.neighbours(request, "has_search_attempt")))
+               for request in restored_requests)
+    _tick(restored)
+    assert len(restored.nodes("OpenProcessSearchAttempt")) == 1

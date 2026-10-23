@@ -1,7 +1,8 @@
 import pytest
 
 from evaluation.process_mastery.improvement_estimand import (
-    paired_generation_deltas, summarize_family, validate_efficiency_match,
+    holm_adjust, paired_generation_deltas, summarize_family,
+    summarize_families, validate_efficiency_match,
 )
 
 
@@ -71,3 +72,55 @@ def test_missing_pair_or_checkpoint_world_invalidates_estimate():
     rows = [row for row in rows if not (row["generation"] == 2 and row["world_id"] == "w3")]
     result = summarize_family(rows, family="perm", bootstrap_draws=50)
     assert result == {"status": "NOT_ESTABLISHED", "reason": "world_cluster_mismatch"}
+
+
+def test_holm_adjusts_all_named_tests_monotonically():
+    adjusted = holm_adjust({"a": 0.01, "b": 0.04, "c": 0.03})
+    assert adjusted == {"a": pytest.approx(0.03),
+                        "b": pytest.approx(0.06),
+                        "c": pytest.approx(0.06)}
+
+
+def test_family_summary_requires_practical_gain_and_phase_wide_holm_evidence():
+    rows = _rows([(1, 1), (1, 1), (1, 1)])
+    other = [dict(row, family="loopover") for row in rows]
+    result = summarize_families(rows + other, families=("perm", "loopover"),
+        bootstrap_draws=200, seed=9)
+    assert result["tests_in_holm_family"] == 4
+    for family_result in result["families"].values():
+        assert family_result["paired_gain_by_generation"] == [0, 0, 0]
+        assert family_result["holm_adjusted_p"] == {
+            "final_gain": 1.0, "generation_slope": 1.0}
+        assert not family_result["registered_criteria"]["passed"]
+
+
+def test_positive_registered_trend_passes_after_holm_adjustment():
+    rows = _rows([(0.6, 0.4), (0.7, 0.4), (0.9, 0.4)])
+    rows += [dict(row, family="loopover") for row in rows]
+    result = summarize_families(rows, families=("perm", "loopover"), seed=3)
+    assert result["tests_in_holm_family"] == 4
+    for family_result in result["families"].values():
+        assert family_result["final_paired_gain"] == pytest.approx(0.5)
+        assert family_result["generation_slope"] >= 0.05
+        assert family_result["registered_criteria"]["passed"]
+
+
+def test_invalid_bootstrap_and_holm_inputs_fail_closed():
+    with pytest.raises(ValueError, match="bootstrap_draws"):
+        summarize_family(_rows([(0.5, 0.5)] * 3), family="perm",
+                         bootstrap_draws=0)
+    with pytest.raises(ValueError, match="Holm p-values"):
+        holm_adjust({"unsafe": float("nan")})
+
+
+def test_family_summary_requires_exact_three_generation_allocation():
+    rows = _rows([(0.5, 0.5), (0.6, 0.5), (0.7, 0.5)])
+    two_generations = [row for row in rows if row["generation"] < 3]
+    assert summarize_family(two_generations, family="perm")["reason"] == (
+        "insufficient_generations")
+    wrong_generation = [dict(row, generation=(4 if row["generation"] == 3 else
+                                                row["generation"])) for row in rows]
+    assert summarize_family(wrong_generation, family="perm")["reason"] == (
+        "generation_allocation_mismatch")
+    with pytest.raises(ValueError, match="cannot be weakened"):
+        summarize_families(rows, families=("perm",), minimum_final_gain=0.0)

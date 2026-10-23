@@ -39,6 +39,7 @@ def open_process_candidate_digest(agent, candidate) -> str:
     # Walk the complete attempt ancestry so a digest binds every held process
     # source used by the tree, not only the last operand attached to the leaf.
     parent_nodes = {}
+    parent_candidates = {}
     pending, visited = list(attempts), set()
     while pending:
         current = pending.pop()
@@ -47,6 +48,8 @@ def open_process_candidate_digest(agent, candidate) -> str:
         visited.add(current)
         for node in native.neighbours(current, "uses_parent_process"):
             parent_nodes[node] = _attrs(agent, node)
+        for node in native.neighbours(current, "extends_candidate"):
+            parent_candidates[node] = _attrs(agent, node)
         pending.extend(native.neighbours(current, "extends_search_attempt"))
     parents = sorted(({
         "name": parent.get("name"),
@@ -68,6 +71,26 @@ def open_process_candidate_digest(agent, candidate) -> str:
         "model_epoch": attrs.get("model_epoch"),
         "frame_epoch": attrs.get("frame_epoch"), "parents": parents,
     }
+    if parent_candidates:
+        candidate_sources = []
+        for parent_id, parent in parent_candidates.items():
+            receipts = native.neighbours(parent_id, "has_expression_digest_receipt")
+            if (parent.get("expression_digest_status") != "verified"
+                    or len(receipts) != 1
+                    or _attrs(agent, receipts[0]).get("status") != "verified"
+                    or _attrs(agent, receipts[0]).get("expression_digest")
+                       != parent.get("expression_digest")):
+                raise ValueError("parent candidate lacks one matching digest receipt")
+            candidate_sources.append({
+                "expression_digest": parent.get("expression_digest"),
+                "domain": parent.get("domain"),
+                "source_epoch": parent.get("source_epoch"),
+                "model_epoch": parent.get("model_epoch"),
+                "frame_epoch": parent.get("frame_epoch"),
+            })
+        payload["parent_candidates"] = sorted(candidate_sources,
+            key=lambda parent: json.dumps(parent, sort_keys=True,
+                                          separators=(",", ":")))
     return params_digest(payload)
 
 

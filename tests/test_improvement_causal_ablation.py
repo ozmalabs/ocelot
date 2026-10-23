@@ -1,23 +1,49 @@
+"""Development-only dependence controls on native P22 checkpoints."""
 from evaluation.process_mastery.checkpoint_world_adapter import (
-    CheckpointExpression, CheckpointWorldAdapter,
+    CheckpointWorldAdapter, capture_adopted_checkpoint,
+    capture_held_process_checkpoint,
 )
-from evaluation.process_mastery.harness import Agent
-from tests.test_open_process_search import _compose
+from evaluation.process_mastery.native_process_execution import (
+    attest_open_process_candidate, execute_open_process_candidate,
+)
+from tests.test_open_process_adoption import (
+    _agent, _approve, _candidate, _tick,
+)
+from tests.test_open_process_search import _apply
 
 
 def test_component_ablation_changes_claimed_path():
-    agent = Agent(track_i=False)
-    adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8,
-                                     allow_unattested_fixtures=True)
-    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
-    full = CheckpointExpression("full", "ancestor", "full-expression",
-                                tuple(_compose(agent, left, right)), 2)
-    ablated = CheckpointExpression("component-ablated", "ancestor", "left-only",
-                                   tuple(left), 2)
-    world = {"world_id": "causal-control", "initial_state": [0, 1, 2, 3],
-             "goal_state": [1, 2, 0, 3]}
-    full_result = adapter.score(full, **world)
-    ablated_result = adapter.score(ablated, **world)
-    assert full_result["score"] == 1
-    assert ablated_result["score"] == 0
-    assert full_result["expression_digest"] != ablated_result["expression_digest"]
+    """Removing the learned candidate restores ancestor behavior on one control."""
+    agent = _agent()
+    try:
+        candidate = _candidate(agent)
+        digest = attest_open_process_candidate(agent, candidate)
+        parent = capture_held_process_checkpoint(agent, agent.schemas("search")[0],
+            checkpoint_id="ablation-native-ancestor")
+        _approve(agent, candidate)
+        _tick(agent)
+        attrs = agent.attrs(candidate)
+        state = list(attrs["guard_state"])
+        predicted = _apply(agent, attrs["params"], state)
+        execution = execute_open_process_candidate(agent, candidate, state=state,
+            authorize=lambda proposal: proposal["expression_digest"] == digest,
+            world_transition=lambda action: {"observed_state": predicted})
+        assert execution["status"] == "COMPLETED"
+        learned = capture_adopted_checkpoint(agent, candidate,
+            checkpoint_id="ablation-native-learned", parent=parent, generation=1,
+            declared_primitive_work=1)
+
+        adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8)
+        world = {"world_id": "derived-training-control", "initial_state": state,
+                 "goal_state": predicted}
+        ancestor = adapter.score(parent, **world)
+        with_candidate = adapter.score(learned, **world)
+
+        assert ancestor["execution_source"] == "native_checkpoint_graph"
+        assert with_candidate["execution_source"] == "native_checkpoint_graph"
+        assert (ancestor["score"], with_candidate["score"]) == (0, 1)
+        assert ancestor["expression_digest"] != with_candidate["expression_digest"]
+    finally:
+        close = getattr(agent.s, "close", None)
+        if callable(close):
+            close()

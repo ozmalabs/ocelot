@@ -6,12 +6,34 @@ from evaluation.process_mastery.analyze_linear_p20_v1 import analyze
 from evaluation.process_mastery.linear_p20_v1 import allocation, run
 
 
+def _synthetic_attested_payload(payload):
+    """Give analyzer unit tests a positive-control provenance fixture.
+
+    This changes only an in-memory test payload. It does not attest the loaded
+    runtime or create evaluation evidence.
+    """
+    runtime = payload["provenance"]["runtime_attestation"]
+    provenance = payload["provenance"]
+    runtime.update({"status": "ATTESTED", "native_symbols_bound": True,
+        "build_sources_match": True,
+        "wrapper_sha256": provenance["wrapper_sha256"],
+        "loaded_extension_sha256": provenance["loaded_extension_sha256"],
+        "build_receipt_sha256": provenance["build_receipt_sha256"],
+        "issues": []})
+    return payload
+
+
 def test_development_runner_includes_target_social_and_structural_panels():
     result = run("development", target_streams_per_pair=1,
                  social_streams_per_arm=1, social_controls_per_kind=1)
     assert result["status"] == "development_only"
     assert result["heldout_accessed"] is False
-    assert result["provenance"]["runtime_attestation"]["status"] == "ATTESTED"
+    attestation_status = result["provenance"]["runtime_attestation"]["status"]
+    assert attestation_status in {"ATTESTED", "DEVELOPMENT_ONLY"}
+    if attestation_status != "ATTESTED":
+        rejected = analyze(result)
+        assert rejected["status"] == "FAIL"
+        assert "runtime_provenance_unattested" in rejected["failures"]
     assert result["allocation_sha256"]
     assert result["allocation_plan"]["primary"]["minimum_gain"] == 0.20
     assert result["target_learning"]["domain_pairs"] == [
@@ -52,8 +74,9 @@ def test_heldout_allocation_is_fixed_and_disjoint_from_development():
 
 
 def test_development_analyzer_rejects_missing_arm_and_false_control():
-    payload = run("development", target_streams_per_pair=1,
-                  social_streams_per_arm=1, social_controls_per_kind=1)
+    payload = _synthetic_attested_payload(run("development",
+        target_streams_per_pair=1, social_streams_per_arm=1,
+        social_controls_per_kind=1))
     result = analyze(payload)
     assert result["status"] == "PASS"
     assert result["primary_status"] == "NOT_ESTIMATED"

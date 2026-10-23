@@ -1,6 +1,12 @@
+import json
+import hashlib
+
+import pytest
+
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointExpression, CheckpointWorldAdapter, capture_adopted_checkpoint,
-    capture_held_process_checkpoint,
+    capture_held_process_checkpoint, capture_passive_checkpoint,
+    restore_native_checkpoint_graph,
 )
 from evaluation.process_mastery.native_process_execution import (
     attest_open_process_candidate, execute_open_process_candidate,
@@ -12,6 +18,16 @@ from evaluation.process_mastery.independent_worlds import (
 from evaluation.process_mastery.harness import Agent
 from tests.test_open_process_search import _compose
 from tests.test_open_process_adoption import _agent as _adoption_agent, _approve, _candidate, _tick
+
+
+def _native_rule_work(term_evaluations):
+    value = {"schema": "p22_native_rule_work_v1", "store_instance_id": 1,
+        "rules": [], "rule_identity_coverage": "COMPLETE",
+        "unresolved_rule_indices": [],
+        "totals_by_metric": {"term_evaluations": term_evaluations}}
+    value["snapshot_sha256"] = hashlib.sha256(json.dumps(value,
+        sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    return value
 
 
 def _adapter():
@@ -261,7 +277,10 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     agent = _adoption_agent()
     candidate = _candidate(agent)
     parent = capture_held_process_checkpoint(agent, agent.schemas("search")[0],
-        checkpoint_id="held-ancestor")
+        checkpoint_id="held-ancestor",
+        runtime_counters={"native_rule_steps": 12, "native_model_calls": 0,
+                          "process_peak_rss_bytes": 64_000_000},
+        native_rule_work=_native_rule_work(10))
     try:
         capture_adopted_checkpoint(agent, 999999, checkpoint_id="invalid-generation",
             parent=parent, generation=2, declared_primitive_work=2)
@@ -284,11 +303,49 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     assert result["status"] == "COMPLETED"
     checkpoint = capture_adopted_checkpoint(agent, candidate,
         checkpoint_id="generation-1", parent=parent,
-        generation=1, declared_primitive_work=2)
+        generation=1, declared_primitive_work=2,
+        runtime_counters={"native_rule_steps": 48, "native_model_calls": 0,
+                          "process_peak_rss_bytes": 65_000_000},
+        native_rule_work=_native_rule_work(20))
     assert checkpoint.generation == 1
     assert checkpoint.parent_digest == parent.checkpoint_digest
     assert checkpoint.approval_id is not None and checkpoint.receipt_id is not None
     assert checkpoint.resource_snapshot_json is not None
+    graph_adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=8)
+    common_world = {"world_id": "native-checkpoint-causal-control",
+        "initial_state": state, "goal_state": predicted}
+    ancestor_outcome = graph_adapter.score(parent, **common_world)
+    learned_outcome = graph_adapter.score(checkpoint, **common_world)
+    assert ancestor_outcome["execution_source"] == "native_checkpoint_graph"
+    assert learned_outcome["execution_source"] == "native_checkpoint_graph"
+    assert (ancestor_outcome["score"], learned_outcome["score"]) == (0, 1)
+    checkpoint_resources = json.loads(checkpoint.resource_snapshot_json)
+    assert checkpoint_resources["runtime_counters"] == {
+        "native_rule_steps": 48, "native_model_calls": 0,
+        "process_peak_rss_bytes": 65_000_000}
+    assert checkpoint_resources["native_rule_work"]["totals_by_metric"][
+        "term_evaluations"] == 20
+    try:
+        capture_adopted_checkpoint(agent, candidate,
+            checkpoint_id="generation-1-regressed", parent=parent,
+            generation=1, declared_primitive_work=2,
+            runtime_counters={"native_rule_steps": 11, "native_model_calls": 0,
+                              "process_peak_rss_bytes": 65_000_000})
+    except ValueError as exc:
+        assert "runtime counter regressed" in str(exc)
+    else:
+        raise AssertionError("descendant checkpoint accepted regressed runtime work")
+    try:
+        capture_adopted_checkpoint(agent, candidate,
+            checkpoint_id="generation-1-rule-work-regressed", parent=parent,
+            generation=1, declared_primitive_work=2,
+            runtime_counters={"native_rule_steps": 48, "native_model_calls": 0,
+                              "process_peak_rss_bytes": 65_000_000},
+            native_rule_work=_native_rule_work(9))
+    except ValueError as exc:
+        assert "native rule work regressed" in str(exc)
+    else:
+        raise AssertionError("descendant checkpoint accepted regressed native rule work")
     before = checkpoint.checkpoint_digest
     original_params = checkpoint.params
     changed = list(agent.attrs(candidate)["params"])
@@ -300,6 +357,8 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
     world = {"world_id": "frozen", "initial_state": state, "goal_state": predicted}
     scored = strict_adapter.score(checkpoint, **world)
     assert scored["status"] == "scored"
+    assert scored["execution_source"] == "native_checkpoint_graph"
+    assert scored["result_state"] == predicted
     assert scored["resource_snapshot"]["snapshot_sha256"]
     tampered = CheckpointExpression(checkpoint.checkpoint_id, checkpoint.parent_digest,
         checkpoint.expression_digest, tuple(changed), checkpoint.declared_primitive_work,
@@ -330,3 +389,82 @@ def test_checkpoint_capture_requires_consumed_exact_approval_and_receipt():
         assert "expression" in str(exc)
     else:
         raise AssertionError("mutated candidate was captured as an approved checkpoint")
+
+
+def test_passive_control_checkpoint_advances_without_adoption_evidence():
+    agent = _adoption_agent()
+    try:
+        agent.add_domain("search", "permutation", [[0, 1, 2, 3]],
+                         {"p": [1, 0, 2, 3]})
+        parent = capture_held_process_checkpoint(agent,
+            agent.schemas("search")[0], checkpoint_id="passive-root",
+            runtime_counters={"native_rule_steps": 10, "native_model_calls": 0},
+            native_rule_work=_native_rule_work(10))
+        child = capture_passive_checkpoint(agent, checkpoint_id="passive-g1",
+            parent=parent, generation=1, declared_primitive_work=0,
+            runtime_counters={"native_rule_steps": 12, "native_model_calls": 0},
+            native_rule_work=_native_rule_work(12))
+        assert child.parent_digest == parent.checkpoint_digest
+        assert child.generation == 1
+        assert child.expression_digest == parent.expression_digest
+        assert child.params == parent.params
+        assert child.approval_id is None and child.receipt_id is None
+        assert CheckpointWorldAdapter._checkpoint_digest_valid(child)
+        child_snapshot = json.loads(child.resource_snapshot_json)
+        assert child_snapshot["runtime_counters"]["native_rule_steps"] == 12
+        assert child_snapshot["native_rule_work"]["totals_by_metric"][
+            "term_evaluations"] == 12
+        adapter = CheckpointWorldAdapter(agent.native, primitive_work_ceiling=10)
+        result = adapter.score(child, world_id="passive-control",
+            initial_state=list(range(len(child.params))),
+            goal_state=list(range(len(child.params))))
+        assert result["status"] == "scored"
+        with pytest.raises(ValueError, match="runtime counter regressed"):
+            capture_passive_checkpoint(agent, checkpoint_id="passive-g2-runtime-regressed",
+                parent=child, generation=2, declared_primitive_work=0,
+                runtime_counters={"native_rule_steps": 11, "native_model_calls": 0},
+                native_rule_work=_native_rule_work(13))
+        with pytest.raises(ValueError, match="native rule work regressed"):
+            capture_passive_checkpoint(agent, checkpoint_id="passive-g2-work-regressed",
+                parent=child, generation=2, declared_primitive_work=0,
+                runtime_counters={"native_rule_steps": 13, "native_model_calls": 0},
+                native_rule_work=_native_rule_work(11))
+        try:
+            capture_passive_checkpoint(agent, checkpoint_id="passive-g3",
+                parent=child, generation=3, declared_primitive_work=0)
+        except ValueError as exc:
+            assert "one generation" in str(exc)
+        else:
+            raise AssertionError("passive checkpoint skipped a generation")
+    finally:
+        del agent
+
+
+def test_checkpoint_captures_and_restores_exact_native_graph_snapshot():
+    source = _adoption_agent()
+    restored = _adoption_agent()
+    try:
+        source.add_domain("snapshot", "permutation", [[0, 1, 2, 3]],
+                          {"swap": [1, 0, 2, 3]})
+        checkpoint = capture_held_process_checkpoint(source,
+            source.schemas("snapshot")[0], checkpoint_id="graph-snapshot-root")
+        frozen_graph = checkpoint.native_graph_snapshot_json
+        assert frozen_graph is not None
+        assert json.loads(frozen_graph) == source.native.graph_to_dict()
+        assert CheckpointWorldAdapter._checkpoint_digest_valid(checkpoint)
+
+        source.s.add_node("PostCheckpointMutation", {"value": 1.0})
+        assert checkpoint.native_graph_snapshot_json == frozen_graph
+        digest = restore_native_checkpoint_graph(restored, checkpoint)
+        assert restored.native.graph_to_dict() == json.loads(frozen_graph)
+        assert digest == hashlib.sha256(frozen_graph.encode()).hexdigest()
+
+        tampered = CheckpointExpression(**(
+            checkpoint.__dict__ | {"native_graph_snapshot_json": frozen_graph + " "}))
+        with pytest.raises(ValueError, match="unattested"):
+            restore_native_checkpoint_graph(restored, tampered)
+    finally:
+        for agent in (source, restored):
+            close = getattr(agent.s, "close", None)
+            if callable(close):
+                close()

@@ -13,7 +13,7 @@ if str(ROOT / "scripts") not in sys.path:
 from track_i_seed_lib import (  # noqa: E402
     A, And, Append, Argmin, Count, Eq, Exists, Filter, Gt, IfThenElse, In, L, Lt, N, Not, OFFLINE_AREA,
     ONLINE_AREA, PApply, PCompose, PFingerprint, PInverse, PPower, Plus, T, Times,
-    StringConcat, V, Vec, is_none, not_none, policy_on, productions, rule,
+    StringConcat, V, Vec, Or, is_none, not_none, policy_on, productions, rule,
 )
 
 SEED_ID = "open_process_search"
@@ -129,7 +129,7 @@ def _expression_rule(operator, order, *, reverse=False):
             Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), expr_key)))),
-        [["add_node", "attempt", "OpenProcessSearchAttempt", {
+        [["add_node_with_counters", "attempt", "OpenProcessSearchAttempt", {
             "expression_key": T(expr_key), "operator_kind": operator,
             "expression_tree": T(tree), "params": T(params),
             "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
@@ -144,7 +144,9 @@ def _expression_rule(operator, order, *, reverse=False):
             "frame_epoch": T(A("d", "frame_epoch")),
             "work_cost": T(work),
             "status": T(_attempt_status(params, applied, "task", "d", subgoal)),
-            "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))}],
+            "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))},
+          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
+          "request", "attempts_reserved", T(A("request", "max_attempts"))],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}]] + parent_effects,
@@ -234,7 +236,7 @@ def _recursive_compose_rule(*, reverse=False):
             Not(Eq(V("prior"), V("a"))),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
-        [["add_node", "attempt", "OpenProcessSearchAttempt", {
+        [["add_node_with_counters", "attempt", "OpenProcessSearchAttempt", {
             "expression_key": T(key), "operator_kind": "compose",
             "expression_tree": T(tree), "params": T(params),
             "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
@@ -248,7 +250,9 @@ def _recursive_compose_rule(*, reverse=False):
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "work_cost": T(work),
             "status": T(_attempt_status(params, applied, "task", "d", prior_state)),
-            "rank_score": T(_attempt_rank(params, applied, "task", "d", prior_state, work))}],
+            "rank_score": T(_attempt_rank(params, applied, "task", "d", prior_state, work))},
+          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
+          "request", "attempts_reserved", T(A("request", "max_attempts"))],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}],
@@ -290,7 +294,7 @@ def _recursive_unary_rule(operator, power=None):
             Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
-        [["add_node", "attempt", "OpenProcessSearchAttempt", {
+        [["add_node_with_counters", "attempt", "OpenProcessSearchAttempt", {
             "expression_key": T(key), "operator_kind": "recursive_unary",
             "expression_tree": T(tree), "params": T(params),
             "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
@@ -303,7 +307,9 @@ def _recursive_unary_rule(operator, power=None):
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "work_cost": T(work),
             "status": T(_attempt_status(params, applied, "task", "d", subgoal)),
-            "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))}],
+            "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))},
+          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
+          "request", "attempts_reserved", T(A("request", "max_attempts"))],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}],
@@ -351,6 +357,160 @@ def _mint_recursive_unary_rule():
          ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]], batch=False)
 
 
+def _mint_recursive_compose_rule():
+    return rule(
+        "ops_mint_verified_recursive_compose_candidate", ONLINE_AREA, 30,
+        "Retain the lowest-work verified recursive composition for one funded request.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_search_attempt", "attempt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "has_search_attempt", "attempt"],
+         ["attempt", "about_task", "task"], ["task", "about_domain", "d"]],
+        And(policy_on(), Eq(A("attempt", "operator_kind"), L("recursive_compose")),
+            Eq(A("attempt", "status"), L("verified")),
+            Eq(A("attempt", "domain"), A("d", "name")),
+            Eq(A("attempt", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("attempt", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("attempt", "frame_epoch"), A("d", "frame_epoch")),
+            Eq(V("attempt"), Argmin(_unminted_attempts(),
+                                    "best", A("best", "rank_score"))),
+            Lt(Count(N("agent", "has_open_process_candidate")),
+               A("pol", "max_candidates")),
+            Not(Exists(N("request", "has_candidate"), "old", L(True)))),
+        [["add_node", "candidate", "OpenProcessCandidate", {
+            "expression_key": T(A("attempt", "expression_key")),
+            "expression_digest": T(A("attempt", "expression_digest")),
+            "expression_tree": T(A("attempt", "expression_tree")),
+            "params": T(A("attempt", "params")),
+            "effect_digest": T(A("attempt", "effect_digest")),
+            "domain": T(A("attempt", "domain")), "kind": T(A("attempt", "kind")),
+            "source_epoch": T(A("attempt", "source_epoch")),
+            "model_epoch": T(A("attempt", "model_epoch")),
+            "frame_epoch": T(A("attempt", "frame_epoch")),
+            "precondition_kind": "native_apply_defined",
+            "guard_state": T(A("attempt", "guard_state")),
+            "subgoal_state": T(A("attempt", "subgoal_state")),
+            "work_cost": T(A("attempt", "work_cost")),
+            "verification": "native_process_apply_on_observed_source_state",
+            "approval_required": 1.0, "status": "unapproved_candidate"}],
+         ["add_edge", "agent", "has_open_process_candidate", "candidate", {}],
+         ["add_edge", "request", "has_candidate", "candidate", {}],
+         ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]], batch=False)
+
+
+def _mint_candidate_composition_rule():
+    eligible = Filter(N("request", "has_search_attempt"), "candidate_trial",
+        And(Eq(A("candidate_trial", "operator_kind"), L("recursive_compose")),
+            Eq(A("candidate_trial", "status"), L("verified")),
+            Exists(N("candidate_trial", "extends_candidate"), "parent", L(True)),
+            Not(Exists(N("agent", "has_open_process_candidate"), "old",
+                Eq(A("old", "expression_key"), A("candidate_trial", "expression_key"))))))
+    return rule("ops_mint_verified_candidate_composition", ONLINE_AREA, 30,
+        "Preserve a verified candidate-plus-held composition as a child candidate with immutable parent lineage.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_search_attempt", "attempt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "has_search_attempt", "attempt"],
+         ["attempt", "extends_candidate", "parent_candidate"],
+         ["attempt", "about_task", "task"], ["task", "about_domain", "d"]],
+        And(policy_on(), Eq(A("attempt", "operator_kind"), L("recursive_compose")),
+            Eq(A("attempt", "status"), L("verified")),
+            Eq(V("attempt"), Argmin(eligible, "best", A("best", "rank_score"))),
+            Lt(Count(N("agent", "has_open_process_candidate")), A("pol", "max_candidates")),
+            Not(Exists(N("request", "has_candidate"), "old", L(True)))),
+        [["add_node", "candidate", "OpenProcessCandidate", {
+            "expression_key": T(A("attempt", "expression_key")),
+            "expression_digest": T(A("attempt", "expression_digest")),
+            "expression_tree": T(A("attempt", "expression_tree")),
+            "params": T(A("attempt", "params")),
+            "effect_digest": T(A("attempt", "effect_digest")),
+            "domain": T(A("attempt", "domain")), "kind": T(A("attempt", "kind")),
+            "source_epoch": T(A("attempt", "source_epoch")),
+            "model_epoch": T(A("attempt", "model_epoch")),
+            "frame_epoch": T(A("attempt", "frame_epoch")),
+            "precondition_kind": "native_apply_defined",
+            "guard_state": T(A("attempt", "guard_state")),
+            "subgoal_state": T(A("attempt", "subgoal_state")),
+            "work_cost": T(A("attempt", "work_cost")),
+            "verification": "native_process_apply_on_observed_source_state",
+            "approval_required": 1.0, "status": "unapproved_candidate"}],
+         ["add_edge", "agent", "has_open_process_candidate", "candidate", {}],
+         ["add_edge", "request", "has_candidate", "candidate", {}],
+         ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]], batch=False)
+
+
+def _independent_candidate_compose_rule(*, reverse=False):
+    direction = "held_then_candidate" if reverse else "candidate_then_held"
+    params = (PCompose(A("a", "params"), A("candidate", "params")) if reverse
+              else PCompose(A("candidate", "params"), A("a", "params")))
+    applied = PApply(params, A("task", "initial_state"))
+    subgoal = (PApply(A("a", "params"), A("task", "initial_state")) if reverse
+               else PApply(A("candidate", "params"), A("task", "initial_state")))
+    key = StringConcat(L("independent-compose:"), A("candidate", "expression_digest"),
+        L(":"), A("a", "source_digest"), L(":"), L(direction))
+    tree = Vec(L("guard"), A("task", "initial_state"),
+        Vec(L("independent_compose"), A("candidate", "expression_tree"),
+            A("a", "name"), L(direction)))
+    return rule(f"ops_test_candidate_composition_{direction}", ONLINE_AREA, 15 + int(reverse),
+        "Test a digest-attested training candidate as an algebraic operand on a distinct training goal before broad search expansion.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_candidate", "candidate"],
+         ["candidate", "derived_from_attempt", "source"],
+         ["source", "about_task", "source_task"],
+         ["agent", "has_open_process_search_request", "source_request"],
+         ["source_request", "has_search_attempt", "source"],
+         ["candidate", "has_expression_digest_receipt", "digest_receipt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "searches_task", "task"], ["task", "about_domain", "d"],
+         ["d", "has_held_process", "a"]],
+        And(policy_on(), Eq(A("source_task", "split"), L("training")),
+            Eq(A("task", "split"), L("training")),
+            Eq(A("source", "status"), L("verified")),
+            Eq(A("candidate", "status"), L("unapproved_candidate")),
+            Eq(A("candidate", "expression_digest_status"), L("verified")),
+            Eq(A("digest_receipt", "status"), L("verified")),
+            Eq(A("digest_receipt", "expression_digest"), A("candidate", "expression_digest")),
+            Eq(A("digest_receipt", "effect_digest"), A("candidate", "effect_digest")),
+            Or(Eq(A("source_request", "status"), L("funded")),
+               Eq(A("source_request", "status"), L("proposal_recorded"))),
+            Or(Eq(A("request", "status"), L("funded")),
+               Eq(A("request", "status"), L("proposal_recorded"))),
+            Eq(A("task", "status"), L("stuck")),
+            Eq(A("candidate", "domain"), A("d", "name")),
+            Eq(A("candidate", "kind"), A("d", "kind")),
+            Eq(A("candidate", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("candidate", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("candidate", "frame_epoch"), A("d", "frame_epoch")),
+            Not(Eq(A("source_task", "goal"), A("task", "goal"))),
+            Lt(Count(N("agent", "has_open_process_search_attempt")), A("pol", "max_attempts")),
+            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            Not(Exists(N("request", "has_search_attempt"), "old",
+                       Eq(A("old", "expression_key"), key)))),
+        [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
+            "expression_key": T(key), "operator_kind": "recursive_compose",
+            "expression_tree": T(tree), "params": T(params),
+            "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
+            "guard_state": T(A("task", "initial_state")),
+            "subgoal_state": T(subgoal), "depth": 1.0,
+            "effect_digest": T(PFingerprint(params, A("d", "probes"))),
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending", "domain": T(A("d", "name")),
+            "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")), "frame_epoch": T(A("d", "frame_epoch")),
+            "work_cost": T(Plus(A("candidate", "work_cost"), A("a", "cost"))),
+            "status": T(IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))),
+            "rank_score": T(Times(L(-1.0), Plus(A("candidate", "work_cost"), A("a", "cost"))))},
+         "pol", "attempts_reserved", T(A("pol", "max_attempts")),
+         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         ["add_edge", "request", "has_search_attempt", "trial", {}],
+         ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
+         ["add_edge", "trial", "about_task", "task", {}],
+         ["add_edge", "trial", "uses_parent_process", "a", {}],
+         ["add_edge", "trial", "extends_candidate", "candidate", {}],
+         ["add_edge", "candidate", "has_independent_trial_attempt", "trial", {}]],
+        batch=False)
+
+
 def build():
     specs = [
         ("Agent", "has_open_process_search_policy", "OpenProcessSearchPolicy"),
@@ -385,6 +545,7 @@ def build():
         [["add_node", "request", "OpenProcessSearchRequest", {
             "task_key": T(_task_identity()), "domain": T(A("d", "name")),
             "max_attempts": T(A("pol", "max_attempts_per_request")),
+            "attempts_reserved": 0.0,
             "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
             "frame_epoch": T(A("d", "frame_epoch")), "status": "awaiting_budget"}],
@@ -407,6 +568,9 @@ def build():
             Eq(A("budget_request", "status"), L("approved"))),
         [["set_attr", "request", "status", "funded"]])
     rules = [_link_failure_evidence_rule(), request, funded]
+    rules.extend((_independent_candidate_compose_rule(),
+                  _independent_candidate_compose_rule(reverse=True),
+                  _mint_candidate_composition_rule(), _mint_recursive_compose_rule()))
     rules.extend(_expression_rule("compose", 0))
     rules.extend(_expression_rule("compose", 1, reverse=True))
     for index, operator in enumerate(("inverse", "power2", "power3"), start=2):
@@ -436,6 +600,7 @@ def build():
         "nodes": [{"local_id": 0, "type": "OpenProcessSearchPolicy", "attrs": {
             "name": "open_process_search_policy", "enabled": 0.0,
             "max_attempts": 64.0, "max_attempts_per_request": 256.0,
+            "attempts_reserved": 0.0,
             "max_candidates": 16.0,
             "search_cost": 2.0, "max_depth": 4.0}}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_open_process_search_policy",

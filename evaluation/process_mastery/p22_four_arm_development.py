@@ -7,16 +7,24 @@ an efficacy comparison.
 """
 from __future__ import annotations
 
+import math
+import resource
+import sys
+import time
+
 from evaluation.process_mastery.independent_worlds import (
-    generate_d4_world_v2, generate_loopover_world_v2,
+    agent_view, generate_d4_world_v2, generate_loopover_world_v2,
 )
 from evaluation.process_mastery.p22_arms import configure_p22_arm
 from evaluation.process_mastery.native_process_execution import params_digest
 from evaluation.process_mastery.native_process_execution import (
     attest_open_process_candidate,
 )
+from evaluation.process_mastery.checkpoint_world_adapter import (
+    score_unapproved_candidate_validation_panel,
+)
 from evaluation.process_mastery.p22_resource_accounting import (
-    compare_resource_snapshots, snapshot_native_resources,
+    NativeRuleWorkCapture, compare_resource_snapshots, snapshot_native_resources,
 )
 from substrate.boot_profiles import boot_cognition_on
 
@@ -78,31 +86,70 @@ def _add_task_inputs(agent, arm: str, domain_name: str, domain,
             agent.s.add_edge(task, "about_domain", domain, {})
 
 
+def _process_peak_rss_bytes() -> int:
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    return int(peak if sys.platform == "darwin" else peak * 1024)
+
+
 def run_p22_four_arm_development(*, family: str,
                                  training_draws: tuple[int, ...],
+                                 validation_draws: tuple[int, ...] = (),
                                  budget_capacity: float = 64.0,
-                                 max_rule_rounds: int = 256) -> dict:
-    """Run all four explicit conditions on a common, training-only v2 panel."""
+                                 search_attempt_ceiling: int = 64,
+                                 max_rule_rounds: int = 256,
+                                 selected_arms: tuple[str, ...] = _ARMS,
+                                 measure_process_peak_rss: bool = False,
+                                 measure_native_rule_work: bool = False) -> dict:
+    """Run selected explicit conditions on a training-only v2 panel."""
     if family not in _GENERATORS:
         raise ValueError("unsupported P22 development family")
     if (not training_draws or len(training_draws) != len(set(training_draws))
             or any(isinstance(draw, bool) or not isinstance(draw, int)
                    or draw < 0 or draw >= 1000 for draw in training_draws)):
         raise ValueError("development requires unique registered training draws")
+    if (len(validation_draws) != len(set(validation_draws))
+            or not set(training_draws).isdisjoint(validation_draws)
+            or any(isinstance(draw, bool) or not isinstance(draw, int)
+                   or draw < 0 or draw >= 1000 for draw in validation_draws)):
+        raise ValueError("validation requires unique development draws disjoint from training")
     if (isinstance(max_rule_rounds, bool) or not isinstance(max_rule_rounds, int)
             or max_rule_rounds < 1):
         raise ValueError("max_rule_rounds must be a positive integer")
+    if (isinstance(search_attempt_ceiling, bool)
+            or not isinstance(search_attempt_ceiling, int)
+            or search_attempt_ceiling < 1 or search_attempt_ceiling > 30_000):
+        raise ValueError("search attempt ceiling must be an integer in [1, 30000]")
+    if (not selected_arms or len(selected_arms) != len(set(selected_arms))
+            or any(arm not in _ARMS for arm in selected_arms)):
+        raise ValueError("selected arms must be unique registered P22 conditions")
+    if not isinstance(measure_process_peak_rss, bool):
+        raise ValueError("process RSS measurement flag must be boolean")
+    if not isinstance(measure_native_rule_work, bool):
+        raise ValueError("native rule-work measurement flag must be boolean")
     generator, size = _GENERATORS[family]
     worlds = [generator(split="train", draw=draw) for draw in training_draws]
+    validation_worlds = [agent_view(generator(split="validation", draw=draw))
+                          for draw in validation_draws]
     if any(len(world["initial_state"]) != size for world in worlds):
         raise ValueError("training worlds have inconsistent domain sizes")
 
     arms = {}
-    for arm in _ARMS:
+    for arm in selected_arms:
+        arm_started = time.perf_counter()
         agent = boot_cognition_on()
+        rule_capture = None
         try:
+            if measure_native_rule_work:
+                rule_capture = NativeRuleWorkCapture(agent.inner).start()
             configuration = configure_p22_arm(
                 agent, arm, budget_capacity=budget_capacity)
+            search_policies = agent.s.nodes("OpenProcessSearchPolicy")
+            if len(search_policies) != 1:
+                raise RuntimeError("four-arm graph must have exactly one open-search policy")
+            agent.s.set_attr(search_policies[0], "max_attempts",
+                             float(search_attempt_ceiling))
+            agent.s.set_attr(search_policies[0], "max_attempts_per_request",
+                             float(search_attempt_ceiling))
             domain_name, domain = _add_training_domain(agent, family, size, worlds)
             curriculum_policy = agent.s.nodes("ProcessCurriculumPolicy")[0]
             agent.s.set_attr(curriculum_policy, "max_tasks", float(len(worlds)))
@@ -175,6 +222,15 @@ def run_p22_four_arm_development(*, family: str,
                 "assessment": agent.s.node(outcome)["attrs"].get("assessment"),
                 "task_key": agent.s.node(outcome)["attrs"].get("task_key")}
                 for outcome in agent.s.nodes("ProcessCurriculumOutcome")]
+            candidate_validation_panels = []
+            for candidate in agent.s.nodes("OpenProcessCandidate"):
+                if agent.s.node(candidate)["attrs"].get("status") != "unapproved_candidate":
+                    continue
+                if not validation_worlds:
+                    continue
+                candidate_validation_panels.append(
+                    score_unapproved_candidate_validation_panel(
+                        agent, candidate, validation_worlds))
             arms[arm] = {"configuration": configuration,
                 "training_tasks": task_rows, "solved_count": sum(
                     row["solved"] for row in task_rows),
@@ -183,25 +239,56 @@ def run_p22_four_arm_development(*, family: str,
                 "proposal_count": len(proposals), "proposals": proposals,
                 "search_requests": search_requests,
                 "curriculum_outcomes": curriculum_outcomes,
+                "candidate_validation_panels": candidate_validation_panels,
                 "approval_count": len(agent.s.nodes("OpenProcessAdoptionApproval")),
                 "world_receipt_count": len(agent.s.nodes("OpenProcessWorldReceipt")),
                 "rule_rounds": rule_rounds,
-                "resource_snapshot": snapshot_native_resources(agent,
-                    runtime_counters={"native_rule_steps": native_rule_steps,
-                                      "native_model_calls": 0})}
+                "resource_snapshot": None}
+            search_policies = agent.s.nodes("OpenProcessSearchPolicy")
+            if len(search_policies) != 1:
+                raise RuntimeError("four-arm graph must have exactly one open-search policy")
+            reserved = agent.s.node(search_policies[0])["attrs"].get("attempts_reserved")
+            if (isinstance(reserved, bool) or not isinstance(reserved, (int, float))
+                    or not math.isfinite(reserved) or reserved < 0
+                    or not float(reserved).is_integer()):
+                raise RuntimeError("open-search reservation counter is invalid")
+            attempts_created = len(agent.s.nodes("OpenProcessSearchAttempt"))
+            if int(reserved) != attempts_created:
+                raise RuntimeError("native attempt reservations differ from created attempts")
+            counters = {"native_rule_steps": native_rule_steps,
+                        "native_model_calls": 0,
+                "search_attempts_reserved": int(reserved),
+                "native_candidate_validation_evaluations": sum(
+                    panel["world_count"] for panel in candidate_validation_panels)}
+            arm_wall_time = time.perf_counter() - arm_started
+            counters["wall_time_seconds"] = arm_wall_time
+            if measure_process_peak_rss:
+                counters["process_peak_rss_bytes"] = _process_peak_rss_bytes()
+            native_rule_work = (rule_capture.finish()
+                                if rule_capture is not None else None)
+            arms[arm]["resource_snapshot"] = snapshot_native_resources(agent,
+                runtime_counters=counters, native_rule_work=native_rule_work)
+            arms[arm]["wall_time_seconds"] = arm_wall_time
         finally:
+            if rule_capture is not None:
+                rule_capture.close()
             agent.close()
 
     world_ids = [world["world_id"] for world in worlds]
     return {"status": "DEVELOPMENT_ONLY", "family": family,
         "split": "training", "training_world_ids": world_ids,
+        "validation_world_ids": [world["world_id"] for world in validation_worlds],
+        "search_attempt_ceiling": search_attempt_ceiling,
         "common_worlds": all(arms[arm]["training_tasks"] and
             [row["world_id"] for row in arms[arm]["training_tasks"]] == world_ids
-            for arm in _ARMS),
-        "all_arms_terminal": all(arms[arm]["all_tasks_terminal"] for arm in _ARMS),
+            for arm in selected_arms),
+        "all_arms_terminal": all(arms[arm]["all_tasks_terminal"]
+                                 for arm in selected_arms),
         "arms": arms,
-        "resource_comparison": compare_resource_snapshots(
-            {arm: arms[arm]["resource_snapshot"] for arm in _ARMS}),
-        "approvals_created": sum(arms[arm]["approval_count"] for arm in _ARMS),
-        "world_receipts_created": sum(arms[arm]["world_receipt_count"] for arm in _ARMS),
+        "resource_comparison": (compare_resource_snapshots(
+            {arm: arms[arm]["resource_snapshot"] for arm in selected_arms})
+            if len(selected_arms) >= 2 else None),
+        "approvals_created": sum(arms[arm]["approval_count"] for arm in selected_arms),
+        "world_receipts_created": sum(arms[arm]["world_receipt_count"]
+                                       for arm in selected_arms),
         "efficacy_established": False}

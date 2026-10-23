@@ -287,6 +287,160 @@ The cognition-on P22 profile booted in a median 0.2020 s across three fresh runs
 
 The P22.E1-specific verification bundle passes 88 tests across the estimand, independent-improvement, checkpoint adapter, causal ablation, and cognition-on integration modules. This is local mechanism evidence only; P22.E2 cannot freeze until actual four-arm learner adapters and the remaining resource dimensions are available.
 
-A reproducible four-arm development wiring probe runs all four native policy settings on the same eight v2 training worlds in each family. After adding native global-attempt-ceiling settlement, every task in each arm terminalized; D4 solved counts were 3/8 in all arms and Loopover counts were 1/8 in all arms. These training-only frequencies are not efficacy estimates. The configured global attempt limit of 64 is overshot by simultaneous grammar activations (up to 132 attempts), and resource vectors differ. Digest-bound successful native rule-progress firings measure 9/67/24/96 on D4 and 16/109/29/138 on Loopover across unchanged/adaptive/invention/full. The runner made zero external model calls; allocator memory and wall-time remain unavailable. No candidate approvals or world receipts were created. See [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md) and its hashed raw records. P22.E2 remains gated on adequate fixed-compute controls and a complete resource-audited four-arm development run.
+A reproducible four-arm development wiring probe runs all four native policy settings on the same eight v2 training worlds in each family. A native `AddNodeWithinCounter` effect now enforces the shared global-attempt cap at the mutation boundary: the refreshed invention-enabled arms each create and reserve exactly 64 attempts, and the unchanged/adaptive-only arms create and reserve zero. The minimized two-task test at a cap of one also passes. D4 solved counts remain 3/8 in every arm and Loopover 1/8 in every arm; these training-only frequencies are not efficacy estimates. Digest-bound successful native rule-progress firings measure 9/67/24/96 on D4 and 16/109/29/138 on Loopover across unchanged/adaptive/invention/full. The runner made zero external model calls; allocator memory and wall-time remain unavailable, and realized resource vectors still differ, so no efficiency claim is supported. No candidate approvals or world receipts were created. See [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md) and the refreshed raw hashes. P22.E2/E3 remain open pending independently grounded approved checkpoint lineages, candidate-specific authorization, and a preregistered analysis that relies on fixed ceilings rather than an unsupported efficiency claim.
 
 The refreshed P22 regression bundle, including the four-arm runner guard, global ceiling settlement, and digest-bound runtime counters, passes 120 tests. The raw development files reproduce byte-for-byte; their candidate attestations, terminal request statuses and resource mismatches remain in the archived records.
+
+The later isolated-worker refresh supersedes the preceding wall-time and runtime-rule-step gaps for the four-arm development diagnostic: each arm now records elapsed time, successful native rule firings, and a digest-bound `ru_maxrss` process peak. The RSS measure includes the Python interpreter and native runtime; native graph allocator bytes remain unavailable, and the runner's zero external model calls do not establish general model-call coverage. The four-arm resource vectors still differ, so no efficiency comparison is supported. The same report records a distinct-goal qualification probe: D4 training draws 0200/0201 and Loopover 0206/0207 produced proposals but zero qualifications on the second independently generated goal. Eight-world validation scores are descriptive candidate frequencies only; no approvals or receipts were created. See [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md) and the two digest-bound raw probe files. Candidate-specific authorization, independent-goal approved lineages, informative four-arm efficacy, P22 preregistration and held-out results remain open; no capability level is closed.
+
+The subsequent P22 cross-goal composition development test repairs that specific qualification mechanism: a graph-attested candidate can be used as an algebraic operand, its verified child retains parent-digest provenance, and both D4 `0200→0202` and Loopover `0015→0026` selected training fixtures produce a qualified source proposal. This is bounded mechanism evidence from selected pairs, not evidence of broad independent-goal learning; the prior zero-qualification pairs remain valid. The request-counter extension atomically enforces both global and per-request attempt ceilings. Validation scores are descriptive, and neither approval nor action receipt was created. Raw hashes, exact candidate digests and allocation exclusions are in [`COGNITION_P22_CROSS_GOAL_COMPOSITION_20261023.md`](COGNITION_P22_CROSS_GOAL_COMPOSITION_20261023.md). Four-arm learners, complete cumulative resource matching, candidate-specific authorization, preregistered held-out efficacy and all L1–L7 capability closures remain open.
+
+The P22 E2 analyzer now rejects overlapping training, validation and evaluation identities and reports development provenance as `DEVELOPMENT_ONLY`, never `ATTESTED` without held-out runtime evidence. Its five focused tests and standalone self-check pass. The runner, complete resource measurements, candidate-specific approved lineages, standalone preregistration and held-out evidence remain open; no capability level closes.
+
+P22 resource snapshots now bind canonical training-node payload bytes and declare measurement coverage instead of implying unavailable quantities are zero. Fresh eight-task four-arm diagnostics at draws 0278–0285 (validation 0378–0385) completed both families: all D4 arms solved 3/8, all Loopover arms solved 1/8; D4 produced five invention-only and four full candidates while Loopover produced none. Resource vectors differ. Retrieval, proposal/verification work units, model refinement, definition/decoder cost, approval labor and rollback costs still lack direct instruments. The raw hashes and single-host timing/RSS limits are in [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md). These remain development diagnostics with no approvals, receipts, held-out access, efficiency claim or capability closure.
+
+Resource snapshots additionally break down ThinkingBudget costs by requester kind and retain proposal, qualification, candidate-validation and approval event counts. These counters do not resolve work units or human cost, and a missing validation counter now makes exact resource comparison incomplete. The same consumed development draws were replayed to verify the expanded schema; the outcomes were identical and are not treated as a fresh sample. Exact digests are in the development report. P22.E2 remains gated on working Loopover proposal/learning comparisons, complete resource instrumentation and authorized checkpoint lineages.
+
+The P22 E2 analyzer now also requires a named source for every declared resource value and rejects partial event counts as if they were measured work units. Its self-check covers absent measurement evidence and incomplete coverage. This forces the future runner to provide measured values or retain a structural failure; no held-out artifact exists or is authorized.
+
+**P22 exact simulated-adoption update (2026-10-23):** Following user approval of the two exact training-only candidate bindings, D4 `#752` and Loopover `#5761` each completed one guarded finite-simulator action with one consumed approval and one verified native receipt. The exact digests, witnesses and raw receipts are in [`COGNITION_P22_V2_CANDIDATE_APPROVALS_20261023.md`](COGNITION_P22_V2_CANDIDATE_APPROVALS_20261023.md). This closes the candidate-approval mechanism gate for those two single actions only. It does not provide lineage-generation evidence, a four-arm matched efficacy result, complete approval-effort accounting, preregistration, held-out evidence or any L1–L7 capability closure.
+
+The native resource module now has one adapter that emits analyzer-ready values, per-field source names, and measured/partial/unavailable statuses from a digest-verified snapshot. It enforces that cumulative checkpoint primitive work cannot be below observed snapshot work. The focused resource/analyzer suite passes 12 tests. Several resource dimensions remain unavailable, so this is a provenance-safe conversion path, not E2 readiness.
+
+The proposal probe now retains a no-candidate-first-task outcome instead of dropping the entire run. Fresh distinct-goal D4 draws 0286/0287 yielded one qualified candidate (4/8 descriptive validation) and one unqualified candidate; Loopover's first task yielded none, and its second-task candidate remained unqualified (0/8). Zero approvals and receipts were created. The full five-test P22 probe module passes, including the per-request ceiling extension. These are small mechanism probes only; the exact raw artifacts, hashes and consumed splits are in the P22 development report. This does not establish qualification reliability or efficacy.
+
+Two more distinct-goal pairs per family reinforce the limitation: D4 qualified one candidate on 0290/0291 but it scored 0/8; D4 0288/0289 did not qualify, and neither Loopover pair qualified. Across these three fresh pairs, the diagnostic count is 1/3 D4 and 0/3 Loopover, with no approvals or receipts. The observations do not estimate qualification rates or establish efficacy. Exact raw artifacts and consumed splits remain in the P22 development report.
+
+The proposal-probe CLI now separates per-request search from its fixed global 30,000-attempt ceiling. A fresh Loopover pair at 20,000 attempts per request produced one candidate, which remained unqualified and scored 0/8; a preceding run that set both global and per-request limits to 20,000 exhausted its global budget on the first task and is retained as confounded evidence. Neither run created approvals or receipts. These results diagnose proposal availability under search limits only; they do not establish independent-goal learning or benefit.
+
+The current broader P22 regression bundle passes 98 tests across inference, native checkpoint/causal paths, cognition-profile integration and analyzer coverage. The exact E2 bundle passes 41 tests; the native proposal-probe module passes 5. All are mechanism/schema evidence. The matched Loopover learner, remaining resource instruments, approved multi-generation lineages, preregistration and held-out results remain open.
+
+The current shared cognition gate also retains the inherited classifications: baseline verifier 4 held RED, zero newly GREEN and zero NEW RED; suite sweep 16 GREEN, 2 RED, one 420-second `NOT_ESTABLISHED` timeout, and one fully skipped file. The report records HEAD `b19b904f` while the worktree was dirty, so it is a current working-tree result rather than a clean-commit attestation. The raw artifact hash is in the build plan. These results do not indicate new P22 regressions or resolve the inherited failures.
+
+**Resource and P22.03 verification refresh (2026-10-23):** The P22 snapshot was corrected to count the full canonical graph, including edges, and now records node/edge counts plus the native graph-memory estimate. The two isolated-worker four-arm artifacts were regenerated and remain resource-unequal; their exact bytes, hashes and measurement limits are in [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md). Thus graph-memory measurement is available as a substrate estimate, while allocator-wide memory remains unavailable. Checkpoint capture now accepts caller-measured native rule steps, model calls and peak RSS, binding them in the checkpoint's digest-protected resource snapshot; descendant captures reject regressed cumulative rule-step, model-call or search-reservation counters. Strict scoring preserves the counters. The P22.03 named verification command passes 25 tests. These tests establish fixture-level native checkpoint and ablation behavior only. There are still no externally authorized candidate adoptions or cross-family live checkpoint lineages, no working matched four-arm efficacy comparison, and no preregistered/held-out P22 result. All L1–L7 levels remain open.
+
+**P22 development candidate-score refresh (2026-10-23):** All proposals from each native four-arm development graph are now scored nonactionably on the same disjoint v2 validation draws 0350–0357, with per-expression outcome rows retained and native evaluation counts added to resource accounting. D4 proposals scored 1/8 in this selected eight-world panel; Loopover produced none. There was no approval or simulated execution. These new diagnostic draws are excluded from preregistration. The raw artifact hashes and duplicate-expression details are in [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md); this does not establish candidate generalization, matched treatment effects, or capability closure.
+
+**P22 higher-ceiling development audit (2026-10-23):** With a common 10,000-attempt ceiling on two v2 training tasks, native invention-only and full arms each produced candidate proposals in both D4 and Loopover. Every arm solved 0/2; unapproved candidate validation yielded D4 0/2 and 1/2 per candidate, and Loopover 0/2. No approvals or receipts were created, and resource vectors differed. This confirms Loopover proposal availability is sensitive to search ceiling and invalidates treating its zero proposals under the 64-attempt cap as a stable comparator result. The two-world 10,000-ceiling run remains a development diagnostic; it does not establish benefit, working held-out comparators or a frozen budget. Exact artifacts and hashes are in [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md). Training 0260–0261 and validation 0360–0361 are consumed and excluded from later preregistration; all capability levels remain open.
+
+**P22 eight-task development audit (2026-10-23):** A larger common-ceiling panel confirms the native invention-only/full proposal and nonactionable validation paths run in both v2 families. All arms scored D4 5/8 and Loopover 2/8 on training; three unique D4 expressions scored 1/8, 2/8 and 0/8, and Loopover expressions scored 0/8 on the fresh eight-world validation panel. No approvals or receipts were created, and resource vectors remain unequal. These are training/development diagnostics only; the result supports adapter execution but no improvement benefit, approved lineage, efficiency or capability closure. The exact raw artifacts and hashes are in [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md). Allocations 0270–0277 and 0370–0377 are consumed and excluded from preregistered use.
+
+**P22.01 inference reconciliation (2026-10-23):** The contract and estimator now align on a minimum point slope of 0.05 per generation and phase-wide Holm correction over each family's final-gain and slope tests. The cluster bootstrap reports fixed 10,000-draw one-sided zero-effect p-values, 99% lower bounds and adjusted p-values; flat/ceiling effects remain zero. The estimator requires exactly generations 1–3, fixes the practical thresholds and α, and passes 11 tests, including positive trend passage and null/ceiling failure. The full P22.E1 verification bundle passes 93 tests. This repairs the written inference gap before freeze and does not change the P22 evidence status: no approved independent-goal lineages, preregistration, or held-out result exists, and all capability levels remain open.
+
+**P22 resource and split audit refresh (2026-10-23):** Four-arm development snapshots now include digest-verified per-rule native work totals, with unmatched rule identities explicitly marked; checkpoints preserve cumulative totals and reject descendant regressions. The analyzer requires the native term-evaluation field with a named source, plus disjoint training, selection, validation and evaluation blocks across all families. The exact E2 test bundle passes 42 tests and the analyzer self-check passes. These changes improve measurement and structural validation only. Four-arm development resource vectors remain unequal, the exact cross-goal candidates remain unapproved in the artifact ledger, and no three-generation independent-goal checkpoint lineage, standalone preregistration, or held-out P22 result exists. All L1–L7 dispositions remain open; no capability claim is elevated by these diagnostics.
+
+**P22 exact-binding audit (2026-10-23):** Training-only native graph reconstructions reproduce both selected cross-goal candidate digests and full approval bindings while leaving validation empty and creating no approval or receipt. The authoritative Loopover digest is `f8277f0f8d7df4de63aed09cfc4f265ed2f6d9293034ae73ec18fdb9babfe75d`; a transcribed alternate value was corrected in the approval packet. The complete five-test proposal module passes with this reconstruction path. This verifies reconstruction of two consumed development candidates only. It does not constitute candidate authorization, an approved lineage, or independent-goal efficacy; all L1–L7 dispositions remain open.
+
+**P22.E2 runner status (2026-10-23):** The development runner now exercises the loaded native evaluator, disjoint deterministic family/split seeds, checkpoint manifest checks and four structural controls. Runner/analyzer self-checks pass, as do the focused E2 verification tests. This does not establish any capability level: no candidate-specific simulated-adoption approval or multi-generation cross-family checkpoint manifest exists, and remaining resource dimensions/cost matching are incomplete. P22 preregistration and held-out efficacy remain `NOT_RUN`; L1–L7 remain open.
+
+**P22 operation-cost attribution update (2026-10-23):** Digest-bound per-rule term evaluations are now grouped into disjoint native retrieval, proposal, verification, refinement, definition-decode, and rollback categories, with explicit source names and complete-identity requirements. Human approval cost remains unmeasured; approval event counts are not treated as work. The focused P22 E2 bundle passes 54 tests. This does not change capability dispositions or P22.E2/E3 status; candidate-specific approvals, actual checkpoint lineages, and held-out results are still absent.
+
+**P22 development resource audit (2026-10-23):** Recomputed six disjoint native operation-cost categories from the complete, digest-bound per-rule counters in the existing D4 0304/0305 four-arm diagnostic. The category vector (retrieval/proposal/verification/refinement) is 40/20/92/8 unchanged, 140/64/112/28 adaptive-only, 200/24,635/7,724/20 invention-only, and 260/24,659/7,736/40 full; definition decode and rollback are measured zero for this artifact. This is a read-only derived report over the archived development snapshot, not a new draw, raw artifact rewrite, resource match, efficacy result, or capability closure. Approval event counts still do not measure human approval cost.
+
+**P22 control-lineage status (2026-10-23):** Added a native digest-bound passive descendant checkpoint for unchanged/adaptive control arms, with no adoption approval or world receipt. Manifest validation enforces unchanged control expressions and uninterrupted parent links; invention/full descendants retain the candidate-specific approval and receipt boundary. Runner development checks cover all 24 parent links and a tamper. The P22 E2 focused bundle passes 55 tests. This improves evaluation readiness but does not create experimental lineages or alter any capability disposition.
+
+**P22 manifest validation refresh (2026-10-23):** A synthetic digest-valid manifest test now exercises all eight family/arm roots and all 24 generation links, including passive no-approval control chains and approved invention/full chains. It rejects changed passive expressions and missing invention-arm approval/receipt bindings. The P22 E2 bundle passes 56 tests. No actual approved candidate lineage or held-out result exists; all capability dispositions remain unchanged.
+
+**P22 passive-lineage resource guard (2026-10-23):** Passive unchanged/adaptive descendants preserve digest-bound runtime and per-rule work counters and reject regressions, covered by the 56-test focused E2 bundle. This closes a checkpoint-accounting mechanism only and does not alter the missing approval-dependent invention-lineage or held-out classifications.
+
+**P22 sealed-allocation guard (2026-10-23):** The runner performs full per-checkpoint resource-source and ceiling validation before it materializes held-out worlds, including exact isolated wall-time coverage. A regression confirms partial approval-cost instrumentation fails at preflight. The P22 E2 focused bundle passes 57 tests. This prevents resource-incomplete manifests from consuming held-out data; P22.E2 remains open pending complete instruments and candidate-specific invention approvals.
+
+## Current plan status refresh (2026-10-23)
+
+P20's earlier integration note remained pending while its combined runner and
+scored explanation panel were unfinished. The later frozen P20 E3 run records
+200/200 explanation reconstruction/adoptions at 100% fidelity, and the four
+named cognition-on integration tests pass. This closes P20.04 and E1 for the
+bounded declared protocol; the transfer primary remains `FAIL`, and no L-level
+disposition changes. In the current dirty checkout, a new P20 development run
+reports `DEVELOPMENT_ONLY` because the attested build inputs are modified; its
+analyzer correctly refuses to label that run attested. The historical frozen
+E3 provenance remains the authoritative evaluation record.
+
+The two exact P22 candidates now each have one user-authorized simulated
+action, one consumed approval and one verified receipt, as documented in the
+candidate packet and raw artifacts. This supersedes older development notes
+that said no live candidate approval had been consumed. It does not create a
+multi-generation lineage, resolve human approval-effort measurement or
+resource mismatches, or authorize any later-generation action. P22.E2/E3 and
+all L1–L7 capability closures remain open.
+
+The P22 resource adapter now prospectively measures candidate-review effort
+as reviewer-reported seconds and keeps missing historical values partial. The
+previous two approvals remain unmeasured; this instrumentation does not
+authorize another action or supply an experimental lineage. P22.E2 is still
+not admissible until new fully measured checkpoint lineages and every other
+frozen resource/control prerequisite are present.
+
+The first fresh training-only probes after adding this instrument used D4 and
+Loopover draws 0400/0402. Each produced a candidate but neither qualified it;
+both had empty validation allocations and zero approvals/receipts. This is
+additional development evidence only and does not alter capability status.
+
+The four-arm development adapter now records arm wall time in its
+digest-bound resource snapshots and includes it in cross-arm comparison. Fresh
+D4 and Loopover training-only panels on draws 0500–0503 measured all declared
+resource dimensions, but realized vectors remained unmatched. All arms solved
+2/4 tasks in these small panels; D4 invention-only/full produced two/one
+candidates and Loopover produced none. The panels had no validation worlds,
+approvals, receipts, or held-out access. This adds instrumentation evidence
+only and leaves L1–L7 and P22 efficacy dispositions unchanged.
+
+A repeated native-rule audit then exposed and fixed namespaced rule-ID to
+local-index attribution in cumulative snapshots. New digest-bound captures use
+native rule-work schema v2 with both IDs; historical v1 snapshots remain
+verifiable and unchanged. Two fresh graph stores now retain complete identity
+coverage in one process, and the exact synthetic generation-zero/generation-one
+checkpoint regression requires complete coverage. The combined affected P22
+resource, checkpoint, four-arm and synthetic adoption modules pass 33 tests.
+This repairs a measurement defect without changing capability or efficacy
+status; genuinely partial capture remains inadmissible for E2.
+
+A separate Loopover training-only run on draws 0504/0505 ended with no
+candidate after 5,000 attempts per request. Its raw result has digest-bound
+native work at the probe level but omitted it from the resource snapshot, so
+the snapshot is not eligible for resource matching. The non-adoption probe path
+now carries that work and runtime counters into future snapshots; a focused
+snapshot regression, sequential-capture regression, and exact checkpoint test
+pass together; runner/analyzer self-checks pass. The raw result is preserved
+unchanged, and this diagnostic does not alter L1–L7 or P22 efficacy status.
+The approved checkpoint path also now refuses nonempty validation allocations,
+keeping candidate reconstruction and adoption evidence strictly training-only.
+
+The P22 source closure now hashes the proposal-training adapter and both
+development CLI entry points. A provenance read confirms coverage; the current
+attestation remains `DEVELOPMENT_ONLY` because the artifact tree is dirty. This
+does not advance P22 to preregistration or held-out status.
+
+P22 checkpoint capture now preserves and digest-binds the full canonical native
+graph, with exact restoration into a normally booted agent. The manifest gate
+requires this state for every root and generation. This is persistence
+infrastructure only: the current world adapter still scores the captured
+finite process expression, and no full learner continuation or independent-
+goal efficacy has been demonstrated. P22.E2/E3 and every L1–L7 closure remain
+open.
+
+The training-only P22 probe can now restore an exact parent checkpoint and
+continue cumulative runtime and per-rule accounting across graph stores. A
+development regression exercises restored training, store-namespaced counter
+merge, and the existing candidate-bound adoption path. This closes a
+continuation mechanism gap only; no new generation was authorized or adopted,
+and no independent-goal improvement or held-out outcome is established.
+
+A fresh Loopover v2 training-only record now includes a fully measured,
+digest-valid generation-zero checkpoint on two distinct goals. Generic search
+did not produce an independently qualified candidate, so the record has no
+adopted child. It adds reusable root evidence only; P22 efficacy and every
+L1–L7 closure remain open.
+
+The strict P22 checkpoint scorer now resolves active process parameters from
+the digest-bound native graph and checks them against the manifest before
+native execution. A captured ancestor and an approved child produce different
+scores on the same derived development control world (0 versus 1), and the
+P22.03 verification command passes 27 tests. The component-ablation regression
+now uses an actual captured ancestor and its approved child rather than
+hand-built permutation records. This replaces the earlier manifest-parameter-
+only execution path and adds a bounded expression-path dependence control.
+The control is still one derived development task, not an independent-goal
+effect, and no matched four-arm result exists; therefore P22.E2/E3 and all
+L1–L7 capability closures remain open.

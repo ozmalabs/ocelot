@@ -130,6 +130,102 @@
       }
     },
     {
+      "provenance": "seed:p22:has_open_process_search_policy:Agent:OpenProcessSearchPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_open_process_search_policy",
+      "tgt": {
+        "type": "OpenProcessSearchPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_open_process_candidate:Agent:OpenProcessCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_open_process_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:derived_from_attempt:OpenProcessCandidate:OpenProcessSearchAttempt",
+      "src": {
+        "type": "OpenProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "derived_from_attempt",
+      "tgt": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_expression_digest_receipt:OpenProcessCandidate:OpenProcessDigestReceipt",
+      "src": {
+        "type": "OpenProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_expression_digest_receipt",
+      "tgt": {
+        "type": "OpenProcessDigestReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_independent_trial_attempt:OpenProcessCandidate:OpenProcessSearchAttempt",
+      "src": {
+        "type": "OpenProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_independent_trial_attempt",
+      "tgt": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:extends_candidate:OpenProcessSearchAttempt:OpenProcessCandidate",
+      "src": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "src"
+      },
+      "edge_type": "extends_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:uses_parent_process:OpenProcessSearchAttempt:ProcessSchema",
+      "src": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "src"
+      },
+      "edge_type": "uses_parent_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:p22:has_held_process:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "has_held_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:p22:has_outcome:ProcessCurriculumTask:ProcessCurriculumOutcome",
       "src": {
         "type": "ProcessCurriculumTask",
@@ -2013,12 +2109,501 @@
           "qualified_for_candidate_specific_approval"
         ]
       ]
+    },
+    {
+      "name": "iip_qualify_after_independent_goal_composition",
+      "area": "memory_consolidation",
+      "order": 15,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Qualify a source proposal only when its attested expression participates in a native-verified solution for a different training goal.",
+      "match": [
+        [
+          "agent",
+          "has_independent_improvement_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_independent_improvement_proposal",
+          "proposal"
+        ],
+        [
+          "proposal",
+          "proposes_native_candidate",
+          "candidate"
+        ],
+        [
+          "proposal",
+          "derived_from_trial",
+          "source"
+        ],
+        [
+          "source",
+          "about_task",
+          "source_task"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "source_request"
+        ],
+        [
+          "source_request",
+          "has_search_attempt",
+          "source"
+        ],
+        [
+          "candidate",
+          "has_independent_trial_attempt",
+          "trial"
+        ],
+        [
+          "trial",
+          "extends_candidate",
+          "candidate"
+        ],
+        [
+          "trial",
+          "about_task",
+          "task"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "trial_request"
+        ],
+        [
+          "trial_request",
+          "has_search_attempt",
+          "trial"
+        ],
+        [
+          "agent",
+          "has_open_process_candidate",
+          "trial_candidate"
+        ],
+        [
+          "trial_candidate",
+          "derived_from_attempt",
+          "trial"
+        ],
+        [
+          "trial_candidate",
+          "has_expression_digest_receipt",
+          "trial_receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "minimum_native_trials"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposal_recorded"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "trial_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "funded"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "trial_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposal_recorded"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "required_split"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "required_split"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unapproved_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unapproved_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_candidate"
+              },
+              "key": "expression_digest_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_receipt"
+              },
+              "key": "expression_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_candidate"
+              },
+              "key": "expression_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_receipt"
+              },
+              "key": "effect_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "trial_candidate"
+              },
+              "key": "effect_digest"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "source_task"
+                },
+                "key": "goal"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "goal"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "proposal"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_native_qualification"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "edge_type": "has_native_qualification",
+                "any_type": false
+              },
+              "var_name": "prior_qualification",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "qualification",
+          "IndependentImprovementQualification",
+          {
+            "status": "qualified_for_candidate_specific_approval",
+            "qualification_kind": "independent_goal_composition",
+            "trial_count": 2.0,
+            "split": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "policy"
+                },
+                "key": "required_split"
+              }
+            },
+            "expression_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "expression_digest"
+              }
+            },
+            "criteria_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "proposal"
+                },
+                "key": "criteria_digest"
+              }
+            },
+            "independent_goal_count": 2.0
+          }
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "has_native_qualification",
+          "qualification",
+          {}
+        ],
+        [
+          "add_edge",
+          "qualification",
+          "qualifies_proposal",
+          "proposal",
+          {}
+        ],
+        [
+          "add_edge",
+          "qualification",
+          "counts_native_trial",
+          "source",
+          {}
+        ],
+        [
+          "add_edge",
+          "qualification",
+          "counts_native_trial",
+          "trial",
+          {}
+        ],
+        [
+          "set_attr",
+          "source_request",
+          "status",
+          "qualified_terminal"
+        ],
+        [
+          "set_attr",
+          "trial_request",
+          "status",
+          "qualified_terminal"
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "qualified_trial_count",
+          2.0
+        ],
+        [
+          "set_attr",
+          "proposal",
+          "status",
+          "qualified_for_candidate_specific_approval"
+        ]
+      ]
     }
   ],
   "id": "independent_improvement",
   "version": "1.0.0",
   "depends_on": [
     "open_process_search",
+    "open_process_adoption",
     "recursive_process_improvement"
   ],
   "self_load_only": true,

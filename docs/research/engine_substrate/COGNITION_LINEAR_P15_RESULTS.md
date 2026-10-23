@@ -36,3 +36,7 @@ The held-out runner/analyzer hashes and dependency closure are frozen in [`COGNI
 - `/tmp/p15-analysis.json` — SHA-256 `e5fabd74ec3933d85f85aa2966234a6a531cca581cde4ae35b7c38751f31b407`
 
 Human comparison is `UNAVAILABLE_PROTOCOL_NOT_MATCHED`; no capability level is closed.
+
+## Post-run review qualification (2026-10-22)
+
+The [source/artifact review](COGNITION_P15_REVIEW_AND_REMAINING_GAPS_20261022.md) verified that the archived raw and analyzer hashes match this ledger. It also found two limits not detected by the frozen integrity checks: `engine_binary_sha256` hashes the Python package wrapper rather than the loaded native extension, so execution-time native artifact identity remains `NOT_ESTABLISHED`; and the scored `_run_task` selects/composes the arm's process in Python before native application rather than executing the active graph-selected operator expression. The outcome counts and original NOT_ESTABLISHED trend are preserved, with their claim scope restricted to this adapter's native macro application and separately exercised lifecycle. No historical frozen hash or result was changed and no hold-out draw was repeated. Follow-up Phases 16–22 in the canonical plan address these limits and the earlier behavioral learning gaps.

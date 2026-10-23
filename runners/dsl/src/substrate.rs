@@ -8472,7 +8472,7 @@ mod tests {
         assert!(s.apply_rule_once(dispatch));
         assert_eq!(
             s.graph.pending_rule_patches,
-            vec![(patch, vec![s.rules[0].name])]
+            vec![(patch, vec![dispatch_name])]
         );
         s.apply_pending_rule_patches();
 
