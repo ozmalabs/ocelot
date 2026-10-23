@@ -1464,3 +1464,25 @@ observed score gain and is not an efficiency comparison. Raw corrected result
 [`p22_lineage_pair_d4_0668_0672_frozen_v3.json`](../../../evaluation/process_mastery/results/p22_lineage_pair_d4_0668_0672_frozen_v3.json)
 has SHA-256 `bafa4acc05af36bb927ea9258ab208c6b275f5a29c235ff6eb7e1b3bcb1253eb`.
 No validation or held-out world was accessed.
+
+## Loopover four-goal, 30,000-attempt qualification panel (2026-10-23)
+
+Four fresh, pairwise-distinct Loopover training goals 0673–0676 each received
+30,000 search attempts, exhausting the 120,000 graph-wide ceiling. All four
+tasks ended stuck. Candidate `#30761` (digest
+`b87a67e14b59e7ce250f5d6a23d44ddbd338b9e14bfae8bab8fbb8c8b43317a0`) had 24
+residual independent-goal trials on each of the three later goals, 72 total,
+and remained unqualified. The larger per-goal allocation did not produce a
+generation-one candidate. There were zero approvals, receipts, validation
+worlds or held-out exposures. Resource measurements report 50 native rule
+steps, 1,008.78 seconds, peak RSS 6,359,154,688 bytes, 120,774 graph nodes,
+599,054 edges and 1,347 training-data payload bytes.
+
+The raw JSON SHA-256 is
+`7b6ee08a094a1e1eea1c2d49cc8023f4ba9f1f2be2bf5f9566f53b8a9e7957d7`; the
+decompressed content of the deterministic gzip artifact
+[`p22_training_panel_loopover_0673_0676_p30k.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0673_0676_p30k.json.gz)
+matches that hash. The gzip SHA-256 is
+`ed95e7c721311197e59d3788a89d02952b75870a4ba764437e90cc3ca4c99b53`. Draws
+0673–0676 are consumed training-only evidence. This panel adds no candidate
+authorization, efficacy or held-out result.

@@ -139,3 +139,7 @@ per-world outcomes (2/4 each) within the cumulative work ceiling. The child
 carried substantially higher accumulated work; this is no improvement and no
 efficiency result. Earlier over-budget scoring attempts are excluded from
 inference and retained with hashes in the P22 development report.
+
+A fresh Loopover panel at 30,000 attempts per goal also left candidate `#30761`
+unqualified after 72 residual trials across three later goals. No Loopover
+generation-one descendant or efficacy evidence is established.

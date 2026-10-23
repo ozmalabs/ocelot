@@ -655,3 +655,9 @@ per-world scores were identical. The child had higher cumulative historical
 work. This establishes no improvement or efficiency claim and is not
 held-out evidence. The initial budget-control failure was fixed and excluded
 from interpretation.
+
+Loopover received a fresh four-goal panel at 30,000 attempts per task and the
+120,000 global ceiling. Candidate `#30761` had 72 residual trials over three
+independent goals and did not qualify; all four tasks were stuck. This extends
+the negative training-only evidence but does not establish or revise any
+capability level.
