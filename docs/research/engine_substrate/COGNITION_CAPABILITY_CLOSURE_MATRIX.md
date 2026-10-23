@@ -40,3 +40,20 @@ ancestor scores 0 and the adopted child scores 1; the P22.03 verification
 command passes 27 tests. This is path-dependence evidence for that task only,
 not an independent-goal learning effect or capability closure. P22.E2/E3 and
 all L1–L7 dispositions remain unchanged.
+
+## P22 lineage and development search update (2026-10-23)
+
+D4 now has a digest-verified generation-zero → generation-one →
+generation-two checkpoint chain. The generation-two edge came from exact
+approval of candidate `#6731`, whose effect was the identity permutation; the
+simulator state did not change. This is lineage integrity evidence only, not
+an improvement. Corrected-ceiling continuation on fresh D4 draws 0576/0577
+used 20,000 attempts per task but produced no candidate qualified on the new
+goals. Loopover probes through draws 0580/0581 likewise produced no qualified
+candidate, including 30,000-attempt-per-task search on 0568/0569. Thus
+Loopover still lacks a generation-one descendant and D4 lacks generation
+three. Neither family has the required three-generation held-out comparison;
+the matched resource panel, standalone P22 preregistration and registered
+held-out result remain open. These outcomes do not change any L1–L7
+disposition. Raw records and hashes are in
+[`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md).
