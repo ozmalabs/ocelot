@@ -45,6 +45,19 @@ descendant carries a candidate-specific approval and verified simulator
 receipt. All four arms in a family use the same generation-zero process
 ancestor.
 
+This requires 8 generation-zero roots plus 24 descendant checkpoints. The
+12 unchanged/adaptive-only descendants are passive controls; the 12
+invention-only/full descendants each require their own candidate-specific
+approval and verified transition receipt. The two pending candidate packets
+are bound to the invention-only generation-zero roots (D4 digest
+`fe39a44242987c5c97404c8b0812c3928a7324aee2911f57133417ce2650236c`;
+Loopover digest
+`7308895927d5ca447ae80199e9ee369e881ed0effa223e166c65b88f51b40f2c`). If
+both are approved and verified, they produce only invention-only generation
+one descendants. Ten more arm-specific invention/full transitions and all
+12 passive descendant captures are still required before the manifest can be
+complete. No checkpoint may be copied across arms or generations.
+
 The held-out panel has 200 independently seeded worlds in each family. Score
 every generation checkpoint from all four arms on the same world in that
 family, retaining failed tasks and native statuses: 2 families × 3
@@ -112,11 +125,13 @@ untouched split; historical allocations must not be rescored.
 ## Current readiness
 
 The runner and analyzer implement the allocation, 24-checkpoint manifest,
-resource-preflight, structural-control, and fail-closed held-out checks. The
-current D4 and Loopover registered-root candidate packets are still awaiting
-exact approval. Approved descendants, complete cross-family lineages, and an
-exactly resource-matched development panel are not available, so this draft
-must not be frozen and no held-out allocation may be accessed.
+resource-preflight, structural-control, and fail-closed held-out checks. No
+descendant manifest is complete. The current D4 and Loopover registered-root
+candidate packets are awaiting exact approval for invention-only generation
+one. Even after those actions, ten additional invention/full transitions and
+12 passive descendant captures are required. An exactly resource-matched
+development panel is also unavailable, so this draft must not be frozen and
+no held-out allocation may be accessed.
 
 The current native provenance audit is `ATTESTED` with no issues. These hashes
 describe the verified runtime snapshot at the time of this draft update; the

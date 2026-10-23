@@ -881,3 +881,12 @@ The held-out runner also rejects a committed preregistration draft with no
 machine-readable freeze before constructing a learner or any evaluation world.
 The focused runner module passes 7 tests. This confirms the current protocol
 draft cannot access held-out data and does not alter the evidence dispositions.
+
+The two pending registered-root requests bind to the D4 and Loopover
+`invention_only` generation-zero parents. If approved, they provide only the
+two invention-only generation-one descendants. The 24-checkpoint panel still
+requires ten further arm-specific approved transitions for the remaining
+invention-only/full generations, plus 12 passive descendant captures for the
+unchanged/adaptive-only controls. No registered descendant manifest or
+resource-matched panel exists; P22 efficacy and L1–L7 dispositions remain
+open.
