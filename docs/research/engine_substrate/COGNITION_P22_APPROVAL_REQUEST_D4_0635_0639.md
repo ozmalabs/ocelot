@@ -1,6 +1,10 @@
 # P22 candidate-specific simulated-adoption request: D4 0635–0639
 
-**Status: awaiting exact user approval. No action has been taken.**
+**Status: superseded by [`COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.md`](COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.md). No action has been taken under this request.**
+
+The later candidate qualified on three independent-goal pairs rather than two.
+The old machine request is marked `superseded`, so the guarded CLI will reject
+it; approval of this old digest must not be used for a transition.
 
 This request covers one guarded D4 training-simulator transition for candidate
 `#26693`, followed by capture of its generation-three checkpoint only if the

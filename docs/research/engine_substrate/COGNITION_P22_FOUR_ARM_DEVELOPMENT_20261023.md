@@ -1717,3 +1717,9 @@ has SHA-256 `8a08579df5bcff5be800a44ab529cff6358f8a05025e4429dfbd8e1c3abb1313`
 and decompresses to the raw digest. Draws 0718–0721 are consumed training
 evidence. The qualified candidate has not been adopted and creates no
 generation-three checkpoint or improvement result.
+
+Candidate `#16750` supersedes the earlier unapproved `#26693` request because
+it qualified on three independent-goal pairs rather than two. The
+candidate-specific request for `#16750` is recorded in
+[`COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.md`](COGNITION_P22_APPROVAL_REQUEST_D4_0718_0721.md);
+the prior request is marked superseded. No adoption has been performed.
