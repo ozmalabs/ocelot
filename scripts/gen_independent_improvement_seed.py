@@ -30,6 +30,19 @@ def build():
     base["edges"].append({"src": {"role": "agent_root"},
         "type": "has_independent_improvement_policy", "tgt": {"local": local_id}, "attrs": {}})
     local_id += 1
+    def novel_effect(candidate):
+        """Exclude a proposal whose permutation effect is already active."""
+        same_schema = Exists(N("agent", "has_process_schema"), "same_schema",
+            And(Eq(A("same_schema", "domain"), A(candidate, "domain")),
+                Eq(A("same_schema", "params"), A(candidate, "params")),
+                Eq(A("same_schema", "status"), L("active"))))
+        same_adopted = Exists(N("agent", "has_open_process_candidate"),
+            "same_adopted", And(
+                Eq(A("same_adopted", "domain"), A(candidate, "domain")),
+                Eq(A("same_adopted", "params"), A(candidate, "params")),
+                Eq(A("same_adopted", "status"), L("adopted_candidate")),
+                Eq(A("same_adopted", "adoption_status"), L("approved"))))
+        return And(Not(same_schema), Not(same_adopted))
     base["nodes"].append({"local_id": local_id,
         "type": "IndependentImprovementCurriculumBridgePolicy", "attrs": {
             "name": "p22_curriculum_search_bridge", "enabled": 0.0,
@@ -47,6 +60,7 @@ def build():
         ("OpenProcessSearchRequest", "has_search_attempt", "OpenProcessSearchAttempt"),
         ("OpenProcessSearchRequest", "searches_task", "SolveTask"),
         ("Agent", "has_open_process_search_policy", "OpenProcessSearchPolicy"),
+        ("Agent", "has_process_schema", "ProcessSchema"),
         ("Agent", "has_open_process_candidate", "OpenProcessCandidate"),
         ("OpenProcessCandidate", "derived_from_attempt", "OpenProcessSearchAttempt"),
         ("OpenProcessCandidate", "has_expression_digest_receipt", "OpenProcessDigestReceipt"),
@@ -229,9 +243,10 @@ def build():
     base["rules"].append({"name": "iip_qualify_after_independent_native_trials",
         "area": "memory_consolidation", "order": 14,
         "latency_class": "background", "batch": False,
-        "comment": "Require a second distinct native-verified expression trial from the training split before a proposal may seek exact candidate approval.",
+        "comment": "Require a second distinct native-verified expression trial and a finite effect absent from active/adopted processes before exact candidate approval.",
         "match": [policy,
             ["agent", "has_independent_improvement_proposal", "proposal"],
+            ["proposal", "proposes_native_candidate", "candidate"],
             ["proposal", "derived_from_trial", "source"],
             ["source", "about_task", "source_task"],
             ["agent", "has_open_process_search_request", "source_request"],
@@ -252,6 +267,7 @@ def build():
             {"type": "Not", "arg": Eq({"type": "Var", "name": "source_task"},
                                          {"type": "Var", "name": "task"})},
             Eq(A("proposal", "status"), L("awaiting_native_qualification")),
+            novel_effect("candidate"),
             Not(Exists(N("proposal", "has_native_qualification"), "prior_qualification",
                          L(True)))),
         "effects": [["add_node", "qualification", "IndependentImprovementQualification", {
@@ -271,7 +287,7 @@ def build():
     base["rules"].append({"name": "iip_qualify_after_independent_goal_composition",
         "area": "memory_consolidation", "order": 15,
         "latency_class": "background", "batch": False,
-        "comment": "Qualify a source proposal only when its attested expression participates in a native-verified solution for a different training goal.",
+        "comment": "Qualify only a novel attested effect that participates in a native-verified solution for a different training goal.",
         "match": [policy,
             ["agent", "has_independent_improvement_proposal", "proposal"],
             ["proposal", "proposes_native_candidate", "candidate"],
@@ -306,6 +322,7 @@ def build():
                A("trial_candidate", "effect_digest")),
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
             Eq(A("proposal", "status"), L("awaiting_native_qualification")),
+            novel_effect("candidate"),
             Not(Exists(N("proposal", "has_native_qualification"),
                        "prior_qualification", L(True)))),
         "effects": [["add_node", "qualification", "IndependentImprovementQualification", {

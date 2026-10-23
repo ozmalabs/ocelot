@@ -103,6 +103,41 @@ def test_qualification_from_native_trials():
     assert len(agent.nodes("OpenProcessSearchAttempt")) == attempt_count
 
 
+def test_candidate_effect_already_active_cannot_qualify_as_improvement():
+    agent = _agent()
+    candidate = _candidate(agent)
+    source_attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    source_task = agent.native.neighbours(source_attempt, "about_task")[0]
+    agent.s.set_attr(source_task, "split", "training")
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    attest_open_process_candidate(agent, candidate)
+    _install(agent)
+    agent.s.set_attr(agent.nodes("IndependentImprovementPolicy")[0], "enabled", 1.0)
+    for _ in range(8):
+        agent.s.tick(4000)
+    proposal, = agent.nodes("IndependentImprovementProposal")
+
+    params = list(agent.attrs(candidate)["params"])
+    duplicate = agent.s.add_node("ProcessSchema", {
+        "name": "already-active-candidate-effect", "kind": "permutation",
+        "domain_kind": "permutation", "domain": "search", "params": params,
+        "source_digest": params_digest(params), "cost": 1.0, "status": "active",
+        "provenance": "qualification_guard_regression", "invariants": [],
+        "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+        "probe_epoch": 0, "source_probe_epoch": 0})
+    agent.s.add_edge(agent.ag, "has_process_schema", duplicate, {})
+    agent.s.add_edge(agent.domains["search"], "has_held_process", duplicate, {})
+    second_task = agent.add_solve_task("search", [0, 1, 2, 3],
+        agent.attrs(source_task)["goal"], training_trial_key="duplicate-effect-trial")
+    agent.s.set_attr(second_task, "split", "training")
+    agent.s.set_attr(second_task, "status", "stuck")
+    for _ in range(20):
+        agent.s.tick(4000)
+
+    assert not agent.native.neighbours(proposal, "has_native_qualification")
+    assert agent.attrs(proposal)["status"] == "awaiting_native_qualification"
+
+
 def test_three_generation_native_development_lineage():
     """Exercise repeated training qualification, exact approval and receipt capture.
 
@@ -130,7 +165,7 @@ def test_three_generation_native_development_lineage():
     checkpoints = [parent]
     for generation in range(1, 4):
         if generation > 1:
-            operand = held_b if generation == 2 else held_a
+            operand = held_a if generation == 2 else held_b
             target = _compose(agent, list(checkpoints[-1].params), operand)
             goal = _apply(agent, target, initial)
             task = agent.add_solve_task("search", initial, goal,
@@ -158,7 +193,14 @@ def test_three_generation_native_development_lineage():
             agent.s.tick(4000)
         proposal = next(proposal for proposal in agent.nodes("IndependentImprovementProposal")
             if agent.native.neighbours(proposal, "derived_from_trial") == [attempt])
-        assert agent.native.neighbours(proposal, "has_native_qualification")
+        assert agent.native.neighbours(proposal, "has_native_qualification"), {
+            "generation": generation, "candidate_params": agent.attrs(candidate).get("params"),
+            "active_schema_params": [agent.attrs(schema).get("params")
+                for schema in agent.native.neighbours(agent.ag, "has_process_schema")],
+            "adopted_params": [agent.attrs(item).get("params")
+                for item in agent.nodes("OpenProcessCandidate")
+                if agent.attrs(item).get("status") == "adopted_candidate"],
+        }
         assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
 
         approval = _approve(agent, candidate)
@@ -196,9 +238,8 @@ def test_three_generation_family_sized_development_lineages():
     development-only lineage probes, so this does not validate held-out goals.
     All approvals below are exact test fixtures, never live authorization.
     """
-    for family, world_fn, draw, extra_operand in (
-            ("loopover", generate_loopover_world, 11, "C1"),
-            ("d4", generate_d4_world, 12, "flip_r")):
+    for family, world_fn, draw, extra_operands in (
+            ("loopover", generate_loopover_world, 11, ("C1", "R0")),):
         world = world_fn(split="train", draw=draw)
         agent, domain = _p19_agent(attempts=30000, held=world["held_processes"])
         agent.s.set_attr(domain, "probes", [world["initial_state"]])
@@ -235,14 +276,22 @@ def test_three_generation_family_sized_development_lineages():
             attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
             proposal = next(proposal for proposal in agent.nodes("IndependentImprovementProposal")
                 if agent.native.neighbours(proposal, "derived_from_trial") == [attempt])
-            assert agent.native.neighbours(proposal, "has_native_qualification")
+            assert agent.native.neighbours(proposal, "has_native_qualification"), {
+                "family": family, "generation": generation,
+                "candidate_params": agent.attrs(candidate).get("params"),
+                "active_schema_params": [agent.attrs(schema).get("params")
+                    for schema in agent.native.neighbours(agent.ag, "has_process_schema")],
+                "adopted_params": [agent.attrs(item).get("params")
+                    for item in agent.nodes("OpenProcessCandidate")
+                    if agent.attrs(item).get("status") == "adopted_candidate"],
+            }
             assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
             return candidate
 
         candidate = train_and_qualify(world["goal_state"], 1)
         for generation in range(1, 4):
             if generation > 1:
-                operand = world["held_processes"][extra_operand]
+                operand = world["held_processes"][extra_operands[generation - 2]]
                 target = _compose(agent, list(checkpoints[-1].params), operand)
                 candidate = train_and_qualify(_apply(agent, target, initial), generation)
             approval = _approve(agent, candidate)

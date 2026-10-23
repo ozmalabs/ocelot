@@ -772,12 +772,14 @@ proposal-search working graph; checkpoint evaluation installs its own fixed
 solver. On fresh D4 draws 0932–0935, the registered invention-only root
 produced candidate `#1870` (digest
 `209f9861ca82daf500284f696298b28b18a420c885bf6c16d4a5aa23e714fd65`,
-parameters `[1,3,0,2]`), distinct from the root process. It qualified on
-0932/0933 and 0932/0935. An exact training-only replay reproduced both
-qualifications. No approval, receipt, validation allocation or held-out
-access occurred. A candidate-specific request now awaits approval; until a
-verified descendant checkpoint exists, no P22 efficacy or capability result
-can be claimed and L1–L7 remain unchanged.
+parameters `[1,3,0,2]`) and recorded qualifications on 0932/0933 and
+0932/0935. Exact training-only replay reproduced them. A later effect audit
+found the candidate identical to the already-held `rot90` process in that
+root, invalidating both qualifications as improvement evidence. Its request
+was superseded; no approval, receipt, validation allocation or held-out
+access occurred. Native qualification now excludes effects already present
+in active or adopted processes. No P22 efficacy or capability result can be
+claimed and L1–L7 remain unchanged.
 
 Two Loopover continuations from its registered invention-only root used fresh
 four-goal panels after solver isolation was corrected. Both spent the full
