@@ -656,8 +656,7 @@ class CheckpointWorldAdapter:
 
 
 def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
-                                  world_id: str, initial_state: list[int],
-                                  goal_state: list[int],
+                                  world: dict,
                                   agent_factory, max_rule_rounds: int = 256) -> dict:
     """Run a fresh native learner graph restored from a checkpoint on one task.
 
@@ -670,8 +669,24 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         raise ValueError("cannot evaluate an unattested native checkpoint")
     if checkpoint.native_graph_snapshot_json is None:
         raise ValueError("checkpoint is missing its immutable native graph snapshot")
-    if not world_id:
-        raise ValueError("world identity is required")
+    if not isinstance(world, dict):
+        raise ValueError("a registered training-world view is required")
+    generators = {
+        "pmb_generated_d4_corner_v2": generate_d4_world_v2,
+        "pmb_generated_loopover_v2": generate_loopover_world_v2,
+    }
+    generator = generators.get(world.get("family"))
+    draw = world.get("draw")
+    if (generator is None or world.get("split") != "train"
+            or isinstance(draw, bool) or not isinstance(draw, int)
+            or not 0 <= draw < 1000):
+        raise ValueError("checkpoint continuation accepts only registered training worlds")
+    expected_world = agent_view(generator(split="train", draw=draw))
+    if world != expected_world:
+        raise ValueError("task must exactly match its registered training-world view")
+    world_id = world["world_id"]
+    initial_state = world["initial_state"]
+    goal_state = world["goal_state"]
     if (isinstance(max_rule_rounds, bool) or not isinstance(max_rule_rounds, int)
             or max_rule_rounds < 1):
         raise ValueError("max_rule_rounds must be a positive integer")
@@ -704,6 +719,8 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         domain_name = domain_names[0] if domain_names else f"p22-checkpoint-domain:{len(params)}"
         domains = [node for node in store.nodes("ProcessDomain")
                    if store.node(node)["attrs"].get("name") == domain_name]
+        if len(domains) > 1:
+            raise ValueError("checkpoint learner graph has duplicate native domain identities")
         domain = domains[0] if domains else store.add_node("ProcessDomain", {
             "name": domain_name, "kind": "permutation", "domain_kind": "permutation",
             "object_count": float(len(params)), "probes": [list(initial_state)],
@@ -711,6 +728,29 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
             "probe_epoch": 0})
         if not domains:
             store.add_edge(root, "has_process_domain", domain, {})
+        held_process_nodes = [node for node in store.nodes("ProcessSchema")
+            if store.node(node)["attrs"].get("domain") == domain_name]
+        for process_name, process_params in sorted(world["held_processes"].items()):
+            matches = [node for node in held_process_nodes
+                if store.node(node)["attrs"].get("name") == process_name]
+            if matches:
+                if any(store.node(node)["attrs"].get("params") != process_params
+                       or store.node(node)["attrs"].get("status") != "active"
+                       or store.node(node)["attrs"].get("source_digest")
+                          != params_digest(process_params) for node in matches):
+                    raise ValueError("checkpoint domain conflicts with registered world process")
+                continue
+            schema = store.add_node("ProcessSchema", {
+                "name": process_name, "kind": "permutation",
+                "domain": domain_name, "domain_kind": "permutation",
+                "params": list(process_params),
+                "source_digest": params_digest(list(process_params)),
+                "cost": 1.0, "status": "active", "provenance": "world_affordance",
+                "invariants": [], "owner_agent": root, "source_epoch": 0,
+                "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0,
+                "source_probe_epoch": 0})
+            store.add_edge(root, "has_process_schema", schema, {})
+            store.add_edge(domain, "has_held_process", schema, {})
         if any(store.node(node)["attrs"].get("task_key") == task_key
                for node in store.nodes("SolveTask")):
             raise ValueError("checkpoint graph already contains this evaluation task identity")
@@ -719,7 +759,8 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
             "initial_state": list(initial_state), "state": list(initial_state),
             "goal": list(goal_state), "object_count": float(len(params)),
             "status": "active", "trace": [], "steps": 0, "moves": 0.0,
-            "stuck_count": 0, "split": "training"})
+            "stuck_count": 0, "split": "training",
+            "training_trial_key": world_id})
         store.add_edge(root, "has_solve_task", task, {})
         store.add_edge(task, "about_domain", domain, {})
         fired_total = 0

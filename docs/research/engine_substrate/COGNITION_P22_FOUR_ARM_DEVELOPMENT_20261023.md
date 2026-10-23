@@ -747,3 +747,17 @@ created. The adapter, ablation, and independent-improvement bundle passes 28
 tests. This supplies a continuation execution primitive, not a complete
 four-arm checkpoint comparison or efficacy result; no held-out allocation was
 accessed.
+
+## Registered-world continuation guard (2026-10-23)
+
+The restored task evaluator now accepts only an exact `agent_view` from a
+registered v2 training draw. It rejects held-out/validation splits and any
+mutation to the world record before booting the learner. The restored native
+domain receives the registered world’s visible held processes, checking
+existing schemas for active status, parameter and digest agreement. The task
+retains the registered training-world identity. The D4 regression confirms
+native solving on draw 0015 and rejects the same draw's held-out view. The
+28-test P22.03 bundle passes, as do runner and analyzer self-checks; neither
+self-check accesses held-out data. This closes a split-provenance gap for the
+single-task continuation primitive, not the complete four-arm checkpoint
+comparison or its resource/effect gates.

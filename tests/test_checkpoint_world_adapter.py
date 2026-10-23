@@ -473,17 +473,20 @@ def test_checkpoint_captures_and_restores_exact_native_graph_snapshot():
 def test_restored_checkpoint_runs_fresh_task_through_native_learner():
     from substrate.boot_profiles import boot_cognition_on
 
+    world = agent_view(generate_d4_world_v2(split="train", draw=15))
     source = boot_cognition_on()
     for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
         for policy in source.s.nodes(policy_type):
             source.s.set_attr(policy, "enabled", 1.0)
     domain = source.s.add_node("ProcessDomain", {"name": "checkpoint-root",
-        "kind": "permutation", "domain_kind": "permutation", "probes": [[0, 1, 2, 3]],
+        "kind": "permutation", "domain_kind": "permutation",
+        "probes": [world["initial_state"]],
         "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
     source.s.add_edge(source.agent, "has_process_domain", domain, {})
-    schema = source.s.add_node("ProcessSchema", {"name": "swap", "kind": "permutation",
+    params = world["held_processes"]["rot90"]
+    schema = source.s.add_node("ProcessSchema", {"name": "rot90", "kind": "permutation",
         "domain": "checkpoint-root", "domain_kind": "permutation",
-        "params": [1, 0, 2, 3], "source_digest": params_digest([1, 0, 2, 3]),
+        "params": params, "source_digest": params_digest(params),
         "status": "active", "provenance": "held", "cost": 1.0,
         "owner_agent": source.agent, "invariants": [],
         "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
@@ -500,10 +503,14 @@ def test_restored_checkpoint_runs_fresh_task_through_native_learner():
         return agent
 
     result = score_restored_checkpoint_task(checkpoint,
-        world_id="fresh-training-task", initial_state=[0, 1, 2, 3],
-        goal_state=[1, 0, 2, 3], agent_factory=boot)
+        world=world, agent_factory=boot)
     assert result["status"] == "COMPLETED"
     assert result["task_status"] == "solved"
     assert result["score"] == 1
     assert result["quiescent"]
     assert result["approval_count"] == result["world_receipt_count"] == 0
+
+    heldout = agent_view(generate_d4_world_v2(split="heldout", draw=6))
+    with pytest.raises(ValueError, match="registered training worlds"):
+        score_restored_checkpoint_task(checkpoint, world=heldout,
+                                      agent_factory=boot)
