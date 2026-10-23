@@ -61,8 +61,8 @@ def main() -> int:
         if args.output is None or args.output.exists():
             parser.error("approved candidate adoption requires a new --output path")
         try:
-            authorization_document = json.loads(
-                args.approved_candidate_binding.read_text(encoding="utf-8"))
+            authorization_document_bytes = args.approved_candidate_binding.read_bytes()
+            authorization_document = json.loads(authorization_document_bytes)
         except (OSError, json.JSONDecodeError) as exc:
             parser.error(f"cannot read candidate approval binding: {exc}")
         if (not isinstance(authorization_document, dict)
@@ -88,7 +88,7 @@ def main() -> int:
             parser.error("review seconds must be supplied on the command line, not prefilled in the binding")
         approved_binding["human_review_seconds"] = args.review_seconds
         authorization_document_sha256 = hashlib.sha256(
-            args.approved_candidate_binding.read_bytes()).hexdigest()
+            authorization_document_bytes).hexdigest()
     elif args.output is not None and args.output.exists():
         parser.error("refusing to overwrite an existing development probe artifact")
     result = run_p22_training_proposal_probe(
