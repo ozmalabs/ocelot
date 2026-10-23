@@ -1730,3 +1730,36 @@ without approval flags before submission. Candidate `#16750`, qualification
 approval or receipt and used no validation worlds. Compressed replay SHA-256
 is `db3a6176f5e0e29ecb3eec8da184db62f38e40706a343fc86048f2ff25d57647`
 (raw SHA-256 `21738f213e8c269b8db67b0a797b0fea6d3eeda37f24ed3b828ad1e0c4f95746`).
+
+## Three-held-process Loopover transfer result
+
+The native search seed now supports a training-only transfer depth of three:
+a digest-attested candidate composed with three held processes. Four rules
+cover every position of the candidate while the graph matcher enumerates the
+held-process bindings. The focused native search/development/CLI bundle passes
+49 tests, including exact finite effects for all four positions. The P22
+arm/checkpoint/profile bundle passes 93 tests. Runtime provenance at commit
+`77e4343e6b24642b357f12be932712c6dea7b983` is `ATTESTED`, with matching build
+sources, verified native binding, and no issues; the source-bundle digest is
+`eef27325ad6ab9508fcab710697dbb54cfda17b471c84fee0fad2cffa50c0b89`.
+
+On fresh pairwise-distinct Loopover training draws 0722–0725, candidate
+`#10761` (digest
+`4e818dbce301c1699cf22dafe914e489d7423d3becc60575d44fa9875a5132e4`, effect
+`[[1,2,6,0,4,5,8,3,7]]`) received 132 two-held and 5,280 three-held trials on
+each of the three later goals. All 16,236 trials were residual; none
+qualified. All four tasks remained stuck after 10,000 attempts each, exactly
+reserving 40,000 globally. There were no approvals, receipts, validation
+worlds, or held-out exposures.
+
+Runtime was 1,387.363 seconds, with 55 native rule steps, peak RSS
+2,469,576,704 bytes, 40,774 graph nodes, 248,974 edges, 74,961,131 serialized
+graph bytes, 27,360,601 native graph-memory bytes, and 13,579,431,373 native
+term evaluations. Raw JSON SHA-256 is
+`5c92372bf4c3f878aad260d70f83aa6191b4fc72b83e4281448250110fe94cfe`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0722_0725_three_held.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0722_0725_three_held.json.gz)
+has SHA-256 `1c306200f3e0a0a348af96894e9ca24931ffdffd181fb243995ad445f35d3988`
+and decompresses to the raw digest. Draws 0722–0725 are consumed training
+evidence. This grammar expansion still produces no qualified Loopover
+descendant or efficacy estimate; P22.E2–E3 remain open.

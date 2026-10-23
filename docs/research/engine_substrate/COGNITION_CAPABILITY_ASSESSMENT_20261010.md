@@ -711,3 +711,10 @@ qualified candidate `#16750` on three independent-goal pairs. This remains
 training-only qualification evidence: there is no candidate approval,
 generation-three checkpoint, held-out comparison, or improvement estimate.
 L1–L7 dispositions remain unchanged.
+
+The native Loopover transfer grammar was extended to candidate compositions
+with three held processes and exercised on fresh draws 0722–0725. All 16,236
+transfer trials across three independent goals were residual; no candidate
+qualified. This is a mechanism expansion with negative training-only results,
+not evidence of Loopover transfer or efficacy. L1–L7 dispositions remain
+unchanged.
