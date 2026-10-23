@@ -976,11 +976,12 @@ is `7435894f1b65c8c62d0d7b401f0db73f1513372ee24f66dd2c01b552aafcab9b`.
 The candidate-specific authorization is exhausted. It permits no later
 generation, Loopover action, preregistration, or held-out allocation. This is
 one D4 lineage edge only and does not establish learning efficacy or satisfy
-the cross-family three-generation panel. The complete focused bundle produced
+the cross-family three-generation panel. The first integrated rerun produced
 95 passing tests and two failures caused by CLI tests that assumed the fixed
 one-shot result path remained unused. Those tests now create temporary
-request-bound paths; the CLI module passes 3/3. Runner and analyzer
-self-checks pass, and no held-out world was accessed.
+request-bound paths. The complete affected P22 bundle passes 97 tests in
+286.89 seconds. Runner and analyzer self-checks pass, and no held-out world
+was accessed.
 
 ## Post-approval candidate development probes (2026-10-23)
 
