@@ -1231,6 +1231,20 @@ has SHA-256 `4ec2ad7a3c50eeb24e93d5bc86b49c1136e5bbda9989cce914baf795753747a0`.
 Draws 0592/0593 are consumed training-only data. The D4 generation-three
 candidate gate remains unmet.
 
+## Loopover higher-tick development diagnostic (2026-10-23)
+
+Fresh distinct training draws 0596/0597 used 60 rule-processing ticks (twice
+the earlier 30-tick setting), 30,000 attempts per request and the 120,000
+global ceiling. Both tasks ended stuck. Candidate `#30761` (digest
+`76608f5df8181234dc6fa45b57f2155a838269edc96bf5dcfce9f368da688681`) remained
+unqualified; its 24 funded trials on draw 0597 were all residual. No approval
+or receipt was created, and validation and held-out allocations were empty.
+Raw artifact
+[`p22_candidate_probe_loopover_0596_0597.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0596_0597.json)
+has SHA-256 `c7796ed1acf60d1b7614fbb24f1c66e707790ab3ec8e43f9c8fad2e20f347901`.
+Draws 0596/0597 are consumed training-only data. Loopover still has no
+approved generation-one descendant.
+
 ## Repeated D4 generation-two continuation (2026-10-23)
 
 The same digest-valid generation-two parent was restored on fresh distinct

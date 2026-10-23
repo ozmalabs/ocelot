@@ -79,6 +79,10 @@ A repeat on D4 draws 0594/0595 produced no independently qualified candidate;
 the identity candidate had residual second-goal trials. D4 generation three
 and cross-family P22 held-out prerequisites remain open.
 
+Loopover draws 0596/0597 used 60 rule-processing ticks but still produced no
+independently qualified candidate. The 24 funded second-goal trials were all
+residual. This adds no approved Loopover descendant or capability disposition.
+
 Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out
