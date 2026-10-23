@@ -59,7 +59,7 @@ def test_runner_self_check_executes_native_adapter_and_controls():
     assert result["manifest_lineage_tamper_control"]["status"] == "FAIL"
 
 
-def test_heldout_freeze_is_verified_before_world_generator_access(monkeypatch):
+def test_heldout_freeze_is_verified_before_learner_or_world_access(monkeypatch):
     def reject_freeze(*_args, **_kwargs):
         raise RuntimeError("freeze rejected")
 
@@ -67,6 +67,7 @@ def test_heldout_freeze_is_verified_before_world_generator_access(monkeypatch):
         pytest.fail("held-out world generator accessed before freeze verification")
 
     monkeypatch.setattr(linear_p22_v1, "_verify_freeze", reject_freeze)
+    monkeypatch.setattr(linear_p22_v1, "Agent", reject_world_access)
     monkeypatch.setattr(linear_p22_v1, "generate_d4_world_v2", reject_world_access)
     monkeypatch.setattr(linear_p22_v1, "generate_loopover_world_v2", reject_world_access)
     with pytest.raises(RuntimeError, match="freeze rejected"):
