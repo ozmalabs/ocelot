@@ -609,3 +609,5 @@ Loopover draws 0588/0589 exhausted their 30,000-per-request, 60,000-global train
 The follow-up on draws 0590/0591 used the runner's maximum 120,000 global ceiling and again produced no qualified candidate. Candidate `#827` had 24 funded but residual trials on the second goal. Loopover still has no approved descendant, and no capability disposition changes.
 
 D4 continuation from the digest-valid generation-two checkpoint on distinct draws 0592/0593 used the raised 120,000 global ceiling and 30,000 attempts per request. Candidate `#16769` had mixed outcomes on the second goal and no independent-goal qualification across both new tasks. The D4 generation-three gate remains unmet; no new approval, receipt, validation, or held-out access occurred.
+
+A repeated D4 continuation on fresh draws 0594/0595 also ended stuck at 30,000 attempts per request. Its identity candidate had residual trials only on the second goal, leaving the generation-three gate unmet. No capability disposition changes.

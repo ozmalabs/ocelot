@@ -75,6 +75,10 @@ global ceiling but produced no candidate qualified on both new goals. Candidate
 `#16769` had mixed second-goal outcomes. D4 still lacks a generation-three
 descendant; no capability disposition changes.
 
+A repeat on D4 draws 0594/0595 produced no independently qualified candidate;
+the identity candidate had residual second-goal trials. D4 generation three
+and cross-family P22 held-out prerequisites remain open.
+
 Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out

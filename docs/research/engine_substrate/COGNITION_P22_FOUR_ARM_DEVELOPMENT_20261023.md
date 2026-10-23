@@ -1231,9 +1231,26 @@ has SHA-256 `4ec2ad7a3c50eeb24e93d5bc86b49c1136e5bbda9989cce914baf795753747a0`.
 Draws 0592/0593 are consumed training-only data. The D4 generation-three
 candidate gate remains unmet.
 
-After the restored-ceiling correction, all 10 tests in
-`tests/test_p22_development.py` pass. The P22 runner self-check passes and
-reports `heldout_accessed=false`; its lineage-tamper controls reject the
-mutated fixtures. The analyzer self-check passes all nine negative and
-positive controls, including missing/partial/mismatched resource sources.
-The development continuation on fresh D4 draws 0576/0577 remains in progress.
+## Repeated D4 generation-two continuation (2026-10-23)
+
+The same digest-valid generation-two parent was restored on fresh distinct
+training draws 0594/0595 at the 120,000 global and 30,000 per-request ceilings.
+Both tasks ended stuck. Three candidate records were present; candidate
+`#16750` (digest
+`b904536f49cf9b86ecca03c09449b15934ccf097d3a9978782ef5e07b3dc379c`) had an
+identity effect and residual trials only on draw 0595. No candidate qualified
+across both new goals. The two approvals and receipts are inherited from the
+generation-two parent; no new action or receipt occurred. Validation and
+held-out allocations were empty. Raw artifact
+[`p22_candidate_continuation_d4_0594_0595.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0594_0595.json)
+has SHA-256 `a7c07f4b99314644737ce3d577384de52bab5300c782de127f1b3a06b311a119`.
+Draws 0594/0595 are consumed training-only data. The D4 generation-three
+candidate gate remains unmet.
+
+The focused `tests/test_p22_development.py` and
+`tests/test_run_p22_development_probe_cli.py` suites pass: 15 tests in
+228.48 seconds. The P22 runner self-check passes and reports
+`heldout_accessed=false`; its lineage-tamper controls reject the mutated
+fixtures. The analyzer self-check passes all nine negative and positive
+controls, including missing/partial/mismatched resource sources. These checks
+do not interpret any continuation as an efficacy result.
