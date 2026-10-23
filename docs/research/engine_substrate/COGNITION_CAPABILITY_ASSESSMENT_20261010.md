@@ -575,3 +575,5 @@ A complete recursive inventory of retained P22 result artifacts found no generat
 The approval CLI parses and hashes the same binding bytes; its two rejection-path tests pass. Updated source-bundle SHA-256 is `8aafcbf1e7e2f16f1b11287b2fbd54d7b75d9fd12fca64bdc04cbf3020429c6f`, with native runtime still attested and clean. No adoption was executed.
 
 The candidate-action CLI durably reserves its one-shot output before any probe work; interrupted attempts cannot be retried under the same request. Three CLI guard tests pass. Native runtime remains attested with no issues; updated P22 source-bundle SHA-256 is `080c96bfb05da93064ab8d5d88d36464be8fac8c8dcb64fc39f6607802a463f2`. No action was run.
+
+The integrated P22 regression bundle now passes 56 tests, including the analyzer resource-match gate and guarded approval CLI. Runner and analyzer self-checks pass; the runner reports no held-out access. Native runtime remains attested and clean. This verifies implementation and controls only; authorized descendant checkpoints, a matched panel, standalone freeze, and held-out evidence remain outstanding.
