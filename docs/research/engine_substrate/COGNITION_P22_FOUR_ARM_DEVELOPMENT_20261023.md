@@ -1763,3 +1763,11 @@ has SHA-256 `1c306200f3e0a0a348af96894e9ca24931ffdffd181fb243995ad445f35d3988`
 and decompresses to the raw digest. Draws 0722–0725 are consumed training
 evidence. This grammar expansion still produces no qualified Loopover
 descendant or efficacy estimate; P22.E2–E3 remain open.
+
+After this seed change, the D4 generation-three request was replayed from its
+exact parent with its bound depth of two. It still reconstructs candidate
+`#16750`, qualification `#56758`, and witnesses 0718/0719 exactly; inherited
+approval and receipt totals remain unchanged and validation is empty. The
+compressed replay SHA-256 is
+`8404827040182163d3960b2ab9d236ca1730355ecebfa0348f3096533f7c7a8e`
+(raw SHA-256 `84d0efc1d930a652aed709d5010f8c492cc8193b430ceb0eea7aa852fc44addb`).

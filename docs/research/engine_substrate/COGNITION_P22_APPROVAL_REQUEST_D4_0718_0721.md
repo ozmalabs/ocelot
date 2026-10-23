@@ -63,3 +63,11 @@ The compressed replay is
 SHA-256 `db3a6176f5e0e29ecb3eec8da184db62f38e40706a343fc86048f2ff25d57647`;
 its decompressed raw SHA-256 is
 `21738f213e8c269b8db67b0a797b0fea6d3eeda37f24ed3b828ad1e0c4f95746`.
+
+The binding was replayed again after the native three-held-process extension
+was committed. The explicit depth-two request still reconstructed the same
+candidate, qualification and witnesses; no new approval or receipt was added.
+That compressed replay is
+[`p22_candidate_approval_replay_d4_0718_0721_postdepth3.json.gz`](../../../evaluation/process_mastery/results/p22_candidate_approval_replay_d4_0718_0721_postdepth3.json.gz),
+SHA-256 `8404827040182163d3960b2ab9d236ca1730355ecebfa0348f3096533f7c7a8e`;
+raw SHA-256 `84d0efc1d930a652aed709d5010f8c492cc8193b430ceb0eea7aa852fc44addb`.
