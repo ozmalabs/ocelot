@@ -718,3 +718,11 @@ transfer trials across three independent goals were residual; no candidate
 qualified. This is a mechanism expansion with negative training-only results,
 not evidence of Loopover transfer or efficacy. L1–L7 dispositions remain
 unchanged.
+
+The current P22 E2 acceptance recheck passes 58 tests, and the runner/analyzer
+self-checks pass with no held-out access. The standalone freeze and complete
+24-checkpoint manifest are still absent. Candidate `#16750` remains
+unapproved: a later approval response referred to the already-consumed
+identity candidate `#6731`, so it cannot authorize another transition. These
+checks establish runner readiness only; no capability level changes and no
+held-out result is available.
