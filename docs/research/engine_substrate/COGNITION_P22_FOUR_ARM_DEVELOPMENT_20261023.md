@@ -710,3 +710,26 @@ generation-one child. It also shows that the root's remaining global search
 budget was insufficient for two new tasks; a future root/continuation plan
 must reserve the inherited budget for both tasks without silently resetting
 the ceiling.
+
+## Explicit cumulative cap continuation control (2026-10-23)
+
+The training probe now accepts a bounded explicit graph-wide attempt ceiling
+(30,000 default, at most 120,000), exposes it in the CLI, and records both the
+inherited and requested ceiling. On restoration, it updates only the policy
+limit; prior attempts remain charged. A follow-up on fresh distinct-goal draws
+0515/0516 used inherited cap 30,000 and requested cap 100,000. Both tasks
+received their full 10,000 attempts. Cumulative work is 40,000 attempts
+(20,000 from the root plus 20,000 new), 335.909 s, 46 native rule steps, and
+1,419,657,216 bytes peak RSS. One candidate remains unqualified (qualification
+count 0), with no approval, receipt, validation, or held-out allocation. The
+native resource and merged rule-work digests verify. Increasing the explicit
+ceiling fixes the earlier second-task starvation but does not produce a
+qualified child.
+
+The complete JSON SHA-256 is
+`cf3a092738de51da0b41822d3a86b124e7a10516b3da3e690e5544f66488b6bd`; it is
+retained as deterministic gzip at
+[`p22_loopover_generation1_training_0515_0516_cap100k.json.gz`](../../../evaluation/process_mastery/results/p22_loopover_generation1_training_0515_0516_cap100k.json.gz),
+SHA-256 `bcda44aa9df03b6c36f6a54c24a3b56f6f265af62bd58c1a0548de8b5bddcab1`.
+The cap control's continuation, ceiling rejection, and default-cap regressions
+pass. This remains development-only negative qualification evidence.

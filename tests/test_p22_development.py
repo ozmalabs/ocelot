@@ -85,7 +85,8 @@ def test_training_probe_continues_restored_checkpoint_with_cumulative_rule_work(
     result = run_p22_training_proposal_probe(family=family,
         training_draws=(286, 287), training_goal_relation="distinct",
         validation_draws=(), search_ticks=1, per_request_attempt_ceiling=1,
-        measure_native_rule_work=True, parent_checkpoint=parent)
+        global_attempt_ceiling=40000, measure_native_rule_work=True,
+        parent_checkpoint=parent)
     snapshot = result["resource_snapshot"]
     cumulative_work = snapshot["native_rule_work"]
     assert cumulative_work["schema"] == "p22_native_rule_work_v3"
@@ -98,6 +99,9 @@ def test_training_probe_continues_restored_checkpoint_with_cumulative_rule_work(
     assert result["approval_count"] == result["world_receipt_count"] == 0
     assert result["generation_zero_ancestor"]["checkpoint_digest"] == parent.checkpoint_digest
     assert result["parent_checkpoint"]["checkpoint_digest"] == parent.checkpoint_digest
+    assert result["inherited_global_attempt_ceiling"] == 30000.0
+    assert result["global_attempt_ceiling"] == 40000
+    assert snapshot["runtime_counters"]["search_attempts_reserved"] < 40000
 
 
 def test_v2_native_training_proposals_are_qualified_and_scored_nonactionably():
@@ -218,6 +222,7 @@ def test_first_trial_no_candidate_is_retained_as_a_terminal_probe_result():
     assert result["candidate_count"] == 1
     assert result["per_request_attempt_ceiling"] == 5000
     assert result["global_attempt_ceiling"] == 30000
+    assert result["inherited_global_attempt_ceiling"] is None
     assert all(row["qualification_count"] == 0 for row in result["candidates"])
     assert result["approval_count"] == 0
     assert result["world_receipt_count"] == 0
@@ -229,6 +234,10 @@ def test_probe_rejects_attempt_ceiling_above_native_limit():
         run_p22_training_proposal_probe(family="d4",
             training_draws=(286, 287), validation_draws=(386,),
             training_goal_relation="distinct", per_request_attempt_ceiling=30001)
+    with pytest.raises(ValueError, match="global attempt ceiling"):
+        run_p22_training_proposal_probe(family="d4",
+            training_draws=(286, 287), validation_draws=(386,),
+            training_goal_relation="distinct", global_attempt_ceiling=120001)
 
 
 def test_candidate_specific_approval_executes_one_guarded_d4_simulator_action():

@@ -61,6 +61,7 @@ def run_p22_training_proposal_probe(*, family: str,
                                     training_goal_relation: str = "same",
                                     search_ticks: int = 30,
                                     per_request_attempt_ceiling: int = 5000,
+                                    global_attempt_ceiling: int = 30000,
                                     measure_native_rule_work: bool = False,
                                     approved_candidate_binding: dict | None = None,
                                     parent_checkpoint: CheckpointExpression | None = None) -> dict:
@@ -88,10 +89,15 @@ def run_p22_training_proposal_probe(*, family: str,
             or not isinstance(per_request_attempt_ceiling, int)
             or not 1 <= per_request_attempt_ceiling <= 30000):
         raise ValueError("per-request attempt ceiling must be in [1, 30000]")
+    if (isinstance(global_attempt_ceiling, bool)
+            or not isinstance(global_attempt_ceiling, int)
+            or not 1 <= global_attempt_ceiling <= 120000):
+        raise ValueError("global attempt ceiling must be in [1, 120000]")
     if not isinstance(measure_native_rule_work, bool):
         raise ValueError("native rule-work measurement flag must be boolean")
     parent_runtime = {}
     parent_rule_work = None
+    inherited_global_attempt_ceiling = None
     if parent_checkpoint is not None:
         if not CheckpointWorldAdapter._checkpoint_digest_valid(parent_checkpoint):
             raise ValueError("continuation requires an intact parent checkpoint")
@@ -104,6 +110,21 @@ def run_p22_training_proposal_probe(*, family: str,
         parent_snapshot = json.loads(parent_checkpoint.resource_snapshot_json)
         parent_runtime = parent_snapshot.get("runtime_counters") or {}
         parent_rule_work = parent_snapshot.get("native_rule_work")
+        try:
+            parent_graph = json.loads(parent_checkpoint.native_graph_snapshot_json)
+            search_policies = [node["attrs"] for node in parent_graph["nodes"]
+                if isinstance(node, dict) and node.get("type") == "OpenProcessSearchPolicy"
+                and isinstance(node.get("attrs"), dict)]
+            if len(search_policies) != 1:
+                raise ValueError("parent graph must contain one search policy")
+            inherited_global_attempt_ceiling = search_policies[0].get("max_attempts")
+            if (isinstance(inherited_global_attempt_ceiling, bool)
+                    or not isinstance(inherited_global_attempt_ceiling, (int, float))
+                    or not math.isfinite(inherited_global_attempt_ceiling)
+                    or inherited_global_attempt_ceiling < 1):
+                raise ValueError("parent search policy has an invalid global ceiling")
+        except (TypeError, KeyError, ValueError) as exc:
+            raise ValueError("parent checkpoint lacks a valid global search ceiling") from exc
         required_runtime = ("native_rule_steps", "native_model_calls",
             "search_attempts_reserved", "process_peak_rss_bytes", "wall_time_seconds")
         if (not native_rule_work_digest_valid(parent_rule_work)
@@ -145,7 +166,7 @@ def run_p22_training_proposal_probe(*, family: str,
     agent = Agent(track_i=False, extra_seeds=("open_process_search",),
         policy_overrides={
             "OpenProcessSearchPolicy": {"enabled": 1.0,
-                "max_attempts": 30000.0,
+                "max_attempts": float(global_attempt_ceiling),
                 "max_attempts_per_request": float(per_request_attempt_ceiling),
                 "max_candidates": 16.0},
             "ProcessSchemaPolicy": {"enabled": 1.0}},
@@ -158,6 +179,13 @@ def run_p22_training_proposal_probe(*, family: str,
     try:
         if parent_checkpoint is not None:
             restore_native_checkpoint_graph(agent, parent_checkpoint)
+        search_policies = agent.nodes("OpenProcessSearchPolicy")
+        if len(search_policies) != 1:
+            raise RuntimeError("P22 graph must contain exactly one open-search policy")
+        # For a continuation this may raise the declared cap, but does not
+        # reset attempts already charged in the restored graph.
+        agent.s.set_attr(search_policies[0], "max_attempts",
+                         float(global_attempt_ceiling))
         if measure_native_rule_work:
             rule_capture = NativeRuleWorkCapture(agent.native).start()
         if parent_checkpoint is None:
@@ -545,7 +573,8 @@ def run_p22_training_proposal_probe(*, family: str,
             "training_world_ids": [world["world_id"] for world in training_worlds],
             "training_goals_match": goals_match,
             "training_goal_relation": training_goal_relation,
-            "global_attempt_ceiling": 30000,
+            "global_attempt_ceiling": global_attempt_ceiling,
+            "inherited_global_attempt_ceiling": inherited_global_attempt_ceiling,
             "per_request_attempt_ceiling": per_request_attempt_ceiling,
             "native_rule_work": measured_native_rule_work,
             "training_goal_states": [world["goal_state"] for world in training_worlds],

@@ -24,7 +24,9 @@ def main() -> int:
     parser.add_argument("--validation-count", type=int, default=200,
         help="number of nonactionable validation worlds; use 0 for training-only binding reconstruction")
     parser.add_argument("--per-request-attempt-ceiling", type=int, default=5000,
-        help="per-request training-search ceiling; global ceiling remains 30000")
+        help="per-request training-search ceiling")
+    parser.add_argument("--global-attempt-ceiling", type=int, default=30000,
+        help="cumulative graph-wide search ceiling across restored generations (max 120000)")
     parser.add_argument("--search-ticks", type=int, default=30)
     parser.add_argument("--measure-native-rule-work", action="store_true",
         help="enable isolated per-rule native work counters; development only")
@@ -40,6 +42,7 @@ def main() -> int:
         validation_draws=tuple(range(args.validation_start,
                                      args.validation_start + args.validation_count)),
         per_request_attempt_ceiling=args.per_request_attempt_ceiling,
+        global_attempt_ceiling=args.global_attempt_ceiling,
         search_ticks=args.search_ticks,
         measure_native_rule_work=args.measure_native_rule_work)
     encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"

@@ -463,3 +463,13 @@ unqualified, with zero approvals or receipts. This confirms cumulative budget
 enforcement across restoration but creates no learned child or efficacy
 result. The next continuation must reserve enough of the inherited ceiling
 for both tasks; all P22 and L1–L7 dispositions remain open.
+
+A bounded graph-wide attempt-cap override is now explicit in the training
+continuation API and CLI. It records the parent cap and requested cap while
+retaining previously charged attempts. With a requested 100,000 cap, both
+fresh Loopover continuation tasks received 10,000 attempts; cumulative work
+reached 40,000 from a 20,000-attempt root. The candidate nevertheless remained
+unqualified, and no approval or receipt was created. This separates budget
+starvation from candidate qualification for these development draws; it does
+not establish learning or efficacy. All P22 and L1–L7 dispositions remain
+open.
