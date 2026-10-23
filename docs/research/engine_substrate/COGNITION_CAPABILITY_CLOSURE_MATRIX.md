@@ -64,3 +64,8 @@ goals. The D4 generation-three gate remains unmet. Loopover draws 0584–0587
 were interrupted before a native result was written; their outcomes remain
 unknown and are excluded from qualification counts. No capability disposition
 changes.
+
+Loopover training draws 0588/0589 used the full 60,000 global attempt ceiling
+without an independently qualified candidate. Candidate `#30761` had only
+residual second-goal trials. The Loopover generation-one gate and all P22
+held-out prerequisites remain open.

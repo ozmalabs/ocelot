@@ -1185,6 +1185,20 @@ has SHA-256 `203bb0f1a2ee146f1cc7bb9a1a6d21f5f64c028332f6a6b4a1b98831ca8dbb5a`.
 The D4 generation-three candidate gate remains unmet. Draws 0582/0583 are
 consumed training-only data.
 
+## Higher-ceiling Loopover development search (2026-10-23)
+
+Fresh distinct training draws 0588/0589 used 30,000 attempts per request and
+exhausted the 60,000 global attempt ceiling. Both tasks ended stuck. Candidate
+`#30761` (digest
+`7beebaba165b6774992cda6c44b046f093060678fd0c0832fb86408bbcb23c2c`) had no
+independent-goal witness on draw 0588 and only residual trials on draw 0589;
+the global cap stopped further search. No approval or receipt was created,
+and validation and held-out allocations were empty. Raw artifact
+[`p22_candidate_probe_loopover_0588_0589.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0588_0589.json)
+has SHA-256 `d4f3ff9c27b91e87d6753defd6ef3c0ad3c3bde9992fa1a67eefcfce06d4d13f`.
+Draws 0588/0589 are consumed training-only data. This adds no Loopover
+generation-one candidate.
+
 After the restored-ceiling correction, all 10 tests in
 `tests/test_p22_development.py` pass. The P22 runner self-check passes and
 reports `heldout_accessed=false`; its lineage-tamper controls reject the
