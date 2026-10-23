@@ -42,3 +42,19 @@ That duration will be recorded with source `reviewer_self_report`; it will not
 be inferred from elapsed time or message length. A plain approval without the
 duration does not authorize action because the preregistered resource field
 would remain incomplete.
+
+## Reproducible execution binding
+
+The machine-readable candidate binding is [`COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json`](COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json), SHA-256 `176035d013ba82192655b5461bfa45e7cbba2b5ed34a11eeb973940db5f8bc93`. It contains the exact candidate binding and registered training draws, but no reviewer duration. After explicit approval of the digest above and a reviewer-reported duration, execute only this training-only guarded transition with:
+
+```sh
+OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python scripts/run_p22_development_probe.py \
+  --family d4 --training-draws 406 407 --training-goal-relation distinct \
+  --validation-start 0 --validation-count 0 --measure-native-rule-work \
+  --approved-candidate-binding docs/research/engine_substrate/COGNITION_P22_APPROVAL_REQUEST_D4_0406_0407.json \
+  --approve-digest badd1251ee4eb9c779233a3631b307d68ec6e34da40daeb993f8c0be0641d255 \
+  --review-seconds REVIEWER_REPORTED_SECONDS --execute-approved-adoption \
+  --output evaluation/process_mastery/results/p22_approved_candidate_d4_0406_0407.json
+```
+
+Replace `REVIEWER_REPORTED_SECONDS` only with the duration explicitly supplied by the reviewer. The command rejects missing authorization fields, a mismatched digest, non-training-only settings, or an output path other than the one bound into the request; that fixed output path also prevents a second invocation after a result has been written. Its CLI guard tests pass. This command is prepared for a future authorized action; it has not been run and creates no approval, receipt, or checkpoint by itself.
