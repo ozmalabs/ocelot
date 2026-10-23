@@ -120,7 +120,7 @@ def main() -> int:
     parser.add_argument("--global-attempt-ceiling", type=int, default=30000,
         help="cumulative graph-wide search ceiling across restored generations (max 120000)")
     parser.add_argument("--search-ticks", type=int, default=30)
-    parser.add_argument("--candidate-transfer-depth", type=int, choices=(1, 2),
+    parser.add_argument("--candidate-transfer-depth", type=int, choices=(1, 2, 3),
         help="bind the independent candidate composition depth for training-only reconstruction")
     parser.add_argument("--measure-native-rule-work", action="store_true",
         help="enable isolated per-rule native work counters; development only")

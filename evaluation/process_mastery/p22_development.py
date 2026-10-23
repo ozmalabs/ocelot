@@ -150,13 +150,13 @@ def run_p22_training_proposal_probe(*, family: str,
     approved_transfer_depth = (approved_candidate_binding.get(
         "candidate_transfer_depth", 1) if approved_candidate_binding is not None else 2)
     if (isinstance(approved_transfer_depth, bool)
-            or approved_transfer_depth not in (1, 2)):
-        raise ValueError("candidate transfer depth must be 1 or 2")
+            or approved_transfer_depth not in (1, 2, 3)):
+        raise ValueError("candidate transfer depth must be 1, 2, or 3")
     if candidate_transfer_depth is None:
         candidate_transfer_depth = approved_transfer_depth
     elif (isinstance(candidate_transfer_depth, bool)
-            or candidate_transfer_depth not in (1, 2)):
-        raise ValueError("candidate transfer depth must be 1 or 2")
+            or candidate_transfer_depth not in (1, 2, 3)):
+        raise ValueError("candidate transfer depth must be 1, 2, or 3")
     elif (approved_candidate_binding is not None
             and candidate_transfer_depth != approved_transfer_depth):
         raise ValueError("candidate transfer depth differs from approval request")

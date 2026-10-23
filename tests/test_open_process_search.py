@@ -357,6 +357,55 @@ def test_training_candidate_can_follow_two_held_processes():
         for attempt in matching)
 
 
+def test_three_held_process_transfer_checks_all_candidate_positions():
+    held = {
+        "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+        "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
+        "t": [2, 0, 1, 3],
+    }
+    initial = [0, 1, 2, 3]
+    for candidate_position in range(4):
+        agent, _ = _agent(attempts=6000, held=held)
+        policy = agent.nodes("OpenProcessSearchPolicy")[0]
+        agent.s.set_attr(policy, "candidate_transfer_depth", 3.0)
+        agent.s.set_attr(policy, "max_attempts_per_request", 3000.0)
+        agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+
+        candidate_params = _compose(agent, held["p"], held["q"])
+        source_goal = _apply(agent, candidate_params, initial)
+        source = agent.add_solve_task("search", initial, source_goal,
+            training_trial_key=f"p22-search-three-held-source-{candidate_position}")
+        agent.s.set_attr(source, "split", "training")
+        agent.s.set_attr(source, "status", "stuck")
+        _tick(agent)
+        candidate = next(candidate for candidate in agent.nodes("OpenProcessCandidate")
+            if agent.attrs(candidate)["params"] == candidate_params)
+        attest_open_process_candidate(agent, candidate)
+
+        held_order = ["r", "s", "t"]
+        order = held_order[:]
+        order.insert(candidate_position, "candidate")
+        target_params = [0, 1, 2, 3]
+        for token in order:
+            operand = candidate_params if token == "candidate" else held[token]
+            target_params = _compose(agent, target_params, operand)
+        target_goal = _apply(agent, target_params, initial)
+        assert target_goal != source_goal
+        task = agent.add_solve_task("search", initial, target_goal,
+            training_trial_key=f"p22-search-three-held-target-{candidate_position}")
+        agent.s.set_attr(task, "split", "training")
+        agent.s.set_attr(task, "status", "stuck")
+        _tick(agent)
+
+        matching = [attempt for attempt in agent.nodes("OpenProcessSearchAttempt")
+            if agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+            and agent.attrs(attempt).get("depth") == 3.0]
+        assert any(agent.attrs(attempt)["status"] == "verified"
+            and agent.attrs(attempt)["params"] == target_params
+            and agent.attrs(attempt)["predicted_state"] == target_goal
+            for attempt in matching), f"candidate position {candidate_position} not covered"
+
+
 def test_each_search_request_obeys_its_own_attempt_ceiling():
     agent, _ = _agent(attempts=1000,
         held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})

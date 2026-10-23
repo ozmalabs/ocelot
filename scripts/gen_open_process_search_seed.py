@@ -711,6 +711,114 @@ def _independent_candidate_two_step_order_rule(order):
         batch=False)
 
 
+def _independent_candidate_three_step_order_rule(order):
+    """Test each candidate position among three held training processes."""
+    if (len(order) != 4 or order.count("candidate") != 1
+            or set(order) != {"candidate", "a", "b", "c"}):
+        raise ValueError("three-step transfer order needs one candidate and three held processes")
+
+    def operand(token):
+        return A("candidate", "params") if token == "candidate" else A(token, "params")
+
+    def source_identity(token):
+        return (A("candidate", "expression_digest") if token == "candidate"
+                else A(token, "source_digest"))
+
+    params = operand(order[0])
+    work_cost = (A("candidate", "work_cost") if order[0] == "candidate"
+                 else A(order[0], "cost"))
+    for token in order[1:]:
+        params = PCompose(params, operand(token))
+        cost = (A("candidate", "work_cost") if token == "candidate"
+                else A(token, "cost"))
+        work_cost = Plus(work_cost, cost)
+
+    first_params = PCompose(operand(order[0]), operand(order[1]))
+    applied = PApply(params, A("task", "initial_state"))
+    tree = A("candidate", "expression_tree")
+    candidate_index = order.index("candidate")
+    for token in reversed(order):
+        if token == "candidate":
+            continue
+        direction = ("held_then_candidate" if order.index(token) < candidate_index
+                     else "candidate_then_held")
+        tree = Vec(L("independent_compose"), tree, A(token, "name"), L(direction))
+    label = "_then_".join("candidate" if token == "candidate" else "held"
+                         for token in order)
+    key_parts = []
+    for index, token in enumerate(order):
+        if index:
+            key_parts.append(L(":"))
+        key_parts.append(source_identity(token))
+    key = StringConcat(L("independent-compose-3:"), *key_parts, L(":" + label))
+    return rule(f"ops_test_candidate_composition_{label}", ONLINE_AREA, 19,
+        "Test a digest-attested training candidate in each bounded position among three held operators.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_candidate", "candidate"],
+         ["candidate", "derived_from_attempt", "source"],
+         ["source", "about_task", "source_task"],
+         ["agent", "has_open_process_search_request", "source_request"],
+         ["source_request", "has_search_attempt", "source"],
+         ["candidate", "has_expression_digest_receipt", "digest_receipt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "searches_task", "task"], ["task", "about_domain", "d"],
+         ["d", "has_held_process", "a"], ["d", "has_held_process", "b"],
+         ["d", "has_held_process", "c"]],
+        And(policy_on(), Eq(A("pol", "candidate_transfer_depth"), L(3.0)),
+            Eq(A("source_task", "split"), L("training")),
+            Eq(A("task", "split"), L("training")),
+            Eq(A("source", "status"), L("verified")),
+            Eq(A("candidate", "status"), L("unapproved_candidate")),
+            Eq(A("candidate", "expression_digest_status"), L("verified")),
+            Eq(A("digest_receipt", "status"), L("verified")),
+            Eq(A("digest_receipt", "expression_digest"), A("candidate", "expression_digest")),
+            Eq(A("digest_receipt", "effect_digest"), A("candidate", "effect_digest")),
+            Or(Eq(A("source_request", "status"), L("funded")),
+               Eq(A("source_request", "status"), L("proposal_recorded"))),
+            Or(Eq(A("request", "status"), L("funded")),
+               Eq(A("request", "status"), L("proposal_recorded"))),
+            Eq(A("task", "status"), L("stuck")),
+            Eq(A("candidate", "domain"), A("d", "name")),
+            Eq(A("candidate", "kind"), A("d", "kind")),
+            Eq(A("candidate", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("candidate", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("candidate", "frame_epoch"), A("d", "frame_epoch")),
+            Not(Eq(A("source_task", "goal"), A("task", "goal"))),
+            Lt(Count(N("agent", "has_open_process_search_attempt")),
+               A("pol", "max_attempts")),
+            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            Not(Exists(N("request", "has_search_attempt"), "old",
+                       Eq(A("old", "expression_key"), key)))),
+        [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
+            "expression_key": T(key), "operator_kind": "recursive_compose",
+            "expression_tree": T(Vec(L("guard"), A("task", "initial_state"), tree)),
+            "params": T(params), "predicted_state": T(applied),
+            "goal_state": T(A("task", "goal")),
+            "guard_state": T(A("task", "initial_state")),
+            "subgoal_state": T(PApply(first_params, A("task", "initial_state"))),
+            "depth": 3.0,
+            "effect_digest": T(PFingerprint(params, A("d", "probes"))),
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending", "domain": T(A("d", "name")),
+            "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")), "frame_epoch": T(A("d", "frame_epoch")),
+            "work_cost": T(work_cost),
+            "status": T(IfThenElse(Eq(applied, A("task", "goal")),
+                                   L("verified"), L("residual"))),
+            "rank_score": T(Times(L(-1.0), work_cost))},
+         "pol", "attempts_reserved", T(A("pol", "max_attempts")),
+         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         ["add_edge", "request", "has_search_attempt", "trial", {}],
+         ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
+         ["add_edge", "trial", "about_task", "task", {}],
+         ["add_edge", "trial", "uses_parent_process", "a", {}],
+         ["add_edge", "trial", "uses_parent_process", "b", {}],
+         ["add_edge", "trial", "uses_parent_process", "c", {}],
+         ["add_edge", "trial", "extends_candidate", "candidate", {}],
+         ["add_edge", "candidate", "has_independent_trial_attempt", "trial", {}]],
+        batch=False)
+
+
 def build():
     specs = [
         ("Agent", "has_open_process_search_policy", "OpenProcessSearchPolicy"),
@@ -773,6 +881,14 @@ def build():
                   _independent_candidate_two_step_compose_rule(),
                   _independent_candidate_two_step_order_rule(("a", "candidate", "b")),
                   _independent_candidate_two_step_order_rule(("a", "b", "candidate")),
+                  _independent_candidate_three_step_order_rule(
+                      ("candidate", "a", "b", "c")),
+                  _independent_candidate_three_step_order_rule(
+                      ("a", "candidate", "b", "c")),
+                  _independent_candidate_three_step_order_rule(
+                      ("a", "b", "candidate", "c")),
+                  _independent_candidate_three_step_order_rule(
+                      ("a", "b", "c", "candidate")),
                   _mint_candidate_composition_rule(), _mint_recursive_compose_rule()))
     rules.extend(_expression_rule("compose", 0))
     rules.extend(_expression_rule("compose", 1, reverse=True))
