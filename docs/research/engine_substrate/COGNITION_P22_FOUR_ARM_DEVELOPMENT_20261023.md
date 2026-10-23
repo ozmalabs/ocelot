@@ -981,3 +981,36 @@ the cross-family three-generation panel. The complete focused bundle produced
 one-shot result path remained unused. Those tests now create temporary
 request-bound paths; the CLI module passes 3/3. Runner and analyzer
 self-checks pass, and no held-out world was accessed.
+
+## Post-approval candidate development probes (2026-10-23)
+
+Fresh Loopover training draws 0550/0551 exhausted 5,000 attempts per request
+without a candidate (`NO_CANDIDATE_FIRST_TRIAL`). Draws 0552/0553 at 10,000
+attempts per request produced candidate `#20764` (digest
+`412a124b06f87edc4c98076398f57877ea75416399cef105cabff411f852671e`) on the
+second task, with no qualification. Draws 0554/0555 produced a different
+unqualified candidate (digest
+`c3454b7f307e9df1b8b4389355bd9db5c88f14e11003060e2fe05edba1732d40`). A
+restored generation-zero continuation from the 0552/0553 graph on distinct
+draws 0556/0557 again left `#20764` unqualified: attempts on both goals were
+residual. The four training-only artifacts have SHA-256 values, respectively,
+`b5460060d8497cfe12bcfb0bdf3962254ce9f430a0efad364c3a10d8c7ecdacf`,
+`f37e818b9fea0ec389ed44d8bf49bd336c786dcd599f45833daee74309135e38`,
+`cc71cfdc1fc2b93b46cb8141c589ca08cc47d167675886e6dc85f78c5bb2eab5`, and
+`3f6b36166863b27cca30744963056a6dd0968cabbe89a699a6ae64112c439c06`.
+All four used distinct training goals, had empty validation allocations, and
+created no approval or world receipt. Draws 0550–0557 are consumed development
+data; none produced an approval-ready Loopover candidate.
+
+A separate continuation restored the approved D4 generation-one graph and
+searched distinct training draws 0560/0561 at 10,000 attempts per request.
+It completed without validation access or a new action. The graph reports the
+parent's one historical approval and receipt; no new approval, receipt, or
+generation-two checkpoint was created. New candidates remained unqualified
+on both task outcomes. The raw artifact
+[`p22_d4_generation2_training_0560_0561.json`](../../../evaluation/process_mastery/results/p22_d4_generation2_training_0560_0561.json)
+has SHA-256
+`504e01786e2f141eede6f0d664cf39c87c33e44132ef5daf69d52b9c2ccf1158`.
+Draws 0560/0561 are consumed for development. The one-action D4 authorization
+is exhausted, so any later generation requires a new candidate-specific
+approval.
