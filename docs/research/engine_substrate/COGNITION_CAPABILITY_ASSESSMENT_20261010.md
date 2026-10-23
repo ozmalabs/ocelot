@@ -939,3 +939,6 @@ A second fresh Loopover full-root search on distinct training worlds 0804–0807
 
 
 A third fresh Loopover full-root panel on distinct training worlds 0808–0811 again produced candidate `#11545`, with all 16,236 independent-goal trials residual and no qualification. It reserved 40,000 attempts, recorded 67 native rule steps, 1,188.857 seconds wall-time, 937,930,752-byte peak RSS, zero approvals/receipts and empty validation allocation; no held-out world was constructed. Native rule identity coverage is complete. Loopover full-arm generation one remains unqualified; this is negative candidate-search evidence only.
+
+
+A higher-budget Loopover full-root panel on fresh distinct training worlds 0812–0814 used 100 search ticks, 20,000 attempts per request, and a 60,000 global ceiling. Candidate `#21545` received 10,824 independent-goal trials, all residual, with zero qualification. The panel reserved 60,000 attempts, recorded 54 native rule steps, 860.849 seconds wall-time, 937,930,752-byte peak RSS, zero approvals/receipts, and empty validation allocation; no held-out world was constructed. Native rule identity coverage is complete. Loopover full-arm generation one remains unqualified.
