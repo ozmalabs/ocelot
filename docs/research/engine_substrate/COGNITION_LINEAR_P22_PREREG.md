@@ -135,8 +135,9 @@ resource-preflight, structural-control, and fail-closed held-out checks. No
 descendant manifest is complete. The 12 unchanged/adaptive-only descendants
 are captured on shared training worlds 0600–0602; all 12 checkpoint digests
 and parent links verify. Their six unchanged-versus-adaptive cumulative checkpoint snapshot pairs
-all mismatch. A common-world scoring panel has not yet measured per-world
-matching for these descendants. The D4 and
+all mismatch. A control-only common-world panel scored them on four fresh
+training worlds per family and found 0/24 unchanged/adaptive pairs matched.
+The complete four-arm resource-matched development panel remains unavailable. The D4 and
 Loopover invention-only requests and a D4 full-arm request await exact approval
 for generation one. Nine additional invention/full transitions will remain
 after these three are approved and verified. The development resource-matching gate is still unmet, so this draft

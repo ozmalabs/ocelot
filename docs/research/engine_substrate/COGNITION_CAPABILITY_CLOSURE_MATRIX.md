@@ -179,3 +179,11 @@ A registered D4 full-arm g0 search produced candidate `#1541` with a
 qualification and a transfer child whose effect is absent from the active
 root. Its exact training replay verified, and a one-transition request is
 pending exact authorization. No descendant or capability result exists yet.
+
+
+A control-only common-world development panel scored the unchanged and
+adaptive-only descendants on four fresh training worlds per family. D4 scored
+2/4 across both arms and all three generations; Loopover scored 0/4. All 24
+paired resource comparisons differed, so this is capability-only diagnostic
+evidence and does not satisfy P22's full four-arm resource-match or held-out
+requirements.

@@ -1867,3 +1867,23 @@ pairs match the uninstrumented source panel. The CLI regression checks both
 artifact hashes, the full-root parent, selected witness pair, source/child
 novelty, zero action evidence, and the unused output path. The focused CLI
 module passes 10 tests. No adoption was executed.
+
+
+## Passive-control common-world scoring and resource match (2026-10-24)
+
+The 12 unchanged/adaptive-only descendants were scored in isolated native
+learners on the same unused training worlds 0603–0606 for each family. The
+common ceilings were 120,000 cumulative primitive work and 20,000 native rule
+progress. All 48 rows completed within both ceilings; no approval, receipt,
+validation, or held-out access occurred. D4 scored 2/4 for each control arm at
+each generation. Loopover scored 0/4 for each arm/generation. These are
+selected development outcomes and do not establish efficacy.
+
+None of the 24 per-world unchanged/adaptive resource pairs matched exactly.
+Differences included native rule steps and term evaluations, training
+exposures and bytes, retrieval/proposal/verification/refinement work, budget
+spent, graph bytes/memory, and peak RSS. The 48-row panel is
+[`p22_control_descendant_resource_panel_0603_0606.json`](../../../evaluation/process_mastery/results/p22_control_descendant_resource_panel_0603_0606.json),
+SHA-256 `047eee711378c306e342f251f5f6aa33a7c344a952bbe3071d565cb3702d2c5d`.
+It contains only two arms; exact four-arm resource matching remains untested
+and the P22 freeze gate remains closed.
