@@ -162,3 +162,11 @@ both families. They preserve the exact root process and declare zero added
 work, with no new training exposure. Adaptive-only descendants, approved
 invention/full descendants, exact resource matching and the registered
 held-out comparison remain absent; capability dispositions are unchanged.
+
+
+The 12 unchanged/adaptive-only D4 and Loopover descendants now have training
+exposures and verified three-generation parent chains on training draws
+0600–0602. The unchanged/adaptive resource pairs all fail exact matching; the
+invention/full descendants, complete four-arm resource-matched development
+panel and held-out comparison are still missing. Capability dispositions
+remain unchanged.

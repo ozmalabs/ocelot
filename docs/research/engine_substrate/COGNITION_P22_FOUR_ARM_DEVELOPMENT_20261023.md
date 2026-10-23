@@ -1806,3 +1806,24 @@ SHA-256 `98f2494659a73b3de2bfc8a61bab25f97182e17cd30c162fa8a821f1bc77b0c9`.
 These captures are structural no-op controls and have no new training
 exposures. They do not satisfy adaptive-only descendant requirements or the
 resource-matched development gate; no held-out worlds were accessed.
+
+
+## Training-exposed passive control descendants (2026-10-24)
+
+The unchanged and adaptive-only roots in each family were restored and
+advanced across the same preregistered training draws 0600–0602. The runner
+used a 10-unit primitive-work ceiling for each new unchanged-arm solver task;
+adaptive-only curriculum remained enabled and invention stayed disabled. All
+six curriculum tasks completed. The unchanged arm solved D4 0600/0601, ended
+stuck on 0602, and ended stuck on all three Loopover tasks.
+
+The resulting 12 generation-one through generation-three checkpoints have
+valid resource snapshots, exact sequential parent links and unchanged root
+process expressions. There were zero approvals and world receipts, and no
+validation or held-out worlds were accessed. The artifact is
+[`p22_passive_control_training_lineages_0600_0602.json`](../../../evaluation/process_mastery/results/p22_passive_control_training_lineages_0600_0602.json),
+SHA-256 `11478f6b590f5923464c7ec2f1b4f04c0c9dd2bdbd601f02bf9c00905ed2d0b3`.
+All six pairwise resource comparisons between unchanged and adaptive-only
+miss exact matching; native rule work, training exposure counts and training
+data bytes differ. This is partial lineage evidence and does not satisfy the
+P22 resource-match gate.
