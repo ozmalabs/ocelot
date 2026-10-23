@@ -453,3 +453,13 @@ obstruction to E2. It does not supply approved multi-generation cross-family
 lineages, full approval/resource measurements, frozen per-checkpoint wall-time
 records, a standalone preregistration, or held-out results; all L1–L7
 dispositions therefore remain open.
+
+A fresh continuation restored the measured Loopover generation-zero graph and
+ran on disjoint training draws 0513/0514. Graph, checkpoint, resource, and
+cumulative rule-work digests verify. The inherited 30,000-attempt global
+ceiling had only 10,000 remaining after the root's 20,000; the first new task
+used that remainder and the second received none. The candidate remained
+unqualified, with zero approvals or receipts. This confirms cumulative budget
+enforcement across restoration but creates no learned child or efficacy
+result. The next continuation must reserve enough of the inherited ceiling
+for both tasks; all P22 and L1–L7 dispositions remain open.

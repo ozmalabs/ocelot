@@ -686,3 +686,27 @@ and analyzer self-checks pass with no held-out access. Source cleanliness is
 now established for a future freeze, while missing approved lineages, complete
 resource/approval measurements, and frozen wall-time records still prohibit
 P22.E2/E3.
+
+## Restored Loopover generation-zero continuation (2026-10-23)
+
+The digest-valid root checkpoint from Loopover draws 0510/0511 was restored and
+continued on fresh distinct-goal training draws 0513/0514. The restored
+generation-zero checkpoint digest is unchanged, the saved native graph matches
+the root snapshot, and cumulative resource/rule-work digests verify. The
+continuation reached 30,000 total reserved attempts: the root had used 20,000,
+leaving 10,000 for continuation. The first new task used that remainder; the
+second task received no attempts. A single candidate remains unqualified
+(qualification count 0). This record has no approval, receipt, validation
+world, or held-out access. Cumulative counters report 228.641 s, 39 native
+rule steps, 1,258,934,272 bytes peak RSS, and 30,000 search attempts.
+
+The complete uncompressed JSON had SHA-256
+`b5016774abcb656ec80152862812a2480192318360a973eed5a0cfc6ea0e2471`; it is
+retained as deterministic gzip at
+[`p22_loopover_generation1_training_0513_0514.json.gz`](../../../evaluation/process_mastery/results/p22_loopover_generation1_training_0513_0514.json.gz),
+SHA-256 `60bf3c8022d446b9f7494b0d01e1a5c3e4bf8fcb189c8b6500192a5aa205de82`.
+This verifies restored continuation and cumulative accounting, but creates no
+generation-one child. It also shows that the root's remaining global search
+budget was insufficient for two new tasks; a future root/continuation plan
+must reserve the inherited budget for both tasks without silently resetting
+the ceiling.
