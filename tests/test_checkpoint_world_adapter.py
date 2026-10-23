@@ -6,10 +6,10 @@ import pytest
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointExpression, CheckpointWorldAdapter, capture_adopted_checkpoint,
     capture_held_process_checkpoint, capture_passive_checkpoint,
-    restore_native_checkpoint_graph,
+    restore_native_checkpoint_graph, score_restored_checkpoint_task,
 )
 from evaluation.process_mastery.native_process_execution import (
-    attest_open_process_candidate, execute_open_process_candidate,
+    attest_open_process_candidate, execute_open_process_candidate, params_digest,
 )
 from evaluation.process_mastery.independent_worlds import (
     agent_view, generate_d4_world, generate_d4_world_v2,
@@ -468,3 +468,42 @@ def test_checkpoint_captures_and_restores_exact_native_graph_snapshot():
             close = getattr(agent.s, "close", None)
             if callable(close):
                 close()
+
+
+def test_restored_checkpoint_runs_fresh_task_through_native_learner():
+    from substrate.boot_profiles import boot_cognition_on
+
+    source = boot_cognition_on()
+    for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
+        for policy in source.s.nodes(policy_type):
+            source.s.set_attr(policy, "enabled", 1.0)
+    domain = source.s.add_node("ProcessDomain", {"name": "checkpoint-root",
+        "kind": "permutation", "domain_kind": "permutation", "probes": [[0, 1, 2, 3]],
+        "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_domain", domain, {})
+    schema = source.s.add_node("ProcessSchema", {"name": "swap", "kind": "permutation",
+        "domain": "checkpoint-root", "domain_kind": "permutation",
+        "params": [1, 0, 2, 3], "source_digest": params_digest([1, 0, 2, 3]),
+        "status": "active", "provenance": "held", "cost": 1.0,
+        "owner_agent": source.agent, "invariants": [],
+        "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_schema", schema, {})
+    source.s.add_edge(domain, "has_held_process", schema, {})
+    checkpoint = capture_held_process_checkpoint(source,
+        schema, checkpoint_id="learner-root")
+
+    def boot():
+        agent = boot_cognition_on()
+        for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
+            for policy in agent.s.nodes(policy_type):
+                agent.s.set_attr(policy, "enabled", 1.0)
+        return agent
+
+    result = score_restored_checkpoint_task(checkpoint,
+        world_id="fresh-training-task", initial_state=[0, 1, 2, 3],
+        goal_state=[1, 0, 2, 3], agent_factory=boot)
+    assert result["status"] == "COMPLETED"
+    assert result["task_status"] == "solved"
+    assert result["score"] == 1
+    assert result["quiescent"]
+    assert result["approval_count"] == result["world_receipt_count"] == 0

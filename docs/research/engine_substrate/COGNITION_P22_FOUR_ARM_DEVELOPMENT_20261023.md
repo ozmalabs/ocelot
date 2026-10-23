@@ -733,3 +733,17 @@ retained as deterministic gzip at
 SHA-256 `bcda44aa9df03b6c36f6a54c24a3b56f6f265af62bd58c1a0548de8b5bddcab1`.
 The cap control's continuation, ceiling rejection, and default-cap regressions
 pass. This remains development-only negative qualification evidence.
+
+## Restored native learner task path (2026-10-23)
+
+`score_restored_checkpoint_task` boots an explicitly supplied learner profile,
+restores the complete immutable checkpoint graph, and submits a fresh task into
+the native process domain retained by that graph. It runs native rules to
+quiescence or a declared round limit and reports task status, native rule
+steps/rounds, and approval/receipt counts. A regression confirms that an
+attested generation-zero checkpoint's process solves a non-identity task
+through the native solver on a fresh graph. No approval or simulated action is
+created. The adapter, ablation, and independent-improvement bundle passes 28
+tests. This supplies a continuation execution primitive, not a complete
+four-arm checkpoint comparison or efficacy result; no held-out allocation was
+accessed.

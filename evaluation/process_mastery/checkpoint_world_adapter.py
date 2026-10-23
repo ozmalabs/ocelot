@@ -653,3 +653,95 @@ class CheckpointWorldAdapter:
                     and all(outcome["status"] == "scored"
                             for row in rows for outcome in row["outcomes"]),
                 "rows": rows}
+
+
+def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
+                                  world_id: str, initial_state: list[int],
+                                  goal_state: list[int],
+                                  agent_factory, max_rule_rounds: int = 256) -> dict:
+    """Run a fresh native learner graph restored from a checkpoint on one task.
+
+    This is a development continuation primitive, distinct from the finite
+    expression scorer above. The caller supplies the normal learner boot path;
+    this function restores only the immutable graph and lets its native rules
+    process the task. It creates no approval or simulated-world receipt.
+    """
+    if not _checkpoint_digest_valid(checkpoint):
+        raise ValueError("cannot evaluate an unattested native checkpoint")
+    if checkpoint.native_graph_snapshot_json is None:
+        raise ValueError("checkpoint is missing its immutable native graph snapshot")
+    if not world_id:
+        raise ValueError("world identity is required")
+    if (isinstance(max_rule_rounds, bool) or not isinstance(max_rule_rounds, int)
+            or max_rule_rounds < 1):
+        raise ValueError("max_rule_rounds must be a positive integer")
+    params = _checkpoint_graph_params(checkpoint)
+    if (not isinstance(initial_state, list) or not isinstance(goal_state, list)
+            or any(isinstance(value, bool) or not isinstance(value, int)
+                   for value in initial_state + goal_state)
+            or len(initial_state) != len(params) or len(goal_state) != len(params)
+            or sorted(initial_state) != list(range(len(params)))
+            or sorted(goal_state) != list(range(len(params)))):
+        raise ValueError("task states must be permutations matching checkpoint domain")
+
+    agent = agent_factory()
+    try:
+        restore_native_checkpoint_graph(agent, checkpoint)
+        native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+        store = getattr(agent, "s", None)
+        root = getattr(agent, "agent", None) or getattr(agent, "ag", None)
+        if native is None or store is None or root is None:
+            raise TypeError("agent factory must return a native graph learner")
+        task_key = f"p22-checkpoint-eval:{world_id}"
+        graph_nodes = json.loads(checkpoint.native_graph_snapshot_json)["nodes"]
+        domain_names = [node.get("attrs", {}).get("domain") for node in graph_nodes
+            if node.get("type") == "ProcessSchema"
+            and node.get("attrs", {}).get("status") == "active"
+            and node.get("attrs", {}).get("source_digest") == checkpoint.expression_digest
+            and node.get("attrs", {}).get("domain")]
+        if len(set(domain_names)) > 1:
+            raise ValueError("checkpoint expression resolves to multiple native domains")
+        domain_name = domain_names[0] if domain_names else f"p22-checkpoint-domain:{len(params)}"
+        domains = [node for node in store.nodes("ProcessDomain")
+                   if store.node(node)["attrs"].get("name") == domain_name]
+        domain = domains[0] if domains else store.add_node("ProcessDomain", {
+            "name": domain_name, "kind": "permutation", "domain_kind": "permutation",
+            "object_count": float(len(params)), "probes": [list(initial_state)],
+            "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+            "probe_epoch": 0})
+        if not domains:
+            store.add_edge(root, "has_process_domain", domain, {})
+        if any(store.node(node)["attrs"].get("task_key") == task_key
+               for node in store.nodes("SolveTask")):
+            raise ValueError("checkpoint graph already contains this evaluation task identity")
+        task = store.add_node("SolveTask", {
+            "task_key": task_key, "domain": domain_name,
+            "initial_state": list(initial_state), "state": list(initial_state),
+            "goal": list(goal_state), "object_count": float(len(params)),
+            "status": "active", "trace": [], "steps": 0, "moves": 0.0,
+            "stuck_count": 0, "split": "training"})
+        store.add_edge(root, "has_solve_task", task, {})
+        store.add_edge(task, "about_domain", domain, {})
+        fired_total = 0
+        rounds = 0
+        quiescent = False
+        for _ in range(max_rule_rounds):
+            fired = int(native.run_rules(20_000))
+            fired_total += fired
+            rounds += 1
+            if fired == 0:
+                quiescent = True
+                break
+        attrs = store.node(task)["attrs"]
+        return {"status": "COMPLETED" if quiescent else "ROUND_LIMIT",
+                "world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
+                "task_status": attrs.get("status"),
+                "score": int(attrs.get("status") == "solved"),
+                "native_rule_steps": fired_total, "rule_rounds": rounds,
+                "quiescent": quiescent,
+                "approval_count": len(store.nodes("OpenProcessAdoptionApproval")),
+                "world_receipt_count": len(store.nodes("OpenProcessWorldReceipt"))}
+    finally:
+        close = getattr(agent, "close", None)
+        if close is not None:
+            close()
