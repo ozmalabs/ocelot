@@ -571,3 +571,5 @@ Current P22 provenance after the approval CLI addition remains `ATTESTED` with n
 The earlier exact D4 and Loopover simulated adoptions establish verified actions only; their raw artifacts contain no generation-one checkpoints. They cannot be reused as lineage evidence. The pending D4 request can create at most its named D4 generation-one checkpoint after exact authorization and review-time reporting; Loopover and later-generation lineage gates would remain open.
 
 A complete recursive inventory of retained P22 result artifacts found no generation-greater-than-zero checkpoint snapshots. Existing development outcomes retain generation-zero roots and scoring reports; historical adoption receipts cannot reconstruct the missing native graph snapshots. Descendant lineage remains unestablished.
+
+The approval CLI parses and hashes the same binding bytes; its two rejection-path tests pass. Updated source-bundle SHA-256 is `8aafcbf1e7e2f16f1b11287b2fbd54d7b75d9fd12fca64bdc04cbf3020429c6f`, with native runtime still attested and clean. No adoption was executed.
