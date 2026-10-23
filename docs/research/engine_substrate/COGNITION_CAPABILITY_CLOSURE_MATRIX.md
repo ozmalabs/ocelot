@@ -57,3 +57,10 @@ the matched resource panel, standalone P22 preregistration and registered
 held-out result remain open. These outcomes do not change any L1–L7
 disposition. Raw records and hashes are in
 [`COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md`](COGNITION_P22_FOUR_ARM_DEVELOPMENT_20261023.md).
+
+The higher-ceiling D4 continuation on distinct draws 0582/0583 used 30,000
+attempts per request and still produced no candidate qualified across both
+goals. The D4 generation-three gate remains unmet. Loopover draws 0584–0587
+were interrupted before a native result was written; their outcomes remain
+unknown and are excluded from qualification counts. No capability disposition
+changes.

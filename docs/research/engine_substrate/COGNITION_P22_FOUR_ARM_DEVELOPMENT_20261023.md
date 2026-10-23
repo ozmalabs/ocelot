@@ -1172,6 +1172,19 @@ approval flags. Draws 0584–0587 are consumed but provide no candidate result.
 The independent D4 0582/0583 process (PID 899940) was still live at the audit
 and remains under observation.
 
+The D4 0582/0583 continuation has since completed. Both restored requests used
+the actual 30,000-attempt per-request limit and both tasks ended stuck. Three
+candidate records were present; the fresh candidate `#25875` (digest
+`760c713b16dc2c1fc5e360ff77879a56395bfde2603a593080afcf3090950952`,
+`rot90` composed with `flip_r`) had only residual trials on draw 0583. No
+candidate qualified across the two new goals. Approval and receipt totals of
+two are inherited from the generation-two parent; no new approval, action or
+receipt occurred. Validation and held-out allocations were empty. Raw artifact
+[`p22_candidate_continuation_d4_0582_0583.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0582_0583.json)
+has SHA-256 `203bb0f1a2ee146f1cc7bb9a1a6d21f5f64c028332f6a6b4a1b98831ca8dbb5a`.
+The D4 generation-three candidate gate remains unmet. Draws 0582/0583 are
+consumed training-only data.
+
 After the restored-ceiling correction, all 10 tests in
 `tests/test_p22_development.py` pass. The P22 runner self-check passes and
 reports `heldout_accessed=false`; its lineage-tamper controls reject the
