@@ -408,17 +408,16 @@ The approved checkpoint path also now refuses nonempty validation allocations,
 keeping candidate reconstruction and adoption evidence strictly training-only.
 
 The P22 source closure now hashes the proposal-training adapter and both
-development CLI entry points. A provenance read confirms coverage; the current
-attestation remains `DEVELOPMENT_ONLY` because the artifact tree is dirty. This
-does not advance P22 to preregistration or held-out status.
+development CLI entry points. A provenance read confirms coverage. The
+attestation was `DEVELOPMENT_ONLY` while these source changes were uncommitted;
+the later clean-source build is recorded below.
 
 P22 checkpoint capture now preserves and digest-binds the full canonical native
-graph, with exact restoration into a normally booted agent. The manifest gate
-requires this state for every root and generation. This is persistence
-infrastructure only: the current world adapter still scores the captured
-finite process expression, and no full learner continuation or independent-
-goal efficacy has been demonstrated. P22.E2/E3 and every L1–L7 closure remain
-open.
+graph, with exact restoration into a normally booted agent. Strict scoring
+resolves the process from that graph and checks the compact manifest. This is
+checkpoint and finite-process evaluation infrastructure; no full learner
+continuation or independent-goal efficacy has been demonstrated. P22.E2/E3 and
+every L1–L7 closure remain open.
 
 The training-only P22 probe can now restore an exact parent checkpoint and
 continue cumulative runtime and per-rule accounting across graph stores. A
@@ -444,3 +443,13 @@ only execution path and adds a bounded expression-path dependence control.
 The control is still one derived development task, not an independent-goal
 effect, and no matched four-arm result exists; therefore P22.E2/E3 and all
 L1–L7 capability closures remain open.
+
+The implementation bundle was committed as
+`c94aa1c8649dedb4e13d84e85df38df3ca912e5f`. After rebuilding the extension
+from that source, strict P22 provenance reports `ATTESTED` with an empty issue
+list. The runner/analyzer self-checks pass, as do the 94-test affected Python
+bundle and the full repository Rust test wrapper. This removes the dirty-source
+obstruction to E2. It does not supply approved multi-generation cross-family
+lineages, full approval/resource measurements, frozen per-checkpoint wall-time
+records, a standalone preregistration, or held-out results; all L1–L7
+dispositions therefore remain open.

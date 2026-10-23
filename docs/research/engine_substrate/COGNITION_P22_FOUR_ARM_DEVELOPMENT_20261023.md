@@ -547,8 +547,8 @@ The P22 provenance closure now hashes `p22_development.py` and both development
 CLI entry points (`run_p22_development_probe.py` and
 `run_p22_four_arm_development.py`) in addition to the learner modules. A
 provenance check confirms all three paths are included in the source bundle.
-The current attestation reports `DEVELOPMENT_ONLY` with `artifact_tree_dirty`,
-so no freeze or held-out run is admissible from this worktree.
+At that point the attestation reported `DEVELOPMENT_ONLY` with
+`artifact_tree_dirty`; the later clean-source attestation is recorded below.
 
 The four-arm diagnostic now also places each arm's `perf_counter` duration in
 the digest-bound resource snapshot's runtime counters, and marks its coverage
@@ -670,3 +670,19 @@ lineage rather than hand-built permutation records. The prescribed P22.03
 command passes 27 tests. This is a bounded expression-path dependence control,
 not a held-out causal estimate; matched four-arm independent-goal evaluation
 remains open.
+
+## Clean-source native attestation (2026-10-23)
+
+The P16–P22 implementation/evidence bundle is committed as
+`c94aa1c8649dedb4e13d84e85df38df3ca912e5f`. After a release rebuild,
+`linear_p22_v1.provenance()` reports `ATTESTED` with no issues. The loaded
+extension hash is
+`5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07`; the
+build-receipt hash is
+`661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66`; the
+P22 source-bundle hash is
+`539131da9af055a94439aa17a4c6651fa3766707c74f775c13a4da32e1a760cd`. Runner
+and analyzer self-checks pass with no held-out access. Source cleanliness is
+now established for a future freeze, while missing approved lineages, complete
+resource/approval measurements, and frozen wall-time records still prohibit
+P22.E2/E3.
