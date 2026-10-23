@@ -134,8 +134,9 @@ The runner and analyzer implement the allocation, 24-checkpoint manifest,
 resource-preflight, structural-control, and fail-closed held-out checks. No
 descendant manifest is complete. The 12 unchanged/adaptive-only descendants
 are captured on shared training worlds 0600–0602; all 12 checkpoint digests
-and parent links verify. Their six unchanged-versus-adaptive resource pairs
-all mismatch, so they do not establish exact resource matching. The D4 and
+and parent links verify. Their six unchanged-versus-adaptive cumulative checkpoint snapshot pairs
+all mismatch. A common-world scoring panel has not yet measured per-world
+matching for these descendants. The D4 and
 Loopover invention-only requests and a D4 full-arm request await exact approval
 for generation one. Nine additional invention/full transitions will remain
 after these three are approved and verified. The development resource-matching gate is still unmet, so this draft

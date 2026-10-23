@@ -1823,10 +1823,11 @@ process expressions. There were zero approvals and world receipts, and no
 validation or held-out worlds were accessed. The artifact is
 [`p22_passive_control_training_lineages_0600_0602.json`](../../../evaluation/process_mastery/results/p22_passive_control_training_lineages_0600_0602.json),
 SHA-256 `11478f6b590f5923464c7ec2f1b4f04c0c9dd2bdbd601f02bf9c00905ed2d0b3`.
-All six pairwise resource comparisons between unchanged and adaptive-only
+All six unchanged/adaptive cumulative checkpoint resource snapshot pairs
 miss exact matching; native rule work, training exposure counts and training
-data bytes differ. This is partial lineage evidence and does not satisfy the
-P22 resource-match gate.
+data bytes differ. A common-world scoring panel has not yet measured per-world
+resource matching for these descendants. This is partial lineage evidence and
+does not satisfy the P22 resource-match gate.
 
 ## Registered full-root D4 repeat qualification panel (2026-10-24)
 

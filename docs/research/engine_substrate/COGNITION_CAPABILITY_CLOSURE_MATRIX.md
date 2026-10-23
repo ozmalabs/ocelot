@@ -166,7 +166,8 @@ held-out comparison remain absent; capability dispositions are unchanged.
 
 The 12 unchanged/adaptive-only D4 and Loopover descendants now have training
 exposures and verified three-generation parent chains on training draws
-0600–0602. The unchanged/adaptive resource pairs all fail exact matching; the
+0600–0602. The six unchanged/adaptive cumulative checkpoint resource snapshots differ;
+no common-world panel has yet established per-world matching. The
 invention/full descendants, complete four-arm resource-matched development
 panel and held-out comparison are still missing. Capability dispositions
 remain unchanged.
