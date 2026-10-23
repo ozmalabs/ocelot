@@ -794,3 +794,12 @@ reserved attempts but produced no proposal on its first training task. It had
 no approvals, receipts, validation or held-out access. This adds a negative
 search result only; the candidate request remains D4-specific, P22.E2–E3
 remain open and L1–L7 dispositions are unchanged.
+
+The four-goal Loopover continuation on draws 0944–0947 proposed candidate
+`#6689`, whose effect matches held process `R2` in the registered root. It
+therefore received no independent-goal trial or qualification. The P22 native
+qualification rules now exclude finite effects already present in active or
+approved-adopted processes; the regression and affected P22 suite pass. This
+closes the duplicate-effect qualification defect, not the Loopover lineage
+gate. No checkpoint lineage, preregistration or held-out result has been
+added, and L1–L7 dispositions remain unchanged.
