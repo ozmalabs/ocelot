@@ -1556,3 +1556,25 @@ deterministic gzip artifact
 has SHA-256 `704c76b31f3a49da352d1184a4ff438669f71830dd0358857a0a92972609b59c`
 and decompresses to that raw digest. Draws 0690/0691 are consumed. This is a
 proposal-generation miss, not a qualification failure or efficacy result.
+
+## Rotated-source transfer probe (2026-10-23)
+
+Fresh pairwise-distinct Loopover training goals 0692/0693 used transfer depth
+2 and 10,000 attempts per task. Both tasks remained stuck. The source task
+produced candidate `#10761` (digest
+`1c0be6708dc57d66c495808d5b13e3a6615ea3c7f3df4b57f11b0718a14a5d15`, effect
+`[[6,7,5,0,1,8,3,4,2]]`), but its 24 one-step and 132 two-step trials on the
+second goal were all residual. It did not qualify. The run reserved 20,000
+attempts and created no approval or receipt; validation and held-out worlds
+were not accessed.
+
+Runtime was 334.002 seconds, with 26 native rule steps, 1,047,445,504 bytes
+peak RSS, 20,768 graph nodes, 101,008 edges and 2,996,940,314 native term
+evaluations. Raw JSON SHA-256 is
+`ab0127077c6e137770b236dc600dcbbcccdb3e516b590497d9158fedb7c3b3fa`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0692_0693_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0692_0693_two_step.json.gz)
+has SHA-256 `37276ef26615c1dd50a0d7919e0a81b753ac61e727dd9afc4d784f255595929d`
+and decompresses to that raw digest. Draws 0692/0693 are consumed
+training-only data; the rotated source produced a different candidate but no
+qualified Loopover descendant.

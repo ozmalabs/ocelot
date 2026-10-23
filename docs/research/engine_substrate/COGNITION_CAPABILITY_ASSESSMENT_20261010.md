@@ -677,3 +677,7 @@ A rotated Loopover source-goal probe on fresh draws 0690/0691 produced no
 candidate on its first task after 20,000 reserved attempts. This proposal
 generation miss adds no transfer or capability evidence; all L1–L7
 dispositions remain unchanged.
+
+A second rotated Loopover source on distinct draws 0692/0693 produced a new
+candidate, but all 156 transfer trials on its independent goal were residual.
+This adds no qualified descendant or capability evidence; L1–L7 remain open.
