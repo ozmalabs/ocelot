@@ -553,3 +553,5 @@ ceilings, zero approvals/receipts, and 1/4 solved in every arm. Realized
 resources remain unmatched. This improves measurement scope without adding
 descendant or efficacy evidence; P22 lineage, freeze, and held-out gates and
 all L1–L7 dispositions remain open.
+
+The P22 runner now has a direct freeze-order regression: when standalone freeze verification fails, both held-out world generators remain unreachable. The focused suite passes 52 tests and runner/analyzer self-checks pass. This strengthens the held-out access guard only; it does not satisfy the pending candidate authorization, resource matching, preregistration, or registered held-out evaluation gates. No P22 held-out world was accessed, and L1–L7 dispositions remain unchanged.
