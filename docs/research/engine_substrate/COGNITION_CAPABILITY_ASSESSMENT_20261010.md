@@ -764,3 +764,17 @@ produced no search attempts or candidates because every task was
 budget-exhausted. These training-only results had no approvals, receipts,
 validation allocations or held-out access. They leave candidate-specific
 lineage creation and P22.E2–E3 open; L1–L7 dispositions do not change.
+
+The continuation fault was traced to the restored four-arm checkpoint's
+enabled `SolverPolicy`, which competed with the probe's deliberate impasse
+setup. The development runner now disables that inherited policy in the
+proposal-search working graph; checkpoint evaluation installs its own fixed
+solver. On fresh D4 draws 0932–0935, the registered invention-only root
+produced candidate `#1870` (digest
+`209f9861ca82daf500284f696298b28b18a420c885bf6c16d4a5aa23e714fd65`,
+parameters `[1,3,0,2]`), distinct from the root process. It qualified on
+0932/0933 and 0932/0935. An exact training-only replay reproduced both
+qualifications. No approval, receipt, validation allocation or held-out
+access occurred. A candidate-specific request now awaits approval; until a
+verified descendant checkpoint exists, no P22 efficacy or capability result
+can be claimed and L1–L7 remain unchanged.

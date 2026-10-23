@@ -124,6 +124,8 @@ def test_training_probe_continues_restored_checkpoint_with_cumulative_rule_work(
     assert result["approval_count"] == result["world_receipt_count"] == 0
     assert result["generation_zero_ancestor"]["checkpoint_digest"] == parent.checkpoint_digest
     assert result["parent_checkpoint"]["checkpoint_digest"] == parent.checkpoint_digest
+    assert result["inherited_solver_policy_count"] == 1
+    assert result["proposal_search_solver_disabled"] is True
     assert result["inherited_global_attempt_ceiling"] == 30000.0
     assert result["global_attempt_ceiling"] == 40000
     assert snapshot["runtime_counters"]["search_attempts_reserved"] < 40000

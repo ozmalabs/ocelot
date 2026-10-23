@@ -163,6 +163,7 @@ def run_p22_training_proposal_probe(*, family: str,
     parent_runtime = {}
     parent_rule_work = None
     inherited_global_attempt_ceiling = None
+    inherited_solver_policy_count = None
     if parent_checkpoint is not None:
         if not CheckpointWorldAdapter._checkpoint_digest_valid(parent_checkpoint):
             raise ValueError("continuation requires an intact parent checkpoint")
@@ -248,6 +249,17 @@ def run_p22_training_proposal_probe(*, family: str,
     try:
         if parent_checkpoint is not None:
             restore_native_checkpoint_graph(agent, parent_checkpoint)
+            solver_policies = agent.nodes("SolverPolicy")
+            if len(solver_policies) > 1:
+                raise RuntimeError("restored checkpoint must contain at most one SolverPolicy")
+            inherited_solver_policy_count = len(solver_policies)
+            # This runner isolates native proposal search by putting each new
+            # task into an observed impasse. A restored executable solver can
+            # otherwise solve the task or exhaust its primitive-work ceiling
+            # before OpenProcessSearch sees it. The scoring adapter installs
+            # its own fixed SolverPolicy when it later evaluates a checkpoint.
+            for policy in solver_policies:
+                agent.s.set_attr(policy, "enabled", 0.0)
         search_policies = agent.nodes("OpenProcessSearchPolicy")
         if len(search_policies) != 1:
             raise RuntimeError("P22 graph must contain exactly one open-search policy")
@@ -271,7 +283,8 @@ def run_p22_training_proposal_probe(*, family: str,
                 [training_worlds[0]["initial_state"]], held)
         else:
             domains = [node for node in agent.nodes("ProcessDomain")
-                if agent.attrs(node).get("name") == f"p22-development-{family}"]
+                if agent.attrs(node).get("name") in {
+                    f"p22-development-{family}", "p22-development"}]
             if len(domains) != 1:
                 raise RuntimeError(
                     "restored checkpoint must contain one family-specific development domain")
@@ -683,6 +696,9 @@ def run_p22_training_proposal_probe(*, family: str,
             "training_goal_relation": training_goal_relation,
             "global_attempt_ceiling": global_attempt_ceiling,
             "inherited_global_attempt_ceiling": inherited_global_attempt_ceiling,
+            "inherited_solver_policy_count": inherited_solver_policy_count,
+            "proposal_search_solver_disabled": bool(
+                parent_checkpoint is not None and inherited_solver_policy_count == 1),
             "per_request_attempt_ceiling": per_request_attempt_ceiling,
             "candidate_transfer_depth": candidate_transfer_depth,
             "native_rule_work": measured_native_rule_work,
