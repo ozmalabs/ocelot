@@ -846,9 +846,10 @@ evidence. L1–L7 dispositions remain unchanged.
 The candidate-adoption CLI now has a regression for stale approval packets:
 even with the exact candidate digest and execution flag, a packet marked
 `superseded` is rejected before the one-shot output is claimed. The focused
-CLI module passes 8 tests. This closes a request-lifecycle guard only; the
-current D4 and Loopover registered-root packets remain awaiting their own
-exact approvals, with no new action or checkpoint.
+CLI module passes 9 tests, including an already-claimed output replay check
+that preserves the consumed result bytes. This closes request-lifecycle
+guards only; the current D4 and Loopover registered-root packets remain
+awaiting their own exact approvals, with no new action or checkpoint.
 
 The P22 preregistration now has a protocol draft covering the fixed allocation,
 estimands, effect thresholds, resource-matching requirement, and structural

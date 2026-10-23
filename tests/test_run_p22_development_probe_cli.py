@@ -71,6 +71,20 @@ def test_approval_cli_rejects_superseded_request_before_claiming_output(tmp_path
     assert not output.exists()
 
 
+def test_approval_cli_rejects_claimed_output_path_without_overwriting(tmp_path):
+    output = tmp_path / "candidate.json"
+    output.write_text("consumed-result\n", encoding="utf-8")
+    binding = _temporary_binding(output, tmp_path / "binding.json")
+
+    result = subprocess.run(_command(output, binding,
+        "--execute-approved-adoption"), cwd=ROOT, capture_output=True,
+        text=True, check=False)
+
+    assert result.returncode != 0
+    assert "requires a new --output path" in result.stderr
+    assert output.read_text(encoding="utf-8") == "consumed-result\n"
+
+
 def test_parent_checkpoint_binding_hash_is_checked_before_one_shot_claim(tmp_path):
     output = tmp_path / "candidate.json"
     binding_path = _temporary_binding(output, tmp_path / "binding.json")
