@@ -700,3 +700,8 @@ A four-goal follow-up on fresh Loopover draws 0702–0705 applied the same
 order-complete grammar to three independent goals. All 1,260 one-step and
 two-step trials were residual; no candidate qualified. This adds no
 independent-goal capability evidence and does not change any L1–L7 disposition.
+
+A fresh four-goal Loopover replication on draws 0706–0709 again tested one
+candidate across three independent goals using the order-complete grammar.
+All 1,260 trials were residual and none qualified. This adds no
+independent-goal capability evidence and does not change any L1–L7 disposition.

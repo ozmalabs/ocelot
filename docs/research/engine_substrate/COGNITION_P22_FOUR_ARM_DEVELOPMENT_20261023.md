@@ -1670,3 +1670,24 @@ has SHA-256 `02a926896a211ddf270dff8eb7b0ee24523fda1db14eac8a5d5915ddfe318101`
 and decompresses to that raw digest. Draws 0702–0705 are consumed training
 evidence. The larger panel still produced no qualified Loopover descendant or
 efficacy estimate; P22.E2–E3 remain open.
+
+## Four-goal order-complete transfer replication
+
+Fresh pairwise-distinct Loopover training draws 0706–0709 each reserved
+10,000 attempts, 40,000 total. All four tasks ended stuck. Candidate `#10761`
+(digest `66a45a72d8556d656eaeef1c239f6242302f37f0dc98ca48ebdbb29ae27c7db6`,
+effect `[[7,2,0,3,1,5,4,8,6]]`) received 24 one-step and 396 two-step trials
+on each of the three later goals. All 1,260 trials were residual and none
+qualified. There were no approvals, receipts, validation worlds, or held-out
+exposures.
+
+The result snapshot records 40,773 graph nodes, 203,108 edges, 61,624,419
+serialized graph bytes and 27,360,206 native graph-memory bytes. Raw JSON
+SHA-256 is
+`2df324d46aa81e067f2f2f08073e3712d62ab627de6d805fc8ce694101066144`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0706_0709_ordered_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0706_0709_ordered_two_step.json.gz)
+has SHA-256 `8e2681213134d9b8c8eaf548252cba388745072aef96ede9fed8e98f1a2e528a`
+and decompresses to the raw digest. Draws 0706–0709 are consumed training
+evidence. The replication still produced no qualified Loopover descendant or
+efficacy estimate; P22.E2–E3 remain open.
