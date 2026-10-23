@@ -173,3 +173,8 @@ remain unchanged.
 
 
 The P22 allocation audit corrected its training world IDs to match the generator's `train` namespace. All 1,600 allocation IDs and 1,600 seeds now verify across the four splits; this is an integrity correction and does not change any capability disposition.
+
+A registered D4 full-arm g0 search produced candidate `#1541` with a
+qualification and a transfer child whose effect is absent from the active
+root. Its exact training replay verified, and a one-transition request is
+pending exact authorization. No descendant or capability result exists yet.

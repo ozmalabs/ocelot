@@ -48,18 +48,20 @@ ancestor.
 This requires 8 generation-zero roots plus 24 descendant checkpoints. The
 12 unchanged/adaptive-only descendants are passive controls; the 12
 invention-only/full descendants each require their own candidate-specific
-approval and verified transition receipt. The two pending candidate packets
-are bound to the invention-only generation-zero roots (D4 digest
+approval and verified transition receipt. Two pending candidate packets are
+bound to the invention-only generation-zero roots (D4 digest
 `fe39a44242987c5c97404c8b0812c3928a7324aee2911f57133417ce2650236c`;
 Loopover digest
 `7308895927d5ca447ae80199e9ee369e881ed0effa223e166c65b88f51b40f2c`). If
 both are approved and verified, they produce only invention-only generation
-one descendants. The 12 unchanged/adaptive-only descendants now have
+one descendants. A third candidate-specific request selects D4 full-arm g0
+qualification `#12259`; if approved and verified, it produces full-arm g1.
+After those three transitions, nine more invention/full transitions remain.
+The 12 unchanged/adaptive-only descendants now have
 training-only captures on shared worlds 0600–0602; the immutable parent-linked
-records are in `p22_passive_control_training_lineages_0600_0602.json`. Ten
-further invention/full transitions remain. These captures do not complete the
-resource-matched development gate. No checkpoint may be copied across arms or
-generations.
+records are in `p22_passive_control_training_lineages_0600_0602.json`. These
+captures do not complete the resource-matched development gate. No checkpoint
+may be copied across arms or generations.
 
 The held-out panel has 200 independently seeded worlds in each family. Score
 every generation checkpoint from all four arms on the same world in that
@@ -134,9 +136,9 @@ descendant manifest is complete. The 12 unchanged/adaptive-only descendants
 are captured on shared training worlds 0600–0602; all 12 checkpoint digests
 and parent links verify. Their six unchanged-versus-adaptive resource pairs
 all mismatch, so they do not establish exact resource matching. The D4 and
-Loopover registered-root candidate packets are awaiting exact approval for
-invention-only generation one. Ten additional invention/full transitions
-remain. The development resource-matching gate is still unmet, so this draft
+Loopover invention-only requests and a D4 full-arm request await exact approval
+for generation one. Nine additional invention/full transitions will remain
+after these three are approved and verified. The development resource-matching gate is still unmet, so this draft
 must not be frozen and no held-out allocation may be accessed.
 
 The current native provenance audit is `ATTESTED` with no issues. These hashes

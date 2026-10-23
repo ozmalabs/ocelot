@@ -1841,3 +1841,21 @@ approvals, receipts, validation worlds, or held-out accesses. The raw artifact
 [`p22_training_panel_registered_root_full_d4_0981_0984_novel.json`](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_full_d4_0981_0984_novel.json)
 has SHA-256
 `7a81a117072460372b0d6003a36c1665c86ba9ac8497c2987f25601426689048`.
+
+## Registered full-root D4 candidate request (2026-10-24)
+
+On distinct training draws 0985–0988 with 60 search ticks, candidate `#1541`
+(`power2:rot90`, digest
+`15ab127dc160101ea078c7eea5b91b5339bc4ca6a73a20048c5facb27656b651`, effect
+`[[3,2,1,0]]`) qualified on pairs 0985/0986 (`#12259`) and 0985/0987
+(`#12260`). The selected 0985/0986 transfer child `#4022` has effect
+`[[0,2,1,3]]`; both effects differ from the full root's active `rot90` and
+`flip_r`. Exact replay reproduced the candidate and both qualifications.
+Source and replay results had zero approvals or receipts and empty validation
+and held-out allocations. Raw SHA-256 values are
+`8adab01214d86cbde56c2eca1d92ea0ce0b201f82373d94043d4c6c4b2e2f083` and
+`d0a44e354755b57871c12d50139746c169816f3968c3eee55a0ade1122e45a95`.
+The [candidate-specific full-arm D4 request](COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.md)
+binds qualification `#12259` and the registered full-arm generation-zero
+parent to one training transition and conditional g1 checkpoint. It awaits
+exact user approval. No transition or checkpoint was created.
