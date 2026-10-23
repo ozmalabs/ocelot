@@ -1691,3 +1691,29 @@ has SHA-256 `8e2681213134d9b8c8eaf548252cba388745072aef96ede9fed8e98f1a2e528a`
 and decompresses to the raw digest. Draws 0706–0709 are consumed training
 evidence. The replication still produced no qualified Loopover descendant or
 efficacy estimate; P22.E2–E3 remain open.
+
+## D4 generation-two continuation qualification
+
+A distinct-goal continuation preflight on draws 0710–0713 was rejected before
+learner boot because draws 0710 and 0713 generated the same goal; no search or
+candidate action occurred. On fresh distinct draws 0718–0721, the verified
+generation-two parent `p22-d4-g2-1e3590935d29` (digest
+`5799cb611c33a58de30c2590bbaa5f294794f0a9f9705707454072645bb694fc`) produced
+candidate `#16750` (digest
+`75c8a4559ab843b8154bc031dab1f527d18f39595e9fc9f0c6f3c0b9d7a63b73`, effect
+`[[2,3,0,1]]`). It qualified on three independent-goal pairs: 0718/0719
+(`#56758`), 0718/0720 (`#56759`), and 0718/0721 (`#56760`). Of 306 recorded
+trials, 48 were verified and 258 residual. All four tasks ended stuck.
+
+The continuation recorded 55,946 search attempts, 165 native rule steps,
+416.280 seconds, peak RSS 1,300,021,248 bytes, 56,761 graph nodes, 256,306
+edges and 3,804,368,537 native term evaluations. Approval and receipt counts
+of two are inherited from the parent; this run created none and accessed no
+validation or held-out worlds. Raw JSON SHA-256 is
+`f3b1bf771b45e2d1c9d73eaa9efd667f8c0f7f670cbfbb82f1c4e6f94099d614`; the
+deterministic gzip artifact
+[`p22_training_panel_continuation_d4_0718_0721.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_continuation_d4_0718_0721.json.gz)
+has SHA-256 `8a08579df5bcff5be800a44ab529cff6358f8a05025e4429dfbd8e1c3abb1313`
+and decompresses to the raw digest. Draws 0718–0721 are consumed training
+evidence. The qualified candidate has not been adopted and creates no
+generation-three checkpoint or improvement result.

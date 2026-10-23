@@ -705,3 +705,9 @@ A fresh four-goal Loopover replication on draws 0706–0709 again tested one
 candidate across three independent goals using the order-complete grammar.
 All 1,260 trials were residual and none qualified. This adds no
 independent-goal capability evidence and does not change any L1–L7 disposition.
+
+A D4 generation-two continuation on fresh distinct training draws 0718–0721
+qualified candidate `#16750` on three independent-goal pairs. This remains
+training-only qualification evidence: there is no candidate approval,
+generation-three checkpoint, held-out comparison, or improvement estimate.
+L1–L7 dispositions remain unchanged.
