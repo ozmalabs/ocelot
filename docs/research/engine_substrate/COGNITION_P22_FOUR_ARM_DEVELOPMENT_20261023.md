@@ -868,3 +868,33 @@ raw SHA-256 `844831e0c8c3d7c8c6b66d44e1959376be3d5e68ed9cdb6c4948fd0803bad27a`.
 The isolated-runner provenance closure test and worker measurement/split
 regressions pass; there are still no approved descendant checkpoints or
 independent-goal efficacy data.
+
+## Curriculum-path correction and expanded root panels (2026-10-23)
+
+A path audit found that the first restored-checkpoint evaluator directly added
+`SolveTask` for all arms, bypassing the native `ProcessCurriculumPolicy` in
+adaptive checkpoints. The earlier scores above are retained as preliminary
+records and superseded for outcome validity. The evaluator now submits the
+same `ProcessCurriculumEvidence` to every arm and allows enabled native
+curriculum rules to select and dispatch the task. Fresh corrected isolated
+panels on training draw 0521 score D4 at 1/1 in each arm and Loopover at 0/1
+in each arm. All resource dimensions and native-work digests verify; resources
+remain unmatched and no approvals or receipts were added. See the exact
+corrected raw artifacts and hashes in the P22 build-plan record.
+
+The corrected evaluator then scored the same generation-zero roots on common
+training draws 0522–0533 in each family. Every arm solved 4/12 D4 worlds and
+1/12 Loopover worlds; all paired score differences across the four root arms
+were zero. All worlds were retained, complete resource coverage was measured,
+all resource/work digests verified, and the primitive ceilings held. Some
+arm/world cells used different cumulative primitive work and the realized
+resource vectors were not matched. No approval or receipt was added. These
+are multi-world baseline-development diagnostics only: they contain no
+approved descendants, do not measure learning across generations, and support
+neither efficiency nor efficacy claims. Corrected gzip artifacts are
+[`p22_four_arm_checkpoint_eval_d4_0522_0533.json.gz`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_d4_0522_0533.json.gz)
+and
+[`p22_four_arm_checkpoint_eval_loopover_0522_0533.json.gz`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_loopover_0522_0533.json.gz);
+the build plan records compressed and decompressed SHA-256 digests. Draws
+0520–0533 are consumed for development, and no validation or held-out worlds
+were accessed.

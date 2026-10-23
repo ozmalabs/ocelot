@@ -513,3 +513,14 @@ resource vectors remain unmatched. These are single-world training plumbing
 checks only. They establish neither adaptive benefit nor learner efficacy;
 approved descendant lineages, resource matching, preregistration, and held-out
 results remain open, as do every L1–L7 closure.
+
+The corrected generation-zero roots were also scored on 12 shared training
+draws per family. D4 solved 4/12 and Loopover 1/12 in every arm, producing
+exactly flat paired scores across unchanged, adaptive-only, invention-only,
+and full root conditions. Some worlds had unequal cumulative primitive work,
+and resource vectors were unmatched despite complete measured coverage.
+These selected development panels demonstrate common-world continuation and
+preserve a flat baseline; they do not test learned descendants, establish
+efficiency, or support efficacy. All approvals and receipts added were zero.
+P22 approved-lineage, preregistration and held-out gates remain open, and
+L1–L7 dispositions are unchanged.
