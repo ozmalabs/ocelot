@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
 import sys
 
@@ -14,6 +15,21 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from evaluation.process_mastery.p22_development import run_p22_training_proposal_probe
+
+
+def _claim_approval_output(path: Path, *, approved_digest: str,
+                           review_seconds: float,
+                           binding_document_sha256: str) -> None:
+    """Durably reserve the one-shot output before beginning an adoption attempt."""
+    marker = {"schema": "p22_candidate_adoption_attempt_v1",
+        "status": "attempt_started", "expression_digest": approved_digest,
+        "human_review_seconds": review_seconds,
+        "human_review_cost_source": "reviewer_self_report",
+        "binding_document_sha256": binding_document_sha256}
+    with path.open("x", encoding="utf-8") as stream:
+        stream.write(json.dumps(marker, sort_keys=True) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
 
 
 def main() -> int:
@@ -91,6 +107,14 @@ def main() -> int:
             authorization_document_bytes).hexdigest()
     elif args.output is not None and args.output.exists():
         parser.error("refusing to overwrite an existing development probe artifact")
+    if approved_binding is not None:
+        try:
+            _claim_approval_output(args.output,
+                approved_digest=args.approve_digest,
+                review_seconds=args.review_seconds,
+                binding_document_sha256=authorization_document_sha256)
+        except FileExistsError:
+            parser.error("candidate adoption attempt was already claimed for this request")
     result = run_p22_training_proposal_probe(
         family=args.family,
         training_draws=tuple(args.training_draws),
