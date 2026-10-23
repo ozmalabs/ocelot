@@ -117,3 +117,19 @@ current D4 and Loopover registered-root candidate packets are still awaiting
 exact approval. Approved descendants, complete cross-family lineages, and an
 exactly resource-matched development panel are not available, so this draft
 must not be frozen and no held-out allocation may be accessed.
+
+The current native provenance audit is `ATTESTED` with no issues. These hashes
+describe the verified runtime snapshot at the time of this draft update; the
+final freeze must recompute and bind them after all implementation changes.
+
+| Provenance item | SHA-256 |
+|---|---|
+| Runner | `e5b4640ec1fc5ceb56fb8115f68bcfba7508c8fcab2569855806dccf169d0924` |
+| Analyzer | `dd737d2bbf2561b2d3279e205ad64c11c809d3c6e227b3b0345fe0bf64cf26af` |
+| Source bundle | `5abae7e7ca8ea8a12c6a5ad2258957a010ffa40859454a83b4c38012a9d01b82` |
+| Python wrapper | `b149923864fd6e5c786906b57929b73d42aa42284cceff200383fd8c1d60e9e5` |
+| Loaded native extension | `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07` |
+| Native build receipt | `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66` |
+| Cognition profile | `2034d2d4b67caf69d9c6da327895b468d8cb07942c58f031ee2a0f531ae725e4` |
+| World adapter | `8dee84864837b4d6bc72ef4e06b6d5d7babad8a8f867f85221d0178bfee63c4d` |
+| Dependency closure | `a1a6e531f12703e2f0de0bdcf7632072fb85af10a28e7a5f704eaf726ae66a15` |

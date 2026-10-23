@@ -855,6 +855,8 @@ The P22 preregistration now has a protocol draft covering the fixed allocation,
 estimands, effect thresholds, resource-matching requirement, and structural
 controls. It is explicitly not frozen and authorizes no held-out access. The
 runner and analyzer self-checks pass, with `heldout_accessed=false`. The
+current native provenance audit is `ATTESTED` with no issues; component hashes
+are recorded in the preregistration draft and must be recomputed at freeze.
 base allocation audit found 1,600 unique world IDs and seeds; its current
 SHA-256 is documented in the draft and does not include the frozen roots and
 resource ceilings.
