@@ -922,3 +922,9 @@ and unclaimed one-shot output paths. The P22 development-probe CLI module now
 passes 13 tests. This strengthens authorization-packet integrity only; none of
 the three approvals has been granted or executed, and no capability disposition
 or held-out status changes.
+
+The combined P22 E2 estimand/proposal/adoption/checkpoint/ablation/analyzer
+bundle and registered-root packet audit passes 74 tests. The prior runner and
+analyzer self-checks remain passing with no held-out access. This is mechanism
+and authorization-integrity evidence only; P22 efficacy and L1–L7 dispositions
+remain unchanged.
