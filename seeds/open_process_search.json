@@ -24,7 +24,8 @@
         "attempts_reserved": 0.0,
         "max_candidates": 16.0,
         "search_cost": 2.0,
-        "max_depth": 4.0
+        "max_depth": 4.0,
+        "candidate_transfer_depth": 1.0
       }
     }
   ],
@@ -1126,6 +1127,21 @@
               "type": "Attr",
               "node": {
                 "type": "Var",
+                "name": "pol"
+              },
+              "key": "candidate_transfer_depth"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
                 "name": "task"
               },
               "key": "split"
@@ -2094,6 +2110,21 @@
             "b": {
               "type": "Lit",
               "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "candidate_transfer_depth"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 2.0
             }
           },
           {

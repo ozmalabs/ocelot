@@ -1515,3 +1515,26 @@ has SHA-256 `815fab0a70752e6144e2e0121df3b5c5c3fba860757947a909b30c726efbec78`
 and decompresses to that raw digest. Draws 0680/0681 are consumed
 training-only data. Search coverage increased, but Loopover qualification
 remains unmet.
+
+## Eight-goal two-held-process qualification panel (2026-10-23)
+
+The two-held-process search ran on eight fresh pairwise-distinct Loopover v2
+training goals, draws 0682–0689, using transfer depth 2, 10,000 attempts per
+task and an 80,000 global ceiling. All eight tasks ended stuck after using
+their full allocations. Candidate `#10761` (digest
+`896b9d0e7ee618bc93ae007b16a0e0db777574f230e2708c0d0a3725a028ff38`, effect
+`[[0,1,7,3,4,5,2,6,8]]`) produced 156 residual trials on each of the seven
+later goals: 24 one-step and 132 two-step, 1,092 residual trials total. It did
+not qualify. Search reservations matched the 80,000 ceiling. There were no new
+approvals or receipts, no validation allocation, and no held-out exposure.
+
+The run took 2,008.991 seconds, with 104 native rule steps, 4,099,854,336
+bytes peak RSS, 80,786 graph nodes, 402,562 edges and 17,197,490,299 native
+term evaluations. Raw JSON SHA-256 is
+`8a393b22267e07cd7934cf14ea1a31f4b80bd7779c1ef44fe0bdcb16f89cac6b`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0682_0689_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0682_0689_two_step.json.gz)
+has SHA-256 `999070499e348746c11799e98e7cff1ef879d099fc64718641412812aac0aa2e`
+and decompresses to the raw digest. Draws 0682–0689 are consumed training-only
+data. The larger panel still produced no Loopover generation-one candidate or
+efficacy result.

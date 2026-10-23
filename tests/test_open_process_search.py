@@ -239,6 +239,8 @@ def test_training_candidate_composes_with_two_held_processes_on_new_goal():
         "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
     }
     agent, _ = _agent(attempts=500, held=held)
+    agent.s.set_attr(agent.nodes("OpenProcessSearchPolicy")[0],
+                     "candidate_transfer_depth", 2.0)
     agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
     initial = [0, 1, 2, 3]
     source_goal = _apply(agent, _compose(agent, held["p"], held["q"]), initial)

@@ -464,6 +464,7 @@ def _independent_candidate_compose_rule(*, reverse=False):
          ["request", "searches_task", "task"], ["task", "about_domain", "d"],
          ["d", "has_held_process", "a"]],
         And(policy_on(), Eq(A("source_task", "split"), L("training")),
+            Eq(A("pol", "candidate_transfer_depth"), L(2.0)),
             Eq(A("task", "split"), L("training")),
             Eq(A("source", "status"), L("verified")),
             Eq(A("candidate", "status"), L("unapproved_candidate")),
@@ -690,7 +691,8 @@ def build():
             "max_attempts": 64.0, "max_attempts_per_request": 256.0,
             "attempts_reserved": 0.0,
             "max_candidates": 16.0,
-            "search_cost": 2.0, "max_depth": 4.0}}],
+            "search_cost": 2.0, "max_depth": 4.0,
+            "candidate_transfer_depth": 1.0}}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_open_process_search_policy",
             "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(SEED_ID, specs), "rules": rules}

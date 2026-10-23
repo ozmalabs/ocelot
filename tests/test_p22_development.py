@@ -298,6 +298,7 @@ def test_candidate_specific_approval_executes_one_guarded_d4_simulator_action():
             "model_epoch": 0,
             "frame_epoch": 0,
             "human_review_seconds": 0.25,
+            "candidate_transfer_depth": 2,
             "training_trial_keys": [
                 "p22:d4-v2:train:0200", "p22:d4-v2:train:0202"],
         })
@@ -363,6 +364,40 @@ def test_candidate_approval_selects_one_exact_qualification_from_multiple():
             "p22:d4-v2:train:0635", "p22:d4-v2:train:0637"],
     })
     assert selected["qualification_id"] == "#66758"
+
+
+def test_candidate_approval_replays_ephemeral_qualification_id_by_exact_witnesses():
+    qualifications = [
+        {"qualification_id": "#66761", "kind": "independent_goal_composition",
+         "training_trial_keys": ["p22:d4-v2:train:0635", "p22:d4-v2:train:0636"]},
+        {"qualification_id": "#66762", "kind": "independent_goal_composition",
+         "training_trial_keys": ["p22:d4-v2:train:0635", "p22:d4-v2:train:0637"]},
+        {"qualification_id": "#66763", "kind": "independent_goal_composition",
+         "training_trial_keys": ["p22:d4-v2:train:0635", "p22:d4-v2:train:0639"]},
+    ]
+    selected = _select_approved_qualification(qualifications, {
+        "qualification_id": "#66758",
+        "qualification_kind": "independent_goal_composition",
+        "training_trial_keys": [
+            "p22:d4-v2:train:0635", "p22:d4-v2:train:0637"],
+    })
+    assert selected["qualification_id"] == "#66762"
+    assert selected["requested_qualification_id"] == "#66758"
+
+
+def test_candidate_approval_replay_rejects_ambiguous_or_different_witnesses():
+    import pytest
+    qualifications = [
+        {"qualification_id": "#1", "training_trial_keys": ["a", "b"]},
+        {"qualification_id": "#2", "training_trial_keys": ["b", "a"]},
+        {"qualification_id": "#3", "training_trial_keys": ["a", "c"]},
+    ]
+    binding = {"qualification_id": "#old", "training_trial_keys": ["a", "b"]}
+    with pytest.raises(RuntimeError, match="exactly one record"):
+        _select_approved_qualification(qualifications, binding)
+    with pytest.raises(RuntimeError, match="exactly one record"):
+        _select_approved_qualification(qualifications[:1], {
+            "qualification_id": "#old", "training_trial_keys": ["a", "c"]})
 
 
 def test_candidate_approval_requires_exact_qualification_when_ambiguous():

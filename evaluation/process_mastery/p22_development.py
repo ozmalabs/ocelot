@@ -57,7 +57,12 @@ def _digest(value) -> str:
 
 def _select_approved_qualification(qualifications: list[dict],
                                   binding: dict) -> dict:
-    """Resolve one exact training qualification for a candidate approval."""
+    """Resolve one exact training qualification for a candidate approval.
+
+    Graph node IDs can shift when a seed is regenerated. If the source ID is
+    absent from an exact replay, resolve by the already-bound witness pair and
+    qualification kind; never substitute a different trial pair.
+    """
     requested_id = binding.get("qualification_id")
     if requested_id is None:
         if len(qualifications) != 1:
@@ -69,9 +74,25 @@ def _select_approved_qualification(qualifications: list[dict],
             raise RuntimeError("qualification_id must be a nonempty string")
         matches = [qualification for qualification in qualifications
                    if qualification.get("qualification_id") == requested_id]
-        if len(matches) != 1:
-            raise RuntimeError("qualification_id does not identify one qualified record")
-        selected = matches[0]
+        if len(matches) > 1:
+            raise RuntimeError("qualification_id identifies multiple qualified records")
+        if matches:
+            selected = matches[0]
+        else:
+            expected = binding.get("training_trial_keys")
+            expected_kind = binding.get("qualification_kind")
+            if (not isinstance(expected, list)
+                    or any(not isinstance(key, str) or not key for key in expected)
+                    or len(expected) != len(set(expected))):
+                raise RuntimeError("qualification ID replay requires exact unique training witnesses")
+            replay_matches = [qualification for qualification in qualifications
+                if sorted(qualification.get("training_trial_keys", [])) == sorted(expected)
+                and (expected_kind is None or qualification.get("kind") == expected_kind)]
+            if len(replay_matches) != 1:
+                raise RuntimeError(
+                    "qualification_id does not replay to exactly one record with the bound witnesses")
+            selected = dict(replay_matches[0])
+            selected["requested_qualification_id"] = requested_id
     witnesses = selected.get("training_trial_keys")
     expected = binding.get("training_trial_keys")
     if (not isinstance(witnesses, list) or not isinstance(expected, list)
@@ -90,7 +111,8 @@ def run_p22_training_proposal_probe(*, family: str,
                                     global_attempt_ceiling: int = 30000,
                                     measure_native_rule_work: bool = False,
                                     approved_candidate_binding: dict | None = None,
-                                    parent_checkpoint: CheckpointExpression | None = None) -> dict:
+                                    parent_checkpoint: CheckpointExpression | None = None,
+                                    candidate_transfer_depth: int | None = None) -> dict:
     """Run native search on two training worlds and score every proposal.
 
     The default ``same`` mode reproduces the original qualification probe.
@@ -122,6 +144,22 @@ def run_p22_training_proposal_probe(*, family: str,
         raise ValueError("global attempt ceiling must be in [1, 120000]")
     if not isinstance(measure_native_rule_work, bool):
         raise ValueError("native rule-work measurement flag must be boolean")
+    if (approved_candidate_binding is not None
+            and not isinstance(approved_candidate_binding, dict)):
+        raise ValueError("approved candidate binding must be an object")
+    approved_transfer_depth = (approved_candidate_binding.get(
+        "candidate_transfer_depth", 1) if approved_candidate_binding is not None else 2)
+    if (isinstance(approved_transfer_depth, bool)
+            or approved_transfer_depth not in (1, 2)):
+        raise ValueError("candidate transfer depth must be 1 or 2")
+    if candidate_transfer_depth is None:
+        candidate_transfer_depth = approved_transfer_depth
+    elif (isinstance(candidate_transfer_depth, bool)
+            or candidate_transfer_depth not in (1, 2)):
+        raise ValueError("candidate transfer depth must be 1 or 2")
+    elif (approved_candidate_binding is not None
+            and candidate_transfer_depth != approved_transfer_depth):
+        raise ValueError("candidate transfer depth differs from approval request")
     parent_runtime = {}
     parent_rule_work = None
     inherited_global_attempt_ceiling = None
@@ -213,6 +251,9 @@ def run_p22_training_proposal_probe(*, family: str,
         search_policies = agent.nodes("OpenProcessSearchPolicy")
         if len(search_policies) != 1:
             raise RuntimeError("P22 graph must contain exactly one open-search policy")
+        candidate_transfer_depth = float(candidate_transfer_depth)
+        agent.s.set_attr(search_policies[0], "candidate_transfer_depth",
+                         candidate_transfer_depth)
         # For a continuation this may raise the declared cap, but does not
         # reset attempts already charged in the restored graph.
         agent.s.set_attr(search_policies[0], "max_attempts",
@@ -371,6 +412,8 @@ def run_p22_training_proposal_probe(*, family: str,
                 if agent.attrs(q).get("status") == "qualified_for_candidate_specific_approval"]
             qualification_records = [{
                 "qualification_id": str(q),
+                "kind": agent.attrs(q).get("qualification_kind"),
+                "declared_trial_count": agent.attrs(q).get("trial_count"),
                 "training_trial_keys": sorted(key
                     for attempt in agent.native.neighbours(q, "counts_native_trial")
                     for task in agent.native.neighbours(attempt, "about_task")
@@ -388,6 +431,10 @@ def run_p22_training_proposal_probe(*, family: str,
                 "human_review_seconds": float(
                     approved_candidate_binding["human_review_seconds"]),
                 "human_review_cost_source": "reviewer_self_report",
+                "qualification_id": selected_qualification["qualification_id"],
+                "requested_qualification_id": approved_candidate_binding.get(
+                    "qualification_id"),
+                "qualification_training_trial_keys": expected_witnesses,
                 **approval_context})
             agent.s.add_edge(agent.ag, "has_open_process_adoption_approval", approval, {})
             agent.s.add_edge(approval, "approves_open_process_candidate", candidate, {})
@@ -429,6 +476,8 @@ def run_p22_training_proposal_probe(*, family: str,
                               if len(approval_nodes) == 1 else {})
             simulated_adoption = {"candidate_id": str(candidate),
                 "qualification_id": selected_qualification["qualification_id"],
+                "requested_qualification_id": approved_candidate_binding.get(
+                    "qualification_id"),
                 "expression_digest": expected_digest,
                 "training_trial_keys": expected_witnesses,
                 "approval_id": (str(approval_nodes[0])
@@ -632,6 +681,7 @@ def run_p22_training_proposal_probe(*, family: str,
             "global_attempt_ceiling": global_attempt_ceiling,
             "inherited_global_attempt_ceiling": inherited_global_attempt_ceiling,
             "per_request_attempt_ceiling": per_request_attempt_ceiling,
+            "candidate_transfer_depth": candidate_transfer_depth,
             "native_rule_work": measured_native_rule_work,
             "training_goal_states": [world["goal_state"] for world in training_worlds],
             "validation_world_ids": [world["world_id"] for world in validation_worlds],

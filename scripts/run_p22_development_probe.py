@@ -120,6 +120,8 @@ def main() -> int:
     parser.add_argument("--global-attempt-ceiling", type=int, default=30000,
         help="cumulative graph-wide search ceiling across restored generations (max 120000)")
     parser.add_argument("--search-ticks", type=int, default=30)
+    parser.add_argument("--candidate-transfer-depth", type=int, choices=(1, 2),
+        help="bind the independent candidate composition depth for training-only reconstruction")
     parser.add_argument("--measure-native-rule-work", action="store_true",
         help="enable isolated per-rule native work counters; development only")
     parser.add_argument("--approved-candidate-binding", type=Path,
@@ -254,7 +256,8 @@ def main() -> int:
                                   or approved_binding is not None
                                   or parent_checkpoint is not None),
         approved_candidate_binding=approved_binding,
-        parent_checkpoint=parent_checkpoint)
+        parent_checkpoint=parent_checkpoint,
+        candidate_transfer_depth=args.candidate_transfer_depth)
     if approved_binding is not None:
         result["candidate_approval_authorization"] = {
             "expression_digest": args.approve_digest,
