@@ -157,7 +157,10 @@ one have each been approved and consumed once, with 12 reviewer-reported
 seconds; their receipts and generation-one checkpoints verify. These complete
 3 of 12 invention/full descendants. Loopover full-arm still lacks a qualified
 generation-one candidate, and nine further invention/full transitions remain,
-each requiring its own approval. Exact realized resource equality
+each requiring its own approval. The latest Loopover full-root training-only
+search on fresh worlds 0800–0803 again failed to qualify a candidate; all
+16,236 independent-goal trials for candidate `#11545` were residual. Exact
+realized resource equality
 is not a freeze prerequisite after the feasibility amendment; measured resource
 coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen

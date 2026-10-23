@@ -930,3 +930,6 @@ bundle and updated registered-root consumed-result audit pass 74 tests. Runner
 and analyzer self-checks pass with no held-out access. This is mechanism and
 authorization-integrity evidence only; P22 efficacy and L1–L7 dispositions
 remain unchanged.
+
+
+A fresh Loopover full-root continuation on training worlds 0800–0803 reproduced candidate `#11545`, but all 16,236 independent-goal trials were residual and no qualification was recorded. The artifact reports 40,000 reserved attempts, 67 native rule steps, 1,222.628 seconds wall-time, 937,930,752-byte peak RSS, zero approvals/receipts, empty validation allocation, and no held-out allocation. Native rule identity coverage is complete. This is negative candidate-search evidence only; the Loopover full-arm generation-one gate and P22.E2–E3 remain open.
