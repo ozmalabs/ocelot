@@ -1854,7 +1854,7 @@ On distinct training draws 0985–0988 with 60 search ticks, candidate `#1541`
 Source and replay results had zero approvals or receipts and empty validation
 and held-out allocations. Raw SHA-256 values are
 `8adab01214d86cbde56c2eca1d92ea0ce0b201f82373d94043d4c6c4b2e2f083` and
-`d0a44e354755b57871c12d50139746c169816f3968c3eee55a0ade1122e45a95`.
+`b91b3dfcf59c234f0c91f8ce01c54607c972d7d13f68411f5f1df11181d72d24`.
 The [candidate-specific full-arm D4 request](COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.md)
 binds qualification `#12259` and the registered full-arm generation-zero
 parent to one training transition and conditional g1 checkpoint. It awaits

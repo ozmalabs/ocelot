@@ -22,11 +22,11 @@ registered D4 full-arm generation-zero checkpoint.
 
 The active full-root held effects are `rot90` `[1,3,0,2]` and `flip_r`
 `[2,3,0,1]`. Both the candidate effect and selected transfer-child effect are
-absent from that active set. The source and exact replay reproduce candidate
+absent from that active set. The source and exact replay with native rule-work measurement reproduce candidate
 `#1541`, its two qualifications, and the selected witnesses.
 Both artifacts contain zero approvals or receipts and empty validation and
 held-out allocations. Source SHA-256 `8adab01214d86cbde56c2eca1d92ea0ce0b201f82373d94043d4c6c4b2e2f083`; replay
-SHA-256 `d0a44e354755b57871c12d50139746c169816f3968c3eee55a0ade1122e45a95`.
+SHA-256 `b91b3dfcf59c234f0c91f8ce01c54607c972d7d13f68411f5f1df11181d72d24`.
 
 Authorization covers only one simulator transition on training world 0985 and
 the conditional g1 checkpoint. It authorizes no later-generation action,
