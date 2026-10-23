@@ -1279,6 +1279,21 @@ has SHA-256 `4a210aad83c838104b197d626306cbdad23f19f96625531e1dd5e9b9ee64186f`.
 Draws 0609–0612 are consumed training-only data. This does not create an
 approved Loopover generation-one descendant.
 
+## Eight-goal Loopover qualification panel (2026-10-23)
+
+Eight fresh pairwise-distinct Loopover training goals, draws 0613–0620, were
+run with 10,000 attempts per request and an 80,000 global ceiling. The full
+ceiling was reserved; all eight tasks remained stuck. Candidate `#10761`
+(digest
+`8928e5557188ed65ab42e5bebe3bca73b9d8a2724dddb022dbb0e0cbb7623104`) was
+tested 24 times on each of the seven later goals. All 168 candidate trials
+were residual and no qualification was created. No approval or receipt was
+created, and validation and held-out allocations were empty. Raw artifact
+[`p22_training_panel_loopover_0613_0620.json`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0613_0620.json)
+has SHA-256 `9e6b079b60ded36688ff7bb34eafa1fc695d0a6726c7f7815f9931a7f58acdf8`.
+Draws 0613–0620 are consumed training-only data. This does not provide a
+Loopover generation-one descendant or a registered efficacy estimate.
+
 ## Reproducible training-only continuation CLI (2026-10-23)
 
 The development CLI now accepts a parent result artifact, a checkpoint record

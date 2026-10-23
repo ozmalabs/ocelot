@@ -619,3 +619,5 @@ The development CLI now supports an artifact-hash- and checkpoint-digest-bound t
 A second Loopover 60-tick probe on draws 0602/0603 repeated the prior result: 24 funded residual trials on the second goal and no independently qualified candidate. Extra rule-processing ticks did not resolve the current training transfer failure; no capability disposition changes.
 
 The Loopover training probe now supports up to eight pairwise-distinct goals. On four fresh goals 0609–0612, the candidate was tested on all three later goals and produced 72 residual trials without qualification. No approved descendant or capability disposition changed.
+
+An eight-goal Loopover panel on 0613–0620 used the full 80,000-attempt ceiling. One candidate had 168 residual trials across seven later goals, with no qualification. The current proposal search therefore still lacks a Loopover generation-one descendant; capability dispositions remain unchanged.

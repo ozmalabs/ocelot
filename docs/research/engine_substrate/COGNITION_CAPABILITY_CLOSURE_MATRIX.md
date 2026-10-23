@@ -97,6 +97,10 @@ on three later independent goals; all 72 trials were residual. The generalized
 training probe adds no approved descendant and does not change capability
 dispositions.
 
+An eight-goal panel on draws 0613–0620 tested one candidate on seven later
+goals; all 168 trials were residual at the full 80,000-attempt ceiling. No
+Loopover generation-one checkpoint or capability disposition changes.
+
 Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out
