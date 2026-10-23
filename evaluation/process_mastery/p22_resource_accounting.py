@@ -413,7 +413,8 @@ def snapshot_native_resources(agent, *, runtime_counters: dict | None = None,
                 cumulative["budget_denied_cost"] += _finite_nonnegative(
                     attrs, "cost", kind=kind, node_id=node_id)
         if kind == "SolveTask":
-            if attrs.get("split") == "training":
+            if (attrs.get("split") == "training"
+                    and attrs.get("evaluation_only") != 1.0):
                 cumulative["training_task_exposures"] += 1
                 training_records.append({"node_id": str(node_id), "type": kind,
                                         "attrs": attrs})

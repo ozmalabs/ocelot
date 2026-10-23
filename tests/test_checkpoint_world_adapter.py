@@ -511,9 +511,10 @@ def test_restored_checkpoint_runs_fresh_task_through_native_learner():
     assert result["quiescent"]
     assert result["approval_events_added"] == result["world_receipts_added"] == 0
 
-    heldout = agent_view(generate_d4_world_v2(split="heldout", draw=6))
-    with pytest.raises(ValueError, match="registered training worlds"):
-        score_restored_checkpoint_task(checkpoint, world=heldout,
+    heldout_fixture = dict(world, split="heldout",
+        world_id="fixture:d4:heldout:rejected")
+    with pytest.raises(ValueError, match="registered scoring split"):
+        score_restored_checkpoint_task(checkpoint, world=heldout_fixture,
                                       agent_factory=boot)
     bounded = score_restored_checkpoint_task(checkpoint, world=world,
         agent_factory=boot, cumulative_primitive_ceiling=1,
@@ -527,6 +528,61 @@ def test_restored_checkpoint_runs_fresh_task_through_native_learner():
         score_restored_checkpoint_task(over_budget, world=world,
             agent_factory=lambda: pytest.fail("over-budget checkpoint was booted"),
             cumulative_primitive_ceiling=1)
+
+
+def test_heldout_learner_scoring_keeps_assigned_world_out_of_training(monkeypatch):
+    from substrate.boot_profiles import boot_cognition_on
+    from evaluation.process_mastery import checkpoint_world_adapter as adapter_module
+
+    train_world = agent_view(generate_d4_world_v2(split="train", draw=16))
+    heldout_fixture = dict(train_world, split="heldout",
+        world_id="fixture:d4:heldout:score")
+    monkeypatch.setattr(adapter_module, "generate_d4_world_v2",
+        lambda *, split, draw: heldout_fixture if split == "heldout"
+        else generate_d4_world_v2(split=split, draw=draw))
+
+    source = boot_cognition_on()
+    for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
+        for policy in source.s.nodes(policy_type):
+            source.s.set_attr(policy, "enabled", 1.0)
+    domain = source.s.add_node("ProcessDomain", {"name": "heldout-checkpoint",
+        "kind": "permutation", "domain_kind": "permutation",
+        "probes": [train_world["initial_state"]], "source_epoch": 0,
+        "model_epoch": 0, "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_domain", domain, {})
+    params = train_world["held_processes"]["rot90"]
+    schema = source.s.add_node("ProcessSchema", {"name": "rot90",
+        "kind": "permutation", "domain": "heldout-checkpoint",
+        "domain_kind": "permutation", "params": params,
+        "source_digest": params_digest(params), "status": "active",
+        "provenance": "held", "cost": 1.0, "owner_agent": source.agent,
+        "invariants": [], "source_epoch": 0, "model_epoch": 0,
+        "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_schema", schema, {})
+    source.s.add_edge(domain, "has_held_process", schema, {})
+    checkpoint = capture_held_process_checkpoint(source, schema,
+        checkpoint_id="heldout-scoring-root")
+
+    def boot():
+        agent = boot_cognition_on()
+        for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
+            for policy in agent.s.nodes(policy_type):
+                agent.s.set_attr(policy, "enabled", 1.0)
+        return agent
+
+    result = score_restored_checkpoint_task(checkpoint,
+        world=agent_view(heldout_fixture), agent_factory=boot,
+        allow_heldout_evaluation=True)
+    assert result["split"] == "heldout"
+    assert result["status"] == "COMPLETED"
+    assert result["task_status"] in {"solved", "stuck"}
+    assert result["score"] == int(result["task_status"] == "solved")
+    assert result["native_rule_steps"] > 0
+    assert result["resource_snapshot"]["cumulative_resources"].get(
+        "training_evidence_exposures", 0) == 0
+    assert result["resource_snapshot"]["cumulative_resources"].get(
+        "training_task_exposures", 0) == 0
+    assert result["approval_events_added"] == result["world_receipts_added"] == 0
 
 
 def test_four_restored_checkpoints_share_registered_world_and_rule_ceiling():

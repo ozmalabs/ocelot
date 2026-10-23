@@ -278,6 +278,22 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None) -> dict
         status = row.get("status")
         if status != "scored":
             failures.append(f"non_scored_outcome:{key}:{status}")
+        learner_status = row.get("native_learner_status")
+        if learner_status not in {
+                "COMPLETED", "RULE_BUDGET_EXHAUSTED",
+                "PRIMITIVE_BUDGET_OVERRUN", "RULE_PROGRESS_LIMIT_OVERRUN"}:
+            failures.append(f"native_learner_outcome_missing_or_invalid:{key}")
+        if row.get("native_task_status") not in {
+                "solved", "stuck", "active", "not_dispatched"}:
+            failures.append(f"native_task_outcome_missing_or_invalid:{key}")
+        if row.get("primitive_budget_respected") is not True:
+            failures.append(f"native_primitive_budget_violation:{key}")
+        if row.get("rule_progress_limit_respected") is not True:
+            failures.append(f"native_rule_progress_limit_violation:{key}")
+        if row.get("approval_events_added") != 0:
+            failures.append(f"heldout_approval_event_created:{key}")
+        if row.get("world_receipts_added") != 0:
+            failures.append(f"heldout_world_receipt_created:{key}")
         score = row.get("score")
         if (isinstance(score, bool) or not isinstance(score, (int, float))
                 or not math.isfinite(score) or score not in (0, 1)):
@@ -477,6 +493,12 @@ def _self_check_payload() -> dict:
                 for arm in ARMS:
                     rows.append({"family": family, "generation": generation,
                         "world_id": world_id, "arm": arm, "status": "scored",
+                        "native_learner_status": "COMPLETED",
+                        "native_task_status": "solved",
+                        "primitive_budget_respected": True,
+                        "rule_progress_limit_respected": True,
+                        "approval_events_added": 0,
+                        "world_receipts_added": 0,
                         "goal_digest": f"goal-{family}-{world_id}",
                         "world_digest": f"world-{family}-{world_id}",
                         "score": 0, "checkpoint_digest": f"{family}-{generation}-{arm}",

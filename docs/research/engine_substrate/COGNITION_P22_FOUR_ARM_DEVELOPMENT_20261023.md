@@ -909,3 +909,19 @@ RSS also vary by arm. Fixed ceilings were respected, but efficiency remains
 inadmissible under the frozen matching rule. The build-plan ledger records
 the per-family wall-time/RSS ranges; no post-hoc work padding or ceiling
 change is allowed to manufacture a resource match.
+
+## Native held-out runner repair (2026-10-23)
+
+Code review found that the frozen P22 runner still used the expression-only
+checkpoint scorer, despite P22.03 requiring restored learner evaluation. The
+runner now restores each digest-bound checkpoint in a fresh worker and gives
+the native solver the same externally assigned answer-free task. Such a task
+is marked evaluation-only and is excluded from training-exposure data and
+counts. The analyzer now requires a native learner/task outcome, respects the
+primitive and rule-progress ceilings, and records zero approvals and receipts;
+worker failures remain rows and invalidate the panel. The standalone freeze
+must be committed and verified before the runner constructs any registered
+held-out world. The focused P22 bundle passes 50 tests, and runner/analyzer
+self-checks pass without held-out access. This repairs the scoring consumer
+path; no registered held-out world has been read, no preregistration has been
+frozen, and approved descendant lineages remain absent.

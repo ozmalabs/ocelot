@@ -77,7 +77,9 @@ def _worker(payload: dict) -> dict:
         outcome = score_restored_checkpoint_task(checkpoint,
             world=payload["world"], agent_factory=lambda: agent,
             cumulative_primitive_ceiling=payload["cumulative_primitive_ceiling"],
-            native_rule_progress_ceiling=payload["native_rule_progress_ceiling"])
+            native_rule_progress_ceiling=payload["native_rule_progress_ceiling"],
+            allow_heldout_evaluation=payload.get(
+                "allow_heldout_evaluation", False))
     except BaseException:
         agent.close()
         raise
@@ -88,6 +90,28 @@ def _worker(payload: dict) -> dict:
         wall_seconds=wall_seconds, peak_rss_bytes=peak_rss_bytes,
         parent_runtime=parent_snapshot.get("runtime_counters") or {})
     return outcome
+
+
+def score_checkpoint_world_isolated(checkpoint: dict, world: dict, *,
+                                    cumulative_primitive_ceiling: int,
+                                    native_rule_progress_ceiling: int,
+                                    allow_heldout_evaluation: bool = False) -> dict:
+    """Run one restored checkpoint/world cell in a fresh native learner process."""
+    if not isinstance(checkpoint, dict) or not _checkpoint_digest_valid(
+            CheckpointExpression(**checkpoint)):
+        raise ValueError("isolated worker requires a digest-valid native checkpoint")
+    if not isinstance(world, dict):
+        raise ValueError("isolated worker requires one registered world view")
+    payload = {"checkpoint": checkpoint, "world": world,
+        "cumulative_primitive_ceiling": cumulative_primitive_ceiling,
+        "native_rule_progress_ceiling": native_rule_progress_ceiling,
+        "allow_heldout_evaluation": allow_heldout_evaluation}
+    completed = subprocess.run([sys.executable, "-m",
+        "evaluation.process_mastery.p22_checkpoint_panel", "--worker"],
+        input=json.dumps(payload, sort_keys=True), capture_output=True,
+        text=True, check=True, env=os.environ | {
+            "OZMA_SEED_PERSIST_DISABLED": "1"})
+    return json.loads(completed.stdout)
 
 
 def run_isolated_checkpoint_panel(checkpoints: dict[str, dict], worlds: list[dict], *,
@@ -137,15 +161,10 @@ def run_isolated_checkpoint_panel(checkpoints: dict[str, dict], worlds: list[dic
     for world in worlds:
         outcomes = {}
         for arm, checkpoint in records.items():
-            payload = {"checkpoint": checkpoint, "world": world,
-                "cumulative_primitive_ceiling": cumulative_primitive_ceiling,
-                "native_rule_progress_ceiling": native_rule_progress_ceiling}
-            completed = subprocess.run([sys.executable, "-m",
-                "evaluation.process_mastery.p22_checkpoint_panel", "--worker"],
-                input=json.dumps(payload, sort_keys=True), capture_output=True,
-                text=True, check=True, env=os.environ | {
-                    "OZMA_SEED_PERSIST_DISABLED": "1"})
-            outcome = json.loads(completed.stdout)
+            outcome = score_checkpoint_world_isolated(checkpoint, world,
+                cumulative_primitive_ceiling=cumulative_primitive_ceiling,
+                native_rule_progress_ceiling=native_rule_progress_ceiling,
+                allow_heldout_evaluation=False)
             outcomes[arm] = outcome
             arm_outcomes[arm].append(outcome)
         resources = compare_resource_snapshots({arm: outcome["resource_snapshot"]

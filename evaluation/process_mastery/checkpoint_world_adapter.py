@@ -661,7 +661,8 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
                                   world: dict,
                                   agent_factory,
                                   cumulative_primitive_ceiling: int = 30_000,
-                                  native_rule_progress_ceiling: int = 20_000) -> dict:
+                                  native_rule_progress_ceiling: int = 20_000,
+                                  allow_heldout_evaluation: bool = False) -> dict:
     """Run a fresh native learner graph restored from a checkpoint on one task.
 
     This is a development continuation primitive, distinct from the finite
@@ -674,20 +675,26 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
     if checkpoint.native_graph_snapshot_json is None:
         raise ValueError("checkpoint is missing its immutable native graph snapshot")
     if not isinstance(world, dict):
-        raise ValueError("a registered training-world view is required")
+        raise ValueError("a registered world view is required")
+    if not isinstance(allow_heldout_evaluation, bool):
+        raise ValueError("held-out evaluation flag must be boolean")
     generators = {
         "pmb_generated_d4_corner_v2": generate_d4_world_v2,
         "pmb_generated_loopover_v2": generate_loopover_world_v2,
     }
     generator = generators.get(world.get("family"))
     draw = world.get("draw")
-    if (generator is None or world.get("split") != "train"
+    split = world.get("split")
+    allowed_splits = {"train"}
+    if allow_heldout_evaluation:
+        allowed_splits.add("heldout")
+    if (generator is None or split not in allowed_splits
             or isinstance(draw, bool) or not isinstance(draw, int)
             or not 0 <= draw < 1000):
-        raise ValueError("checkpoint continuation accepts only registered training worlds")
-    expected_world = agent_view(generator(split="train", draw=draw))
+        raise ValueError("checkpoint continuation accepts only its registered scoring split")
+    expected_world = agent_view(generator(split=split, draw=draw))
     if world != expected_world:
-        raise ValueError("task must exactly match its registered training-world view")
+        raise ValueError("task must exactly match its registered answer-free world view")
     world_id = world["world_id"]
     initial_state = world["initial_state"]
     goal_state = world["goal_state"]
@@ -730,7 +737,7 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         store.set_attr(solver_policy, "max_steps", float(solver_step_allowance))
         baseline_approvals = len(store.nodes("OpenProcessAdoptionApproval"))
         baseline_receipts = len(store.nodes("OpenProcessWorldReceipt"))
-        task_key = f"p22:{world['family']}:{world['draw']:04d}"
+        task_key = f"p22:{world['family']}:{split}:{world['draw']:04d}"
         graph_nodes = json.loads(checkpoint.native_graph_snapshot_json)["nodes"]
         domain_names = [node.get("attrs", {}).get("domain") for node in graph_nodes
             if node.get("type") == "ProcessSchema"
@@ -774,37 +781,55 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
                 "source_probe_epoch": 0})
             store.add_edge(root, "has_process_schema", schema, {})
             store.add_edge(domain, "has_held_process", schema, {})
-        if any(store.node(node)["attrs"].get("task_key") == task_key
-               for node in store.nodes("ProcessCurriculumEvidence")):
-            raise ValueError("checkpoint graph already contains this evaluation task identity")
-        evidence = store.add_node("ProcessCurriculumEvidence", {
-            "evidence_key": task_key, "source_kind": "registered_training_pool",
-            "source_id": world_id, "task_kind": "process_composition",
-            "action_kind": "apply", "object_type": "Permutation",
-            "feature_key": "permutation", "before_value": list(initial_state),
-            "domain": domain_name, "initial_state": list(initial_state),
-            "goal": list(goal_state), "source_epoch": 0, "model_epoch": 0,
-            "frame_epoch": 0, "status": "eligible", "split": "training",
-            "expected_outcome": "unknown", "sealed_labels_present": False,
-            "fixed_rank": 0.0, "random_rank": 0.0})
-        store.add_edge(root, "has_process_curriculum_evidence", evidence, {})
-        curriculum_policies = store.nodes("ProcessCurriculumPolicy")
-        if len(curriculum_policies) != 1:
-            raise ValueError("checkpoint learner requires exactly one native curriculum policy")
-        curriculum_enabled = (store.node(curriculum_policies[0])["attrs"].get(
-            "enabled") == 1.0)
-        if curriculum_enabled:
-            existing_curriculum_tasks = len(store.nodes("ProcessCurriculumTask"))
-            store.set_attr(curriculum_policies[0], "max_tasks",
-                           float(existing_curriculum_tasks + 1))
+        if split == "train":
+            if any(store.node(node)["attrs"].get("task_key") == task_key
+                   for node in store.nodes("ProcessCurriculumEvidence")):
+                raise ValueError("checkpoint graph already contains this training task identity")
+            evidence = store.add_node("ProcessCurriculumEvidence", {
+                "evidence_key": task_key, "source_kind": "registered_training_pool",
+                "source_id": world_id, "task_kind": "process_composition",
+                "action_kind": "apply", "object_type": "Permutation",
+                "feature_key": "permutation", "before_value": list(initial_state),
+                "domain": domain_name, "initial_state": list(initial_state),
+                "goal": list(goal_state), "source_epoch": 0, "model_epoch": 0,
+                "frame_epoch": 0, "status": "eligible", "split": "training",
+                "expected_outcome": "unknown", "sealed_labels_present": False,
+                "fixed_rank": 0.0, "random_rank": 0.0})
+            store.add_edge(root, "has_process_curriculum_evidence", evidence, {})
+            curriculum_policies = store.nodes("ProcessCurriculumPolicy")
+            if len(curriculum_policies) != 1:
+                raise ValueError("checkpoint learner requires exactly one native curriculum policy")
+            curriculum_enabled = (store.node(curriculum_policies[0])["attrs"].get(
+                "enabled") == 1.0)
+            if curriculum_enabled:
+                existing_curriculum_tasks = len(store.nodes("ProcessCurriculumTask"))
+                store.set_attr(curriculum_policies[0], "max_tasks",
+                               float(existing_curriculum_tasks + 1))
+            else:
+                task = store.add_node("SolveTask", {
+                    "task_key": task_key, "training_trial_key": world_id,
+                    "domain": domain_name, "initial_state": list(initial_state),
+                    "state": list(initial_state), "goal": list(goal_state),
+                    "object_count": float(len(params)), "status": "active",
+                    "trace": [], "steps": 0, "moves": 0.0, "stuck_count": 0,
+                    "split": "training"})
+                store.add_edge(root, "has_solve_task", task, {})
+                store.add_edge(task, "about_domain", domain, {})
         else:
+            # Held-out worlds are externally assigned scoring tasks. Keep them
+            # out of training evidence and curriculum selection while using the
+            # restored native solver and policy graph for the scored behavior.
             task = store.add_node("SolveTask", {
-                "task_key": task_key, "training_trial_key": world_id,
+                "task_key": task_key, "evaluation_world_id": world_id,
                 "domain": domain_name, "initial_state": list(initial_state),
                 "state": list(initial_state), "goal": list(goal_state),
                 "object_count": float(len(params)), "status": "active",
                 "trace": [], "steps": 0, "moves": 0.0, "stuck_count": 0,
-                "split": "training"})
+                # Native task/search rules are intentionally training-only.
+                # This externally assigned, answer-free scoring task is
+                # available to the per-world solver/search policy, while the
+                # marker keeps it out of training-exposure accounting.
+                "split": "training", "evaluation_only": 1.0})
             store.add_edge(root, "has_solve_task", task, {})
             store.add_edge(task, "about_domain", domain, {})
         fired_total = 0
@@ -879,6 +904,7 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
             "COMPLETED" if terminal else "RULE_BUDGET_EXHAUSTED")
         return {"status": status,
                 "world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
+                "split": split,
                 "task_status": task_attrs.get("status"),
                 "score": int(task_attrs.get("status") == "solved"),
                 "native_rule_steps": fired_total,

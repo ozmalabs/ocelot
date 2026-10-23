@@ -71,3 +71,15 @@ def test_selection_allocation_is_required_and_disjoint():
     cross_family_overlap = analyze(payload)
     assert "allocation_identity_reused_across_families_or_splits" in (
         cross_family_overlap["failures"])
+
+
+def test_native_learner_budget_and_action_invariants_are_required():
+    payload = _self_check_payload()
+    row = payload["checkpoint_rows"][0]
+    row["primitive_budget_respected"] = False
+    row["world_receipts_added"] = 1
+    result = analyze(payload)
+    assert any(item.startswith("native_primitive_budget_violation:")
+               for item in result["failures"])
+    assert any(item.startswith("heldout_world_receipt_created:")
+               for item in result["failures"])

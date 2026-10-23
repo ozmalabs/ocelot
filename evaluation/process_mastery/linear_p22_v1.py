@@ -29,6 +29,9 @@ from evaluation.process_mastery.analyze_linear_p22_v1 import (
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointExpression, CheckpointWorldAdapter,
 )
+from evaluation.process_mastery.p22_checkpoint_panel import (
+    score_checkpoint_world_isolated,
+)
 from evaluation.process_mastery.independent_worlds import (
     agent_view, generate_d4_world_v2, generate_loopover_world_v2, p22_seed,
 )
@@ -317,6 +320,16 @@ def _verify_freeze(path: Path, requested_hash: str) -> tuple[dict, dict, dict]:
                                      cwd=ROOT, text=True).strip()
     if freeze.get("freeze_commit") != head or freeze.get("freeze_parent_commit") != parent:
         raise RuntimeError("P22 preregistration commit identity mismatch")
+    primitive_ceiling = freeze.get("cumulative_primitive_ceiling")
+    rule_progress_ceiling = freeze.get("native_rule_progress_ceiling")
+    if (isinstance(primitive_ceiling, bool)
+            or not isinstance(primitive_ceiling, int)
+            or not 1 <= primitive_ceiling <= 120_000):
+        raise RuntimeError("freeze must declare a bounded cumulative primitive ceiling")
+    if (isinstance(rule_progress_ceiling, bool)
+            or not isinstance(rule_progress_ceiling, int)
+            or not 1 <= rule_progress_ceiling <= 10_000_000):
+        raise RuntimeError("freeze must declare a bounded native rule-progress ceiling")
     current = provenance()
     for key in ("runner_sha256", "analyzer_sha256", "source_bundle_sha256",
             "wrapper_sha256", "loaded_extension_sha256", "build_receipt_sha256",
@@ -408,40 +421,61 @@ def run_heldout(*, preregistration: Path, requested_hash: str) -> dict:
     allocation_plan = loaded["plan"]
     agent = Agent(track_i=False)
     try:
-        adapter = CheckpointWorldAdapter(agent.native,
-            primitive_work_ceiling=freeze["primitive_work_ceiling"])
         rows = []
-        worlds_by_family = {}
         for family in FAMILIES:
             worlds = [agent_view(generator[family](split="heldout", draw=draw))
                 for draw in range(PANEL_SIZE)]
-            worlds_by_family[family] = worlds
             for generation in GENERATIONS:
                 for world in worlds:
                     world_digest = _digest(world)
                     goal_digest = _digest(world["goal_state"])
                     for arm in ARMS:
                         checkpoint = lineages[(family, arm, generation)]
-                        scored = adapter.score(checkpoint, world_id=world["world_id"],
-                            initial_state=world["initial_state"],
-                            goal_state=world["goal_state"])
-                        snapshot = json.loads(checkpoint.resource_snapshot_json)
-                        measured = analyzer_resource_record(snapshot,
-                            cumulative_primitive_work=checkpoint.cumulative_primitive_work,
-                            wall_time_seconds=freeze.get("checkpoint_wall_time_seconds", {}).get(
-                                f"{family}:{arm}:{generation}"))
                         row = {"family": family, "generation": generation,
                             "world_id": world["world_id"], "arm": arm,
-                            "status": scored["status"], "score": scored.get("score"),
                             "goal_digest": goal_digest, "world_digest": world_digest,
                             "checkpoint_digest": checkpoint.checkpoint_digest,
                             "parent_digest": checkpoint.parent_digest or
                                 roots[f"{family}:{arm}"].checkpoint_digest,
                             "approval_id": checkpoint.approval_id,
                             "verified_receipt_id": checkpoint.receipt_id,
-                            "unsafe_output": False, "unauthorized_transition": False,
-                            **measured["resources"],
-                            "resource_measurements": measured["resource_measurements"]}
+                            "unsafe_output": False, "unauthorized_transition": False}
+                        try:
+                            outcome = score_checkpoint_world_isolated(
+                                asdict(checkpoint), world,
+                                cumulative_primitive_ceiling=(
+                                    freeze["cumulative_primitive_ceiling"]),
+                                native_rule_progress_ceiling=(
+                                    freeze["native_rule_progress_ceiling"]),
+                                allow_heldout_evaluation=True)
+                            snapshot = outcome["resource_snapshot"]
+                            wall_time = snapshot["runtime_counters"]["wall_time_seconds"]
+                            measured = analyzer_resource_record(snapshot,
+                                cumulative_primitive_work=outcome[
+                                    "cumulative_primitive_work"],
+                                wall_time_seconds=wall_time)
+                            row.update({"status": "scored", "score": outcome["score"],
+                                "native_learner_status": outcome["status"],
+                                "native_task_status": outcome["task_status"],
+                                "primitive_budget_respected": outcome[
+                                    "primitive_budget_respected"],
+                                "rule_progress_limit_respected": outcome[
+                                    "rule_progress_limit_respected"],
+                                "approval_events_added": outcome[
+                                    "approval_events_added"],
+                                "world_receipts_added": outcome[
+                                    "world_receipts_added"],
+                                **measured["resources"],
+                                "resource_measurements": measured[
+                                    "resource_measurements"]})
+                        except Exception as exc:
+                            # Keep the task/world/arm row in the denominator.
+                            # The analyzer will reject missing resources and
+                            # non-scored status rather than silently dropping it.
+                            row.update({"status": "worker_failed", "score": None,
+                                "native_learner_status": "worker_failed",
+                                "evaluation_error_type": type(exc).__name__,
+                                "evaluation_error": str(exc)})
                         rows.append(row)
         controls = _structural_controls(agent.native, roots, lineages)
     finally:

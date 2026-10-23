@@ -533,3 +533,12 @@ arm. Thus the root panels support flat score comparisons under measured but
 unmatched work; they do not support efficiency claims. An admissible next
 comparison requires a resource protocol frozen before allocation, alongside
 approved descendant checkpoints.
+
+The held-out runner has also been corrected to score restored native learner
+graphs through the common solver task path. Evaluation tasks are isolated by
+world, marked evaluation-only, and excluded from training-exposure accounting;
+the analyzer rejects budget overruns and any newly created approval or world
+receipt. Synthetic-fixture tests and runner/analyzer self-checks pass. The
+registered P22 freeze is still absent, so the corrected held-out path has not
+read or scored any registered held-out world. This closes a runner wiring
+defect, not the P22 lineage or efficacy gates; L1–L7 remain unchanged.
