@@ -786,3 +786,9 @@ goal qualifications. No Loopover adoption request was prepared. The D4
 candidate request does not change any capability disposition; cross-family
 lineages, preregistration and held-out evaluation remain incomplete, and
 L1–L7 remain unchanged.
+
+A further two-goal Loopover continuation on fresh draws 0940/0941 used 20,000
+reserved attempts but produced no proposal on its first training task. It had
+no approvals, receipts, validation or held-out access. This adds a negative
+search result only; the candidate request remains D4-specific, P22.E2–E3
+remain open and L1–L7 dispositions are unchanged.
