@@ -1771,3 +1771,24 @@ approval and receipt totals remain unchanged and validation is empty. The
 compressed replay SHA-256 is
 `8404827040182163d3960b2ab9d236ca1730355ecebfa0348f3096533f7c7a8e`
 (raw SHA-256 `84d0efc1d930a652aed709d5010f8c492cc8193b430ceb0eea7aa852fc44addb`).
+
+
+## Registered full-arm D4 continuation (2026-10-24)
+
+The preflight on D4 draws 0973–0976 rejected duplicate goals before learner
+boot; it reserved no search attempts (raw SHA-256
+`92b9e39c2f35c176decd0a8757927fe9b2b53b014786cd34c3ec479713c63705`). A
+fresh pairwise-distinct panel on draws 0977–0980 restored the registered full
+generation-zero parent `fa79f67d5ea71d15f5b70f43efd2c2047af3c84b9258b25c61a0d97d84bf8b7b`.
+It completed with four candidates, zero approvals or receipts, and empty
+validation and held-out lists. The raw result is
+[`p22_training_panel_registered_root_full_d4_0977_0980_novel.json`](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_full_d4_0977_0980_novel.json),
+SHA-256 `3848a3633e1314c331a2df8ed9b7df7503963f87a507d5addcbd0646db8da7e7`.
+
+Candidate `#1539` (`inverse:rot90`, digest
+`77425927da7e05d5dbc469dc97dd15b3c52eeec9b29bf192d7b7f5758cf9c3c3`)
+qualified on the independent training goals 0977 and 0979 (`#11860`). Its
+recorded effect `[[1,3,0,2]]` equals active root process `rot90`, so the
+candidate fails the novelty criterion and received no approval packet.
+Derived candidate `#6121` did not qualify. This search adds no checkpoint
+descendant or improvement evidence.

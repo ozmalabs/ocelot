@@ -148,3 +148,11 @@ The native Loopover transfer search now tries a candidate followed by two held
 processes. A fresh two-goal panel produced 156 candidate trials on the
 independent goal, all residual. No generation-one Loopover descendant or
 efficacy evidence is established.
+
+
+The registered D4 full-arm continuation on fresh goals 0977–0980 produced a
+qualified source candidate, but its recorded effect equals active `rot90` and
+fails the novelty gate; no approval was requested. The 0973–0976 preflight
+rejected duplicate goals before learner boot. Neither result adds a descendant
+or changes any level disposition. See the build plan entry and four-arm report
+for artifact hashes.
