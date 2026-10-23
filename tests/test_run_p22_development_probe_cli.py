@@ -55,6 +55,22 @@ def test_approval_cli_rejects_digest_mismatch_before_probe_or_output(tmp_path):
     assert not output.exists()
 
 
+def test_approval_cli_rejects_superseded_request_before_claiming_output(tmp_path):
+    output = tmp_path / "candidate.json"
+    binding_path = _temporary_binding(output, tmp_path / "binding.json")
+    binding = json.loads(binding_path.read_text(encoding="utf-8"))
+    binding["status"] = "superseded"
+    binding_path.write_text(json.dumps(binding), encoding="utf-8")
+
+    result = subprocess.run(_command(output, binding_path,
+        "--execute-approved-adoption"), cwd=ROOT, capture_output=True,
+        text=True, check=False)
+
+    assert result.returncode != 0
+    assert "candidate binding document does not match" in result.stderr
+    assert not output.exists()
+
+
 def test_parent_checkpoint_binding_hash_is_checked_before_one_shot_claim(tmp_path):
     output = tmp_path / "candidate.json"
     binding_path = _temporary_binding(output, tmp_path / "binding.json")

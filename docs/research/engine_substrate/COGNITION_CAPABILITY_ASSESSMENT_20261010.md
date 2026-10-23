@@ -842,3 +842,10 @@ The new request and the Loopover request each require exact candidate-specific
 approval for one training transition and conditional g1 capture. Neither has
 been actioned; both remain training-only with no validation or held-out
 evidence. L1–L7 dispositions remain unchanged.
+
+The candidate-adoption CLI now has a regression for stale approval packets:
+even with the exact candidate digest and execution flag, a packet marked
+`superseded` is rejected before the one-shot output is claimed. The focused
+CLI module passes 8 tests. This closes a request-lifecycle guard only; the
+current D4 and Loopover registered-root packets remain awaiting their own
+exact approvals, with no new action or checkpoint.
