@@ -1154,6 +1154,24 @@ has SHA-256 `3bed527bf1fcc1ec9e1a9638672dd3e6c42e78f06a7c29e62b9bcd49dc53ead7`.
 Draws 0580/0581 are consumed training-only data. A fresh Loopover pair
 0584/0585 is running at a 30,000 per-request ceiling.
 
+## Interrupted Loopover probes (2026-10-23)
+
+The final polling cell for probes 0584/0585 and 0586/0587 was interrupted.
+The subsequent PID audit found both probe processes absent and neither native
+result artifact had been written. Their candidate and completion outcomes are
+unknown, so they are not counted as completed attempts or qualification
+failures. To preserve the split and prevent accidental reuse, the two expected
+output paths now contain explicit interruption records:
+[`p22_candidate_probe_loopover_0584_0585.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0584_0585.json),
+SHA-256 `9df712c64c3e41ea1f6593e7012c1576b6c2b5d936d7ad28d47207c06d701094`,
+and
+[`p22_candidate_probe_loopover_0586_0587.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0586_0587.json),
+SHA-256 `039310b9e6729540bb3c9ed4cdd1bca76e0510def97e8784a992293afb8ad950`.
+Both were training-only, had empty validation allocations, and used no
+approval flags. Draws 0584–0587 are consumed but provide no candidate result.
+The independent D4 0582/0583 process (PID 899940) was still live at the audit
+and remains under observation.
+
 After the restored-ceiling correction, all 10 tests in
 `tests/test_p22_development.py` pass. The P22 runner self-check passes and
 reports `heldout_accessed=false`; its lineage-tamper controls reject the
