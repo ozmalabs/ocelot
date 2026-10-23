@@ -726,3 +726,11 @@ unapproved: a later approval response referred to the already-consumed
 identity candidate `#6731`, so it cannot authorize another transition. These
 checks establish runner readiness only; no capability level changes and no
 held-out result is available.
+
+A fresh Loopover panel on draws 0726–0729 produced candidate `#10761`, which
+qualified on two independent-goal pairs. Its exact request binds the 0726/0727
+pair and one guarded training transition; the 0726/0728 qualification is
+outside that request. No action or checkpoint has been created, and the
+request is awaiting exact approval. The panel used the full 40,000-attempt
+training ceiling and produced no validation or held-out evidence. This adds a
+qualified proposal, not Loopover transfer efficacy; L1–L7 remain unchanged.
