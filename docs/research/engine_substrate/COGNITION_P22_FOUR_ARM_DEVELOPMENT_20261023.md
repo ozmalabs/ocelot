@@ -1142,6 +1142,18 @@ The generation-three candidate gate remains unmet. A further D4 pair 0582/0583
 is running at the 30,000 per-request ceiling; Loopover 0580/0581 is also in
 progress.
 
+The fresh Loopover pair 0580/0581 completed with actual per-request ceilings
+of 10,000 and 10,000 global attempts, both tasks stuck. It produced one
+candidate `#10761`, digest
+`9d2cca990f4676eb687009efb1b7f3eb425e9e95903549a021ff0ccad454b6ef`, with
+zero independent-goal qualification witnesses; its recorded attempts on the
+second training goal were all residual. There was no approval, receipt,
+validation or held-out access. The raw artifact
+[`p22_candidate_probe_loopover_0580_0581.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0580_0581.json)
+has SHA-256 `3bed527bf1fcc1ec9e1a9638672dd3e6c42e78f06a7c29e62b9bcd49dc53ead7`.
+Draws 0580/0581 are consumed training-only data. A fresh Loopover pair
+0584/0585 is running at a 30,000 per-request ceiling.
+
 After the restored-ceiling correction, all 10 tests in
 `tests/test_p22_development.py` pass. The P22 runner self-check passes and
 reports `heldout_accessed=false`; its lineage-tamper controls reject the
