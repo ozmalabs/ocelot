@@ -424,22 +424,21 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None) -> dict
                            and all(efficiency.values()))
     primary["score_criteria_pass"] = score_criteria_pass
     primary["resource_match_pass"] = resource_match_pass
-    primary["registered_phase_pass"] = score_criteria_pass and resource_match_pass
+    primary["registered_phase_pass"] = score_criteria_pass
+    primary["efficiency_comparable"] = resource_match_pass
     if split == "development":
         status = "DEVELOPMENT_ONLY"
         evidence_class = "DEVELOPMENT_ONLY"
     elif failures:
         status = "NOT_ESTABLISHED"
         evidence_class = "HELDOUT_INVALID"
-    elif not resource_match_pass:
-        status = "NOT_ESTABLISHED"
-        evidence_class = "CAPABILITY_ONLY"
     elif primary.get("status") == "NOT_ESTABLISHED":
         status = "NOT_ESTABLISHED"
         evidence_class = "HELDOUT"
     else:
         status = "PASS" if score_criteria_pass else "FAIL"
-        evidence_class = "HELDOUT"
+        evidence_class = ("HELDOUT_EFFICIENCY_COMPARABLE" if resource_match_pass
+                          else "CAPABILITY_ONLY")
     resource_differences = {}
     for family in families:
         for generation in GENERATIONS:
@@ -473,6 +472,8 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None) -> dict
                    "missing_rows": len(missing), "structural_controls": len(controls or [])},
         "arm_rates": arm_rates, "mcnemar": mcnemar, "paired_effects": primary,
         "resource_differences": resource_differences,
+        "efficiency_status": ("COMPARABLE" if resource_match_pass
+                              else "NOT_ESTABLISHED"),
         "efficiency_comparable_worlds": sum(efficiency.values()),
         "efficiency_total_worlds": len(efficiency),
         "resource_match_by_world": efficiency,
@@ -578,6 +579,7 @@ def self_check() -> dict:
     mismatch_result = analyze(resource_mismatch)
     assert mismatch_result["paired_effects"]["resource_match_pass"] is False
     assert mismatch_result["paired_effects"]["registered_phase_pass"] is False
+    assert mismatch_result["efficiency_status"] == "NOT_ESTABLISHED"
     overlap = json.loads(json.dumps(payload))
     overlap["allocation_plan"]["training_world_ids_by_family"]["d4"][0] = "d4-w0"
     assert "split_identity_overlap:d4" in analyze(overlap)["failures"]

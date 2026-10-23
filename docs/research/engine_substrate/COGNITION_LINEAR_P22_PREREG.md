@@ -1,6 +1,6 @@
 # P22 registered checkpoint evaluation preregistration
 
-**Status: DRAFT — NOT FROZEN. Do not run on held-out worlds.**
+**Status: DRAFT — NOT FROZEN. Protocol feasibility amendment recorded 2026-10-24; do not run on held-out worlds.**
 
 This file records the protocol choices that can be fixed before the final
 checkpoint manifest exists. It is not a standalone freeze: it contains no
@@ -84,15 +84,21 @@ digests and all resource ceilings before hashing the complete analysis plan.
 
 ## Resource and integrity criteria
 
-The efficacy panel is efficiency-comparable only when every member of
-`analyze_linear_p22_v1.MATCHED_RESOURCE_FIELDS` is exactly equal across the
-four arms for every family, generation, and world. Measured isolated wall time
-is reported for every checkpoint and checked against a declared ceiling, but
-is reported separately from exact per-world resource matching. Every
-checkpoint resource field must have source-backed measured coverage and be
-within its frozen ceiling before any held-out world is constructed. Missing
-resource evidence or any mismatch blocks the registered phase pass; it cannot
-be replaced by equal ceilings or an aggregate average.
+The efficacy estimand is a paired capability comparison under identical
+worlds, interfaces, and frozen per-field resource ceilings. Every checkpoint
+resource field must have source-backed measured coverage and remain within its
+frozen ceiling before any held-out world is constructed. Measured isolated wall
+time is reported for every checkpoint and checked against its ceiling. Exact
+equality of realized resources across all members of
+`analyze_linear_p22_v1.MATCHED_RESOURCE_FIELDS` is required for an
+efficiency-comparability claim, but is not a prerequisite for reporting the
+registered capability estimand. If any realized resource differs, retain the
+complete paired outcomes and report `CAPABILITY_ONLY`; efficiency is
+`NOT_ESTABLISHED`. In particular, candidate approval time, approval events,
+and simulator receipts must remain visible even though passive controls carry
+none. Do not pad controls with sham approvals or receipts. Equal ceilings do
+not imply equal realized cost, and an unmatched result must never be described
+as efficiency evidence.
 
 Retain all 4,800 rows. Require all four structural controls to pass:
 
@@ -113,8 +119,11 @@ Before freeze, all of the following must be true:
 
 - the 24-checkpoint manifest is complete and its root, parent, approval,
   receipt, and immutable checkpoint digests verify;
-- every checkpoint has complete measured resource provenance, and the
-  development panel establishes exact per-world resource matching;
+- every checkpoint has complete measured resource provenance and stays within
+  its frozen per-field ceiling; the development panel verifies common world
+  delivery and ceiling enforcement. Any exact realized-resource mismatches are
+  retained and preclude efficiency claims, but do not block the capability
+  analysis;
 - isolated wall-time values and all resource ceilings are fixed;
 - the native runtime and complete source/dependency closure attest cleanly;
 - the exact split allocation, criteria, controls, and analysis code are frozen;
@@ -137,15 +146,26 @@ are captured on shared training worlds 0600–0602; all 12 checkpoint digests
 and parent links verify. Their six unchanged-versus-adaptive cumulative checkpoint snapshot pairs
 all mismatch. A control-only common-world panel scored them on four fresh
 training worlds per family and found 0/24 unchanged/adaptive pairs matched.
-The complete four-arm resource-matched development panel remains unavailable. The D4 and
+Six existing four-arm root panels cover 40 training-world rows. All 40 use the
+same world across arms, respect the shared primitive-work and native-rule
+progress ceilings, and report every contract resource dimension; 0/40 have
+exact realized-resource equality, so they support development capability
+comparisons only. They do not establish per-field frozen resource ceilings for
+the final 24-checkpoint panel or the full multi-generation lineages. The D4 and
 Loopover invention-only requests and a D4 full-arm request await exact approval
 for generation one. Nine additional invention/full transitions will remain
-after these three are approved and verified. The development resource-matching gate is still unmet, so this draft
-must not be frozen and no held-out allocation may be accessed.
+after these three are approved and verified. Exact realized resource equality
+is not a freeze prerequisite after the feasibility amendment; measured resource
+coverage, common allocated ceilings, within-ceiling outcomes, and complete
+development plumbing remain required. This draft still cannot be frozen
+because the 24-checkpoint descendant manifest and per-checkpoint measured
+resource/ceiling manifest are incomplete, and candidate-specific decisions
+remain pending. No held-out allocation may be accessed.
 
-The current native provenance audit is `ATTESTED` with no issues. These hashes
-describe the verified runtime snapshot at the time of this draft update; the
-final freeze must recompute and bind them after all implementation changes.
+The current native provenance audit was `ATTESTED` with no issues before the
+2026-10-24 analyzer/protocol amendment. The analyzer hash below is now stale by
+design; the final freeze must recompute every provenance hash and attest the
+runtime after the amendment and all remaining implementation changes.
 
 | Provenance item | SHA-256 |
 |---|---|

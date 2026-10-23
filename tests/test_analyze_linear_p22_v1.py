@@ -152,6 +152,8 @@ def test_unmatched_heldout_resources_are_capability_only(tmp_path, monkeypatch):
     assert result["failures"] == []
     assert result["paired_effects"]["score_criteria_pass"] is True
     assert result["paired_effects"]["resource_match_pass"] is False
-    assert result["paired_effects"]["registered_phase_pass"] is False
-    assert result["status"] == "NOT_ESTABLISHED"
+    assert result["paired_effects"]["registered_phase_pass"] is True
+    assert result["paired_effects"]["efficiency_comparable"] is False
+    assert result["efficiency_status"] == "NOT_ESTABLISHED"
+    assert result["status"] == "PASS"
     assert result["evidence_class"] == "CAPABILITY_ONLY"
