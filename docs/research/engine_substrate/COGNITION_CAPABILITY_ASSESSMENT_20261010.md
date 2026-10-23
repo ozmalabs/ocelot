@@ -615,3 +615,5 @@ A repeated D4 continuation on fresh draws 0594/0595 also ended stuck at 30,000 a
 Loopover draws 0596/0597 used 60 rule-processing ticks at the 30,000-per-request ceiling. The sole candidate had 24 funded residual trials on the second goal, with no independent-goal qualification. Increasing ticks did not change the qualification outcome in this diagnostic; Loopover remains without an approved descendant.
 
 The development CLI now supports an artifact-hash- and checkpoint-digest-bound training-only continuation without adoption approval. Its 16-test focused regression bundle passes, and a low-budget end-to-end smoke restored the D4 generation-two checkpoint with no new action, receipt, validation, or held-out access. This improves reproducibility only; capability dispositions remain open.
+
+A second Loopover 60-tick probe on draws 0602/0603 repeated the prior result: 24 funded residual trials on the second goal and no independently qualified candidate. Extra rule-processing ticks did not resolve the current training transfer failure; no capability disposition changes.

@@ -88,6 +88,10 @@ checkpoint digest without requiring or consuming an adoption approval. Its
 smoke restored the D4 generation-two parent but performed zero new search
 attempts under the one-attempt test ceiling; this does not change P22 gates.
 
+A second 60-tick Loopover probe on draws 0602/0603 again had only residual
+candidate trials on the second goal. Loopover still lacks an approved
+generation-one descendant; no capability disposition changes.
+
 Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out

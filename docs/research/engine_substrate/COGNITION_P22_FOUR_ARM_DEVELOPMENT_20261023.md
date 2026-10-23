@@ -1245,6 +1245,20 @@ has SHA-256 `c7796ed1acf60d1b7614fbb24f1c66e707790ab3ec8e43f9c8fad2e20f347901`.
 Draws 0596/0597 are consumed training-only data. Loopover still has no
 approved generation-one descendant.
 
+## Repeated Loopover higher-tick development diagnostic (2026-10-23)
+
+A second fresh distinct Loopover pair, draws 0602/0603, used 60
+rule-processing ticks, 30,000 attempts per request and a 120,000 global
+ceiling. Both tasks ended stuck. Candidate `#30761` (digest
+`e12f3bd35e6d7df28b8faba319cdc9ee4a2cc8d903ed11a08ba916061ff41615`) had 24
+funded but residual trials on the second goal; it did not qualify across the
+two goals. No approval or receipt was created, and validation and held-out
+allocations were empty. Raw artifact
+[`p22_candidate_probe_loopover_0602_0603.json`](../../../evaluation/process_mastery/results/p22_candidate_probe_loopover_0602_0603.json)
+has SHA-256 `c56d7a14a7547fd98432cddc3d784b2e3ee7d753539d3f048d9c0ed7c7b522ce`.
+Draws 0602/0603 are consumed training-only data. This reproduces the 0596/0597
+higher-tick result and adds no Loopover generation-one candidate.
+
 ## Reproducible training-only continuation CLI (2026-10-23)
 
 The development CLI now accepts a parent result artifact, a checkpoint record
