@@ -936,3 +936,6 @@ A fresh Loopover full-root continuation on training worlds 0800–0803 reproduce
 
 
 A second fresh Loopover full-root search on distinct training worlds 0804–0807 returned no candidate on its first task; a later task yielded `#31551` with no qualification or independent-goal trials. It reserved 40,000 attempts and recorded 55 native rule steps, 205.445 seconds wall-time, 937,930,752-byte peak RSS, zero approvals/receipts and empty validation allocation. No held-out world was constructed; rule identity coverage is complete. This negative search result leaves the Loopover full-arm g1 gate open.
+
+
+A third fresh Loopover full-root panel on distinct training worlds 0808–0811 again produced candidate `#11545`, with all 16,236 independent-goal trials residual and no qualification. It reserved 40,000 attempts, recorded 67 native rule steps, 1,188.857 seconds wall-time, 937,930,752-byte peak RSS, zero approvals/receipts and empty validation allocation; no held-out world was constructed. Native rule identity coverage is complete. Loopover full-arm generation one remains unqualified; this is negative candidate-search evidence only.
