@@ -1379,3 +1379,17 @@ goal pairs. It now accepts an exact `qualification_id` and checks only that
 record's witness keys; ambiguous approvals without that identifier still
 fail closed. Unit regressions cover explicit selection, ambiguity, and
 witness mismatch. The focused development and CLI regression suite passed: 20 tests in 213.80 seconds, including the existing single-qualification guarded-adoption path and the new ambiguous-qualification controls.
+
+## Loopover eight-goal follow-up (2026-10-23)
+
+Eight fresh pairwise-distinct Loopover training goals, draws 0643–0650, used
+10,000 attempts per task and exhausted the full 80,000-attempt global ceiling.
+All eight tasks ended stuck. Candidate `#10761` (digest
+`2e4d1ba7cfa4eecbea8cf59ab4ac1f7d3f3a5544cd473216ccf3ec7cf4156986`) had no
+qualification and produced 24 residual independent-goal trials on each of the
+seven later goals, 168 total. No approval or receipt was created; validation
+and held-out allocations were empty. Raw result
+[`p22_training_panel_loopover_0643_0650.json`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0643_0650.json)
+has SHA-256 `a2a9d36048c23c86a552c4f9058d3d81fd67c44a6f8c21d9d3f64f681073c51f`.
+Draws 0643–0650 are consumed. Loopover still has no generation-one
+descendant or registered efficacy estimate.

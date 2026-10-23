@@ -628,3 +628,8 @@ qualified pairs. Exact adoption request `COGNITION_P22_APPROVAL_REQUEST_D4_0635_
 is pending. Until explicit approval and a verified receipt produce a
 checkpoint, this is proposal qualification evidence only; no capability
 disposition or held-out claim changes.
+
+The Loopover eight-goal follow-up on draws 0643–0650 again produced no
+independent-goal-qualified candidate after 80,000 attempts; all 168 transfer
+trials were residual. This is additional negative development evidence, not a
+held-out result, and does not change any capability disposition.

@@ -112,3 +112,8 @@ candidate-specific adoption request is pending exact approval. The result
 adds training qualification evidence only; it does not add a checkpoint
 descendant, held-out evidence, an efficacy estimate, or a capability-level
 disposition. P22.E2–E3 remain open.
+
+The Loopover eight-goal follow-up on 0643–0650 exhausted 80,000 attempts.
+Candidate `#10761` had 168 residual transfer trials across seven distinct
+training goals and did not qualify. Loopover lineage and P22 held-out evidence
+remain unavailable; no capability disposition changes.
