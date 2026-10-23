@@ -21,8 +21,10 @@ The primary paired outcomes are the generation-3 solved-rate difference
 (`full` minus `unchanged`) and the linear slope of the paired solved-rate
 difference over generations 1, 2, and 3. Resample whole world IDs so each
 world's three generation measurements remain clustered. Use 10,000 bootstrap
-draws and the fixed `bootstrap_seed` in the freeze. Holm-adjust the four tests
-formed by two outcomes in each of two families.
+draws and the fixed `bootstrap_seed` in the freeze. Compute each one-sided
+bootstrap p-value at the zero-effect boundary as
+`(1 + count(bootstrap_effect <= 0)) / 10,001`; Holm-adjust the four tests formed
+by two outcomes in each of two families.
 
 Each family passes the registered efficacy criteria only if its estimated
 generation-3 gain is at least `+0.10`, its slope is at least `+0.05` per
