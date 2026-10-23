@@ -947,8 +947,9 @@ A final analyzer audit found that score thresholds alone could mark the
 registered phase `PASS` even when measured paired resources differed. The
 contract says such outcomes support capability observations only. The
 analyzer now separates score-threshold success from resource matching and
-requires complete all-arm, all-generation, all-world matching for a registered
-phase pass. A synthetic held-out regression supplies score-threshold success
+requires complete all-arm, all-generation, all-world matching across
+`MATCHED_RESOURCE_FIELDS` for a registered phase pass; wall time remains a
+separately reported outcome. A synthetic held-out regression supplies score-threshold success
 with one resource mismatch and verifies `NOT_ESTABLISHED` / `CAPABILITY_ONLY`.
 The focused P22 suite passes 53 tests; runner and analyzer self-checks pass.
 No registered held-out allocation was accessed. This tightens claim
