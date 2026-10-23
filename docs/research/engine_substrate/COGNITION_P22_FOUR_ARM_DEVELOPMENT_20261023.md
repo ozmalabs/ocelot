@@ -898,3 +898,14 @@ and
 the build plan records compressed and decompressed SHA-256 digests. Draws
 0520–0533 are consumed for development, and no validation or held-out worlds
 were accessed.
+
+The resource audit found complete measurement coverage with no unavailable
+dimensions, but realized treatment work differs. Median cumulative term
+evaluations by arm were 4,280 / 7,684 / 37,546 / 41,023 on D4 and
+23,015 / 28,637 / 41,516 / 47,069 on Loopover (unchanged, adaptive-only,
+invention-only, full). Median primitive work was 2 / 2 / 198 / 198 on D4 and
+3 / 3 / 131 / 131 on Loopover. Captured cumulative wall time and process peak
+RSS also vary by arm. Fixed ceilings were respected, but efficiency remains
+inadmissible under the frozen matching rule. The build-plan ledger records
+the per-family wall-time/RSS ranges; no post-hoc work padding or ceiling
+change is allowed to manufacture a resource match.

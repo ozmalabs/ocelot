@@ -524,3 +524,12 @@ preserve a flat baseline; they do not test learned descendants, establish
 efficiency, or support efficacy. All approvals and receipts added were zero.
 P22 approved-lineage, preregistration and held-out gates remain open, and
 L1–L7 dispositions are unchanged.
+
+The resource audit identified substantial realized-work differences despite
+complete measurement coverage and shared declared ceilings: median native
+term evaluations across the four arms span 4,280–41,023 on D4 and
+23,015–47,069 on Loopover. Median primitive work also differs by treatment
+arm. Thus the root panels support flat score comparisons under measured but
+unmatched work; they do not support efficiency claims. An admissible next
+comparison requires a resource protocol frozen before allocation, alongside
+approved descendant checkpoints.
