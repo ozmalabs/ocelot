@@ -542,3 +542,14 @@ receipt. Synthetic-fixture tests and runner/analyzer self-checks pass. The
 registered P22 freeze is still absent, so the corrected held-out path has not
 read or scored any registered held-out world. This closes a runner wiring
 defect, not the P22 lineage or efficacy gates; L1–L7 remain unchanged.
+
+A final worker-timing audit moved the isolated wall-time start to before fresh
+learner boot, so future per-cell timing includes boot, restore, and scoring.
+Earlier isolated root panels undercounted that interval; their outcomes and
+other measured fields remain valid, but their worker wall-time values are
+superseded for timing. A fresh four-world training panel in each family
+completed 32/32 arm-world cells with valid digests, respected primitive
+ceilings, zero approvals/receipts, and 1/4 solved in every arm. Realized
+resources remain unmatched. This improves measurement scope without adding
+descendant or efficacy evidence; P22 lineage, freeze, and held-out gates and
+all L1–L7 dispositions remain open.

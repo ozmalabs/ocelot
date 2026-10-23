@@ -925,3 +925,18 @@ held-out world. The focused P22 bundle passes 50 tests, and runner/analyzer
 self-checks pass without held-out access. This repairs the scoring consumer
 path; no registered held-out world has been read, no preregistration has been
 frozen, and approved descendant lineages remain absent.
+
+## Isolated wall-time scope correction (2026-10-23)
+
+The first worker timer began after native learner boot. It now starts before
+boot, so the per-cell wall-time snapshot includes boot, restore, and scoring
+(Python process import/startup remains outside that interval). Earlier
+isolated panels retain valid scores, RSS and work digests, but their
+worker-wall-time values omit boot and are superseded for timing only. A
+controlled-delay regression confirms the updated interval is digest-bound.
+Fresh D4 and Loopover panels on training draws 0546–0549 each scored 1/4 in
+every arm. All 32 arm/world outcomes completed, resource/work digests
+verified, ceilings held, and no approvals or receipts were added. The values
+remain unmatched and the roots are generation zero, so no efficiency or
+efficacy claim follows. Exact artifact hashes and per-arm timing/resource
+medians are recorded in the build plan.
