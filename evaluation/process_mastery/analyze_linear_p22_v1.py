@@ -411,20 +411,34 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None) -> dict
                                          for family in families):
         primary = summarize_families(paired_rows, families=families,
             bootstrap_draws=10000, seed=payload.get("bootstrap_seed", 0))
-        primary_pass = all(result.get("registered_criteria", {}).get("passed")
+        score_criteria_pass = all(result.get("registered_criteria", {}).get("passed")
                            for result in primary["families"].values())
-        primary["registered_phase_pass"] = primary_pass
     else:
         primary = {"status": "NOT_ESTABLISHED",
                    "reason": "structural_failure_or_incomplete_primary_panel"}
+        score_criteria_pass = False
+    expected_resource_worlds = sum(len(world_ids.get(family, []))
+        * len(GENERATIONS) for family in families)
+    resource_match_pass = (len(efficiency) == expected_resource_worlds
+                           and expected_resource_worlds > 0
+                           and all(efficiency.values()))
+    primary["score_criteria_pass"] = score_criteria_pass
+    primary["resource_match_pass"] = resource_match_pass
+    primary["registered_phase_pass"] = score_criteria_pass and resource_match_pass
     if split == "development":
         status = "DEVELOPMENT_ONLY"
         evidence_class = "DEVELOPMENT_ONLY"
     elif failures:
         status = "NOT_ESTABLISHED"
         evidence_class = "HELDOUT_INVALID"
+    elif not resource_match_pass:
+        status = "NOT_ESTABLISHED"
+        evidence_class = "CAPABILITY_ONLY"
+    elif primary.get("status") == "NOT_ESTABLISHED":
+        status = "NOT_ESTABLISHED"
+        evidence_class = "HELDOUT"
     else:
-        status = "PASS" if primary.get("registered_phase_pass") else "FAIL"
+        status = "PASS" if score_criteria_pass else "FAIL"
         evidence_class = "HELDOUT"
     resource_differences = {}
     for family in families:
@@ -529,6 +543,8 @@ def self_check() -> dict:
     assert clean["provenance_status"] == "DEVELOPMENT_ONLY"
     assert clean["failures"] == []
     assert clean["paired_effects"]["status"] == "NOT_ESTABLISHED"
+    assert clean["paired_effects"]["resource_match_pass"] is True
+    assert clean["paired_effects"]["registered_phase_pass"] is False
 
     cases = {}
     null = json.loads(json.dumps(payload))
@@ -557,6 +573,11 @@ def self_check() -> dict:
     assert any(failure.endswith(":retrieval_work")
                for failure in analyze(partial_resource)["failures"]
                if failure.startswith("resource_measurement_unverified:"))
+    resource_mismatch = json.loads(json.dumps(payload))
+    resource_mismatch["checkpoint_rows"][0]["native_rule_steps"] = 1.0
+    mismatch_result = analyze(resource_mismatch)
+    assert mismatch_result["paired_effects"]["resource_match_pass"] is False
+    assert mismatch_result["paired_effects"]["registered_phase_pass"] is False
     overlap = json.loads(json.dumps(payload))
     overlap["allocation_plan"]["training_world_ids_by_family"]["d4"][0] = "d4-w0"
     assert "split_identity_overlap:d4" in analyze(overlap)["failures"]
@@ -569,6 +590,7 @@ def self_check() -> dict:
                                           "comparator_disagreement",
                                           "resource_source_missing",
                                           "partial_resource_measurement",
+                                          "resource_mismatch",
                                           "selection_split_integrity",
                                           "complete_flat_panel"]}
 

@@ -1,3 +1,7 @@
+import hashlib
+import json
+
+import evaluation.process_mastery.analyze_linear_p22_v1 as analyzer
 from evaluation.process_mastery.analyze_linear_p22_v1 import (
     _self_check_payload, analyze, self_check,
 )
@@ -8,6 +12,7 @@ def test_self_check_exercises_null_timeout_unsafe_and_comparator_disagreement():
     assert result["status"] == "PASS"
     assert {"null", "timeout", "unsafe", "comparator_disagreement"}.issubset(
         set(result["cases"]))
+    assert "resource_mismatch" in result["cases"]
     assert "selection_split_integrity" in result["cases"]
 
 
@@ -83,3 +88,70 @@ def test_native_learner_budget_and_action_invariants_are_required():
                for item in result["failures"])
     assert any(item.startswith("heldout_world_receipt_created:")
                for item in result["failures"])
+
+
+def test_unmatched_heldout_resources_are_capability_only(tmp_path, monkeypatch):
+    payload = _self_check_payload()
+    payload["split"] = "heldout"
+    payload["heldout_accessed"] = True
+    payload["status"] = "heldout_pending_analysis"
+    payload["provenance"] = {"runtime_attestation": {
+        "status": "ATTESTED", "issues": []}}
+    plan = payload["allocation_plan"]
+    families = plan["families"]
+    panels = {}
+    for family_index, family in enumerate(families):
+        panels[family] = {}
+        for split_index, split_name in enumerate(("heldout", "validation",
+                                                  "selection", "training")):
+            ids = [f"{family}-{split_name}-{index}" for index in range(200)]
+            panels[family][split_name] = ids
+            plan[{"heldout": "world_ids_by_family",
+                  "validation": "validation_world_ids_by_family",
+                  "selection": "selection_world_ids_by_family",
+                  "training": "training_world_ids_by_family"}[split_name]][family] = ids
+    seed = 0
+    for split_name in ("training", "selection", "validation", "heldout"):
+        for family in families:
+            plan["seeds_by_split_family"][split_name][family] = list(
+                range(seed, seed + 200))
+            seed += 200
+
+    templates = {(row["family"], row["generation"], row["arm"]): row
+                 for row in payload["checkpoint_rows"]}
+    rows = []
+    for family in families:
+        for world_id in panels[family]["heldout"]:
+            for generation in plan["generations"]:
+                for arm in plan["arms"]:
+                    row = dict(templates[(family, generation, arm)])
+                    row.update(world_id=world_id,
+                        goal_digest=f"goal-{family}-{world_id}",
+                        world_digest=f"world-{family}-{world_id}",
+                        score=int(arm == "full"))
+                    rows.append(row)
+    rows[0]["native_rule_steps"] = 1.0
+    payload["checkpoint_rows"] = rows
+    payload["allocation_sha256"] = "allocation-digest"
+    payload["freeze_commit"] = "freeze-commit"
+    preregistration = tmp_path / "freeze.json"
+    preregistration.write_text(json.dumps({"freeze": {
+        "allocation_plan": plan,
+        "allocation_sha256": payload["allocation_sha256"],
+        "freeze_commit": payload["freeze_commit"],
+        "provenance": payload["provenance"]}}), encoding="utf-8")
+    payload["preregistration_sha256"] = hashlib.sha256(
+        preregistration.read_bytes()).hexdigest()
+    monkeypatch.setattr(analyzer, "summarize_families", lambda *args, **kwargs: {
+        "status": "PASS", "families": {family: {"registered_criteria": {
+            "passed": True}} for family in families}})
+    monkeypatch.setattr(analyzer, "_bootstrap_mean_interval",
+                        lambda *_args, **_kwargs: [0.0, 0.0])
+
+    result = analyze(payload, preregistration=preregistration)
+    assert result["failures"] == []
+    assert result["paired_effects"]["score_criteria_pass"] is True
+    assert result["paired_effects"]["resource_match_pass"] is False
+    assert result["paired_effects"]["registered_phase_pass"] is False
+    assert result["status"] == "NOT_ESTABLISHED"
+    assert result["evidence_class"] == "CAPABILITY_ONLY"
