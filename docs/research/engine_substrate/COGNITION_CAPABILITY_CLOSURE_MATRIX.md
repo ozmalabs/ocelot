@@ -1,4 +1,4 @@
-# Capability closure matrix — evidence through P22 (2026-10-23)
+# Capability closure matrix — evidence through P22 (2026-10-24)
 
 No L1–L7 level closes from the evidence below. “Failed” means the registered comparison was structurally valid but missed its criterion; “not established” means a required adapter, trend or inference is missing. Human-relative comparison is unavailable for every row because no protocol-matched human dataset or prospective collection has been frozen.
 
@@ -187,3 +187,13 @@ adaptive-only descendants on four fresh training worlds per family. D4 scored
 paired resource comparisons differed, so this is capability-only diagnostic
 evidence and does not satisfy P22's full four-arm resource-match or held-out
 requirements.
+
+## P22 registered Loopover full-root search update (2026-10-24)
+
+A fresh four-goal training-only search from the registered Loopover full-arm
+root produced one novel candidate but no qualified transfer: all 1,260
+independent-goal trials were residual. All four source tasks ended stuck, with
+zero approvals or receipts and no validation or held-out access. This adds
+negative qualification evidence only; it creates no checkpoint descendant and
+changes no L1–L7 disposition. See the exact root and artifact hashes in the
+P22 build-plan ledger.
