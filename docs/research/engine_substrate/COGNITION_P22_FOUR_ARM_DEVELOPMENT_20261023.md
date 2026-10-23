@@ -1259,6 +1259,26 @@ has SHA-256 `c56d7a14a7547fd98432cddc3d784b2e3ee7d753539d3f048d9c0ed7c7b522ce`.
 Draws 0602/0603 are consumed training-only data. This reproduces the 0596/0597
 higher-tick result and adds no Loopover generation-one candidate.
 
+## Multi-goal Loopover training panel (2026-10-23)
+
+The development probe and CLI now accept 2–8 training draws. Distinct-goal
+mode validates pairwise uniqueness across the full panel; same-goal mode
+validates the target across every task. The focused P22 development and CLI
+regression bundle passes 18 tests, including multi-goal execution and
+duplicate-goal rejection.
+
+A fresh four-goal Loopover panel on draws 0609–0612 used 20,000 attempts per
+request and an overall ceiling of 120,000. All four tasks ended stuck and
+exactly 80,000 attempts were reserved. Candidate `#20761` (digest
+`511a61ca014c0f64f432bfc01eaceb66179fde572f76efbbe9912c3cf829324b`) was
+tested on each of the three later goals, producing 72 residual trials and no
+qualification across the panel. No approval or receipt was created, and
+validation and held-out allocations were empty. Raw artifact
+[`p22_training_panel_loopover_0609_0612.json`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0609_0612.json)
+has SHA-256 `4a210aad83c838104b197d626306cbdad23f19f96625531e1dd5e9b9ee64186f`.
+Draws 0609–0612 are consumed training-only data. This does not create an
+approved Loopover generation-one descendant.
+
 ## Reproducible training-only continuation CLI (2026-10-23)
 
 The development CLI now accepts a parent result artifact, a checkpoint record

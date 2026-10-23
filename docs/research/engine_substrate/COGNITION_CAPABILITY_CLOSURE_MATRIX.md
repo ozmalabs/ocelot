@@ -92,6 +92,11 @@ A second 60-tick Loopover probe on draws 0602/0603 again had only residual
 candidate trials on the second goal. Loopover still lacks an approved
 generation-one descendant; no capability disposition changes.
 
+A four-goal Loopover training panel on draws 0609–0612 tested one candidate
+on three later independent goals; all 72 trials were residual. The generalized
+training probe adds no approved descendant and does not change capability
+dispositions.
+
 Loopover draws 0590/0591 used the runner's maximum 120,000 global ceiling and
 still yielded no qualified candidate. Candidate `#827` had 24 funded residual
 trials on its second goal. This adds no approved descendant; P22 held-out

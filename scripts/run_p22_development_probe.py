@@ -108,7 +108,8 @@ def _continuation_parent_from_artifact(artifact: Path,
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--family", choices=("d4", "loopover"), required=True)
-    parser.add_argument("--training-draws", type=int, nargs=2, required=True)
+    parser.add_argument("--training-draws", type=int, nargs="+", required=True,
+        help="2–8 training draw IDs; every goal must satisfy the declared relation")
     parser.add_argument("--training-goal-relation", choices=("same", "distinct"),
                         default="same")
     parser.add_argument("--validation-start", type=int, required=True)

@@ -35,6 +35,30 @@ def test_training_only_probe_binds_native_rule_work_to_resource_snapshot():
     assert ancestor["checkpoint_digest"]
 
 
+def test_training_probe_accepts_multiple_pairwise_distinct_goals():
+    draws = (286, 287, 288)
+    result = run_p22_training_proposal_probe(family="loopover",
+        training_draws=draws, training_goal_relation="distinct",
+        validation_draws=(), search_ticks=1, per_request_attempt_ceiling=1,
+        global_attempt_ceiling=1, measure_native_rule_work=True)
+    assert result["training_world_ids"] == [
+        f"p22:loopover-v2:train:{draw:04d}" for draw in draws]
+    assert len({tuple(goal) for goal in result["training_goal_states"]}) == 3
+    assert len(result["training_task_rows"]) == 3
+    assert result["resource_snapshot"]["cumulative_resources"][
+        "training_task_exposures"] == 3
+    assert result["approval_count"] == result["world_receipt_count"] == 0
+
+
+def test_multi_goal_distinct_relation_rejects_duplicate_goal_anywhere():
+    import pytest
+    with pytest.raises(ValueError, match="distinct goals"):
+        run_p22_training_proposal_probe(family="loopover",
+            training_draws=(1, 3, 286), training_goal_relation="distinct",
+            validation_draws=(), search_ticks=1, per_request_attempt_ceiling=1,
+            global_attempt_ceiling=1, measure_native_rule_work=True)
+
+
 def test_training_probe_continues_restored_checkpoint_with_cumulative_rule_work():
     family = "loopover"
     size = 9

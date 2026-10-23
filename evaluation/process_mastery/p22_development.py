@@ -56,7 +56,7 @@ def _digest(value) -> str:
 
 
 def run_p22_training_proposal_probe(*, family: str,
-                                    training_draws: tuple[int, int],
+                                    training_draws: tuple[int, ...],
                                     validation_draws: tuple[int, ...],
                                     training_goal_relation: str = "same",
                                     search_ticks: int = 30,
@@ -77,14 +77,15 @@ def run_p22_training_proposal_probe(*, family: str,
     if family not in _FAMILIES:
         raise ValueError("unsupported P22 development family")
     generator, size = _FAMILIES[family]
-    if (len(training_draws) != 2 or training_draws[0] == training_draws[1]
+    if (not 2 <= len(training_draws) <= 8
+            or len(set(training_draws)) != len(training_draws)
             or len(set(validation_draws)) != len(validation_draws)
             or any(isinstance(draw, bool) or not isinstance(draw, int)
                    or draw < 0 or draw >= 1000
                    for draw in (*training_draws, *validation_draws))
             or isinstance(search_ticks, bool) or not isinstance(search_ticks, int)
             or search_ticks <= 0):
-        raise ValueError("probe requires two distinct training draws and unique validation draws")
+        raise ValueError("probe requires 2–8 unique training draws and unique validation draws")
     if (isinstance(per_request_attempt_ceiling, bool)
             or not isinstance(per_request_attempt_ceiling, int)
             or not 1 <= per_request_attempt_ceiling <= 30000):
@@ -148,12 +149,16 @@ def run_p22_training_proposal_probe(*, family: str,
     if training_goal_relation not in {"same", "distinct"}:
         raise ValueError("training goal relation must be 'same' or 'distinct'")
     training_worlds = [generator(split="train", draw=draw) for draw in training_draws]
-    goals_match = training_worlds[0]["goal_state"] == training_worlds[1]["goal_state"]
-    same_target = (training_worlds[0]["hidden_target_params"]
-                   == training_worlds[1]["hidden_target_params"])
+    goals_match = all(world["goal_state"] == training_worlds[0]["goal_state"]
+                      for world in training_worlds[1:])
+    same_target = all(world["hidden_target_params"]
+                      == training_worlds[0]["hidden_target_params"]
+                      for world in training_worlds[1:])
     relation_invalid = (
         (training_goal_relation == "same" and not same_target)
-        or (training_goal_relation == "distinct" and goals_match))
+        or (training_goal_relation == "distinct"
+            and len({tuple(world["goal_state"]) for world in training_worlds})
+                != len(training_worlds)))
     if relation_invalid:
         raise ValueError(f"training draws must generate {training_goal_relation} goals")
     validation_worlds = [agent_view(generator(split="validation", draw=draw))
