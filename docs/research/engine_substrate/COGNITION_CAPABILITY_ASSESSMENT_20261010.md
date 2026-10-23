@@ -473,3 +473,31 @@ unqualified, and no approval or receipt was created. This separates budget
 starvation from candidate qualification for these development draws; it does
 not establish learning or efficacy. All P22 and L1–L7 dispositions remain
 open.
+
+A registered-world native checkpoint panel now restores four distinct D4
+policy graphs and evaluates them on one common, fresh training task under the
+same cumulative primitive ceiling. All four solve the single task, with
+cumulative primitive work 2; digest-bound native rule evaluations differ by
+arm. This advances checkpoint continuation beyond direct expression scoring,
+but one selected task cannot establish benefit, and the scoring worker lacks
+per-arm isolated wall-time/RSS. Resource matching and efficiency remain
+unestablished, as do candidate-authorized multi-generation lineages,
+preregistration and held-out P22 results. L1–L7 dispositions are unchanged.
+
+The checkpoint panel has now been exercised on both registered v2 families.
+D4 scored all four arm snapshots 1/1 on one training task with cumulative
+primitive work 2; Loopover scored 0/1 in every arm, with cumulative primitive
+work 2 for unchanged/adaptive-only and 130 for invention-only/full. This is
+training-only, one-task-per-family evidence: it demonstrates native
+checkpoint continuation across both domain sizes and exposes unequal realized
+work in Loopover, while establishing no efficacy. Isolated scoring wall-time
+and RSS remain missing, so P22 resource matching, approved descendant lineages,
+preregistration, and held-out results remain open.
+
+The four-arm root-panel scorer now runs every checkpoint/world cell in an
+isolated process and records cumulative wall time and peak RSS. Both D4 and
+Loopover pilot panels have complete measured-resource coverage and valid
+per-rule work digests, but their actual vectors remain unmatched and neither
+supports an efficiency comparison. The isolated panels are one training task
+per family with no effect evidence, and approved descendant lineages remain
+absent. P22 preregistration/held-out status and L1–L7 closures are unchanged.

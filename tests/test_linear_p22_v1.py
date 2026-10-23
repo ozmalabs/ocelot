@@ -37,6 +37,7 @@ def test_allocation_uses_complete_disjoint_split_namespaces():
 
 def test_provenance_closure_includes_candidate_and_arm_runner_adapters():
     required = {
+        "evaluation/process_mastery/p22_checkpoint_panel.py",
         "evaluation/process_mastery/p22_development.py",
         "scripts/run_p22_development_probe.py",
         "scripts/run_p22_four_arm_development.py",

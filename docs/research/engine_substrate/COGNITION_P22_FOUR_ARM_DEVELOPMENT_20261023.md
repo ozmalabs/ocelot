@@ -761,3 +761,110 @@ native solving on draw 0015 and rejects the same draw's held-out view. The
 self-check accesses held-out data. This closes a split-provenance gap for the
 single-task continuation primitive, not the complete four-arm checkpoint
 comparison or its resource/effect gates.
+
+## Common checkpoint panel with cumulative primitive ceiling (2026-10-23)
+
+`compare_restored_checkpoint_panel` runs each named, digest-valid checkpoint
+against every common registered v2 training world. Each cell uses a fresh
+learner graph and the same hard native rule-step ceiling. Outcomes retain
+native quiescence/budget exhaustion, per-rule work, runtime counters, resource
+snapshots, and newly created approval/receipt counts. The comparator reports
+ceiling equality separately from actual resource matching and cumulative
+primitive-work equality. A D4 regression exercises four checkpoint identities
+on one registered training world with zero new approvals or receipts. Those
+checkpoint identities share one captured graph, so the fixture verifies
+comparison plumbing only and supplies no distinct-arm or efficacy evidence.
+The P22.03 adapter/ablation/estimand suite passes 29 tests.
+
+### Compute-cap measurement correction (2026-10-23)
+
+Audit showed that `run_rules(max_steps)` may report more progress than its
+argument when a batch-safe rule performs multiple graph updates in one pass.
+The comparator now calls this a rule-progress limit and retains detected
+scheduler overruns. The separate cumulative primitive ceiling is applied via
+the native SolverPolicy's per-task max_steps after subtracting the checkpoint's
+recorded prior primitive work, then verified against the post-run native graph
+resource snapshot. Equal ceilings remain budget controls, not proof of equal
+realized resources or efficiency.
+
+## Four-arm native checkpoint scoring diagnostic (2026-10-23)
+
+The isolated four-arm development runner can opt into generation-zero
+checkpoint capture. Each captured root includes the complete native graph,
+resource snapshot, runtime counters, and digest-bound native rule-work. The
+capture path requires isolated per-arm RSS and complete rule-work measurement.
+On D4 training draw 0520, the four distinct policy graphs all solved the
+training task and produced valid roots with no approvals or receipts. They were
+restored separately and scored on registered training draw 0521. All four
+solved 1/1 under the same cumulative primitive ceiling 30,000; each ended at
+cumulative primitive work 2, with no approval or receipt added. Cumulative
+native term evaluations were 4,363 unchanged, 4,363 invention-only, 5,713
+adaptive-only, and 5,709 full.
+
+The vectors are not resource matched. The scoring pass ran multiple fresh
+learners inside one process, so it did not produce arm-isolated wall-time or
+RSS measures; graph/resource fields and native work also differ. Efficiency is
+therefore inadmissible. This selected one-world training diagnostic establishes
+no effect or efficacy; draws 0520 and 0521 are consumed for development. The
+root JSON is
+[`p22_four_arm_checkpoint_roots_d4_0520.json`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_roots_d4_0520.json),
+SHA-256 `bb88741136b5c2dc88daa33cdd0bbe6dbb94b261c45292b2cdef0b79c1661aee`.
+The cumulative evaluation is deterministic gzip at
+[`p22_four_arm_checkpoint_eval_d4_0521_cumulative.json.gz`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_d4_0521_cumulative.json.gz),
+raw SHA-256 `42f54ebdff262d011fba04684c71cd067d7709d612bf82ec6e6338deb38260d8`,
+gzip SHA-256 `868dad46eb06d6e7c3665fbec61cd49558b0643b0de89909fc316874f7aba477`.
+A preliminary same-allocation artifact with increment-only native counters is
+retained at
+[`p22_four_arm_checkpoint_eval_d4_0521.json`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_d4_0521.json)
+(SHA-256 `cad103a69a9ccf12f0bb420ca85df3e530e1b2b88850a512b09ebb22d7940ae3`)
+and superseded for cumulative accounting; it is not an independent rerun.
+
+## Loopover checkpoint panel counterpart (2026-10-23)
+
+The same isolated generation-zero capture and registered training-world panel
+ran for Loopover v2. Four arm roots trained on draw 0520 were scored on the
+common registered draw 0521. All four ended without solving; none added an
+approval or receipt. Unchanged/adaptive-only cumulative primitive work was 2;
+invention-only/full was 130, all below the common 30,000 ceiling. Digest-bound
+native term evaluations were 15,661 unchanged, 18,011 adaptive-only, 34,110
+invention-only, and 36,537 full. This shows the primitive-work vectors differ
+in Loopover despite equal ceilings and common data. As with D4, the in-process
+scoring panel lacks per-arm isolated RSS/wall-time, so resource matching and
+efficiency remain false. The result is a selected single-world training
+diagnostic with no efficacy claim; draws 0520/0521 are consumed.
+
+The root artifact is
+[`p22_four_arm_checkpoint_roots_loopover_0520.json`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_roots_loopover_0520.json),
+SHA-256 `3cbcc409fb0572dc6cfb0cc3d013f0084c2ae21ab12e3705dca181bb9818e346`.
+The cumulative panel is deterministic gzip at
+[`p22_four_arm_checkpoint_eval_loopover_0521_cumulative.json.gz`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_loopover_0521_cumulative.json.gz),
+raw SHA-256 `d24d98ba20ed7497cfb7c1f51e386851b53164f6985349e6d882efae68d1ad51`,
+gzip SHA-256 `b517c8ed698641017c2401ce17a7dc61244b1f43b1178247e9e2fd463cf742b5`.
+
+## Isolated checkpoint resource-measurement refresh (2026-10-23)
+
+Added `evaluation.process_mastery.p22_checkpoint_panel`, which verifies each
+checkpoint and registered training view, starts a separate process for every
+arm/world cell, and attaches isolated `perf_counter` wall time and `ru_maxrss`
+peak memory to the cumulative native resource snapshot. The updated snapshot
+is resealed and reverified. Both family panels now report every declared
+contract dimension as measured with no measurement gaps, while still reporting
+`resource_matched=false` and `efficiency_comparable=false` because actual
+vectors differ.
+
+D4 remains 1/1 in all arms at cumulative primitive work 2. Loopover remains
+0/1 in all arms at cumulative primitive work 2/2/130/130 (unchanged,
+adaptive-only, invention-only, full). Isolated wall time and RSS remain
+arm-specific measurements; the in-process JSON artifacts above are retained
+as preliminary diagnostics and the isolated outputs supersede them for
+resource coverage. Isolated D4 output is
+[`p22_four_arm_checkpoint_eval_d4_0521_isolated.json.gz`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_d4_0521_isolated.json.gz),
+compressed SHA-256 `11a838c6ca87d83b11808631c5510e38164597522f61d1a3bc8c968323ddbb6b`,
+raw SHA-256 `264f379a6d5f63c2f8bfbd90f7ffed812a17451eabd762980d43837e81d9554e`.
+Loopover output is
+[`p22_four_arm_checkpoint_eval_loopover_0521_isolated.json.gz`](../../../evaluation/process_mastery/results/p22_four_arm_checkpoint_eval_loopover_0521_isolated.json.gz),
+compressed SHA-256 `4a83adddb30551a1664be1088e16d4690771414146f9d61397abf007698b7b0a`,
+raw SHA-256 `844831e0c8c3d7c8c6b66d44e1959376be3d5e68ed9cdb6c4948fd0803bad27a`.
+The isolated-runner provenance closure test and worker measurement/split
+regressions pass; there are still no approved descendant checkpoints or
+independent-goal efficacy data.

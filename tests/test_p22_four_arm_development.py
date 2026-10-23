@@ -1,6 +1,10 @@
+import json
 import math
 import pytest
 
+from evaluation.process_mastery.checkpoint_world_adapter import (
+    CheckpointWorldAdapter,
+)
 from evaluation.process_mastery.p22_four_arm_development import (
     run_p22_four_arm_development,
 )
@@ -53,6 +57,22 @@ def test_single_arm_peak_rss_is_recorded_without_claiming_a_comparison():
     assert counters["process_peak_rss_bytes"] > 0
     rule_work = result["arms"]["unchanged"]["resource_snapshot"]["native_rule_work"]
     assert rule_work["totals_by_metric"]["term_evaluations"] > 0
+
+
+def test_isolated_arm_can_capture_measured_generation_zero_checkpoint():
+    from evaluation.process_mastery.checkpoint_world_adapter import CheckpointExpression
+
+    result = run_p22_four_arm_development(family="d4", training_draws=(250,),
+        selected_arms=("unchanged",), measure_process_peak_rss=True,
+        measure_native_rule_work=True, capture_checkpoints=True)
+    record = result["arms"]["unchanged"]["generation_zero_checkpoint"]
+    checkpoint = CheckpointExpression(**record)
+    assert CheckpointWorldAdapter._checkpoint_digest_valid(checkpoint)
+    snapshot = json.loads(checkpoint.resource_snapshot_json)
+    assert snapshot["native_rule_work"]["rule_identity_coverage"] == "COMPLETE"
+    assert snapshot["runtime_counters"]["process_peak_rss_bytes"] > 0
+    assert result["arms"]["unchanged"]["approval_count"] == 0
+    assert result["arms"]["unchanged"]["world_receipt_count"] == 0
 
 
 def test_search_attempt_ceiling_rejects_invalid_values():

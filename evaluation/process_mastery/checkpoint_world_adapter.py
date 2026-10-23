@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 import math
+import time
 
 from evaluation.process_mastery.native_process_execution import (
     open_process_candidate_digest, params_digest,
@@ -14,7 +15,8 @@ from evaluation.process_mastery.independent_worlds import (
     generate_loopover_world, generate_loopover_world_v2,
 )
 from evaluation.process_mastery.p22_resource_accounting import (
-    compare_resource_snapshots, native_rule_work_digest_valid,
+    NativeRuleWorkCapture, compare_resource_snapshots,
+    merge_native_rule_work_snapshots, native_rule_work_digest_valid,
     resource_snapshot_digest_valid,
     snapshot_native_resources,
 )
@@ -657,7 +659,9 @@ class CheckpointWorldAdapter:
 
 def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
                                   world: dict,
-                                  agent_factory, max_rule_rounds: int = 256) -> dict:
+                                  agent_factory,
+                                  cumulative_primitive_ceiling: int = 30_000,
+                                  native_rule_progress_ceiling: int = 20_000) -> dict:
     """Run a fresh native learner graph restored from a checkpoint on one task.
 
     This is a development continuation primitive, distinct from the finite
@@ -687,9 +691,16 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
     world_id = world["world_id"]
     initial_state = world["initial_state"]
     goal_state = world["goal_state"]
-    if (isinstance(max_rule_rounds, bool) or not isinstance(max_rule_rounds, int)
-            or max_rule_rounds < 1):
-        raise ValueError("max_rule_rounds must be a positive integer")
+    if (isinstance(cumulative_primitive_ceiling, bool)
+            or not isinstance(cumulative_primitive_ceiling, int)
+            or not 1 <= cumulative_primitive_ceiling <= 120_000):
+        raise ValueError("cumulative primitive ceiling must be an integer in [1, 120000]")
+    if checkpoint.cumulative_primitive_work > cumulative_primitive_ceiling:
+        raise ValueError("checkpoint cumulative work exceeds the shared primitive ceiling")
+    if (isinstance(native_rule_progress_ceiling, bool)
+            or not isinstance(native_rule_progress_ceiling, int)
+            or not 1 <= native_rule_progress_ceiling <= 10_000_000):
+        raise ValueError("native rule-progress ceiling must be an integer in [1, 10000000]")
     params = _checkpoint_graph_params(checkpoint)
     if (not isinstance(initial_state, list) or not isinstance(goal_state, list)
             or any(isinstance(value, bool) or not isinstance(value, int)
@@ -700,6 +711,7 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         raise ValueError("task states must be permutations matching checkpoint domain")
 
     agent = agent_factory()
+    rule_capture = None
     try:
         restore_native_checkpoint_graph(agent, checkpoint)
         native = getattr(agent, "inner", None) or getattr(agent, "native", None)
@@ -707,6 +719,17 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         root = getattr(agent, "agent", None) or getattr(agent, "ag", None)
         if native is None or store is None or root is None:
             raise TypeError("agent factory must return a native graph learner")
+        solver_policies = store.nodes("SolverPolicy")
+        if len(solver_policies) != 1:
+            raise ValueError("checkpoint learner requires exactly one native SolverPolicy")
+        solver_policy = solver_policies[0]
+        if store.node(solver_policy)["attrs"].get("enabled") != 1.0:
+            raise ValueError("checkpoint learner SolverPolicy must be explicitly enabled")
+        solver_step_allowance = (cumulative_primitive_ceiling
+                                 - checkpoint.cumulative_primitive_work)
+        store.set_attr(solver_policy, "max_steps", float(solver_step_allowance))
+        baseline_approvals = len(store.nodes("OpenProcessAdoptionApproval"))
+        baseline_receipts = len(store.nodes("OpenProcessWorldReceipt"))
         task_key = f"p22-checkpoint-eval:{world_id}"
         graph_nodes = json.loads(checkpoint.native_graph_snapshot_json)["nodes"]
         domain_names = [node.get("attrs", {}).get("domain") for node in graph_nodes
@@ -766,23 +789,184 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
         fired_total = 0
         rounds = 0
         quiescent = False
-        for _ in range(max_rule_rounds):
-            fired = int(native.run_rules(20_000))
+        rule_progress_limit_respected = True
+        started = time.perf_counter()
+        rule_capture = NativeRuleWorkCapture(native).start()
+        while fired_total < native_rule_progress_ceiling:
+            remaining = native_rule_progress_ceiling - fired_total
+            fired = int(native.run_rules(min(20_000, remaining)))
+            if fired < 0:
+                raise RuntimeError("native rule runner returned negative progress")
             fired_total += fired
             rounds += 1
+            if fired > remaining:
+                rule_progress_limit_respected = False
+                break
             if fired == 0:
                 quiescent = True
                 break
         attrs = store.node(task)["attrs"]
-        return {"status": "COMPLETED" if quiescent else "ROUND_LIMIT",
+        wall_time = time.perf_counter() - started
+        increment_rule_work = rule_capture.finish()
+        rule_capture = None
+        checkpoint_snapshot = json.loads(checkpoint.resource_snapshot_json)
+        parent_runtime = checkpoint_snapshot.get("runtime_counters") or {}
+        parent_rule_work = checkpoint_snapshot.get("native_rule_work")
+        native_rule_work = (merge_native_rule_work_snapshots(
+            parent_rule_work, increment_rule_work) if parent_rule_work is not None
+            else increment_rule_work)
+        runtime_counters = {
+            "native_rule_steps": int(parent_runtime.get("native_rule_steps", 0))
+                + fired_total,
+            "native_model_calls": int(parent_runtime.get("native_model_calls", 0)),
+        }
+        search_policies = store.nodes("OpenProcessSearchPolicy")
+        if len(search_policies) == 1:
+            reserved = store.node(search_policies[0])["attrs"].get("attempts_reserved", 0)
+            if (isinstance(reserved, bool) or not isinstance(reserved, (int, float))
+                    or not math.isfinite(reserved) or reserved < 0
+                    or not float(reserved).is_integer()):
+                raise ValueError("restored search reservation counter is invalid")
+            runtime_counters["search_attempts_reserved"] = int(reserved)
+        if "native_candidate_validation_evaluations" in parent_runtime:
+            runtime_counters["native_candidate_validation_evaluations"] = int(
+                parent_runtime["native_candidate_validation_evaluations"])
+        resource_snapshot = snapshot_native_resources(agent,
+            runtime_counters=runtime_counters, native_rule_work=native_rule_work)
+        cumulative_resources = resource_snapshot["cumulative_resources"]
+        cumulative_primitive_value = (
+            cumulative_resources.get("native_solver_primitive_work", 0)
+            + cumulative_resources.get("search_declared_primitive_work", 0))
+        if (isinstance(cumulative_primitive_value, bool)
+                or not isinstance(cumulative_primitive_value, (int, float))
+                or not math.isfinite(cumulative_primitive_value)
+                or cumulative_primitive_value < 0
+                or not float(cumulative_primitive_value).is_integer()):
+            raise ValueError("restored learner primitive-work total is invalid")
+        cumulative_primitive_work = int(cumulative_primitive_value)
+        if cumulative_primitive_work < checkpoint.cumulative_primitive_work:
+            raise ValueError("restored learner resource totals regress checkpoint primitive work")
+        primitive_budget_respected = cumulative_primitive_work <= cumulative_primitive_ceiling
+        terminal = attrs.get("status") in {"solved", "stuck"}
+        status = ("PRIMITIVE_BUDGET_OVERRUN" if not primitive_budget_respected else
+            "RULE_PROGRESS_LIMIT_OVERRUN" if not rule_progress_limit_respected else
+            "COMPLETED" if terminal else "RULE_BUDGET_EXHAUSTED")
+        return {"status": status,
                 "world_id": world_id, "checkpoint_id": checkpoint.checkpoint_id,
                 "task_status": attrs.get("status"),
                 "score": int(attrs.get("status") == "solved"),
-                "native_rule_steps": fired_total, "rule_rounds": rounds,
+                "native_rule_steps": fired_total,
+                "native_rule_progress_ceiling": native_rule_progress_ceiling,
+                "rule_progress_limit_respected": rule_progress_limit_respected,
+                "evaluation_wall_time_seconds": wall_time,
+                "cumulative_primitive_work": cumulative_primitive_work,
+                "cumulative_primitive_ceiling": cumulative_primitive_ceiling,
+                "primitive_budget_respected": primitive_budget_respected,
+                "rule_rounds": rounds,
                 "quiescent": quiescent,
-                "approval_count": len(store.nodes("OpenProcessAdoptionApproval")),
-                "world_receipt_count": len(store.nodes("OpenProcessWorldReceipt"))}
+                "approval_events_added": (len(store.nodes("OpenProcessAdoptionApproval"))
+                                           - baseline_approvals),
+                "world_receipts_added": (len(store.nodes("OpenProcessWorldReceipt"))
+                                          - baseline_receipts),
+                "resource_snapshot": resource_snapshot}
     finally:
+        if rule_capture is not None:
+            rule_capture.close()
         close = getattr(agent, "close", None)
         if close is not None:
             close()
+
+
+def compare_restored_checkpoint_panel(checkpoints: dict[str, CheckpointExpression],
+                                      worlds: list[dict], *, agent_factory,
+                                      cumulative_primitive_ceiling: int = 30_000,
+                                      native_rule_progress_ceiling: int = 20_000) -> dict:
+    """Compare restored checkpoints on common registered training tasks.
+
+    Each checkpoint/world cell receives a fresh learner, the same cumulative
+    primitive-work ceiling, and the same native rule-progress limit. The
+    native scheduler can exceed a requested progress limit within one call;
+    such overruns are retained explicitly. Equal limits are not treated as
+    equal realized resource use.
+    """
+    if not isinstance(checkpoints, dict) or len(checkpoints) < 2:
+        raise ValueError("at least two named checkpoints are required")
+    if any(not isinstance(name, str) or not name for name in checkpoints):
+        raise ValueError("checkpoint comparison names must be nonempty strings")
+    checkpoint_ids = [checkpoint.checkpoint_id for checkpoint in checkpoints.values()]
+    if any(not identity for identity in checkpoint_ids) or len(set(checkpoint_ids)) != len(checkpoint_ids):
+        raise ValueError("checkpoint identities must be present and unique")
+    if not isinstance(worlds, list) or not worlds:
+        raise ValueError("at least one common registered training world is required")
+    world_ids = [world.get("world_id") if isinstance(world, dict) else None
+                 for world in worlds]
+    if any(not identity for identity in world_ids) or len(set(world_ids)) != len(world_ids):
+        raise ValueError("training world identities must be present and unique")
+    if (isinstance(cumulative_primitive_ceiling, bool)
+            or not isinstance(cumulative_primitive_ceiling, int)
+            or not 1 <= cumulative_primitive_ceiling <= 120_000):
+        raise ValueError("cumulative primitive ceiling must be an integer in [1, 120000]")
+    if (isinstance(native_rule_progress_ceiling, bool)
+            or not isinstance(native_rule_progress_ceiling, int)
+            or not 1 <= native_rule_progress_ceiling <= 10_000_000):
+        raise ValueError("native rule-progress ceiling must be an integer in [1, 10000000]")
+
+    arms = {name: [] for name in checkpoints}
+    rows = []
+    for world in worlds:
+        outcomes = {}
+        for name, checkpoint in checkpoints.items():
+            outcome = score_restored_checkpoint_task(checkpoint, world=world,
+                agent_factory=agent_factory,
+                cumulative_primitive_ceiling=cumulative_primitive_ceiling,
+                native_rule_progress_ceiling=native_rule_progress_ceiling)
+            arms[name].append(outcome)
+            outcomes[name] = outcome
+        resource_match = compare_resource_snapshots({name: outcome["resource_snapshot"]
+            for name, outcome in outcomes.items()})
+        rows.append({"world_id": world["world_id"], "outcomes": outcomes,
+            "same_world": all(outcome["world_id"] == world["world_id"]
+                              for outcome in outcomes.values()),
+            "same_native_rule_progress_ceiling": all(outcome[
+                "native_rule_progress_ceiling"] == native_rule_progress_ceiling
+                for outcome in outcomes.values()),
+            "rule_progress_limits_respected": all(outcome[
+                "rule_progress_limit_respected"] for outcome in outcomes.values()),
+            "primitive_budgets_respected": all(outcome[
+                "primitive_budget_respected"] for outcome in outcomes.values()),
+            "same_cumulative_primitive_work": len({outcome[
+                "cumulative_primitive_work"] for outcome in outcomes.values()}) == 1,
+            "resource_comparison": resource_match})
+    return {"status": "COMPLETED",
+        "split": "training", "world_ids": world_ids,
+        "native_rule_progress_ceiling": native_rule_progress_ceiling,
+        "cumulative_primitive_ceiling": cumulative_primitive_ceiling,
+        "same_worlds": all(row["same_world"] for row in rows),
+        "same_native_rule_progress_ceiling": all(
+            row["same_native_rule_progress_ceiling"] for row in rows),
+        "rule_progress_limits_respected": all(row[
+            "rule_progress_limits_respected"] for row in rows),
+        "primitive_budgets_respected": all(row["primitive_budgets_respected"]
+                                             for row in rows),
+        "same_cumulative_primitive_work": all(
+            row["same_cumulative_primitive_work"] for row in rows),
+        "resource_matched": all(row["resource_comparison"][
+            "all_resource_dimensions_match"] for row in rows),
+        "efficiency_comparable": all(row["same_cumulative_primitive_work"]
+            and row["primitive_budgets_respected"]
+            and row["rule_progress_limits_respected"]
+            and row["resource_comparison"]["all_resource_dimensions_match"]
+            and all(outcome["status"] == "COMPLETED"
+                    for outcome in row["outcomes"].values()) for row in rows),
+        "arms": {name: {"outcomes": outcomes,
+            "solved_count": sum(outcome["score"] for outcome in outcomes),
+            "completed_count": sum(outcome["status"] == "COMPLETED"
+                                    for outcome in outcomes),
+            "native_rule_steps": sum(outcome["native_rule_steps"]
+                                      for outcome in outcomes),
+            "approval_events_added": sum(outcome["approval_events_added"]
+                                         for outcome in outcomes),
+            "world_receipts_added": sum(outcome["world_receipts_added"]
+                                        for outcome in outcomes)}
+            for name, outcomes in arms.items()},
+        "rows": rows, "efficacy_established": False}

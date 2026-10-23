@@ -11,6 +11,7 @@ import math
 import resource
 import sys
 import time
+from dataclasses import asdict
 
 from evaluation.process_mastery.independent_worlds import (
     agent_view, generate_d4_world_v2, generate_loopover_world_v2,
@@ -21,7 +22,7 @@ from evaluation.process_mastery.native_process_execution import (
     attest_open_process_candidate,
 )
 from evaluation.process_mastery.checkpoint_world_adapter import (
-    score_unapproved_candidate_validation_panel,
+    capture_held_process_checkpoint, score_unapproved_candidate_validation_panel,
 )
 from evaluation.process_mastery.p22_resource_accounting import (
     NativeRuleWorkCapture, compare_resource_snapshots, snapshot_native_resources,
@@ -99,7 +100,8 @@ def run_p22_four_arm_development(*, family: str,
                                  max_rule_rounds: int = 256,
                                  selected_arms: tuple[str, ...] = _ARMS,
                                  measure_process_peak_rss: bool = False,
-                                 measure_native_rule_work: bool = False) -> dict:
+                                 measure_native_rule_work: bool = False,
+                                 capture_checkpoints: bool = False) -> dict:
     """Run selected explicit conditions on a training-only v2 panel."""
     if family not in _GENERATORS:
         raise ValueError("unsupported P22 development family")
@@ -126,6 +128,11 @@ def run_p22_four_arm_development(*, family: str,
         raise ValueError("process RSS measurement flag must be boolean")
     if not isinstance(measure_native_rule_work, bool):
         raise ValueError("native rule-work measurement flag must be boolean")
+    if not isinstance(capture_checkpoints, bool):
+        raise ValueError("checkpoint capture flag must be boolean")
+    if capture_checkpoints and (len(selected_arms) != 1
+            or not measure_process_peak_rss or not measure_native_rule_work):
+        raise ValueError("checkpoint capture requires one isolated arm and complete runtime/native-work measurement")
     generator, size = _GENERATORS[family]
     worlds = [generator(split="train", draw=draw) for draw in training_draws]
     validation_worlds = [agent_view(generator(split="validation", draw=draw))
@@ -269,6 +276,31 @@ def run_p22_four_arm_development(*, family: str,
             arms[arm]["resource_snapshot"] = snapshot_native_resources(agent,
                 runtime_counters=counters, native_rule_work=native_rule_work)
             arms[arm]["wall_time_seconds"] = arm_wall_time
+            if capture_checkpoints:
+                ancestor_schemas = [node for node in agent.s.nodes("ProcessSchema")
+                    if agent.s.node(node)["attrs"].get("domain") == domain_name
+                    and agent.s.node(node)["attrs"].get("status") == "active"
+                    and agent.s.node(node)["attrs"].get("provenance")
+                        == "world_affordance"]
+                if not ancestor_schemas:
+                    raise RuntimeError("checkpoint capture requires a registered active domain ancestor")
+                ancestor_schemas.sort(key=lambda node: (
+                    agent.s.node(node)["attrs"].get("name", ""), str(node)))
+                cumulative = arms[arm]["resource_snapshot"]["cumulative_resources"]
+                cumulative_primitive = (cumulative.get("native_solver_primitive_work", 0.0)
+                    + cumulative.get("search_declared_primitive_work", 0.0))
+                if (isinstance(cumulative_primitive, bool)
+                        or not isinstance(cumulative_primitive, (int, float))
+                        or not math.isfinite(cumulative_primitive)
+                        or cumulative_primitive < 0
+                        or not float(cumulative_primitive).is_integer()):
+                    raise RuntimeError("measured cumulative primitive work is invalid")
+                checkpoint = capture_held_process_checkpoint(agent,
+                    ancestor_schemas[0],
+                    checkpoint_id=f"p22-{family}-{arm}-g0",
+                    declared_primitive_work=int(cumulative_primitive),
+                    runtime_counters=counters, native_rule_work=native_rule_work)
+                arms[arm]["generation_zero_checkpoint"] = asdict(checkpoint)
         finally:
             if rule_capture is not None:
                 rule_capture.close()

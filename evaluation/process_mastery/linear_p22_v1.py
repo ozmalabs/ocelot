@@ -65,6 +65,7 @@ PROVENANCE_FILES = (
     "evaluation/process_mastery/independent_worlds.py",
     "evaluation/process_mastery/native_process_execution.py",
     "evaluation/process_mastery/p22_arms.py",
+    "evaluation/process_mastery/p22_checkpoint_panel.py",
     "evaluation/process_mastery/p22_development.py",
     "evaluation/process_mastery/p22_four_arm_development.py",
     "evaluation/process_mastery/p22_resource_accounting.py",

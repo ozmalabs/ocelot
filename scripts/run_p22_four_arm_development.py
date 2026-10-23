@@ -22,7 +22,8 @@ from evaluation.process_mastery.p22_resource_accounting import compare_resource_
 
 def _run_isolated_arm(family: str, draws: list[int], validation_draws: list[int],
                      arm: str, search_attempt_ceiling: int,
-                     measure_native_rule_work: bool) -> dict:
+                     measure_native_rule_work: bool,
+                     capture_checkpoints: bool) -> dict:
     command = [sys.executable, str(Path(__file__).resolve()), "--family", family,
         "--training-draws", *[str(draw) for draw in draws],
         "--validation-draws", *[str(draw) for draw in validation_draws],
@@ -30,6 +31,8 @@ def _run_isolated_arm(family: str, draws: list[int], validation_draws: list[int]
         "--worker-arm", arm]
     if measure_native_rule_work:
         command.append("--measure-native-rule-work")
+    if capture_checkpoints:
+        command.append("--capture-checkpoints")
     environment = os.environ.copy()
     environment.setdefault("OZMA_SEED_PERSIST_DISABLED", "1")
     completed = subprocess.run(command, check=True, capture_output=True,
@@ -40,10 +43,12 @@ def _run_isolated_arm(family: str, draws: list[int], validation_draws: list[int]
 def _run_isolated_arms(family: str, draws: list[int],
                        validation_draws: list[int],
                        search_attempt_ceiling: int,
-                       measure_native_rule_work: bool) -> dict:
+                       measure_native_rule_work: bool,
+                       capture_checkpoints: bool) -> dict:
     runs = {arm: _run_isolated_arm(family, draws, validation_draws, arm,
                                    search_attempt_ceiling,
-                                   measure_native_rule_work)
+                                   measure_native_rule_work,
+                                   capture_checkpoints)
             for arm in _ARM_SWITCHES}
     arms = {arm: result["arms"][arm] for arm, result in runs.items()}
     snapshots = {arm: data["resource_snapshot"] for arm, data in arms.items()}
@@ -70,6 +75,8 @@ def main() -> int:
     parser.add_argument("--search-attempt-ceiling", type=int, default=64)
     parser.add_argument("--measure-native-rule-work", action="store_true",
         help="capture isolated per-rule native counters for each arm")
+    parser.add_argument("--capture-checkpoints", action="store_true",
+        help="capture each isolated arm's complete measured generation-zero native checkpoint")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--worker-arm", choices=tuple(_ARM_SWITCHES))
     args = parser.parse_args()
@@ -80,7 +87,8 @@ def main() -> int:
             search_attempt_ceiling=args.search_attempt_ceiling,
             selected_arms=(args.worker_arm,),
             measure_process_peak_rss=True,
-            measure_native_rule_work=args.measure_native_rule_work)
+            measure_native_rule_work=args.measure_native_rule_work,
+            capture_checkpoints=args.capture_checkpoints)
         print(json.dumps(result, sort_keys=True))
         return 0
     if args.output is None:
@@ -88,7 +96,8 @@ def main() -> int:
     result = _run_isolated_arms(args.family, args.training_draws,
                                  args.validation_draws,
                                  args.search_attempt_ceiling,
-                                 args.measure_native_rule_work)
+                                 args.measure_native_rule_work,
+                                 args.capture_checkpoints)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, sort_keys=True, indent=2) + "\n")
     print(json.dumps({"status": result["status"], "family": result["family"],

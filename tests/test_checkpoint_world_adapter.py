@@ -6,7 +6,8 @@ import pytest
 from evaluation.process_mastery.checkpoint_world_adapter import (
     CheckpointExpression, CheckpointWorldAdapter, capture_adopted_checkpoint,
     capture_held_process_checkpoint, capture_passive_checkpoint,
-    restore_native_checkpoint_graph, score_restored_checkpoint_task,
+    compare_restored_checkpoint_panel, restore_native_checkpoint_graph,
+    score_restored_checkpoint_task,
 )
 from evaluation.process_mastery.native_process_execution import (
     attest_open_process_candidate, execute_open_process_candidate, params_digest,
@@ -508,9 +509,69 @@ def test_restored_checkpoint_runs_fresh_task_through_native_learner():
     assert result["task_status"] == "solved"
     assert result["score"] == 1
     assert result["quiescent"]
-    assert result["approval_count"] == result["world_receipt_count"] == 0
+    assert result["approval_events_added"] == result["world_receipts_added"] == 0
 
     heldout = agent_view(generate_d4_world_v2(split="heldout", draw=6))
     with pytest.raises(ValueError, match="registered training worlds"):
         score_restored_checkpoint_task(checkpoint, world=heldout,
                                       agent_factory=boot)
+    bounded = score_restored_checkpoint_task(checkpoint, world=world,
+        agent_factory=boot, cumulative_primitive_ceiling=1,
+        native_rule_progress_ceiling=20_000)
+    assert bounded["cumulative_primitive_ceiling"] == 1
+    assert bounded["primitive_budget_respected"]
+    assert bounded["cumulative_primitive_work"] <= 1
+    over_budget = capture_held_process_checkpoint(source, schema,
+        checkpoint_id="over-budget-root", declared_primitive_work=2)
+    with pytest.raises(ValueError, match="exceeds the shared primitive ceiling"):
+        score_restored_checkpoint_task(over_budget, world=world,
+            agent_factory=lambda: pytest.fail("over-budget checkpoint was booted"),
+            cumulative_primitive_ceiling=1)
+
+
+def test_four_restored_checkpoints_share_registered_world_and_rule_ceiling():
+    from substrate.boot_profiles import boot_cognition_on
+
+    world = agent_view(generate_d4_world_v2(split="train", draw=15))
+    source = boot_cognition_on()
+    for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
+        for policy in source.s.nodes(policy_type):
+            source.s.set_attr(policy, "enabled", 1.0)
+    domain = source.s.add_node("ProcessDomain", {"name": "checkpoint-panel",
+        "kind": "permutation", "domain_kind": "permutation",
+        "probes": [world["initial_state"]], "source_epoch": 0, "model_epoch": 0,
+        "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_domain", domain, {})
+    params = world["held_processes"]["rot90"]
+    schema = source.s.add_node("ProcessSchema", {"name": "rot90",
+        "kind": "permutation", "domain": "checkpoint-panel",
+        "domain_kind": "permutation", "params": params,
+        "source_digest": params_digest(params), "status": "active",
+        "provenance": "held", "cost": 1.0, "owner_agent": source.agent,
+        "invariants": [], "source_epoch": 0, "model_epoch": 0,
+        "frame_epoch": 0, "probe_epoch": 0})
+    source.s.add_edge(source.agent, "has_process_schema", schema, {})
+    source.s.add_edge(domain, "has_held_process", schema, {})
+    checkpoints = {name: capture_held_process_checkpoint(source, schema,
+        checkpoint_id=f"panel-{name}") for name in
+        ("unchanged", "adaptive_only", "invention_only", "full")}
+
+    def boot():
+        agent = boot_cognition_on()
+        for policy_type in ("SolverPolicy", "ProcessSchemaPolicy"):
+            for policy in agent.s.nodes(policy_type):
+                agent.s.set_attr(policy, "enabled", 1.0)
+        return agent
+
+    result = compare_restored_checkpoint_panel(checkpoints, [world],
+        agent_factory=boot, native_rule_progress_ceiling=20_000,
+        cumulative_primitive_ceiling=30_000)
+    assert result["same_worlds"]
+    assert result["same_native_rule_progress_ceiling"]
+    assert result["primitive_budgets_respected"]
+    assert result["same_cumulative_primitive_work"]
+    assert all(result["arms"][arm]["solved_count"] == 1 for arm in checkpoints)
+    assert all(result["arms"][arm]["approval_events_added"] == 0
+               and result["arms"][arm]["world_receipts_added"] == 0
+               for arm in checkpoints)
+    assert not result["efficacy_established"]
