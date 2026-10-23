@@ -1213,6 +1213,24 @@ has SHA-256 `615cff996516b940a387fbfccc69766d61128b13e172c4b4dffc64b7c736bbc5`.
 Draws 0590/0591 are consumed training-only data. This adds no Loopover
 generation-one candidate.
 
+## Maximum-ceiling D4 generation-two continuation (2026-10-23)
+
+The digest-valid parent checkpoint `p22-d4-g2-1e3590935d29` (generation 2,
+digest `5799cb611c33a58de30c2590bbaa5f294794f0a9f9705707454072645bb694fc`)
+was restored on fresh distinct training draws 0592/0593. The continuation
+raised the graph-wide ceiling from 60,000 to 120,000; both new requests used
+30,000 attempts and both tasks ended stuck. Four candidate records were
+present. Candidate `#16769` (digest
+`a54ed68b85a26c7caad1c3ac3fff9f2a122b145643c34a5a5f75358d3ac8da42`) had
+mixed verified and residual trials on draw 0593 but no qualification across
+both new goals. Approval and receipt totals of two are inherited from the
+parent; there was no new action or receipt. Validation and held-out
+allocations were empty. Raw artifact
+[`p22_candidate_continuation_d4_0592_0593.json`](../../../evaluation/process_mastery/results/p22_candidate_continuation_d4_0592_0593.json)
+has SHA-256 `4ec2ad7a3c50eeb24e93d5bc86b49c1136e5bbda9989cce914baf795753747a0`.
+Draws 0592/0593 are consumed training-only data. The D4 generation-three
+candidate gate remains unmet.
+
 After the restored-ceiling correction, all 10 tests in
 `tests/test_p22_development.py` pass. The P22 runner self-check passes and
 reports `heldout_accessed=false`; its lineage-tamper controls reject the
