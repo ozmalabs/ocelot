@@ -198,7 +198,9 @@ def test_distinct_goal_probe_retains_native_qualification_without_actions():
                 assert len(set(qualification["training_trial_keys"])) == 2
                 verified = [trial for trial in row["independent_goal_trials"]
                             if trial["status"] == "verified"]
-                assert len(verified) == 1
+                assert verified
+                assert {trial["task_key"] for trial in verified} <= set(
+                    qualification["training_trial_keys"])
                 assert verified[0]["parent_candidate_ids"] == [row["candidate_id"]]
                 assert verified[0]["task_key"] != result["training_world_ids"][0]
             assert row["panel"]["world_count"] == 8

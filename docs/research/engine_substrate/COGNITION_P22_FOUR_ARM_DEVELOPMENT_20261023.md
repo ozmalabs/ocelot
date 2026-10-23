@@ -1598,3 +1598,53 @@ deterministic gzip artifact
 has SHA-256 `1c691650d8d3a3886dfb3ba42e01a9fa074c95d6fc92d51cbdfd49c46b8aac8d`
 and decompresses to that raw digest. Draws 0694/0695 are consumed. This new
 source expression also failed to qualify on its independent training goal.
+
+## Ordered two-held-process proposal panel (2026-10-23)
+
+The transfer grammar now includes the candidate-first, candidate-middle and
+candidate-last orderings around two held processes. A fresh four-goal
+pairwise-distinct Loopover panel on draws 0696–0699 used transfer depth 2,
+10,000 attempts per task and a 40,000 global ceiling. All tasks ended stuck.
+The first task produced no candidate; candidate `#20764` (digest
+`642521f05b9b9d32ce35c60d8a211d1e541f58e144ff7d4b6dd7c99719e0c48c`, effect
+`[[0,5,3,4,7,8,6,1,2]]`) was minted later and received no independent-goal
+trials. The run is `NO_CANDIDATE_FIRST_TRIAL`, not a transfer qualification
+failure. It created no approvals or receipts and accessed no validation or
+held-out worlds.
+
+Runtime was 213.217 seconds, with 43 native rule steps, 2,042,884,096 bytes
+peak RSS, 40,774 graph nodes, 200,662 edges and 2,553,665,815 native term
+evaluations. Raw JSON SHA-256 is
+`fe8d3040e1c5a60d61fd4c5a6b09e8a080a529e8d68599317e73fc859bc5f442`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0696_0699_ordered_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0696_0699_ordered_two_step.json.gz)
+has SHA-256 `0ad9d02dc75dab2aab41336502bc516e2db7edebc8e31c53e6c20b832e34e35c`
+and decompresses to that raw digest. Draws 0696–0699 are consumed. This panel
+does not exercise candidate transfer in the additional orderings.
+
+## Order-complete two-held-process transfer probe (2026-10-23)
+
+Native search now covers candidate-first, candidate-middle and candidate-last
+placements around two held processes. Bounded graph tests verify all three
+orderings against exact finite effects. The combined search/development/CLI
+suite passes 48 tests; the arm/checkpoint/profile suite passes 93.
+
+On fresh pairwise-distinct Loopover training draws 0700/0701, candidate
+`#10761` (digest
+`7042a5a6d5d8d2512e5709a4bbc853a777ec915fe9e3c1df0295740c571fdd93`, effect
+`[[2,0,1,4,5,3,7,8,6]]`) had 24 one-step and 396 two-step trials on the
+independent goal. The two-step trials cover all three orderings; all 420
+attempts were residual, with no qualification. Both tasks were stuck after
+10,000 attempts each. There were no approvals, receipts, validation worlds or
+held-out exposures.
+
+Runtime was 690.952 seconds, with 28 native rule steps, 1,054,629,888 bytes
+peak RSS, 20,768 graph nodes, 101,536 edges and 8,401,352,553 native term
+evaluations. Raw JSON SHA-256 is
+`6fb4a0f514d54037ce4449e897504bc59e3fa422d3dffbef00b2aeeb12d5dfb2`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0700_0701_ordered_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0700_0701_ordered_two_step.json.gz)
+has SHA-256 `f7f34eddd98af40ca222fafcbdb0cd666a7f67ed0c56b0154705cf30a7865aa7`
+and decompresses to that raw digest. Draws 0700/0701 are consumed
+training-only evidence. The expanded composition orders are exercised but do
+not produce a qualified Loopover descendant.

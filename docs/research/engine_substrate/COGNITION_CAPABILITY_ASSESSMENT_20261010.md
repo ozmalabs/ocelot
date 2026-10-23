@@ -685,3 +685,13 @@ This adds no qualified descendant or capability evidence; L1–L7 remain open.
 A second fresh Loopover source pair (0694/0695) produced another candidate,
 but its 156 one-step/two-step trials on the independent goal were all
 residual. No capability disposition changes.
+
+An order-complete two-held-process grammar was added, but its first four-goal
+Loopover panel produced no candidate on the source task; a later candidate had
+no independent trials. This is no transfer failure estimate and does not
+change any L1–L7 disposition.
+
+An order-complete Loopover transfer probe on distinct draws 0700/0701 exercised
+all three placements of an acquired candidate around two held processes. All
+420 independent-goal trials were residual and no candidate qualified. This
+does not establish Loopover transfer or change any L1–L7 disposition.
