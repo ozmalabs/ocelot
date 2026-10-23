@@ -868,3 +868,8 @@ parent digests, qualification IDs/kinds, and exact training-witness pairs
 reproduced for D4 and Loopover; no action or held-out allocation is present.
 Both still require exact user approval, so capability dispositions remain
 unchanged.
+
+The held-out runner also rejects a committed preregistration draft with no
+machine-readable freeze before constructing a learner or any evaluation world.
+The focused runner module passes 7 tests. This confirms the current protocol
+draft cannot access held-out data and does not alter the evidence dispositions.

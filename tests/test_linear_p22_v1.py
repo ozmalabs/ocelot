@@ -6,7 +6,7 @@ import pytest
 
 import evaluation.process_mastery.linear_p22_v1 as linear_p22_v1
 from evaluation.process_mastery.linear_p22_v1 import (
-    ARMS, FAMILIES, GENERATIONS, PANEL_SIZE, PROVENANCE_FILES,
+    ARMS, FAMILIES, GENERATIONS, PANEL_SIZE, PREREGISTRATION, PROVENANCE_FILES,
     RESOURCE_FIELDS, _index_manifest, _preflight_checkpoint_resources,
     _hash_files, allocation, self_check,
 )
@@ -73,6 +73,34 @@ def test_heldout_freeze_is_verified_before_learner_or_world_access(monkeypatch):
     with pytest.raises(RuntimeError, match="freeze rejected"):
         linear_p22_v1.run_heldout(preregistration=linear_p22_v1.ROOT / "unused",
                                   requested_hash="0" * 64)
+
+
+def test_unfrozen_preregistration_is_rejected_before_heldout_access(
+        tmp_path, monkeypatch):
+    preregistration = tmp_path / PREREGISTRATION
+    preregistration.parent.mkdir(parents=True)
+    raw = b"# Draft preregistration\nNo machine-readable freeze.\n"
+    preregistration.write_bytes(raw)
+    monkeypatch.setattr(linear_p22_v1, "ROOT", tmp_path)
+
+    def git_response(args, *, cwd, text):
+        if args[:2] == ["git", "status"]:
+            return ""
+        if args[:2] == ["git", "diff-tree"]:
+            return PREREGISTRATION + "\n"
+        pytest.fail(f"unexpected git command before freeze parsing: {args}")
+
+    def reject_world_access(*_args, **_kwargs):
+        pytest.fail("held-out access occurred before the missing freeze was rejected")
+
+    monkeypatch.setattr(linear_p22_v1.subprocess, "check_output", git_response)
+    monkeypatch.setattr(linear_p22_v1, "Agent", reject_world_access)
+    monkeypatch.setattr(linear_p22_v1, "generate_d4_world_v2", reject_world_access)
+    monkeypatch.setattr(linear_p22_v1, "generate_loopover_world_v2", reject_world_access)
+
+    with pytest.raises(RuntimeError, match="lacks its machine-readable freeze"):
+        linear_p22_v1.run_heldout(preregistration=preregistration,
+            requested_hash=hashlib.sha256(raw).hexdigest())
 
 
 def test_manifest_accepts_approved_improvement_and_passive_control_lineages():
