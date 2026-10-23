@@ -138,6 +138,47 @@ def test_candidate_effect_already_active_cannot_qualify_as_improvement():
     assert agent.attrs(proposal)["status"] == "awaiting_native_qualification"
 
 
+def test_independent_goal_composition_to_held_effect_cannot_qualify():
+    agent = _agent()
+    candidate = _candidate(agent)
+    source_attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    source_task = agent.native.neighbours(source_attempt, "about_task")[0]
+    agent.s.set_attr(source_task, "split", "training")
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    attest_open_process_candidate(agent, candidate)
+    _install(agent)
+    agent.s.set_attr(agent.nodes("IndependentImprovementPolicy")[0], "enabled", 1.0)
+    search_policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(search_policy, "candidate_transfer_depth", 3.0)
+    for _ in range(8):
+        agent.s.tick(4000)
+    proposal = next(proposal for proposal in agent.nodes("IndependentImprovementProposal")
+        if agent.native.neighbours(proposal, "proposes_native_candidate") == [candidate])
+
+    identity = [0, 1, 2, 3]
+    duplicate = agent.s.add_node("ProcessSchema", {
+        "name": "already-active-composed-trial-effect", "kind": "permutation",
+        "domain_kind": "permutation", "domain": "search", "params": identity,
+        "source_digest": params_digest(identity), "cost": 1.0, "status": "active",
+        "provenance": "qualification_guard_regression", "invariants": [],
+        "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+        "probe_epoch": 0, "source_probe_epoch": 0})
+    agent.s.add_edge(agent.ag, "has_process_schema", duplicate, {})
+    agent.s.add_edge(agent.domains["search"], "has_held_process", duplicate, {})
+    second_task = agent.add_solve_task("search", identity, identity,
+        training_trial_key="held-composition-result")
+    agent.s.set_attr(second_task, "split", "training")
+    agent.s.set_attr(second_task, "status", "stuck")
+    for _ in range(24):
+        agent.s.tick(4000)
+
+    assert any(agent.attrs(attempt)["status"] == "verified"
+        and agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+        for attempt in agent.nodes("OpenProcessSearchAttempt"))
+    assert not agent.native.neighbours(proposal, "has_native_qualification")
+    assert agent.attrs(proposal)["status"] == "awaiting_native_qualification"
+
+
 def test_three_generation_native_development_lineage():
     """Exercise repeated training qualification, exact approval and receipt capture.
 

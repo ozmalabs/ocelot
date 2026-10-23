@@ -23,13 +23,14 @@ of this request. No validation or held-out worlds are included.
 | Selected witnesses | `p22:loopover-v2:train:0951`, `p22:loopover-v2:train:0953` |
 
 The effect differs from all active held process effects in the registered
-Loopover root. Exact training-only replay reproduced the candidate, effect,
-qualification and witnesses. The original and replay source panels each used
-20,000 reserved attempts and added zero approvals or receipts. Their raw
-SHA-256 values are `e5c83c603025f78305111f47b2831697c0738967eec31ed0542e459b539e3fe9`
-and `722f78bab019eea085cf039a3a3d29e17b27d0c83946a73b52c95ceabe840784`;
-deterministic gzip hashes are `1d42107cccf2ab5398f68833ae0082db3075d980737c60f93f35650827885cf3`
-and `595385075af462696de556f998a0355f1647cedd8a500ebbe4e23d412ba2b963`.
+Loopover root. The source panel and exact replay were both rerun with the
+stricter transfer-child novelty guard. They reproduced the candidate, both
+qualifications and their witnesses; each used 20,000 reserved attempts and
+added zero approvals or receipts. Their raw SHA-256 values are
+`d4494ea8fd590af5f33baf736940843209c155a65b1b12d53e5a18653f2146bc` and
+`cdc4421f8425369e12df717b7cb495c6033f40ba1480729497f7b2a476ea7238`;
+deterministic gzip hashes are `0efa12606c579971601b505c3e82823caff62bf59a634e3d2d23031db2146384`
+and `cde29f3416c936bf42b7b5d651f7b8f8d8ba7d82cf4970cf7c3bc8fd17578c17`.
 
 The authorization covers one simulator transition on a training world and
 the conditional g1 checkpoint only. It does not authorize a later-generation

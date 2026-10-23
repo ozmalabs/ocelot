@@ -287,7 +287,7 @@ def build():
     base["rules"].append({"name": "iip_qualify_after_independent_goal_composition",
         "area": "memory_consolidation", "order": 15,
         "latency_class": "background", "batch": False,
-        "comment": "Qualify only a novel attested effect that participates in a native-verified solution for a different training goal.",
+        "comment": "Qualify only a novel source effect whose independently-goal composition also has an effect absent from active/adopted processes.",
         "match": [policy,
             ["agent", "has_independent_improvement_proposal", "proposal"],
             ["proposal", "proposes_native_candidate", "candidate"],
@@ -323,6 +323,7 @@ def build():
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
             Eq(A("proposal", "status"), L("awaiting_native_qualification")),
             novel_effect("candidate"),
+            novel_effect("trial_candidate"),
             Not(Exists(N("proposal", "has_native_qualification"),
                        "prior_qualification", L(True)))),
         "effects": [["add_node", "qualification", "IndependentImprovementQualification", {

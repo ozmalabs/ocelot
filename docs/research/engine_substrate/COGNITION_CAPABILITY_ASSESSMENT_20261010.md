@@ -816,3 +816,18 @@ approval. No action, validation allocation or
 held-out access has occurred. This supplies a qualified training proposal,
 not a checkpoint lineage or efficacy evidence; P22.E2–E3 and L1–L7
 dispositions remain open.
+
+From the registered D4 invention-only root, candidate `#1908` has a novel
+standalone effect. Its 0955/0957 transfer witness produces a child effect
+identical to active held process `rot90`, so the earlier qualification was
+invalidated. The stricter native rule now requires both source and transfer
+child effects to be absent from active/adopted processes; a regression covers
+the held-child case. Re-evaluation recorded zero qualifications. The D4
+request packet is superseded. The corrected runner/search/qualification/CLI
+suite passes 53 tests, and the E2 acceptance bundle passes 60 tests; both
+self-checks pass with no held-out access. Loopover candidate `#6542` retains two
+qualifications under this stricter rule and exact replay; its separate
+[request packet](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0951_0954.md) remains
+awaiting exact approval. No candidate has been actioned, and neither family
+has validation or held-out evidence. This adds no P22 efficacy result and
+leaves L1–L7 dispositions unchanged.

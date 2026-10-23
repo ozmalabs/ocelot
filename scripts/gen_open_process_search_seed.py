@@ -406,9 +406,6 @@ def _mint_candidate_composition_rule():
         And(Eq(A("candidate_trial", "operator_kind"), L("recursive_compose")),
             Eq(A("candidate_trial", "status"), L("verified")),
             Exists(N("candidate_trial", "extends_candidate"), "parent", L(True)),
-            Not(Exists(N("d", "has_held_process"), "held_process",
-                And(Eq(A("held_process", "status"), L("active")),
-                    Eq(A("held_process", "params"), A("candidate_trial", "params"))))),
             Not(Exists(N("agent", "has_open_process_candidate"), "old",
                 Eq(A("old", "expression_key"), A("candidate_trial", "expression_key"))))))
     return rule("ops_mint_verified_candidate_composition", ONLINE_AREA, 30,

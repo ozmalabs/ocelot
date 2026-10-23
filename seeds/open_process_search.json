@@ -11516,61 +11516,6 @@
                           "type": "Neighbours",
                           "node": {
                             "type": "Var",
-                            "name": "d"
-                          },
-                          "edge_type": "has_held_process",
-                          "any_type": false
-                        },
-                        "var_name": "held_process",
-                        "predicate": {
-                          "type": "And",
-                          "items": [
-                            {
-                              "type": "Eq",
-                              "a": {
-                                "type": "Attr",
-                                "node": {
-                                  "type": "Var",
-                                  "name": "held_process"
-                                },
-                                "key": "status"
-                              },
-                              "b": {
-                                "type": "Lit",
-                                "value": "active"
-                              }
-                            },
-                            {
-                              "type": "Eq",
-                              "a": {
-                                "type": "Attr",
-                                "node": {
-                                  "type": "Var",
-                                  "name": "held_process"
-                                },
-                                "key": "params"
-                              },
-                              "b": {
-                                "type": "Attr",
-                                "node": {
-                                  "type": "Var",
-                                  "name": "candidate_trial"
-                                },
-                                "key": "params"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    },
-                    {
-                      "type": "Not",
-                      "arg": {
-                        "type": "Exists",
-                        "source": {
-                          "type": "Neighbours",
-                          "node": {
-                            "type": "Var",
                             "name": "agent"
                           },
                           "edge_type": "has_open_process_candidate",
