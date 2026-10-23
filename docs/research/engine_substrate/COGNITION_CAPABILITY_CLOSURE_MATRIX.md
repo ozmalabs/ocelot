@@ -190,10 +190,4 @@ requirements.
 
 ## P22 registered Loopover full-root search update (2026-10-24)
 
-A fresh four-goal training-only search from the registered Loopover full-arm
-root produced one novel candidate but no qualified transfer: all 1,260
-independent-goal trials were residual. All four source tasks ended stuck, with
-zero approvals or receipts and no validation or held-out access. This adds
-negative qualification evidence only; it creates no checkpoint descendant and
-changes no L1–L7 disposition. See the exact root and artifact hashes in the
-P22 build-plan ledger.
+Repeated training-only searches from the registered Loopover full-arm root produced no qualified transfer. The latest source candidate had 1,260 residual independent-goal trials; three other runs either had no candidate on the first task or produced later-task candidates with zero qualification trials. All tasks ended stuck, with zero approvals or receipts and no validation or held-out access. This adds negative qualification evidence only; it creates no checkpoint descendant and changes no L1–L7 disposition. Exact root and artifact hashes are in the P22 build-plan ledger.
