@@ -849,3 +849,11 @@ even with the exact candidate digest and execution flag, a packet marked
 CLI module passes 8 tests. This closes a request-lifecycle guard only; the
 current D4 and Loopover registered-root packets remain awaiting their own
 exact approvals, with no new action or checkpoint.
+
+The P22 preregistration now has a protocol draft covering the fixed allocation,
+estimands, effect thresholds, resource-matching requirement, and structural
+controls. It is explicitly not frozen and authorizes no held-out access. The
+runner and analyzer self-checks pass, with `heldout_accessed=false`. The
+24-checkpoint manifest, approved registered-root descendants, and matching
+development resource vectors remain unavailable, so no efficacy or capability
+disposition changes.
