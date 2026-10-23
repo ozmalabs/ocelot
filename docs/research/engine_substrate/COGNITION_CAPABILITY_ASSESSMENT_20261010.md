@@ -861,3 +861,10 @@ resource ceilings.
 24-checkpoint manifest, approved registered-root descendants, and matching
 development resource vectors remain unavailable, so no efficacy or capability
 disposition changes.
+
+The two pending registered-root candidate packets were independently audited
+against their source and replay artifacts. Candidate digests, parameters,
+parent digests, qualification IDs/kinds, and exact training-witness pairs
+reproduced for D4 and Loopover; no action or held-out allocation is present.
+Both still require exact user approval, so capability dispositions remain
+unchanged.
