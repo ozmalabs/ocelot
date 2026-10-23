@@ -1,6 +1,9 @@
 """P19 bounded generic expression search over graph-held process evidence."""
 from evaluation.process_mastery.harness import Agent
-from evaluation.process_mastery.native_process_execution import open_process_candidate_digest
+from evaluation.process_mastery.native_process_execution import (
+    attest_open_process_candidate, open_process_candidate_digest,
+)
+from substrate.seed_loader import manifest_for
 
 
 def _agent(*, attempts=64, held=None):
@@ -228,6 +231,45 @@ def test_proposal_budget_includes_failures():
         if agent.attrs(n).get("requester_kind") == "open_process_search"]
     assert len(budget_requests) == 1
     assert agent.attrs(budget_requests[0])["status"] == "approved"
+
+
+def test_training_candidate_composes_with_two_held_processes_on_new_goal():
+    held = {
+        "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+        "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
+    }
+    agent, _ = _agent(attempts=500, held=held)
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    initial = [0, 1, 2, 3]
+    source_goal = _apply(agent, _compose(agent, held["p"], held["q"]), initial)
+    source = agent.add_solve_task("search", initial, source_goal,
+        training_trial_key="p22-search-source-training")
+    agent.s.set_attr(source, "split", "training")
+    agent.s.set_attr(source, "status", "stuck")
+    _tick(agent)
+    candidate = next(candidate for candidate in agent.nodes("OpenProcessCandidate")
+        if agent.attrs(candidate)["params"] == _compose(agent, held["p"], held["q"]))
+    attest_open_process_candidate(agent, candidate)
+
+    candidate_params = agent.attrs(candidate)["params"]
+    second_params = _compose(agent, _compose(agent, candidate_params, held["r"]),
+                             held["s"])
+    second_goal = _apply(agent, second_params, initial)
+    assert second_goal != source_goal
+    second = agent.add_solve_task("search", initial, second_goal,
+        training_trial_key="p22-search-independent-training")
+    agent.s.set_attr(second, "split", "training")
+    agent.s.set_attr(second, "status", "stuck")
+    _tick(agent)
+
+    extended = [attempt for attempt in agent.nodes("OpenProcessSearchAttempt")
+        if agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+        and agent.attrs(attempt).get("expression_key", "").startswith(
+            "independent-compose-2:")]
+    assert extended
+    assert any(agent.attrs(attempt)["status"] == "verified"
+               and agent.attrs(attempt)["predicted_state"] == second_goal
+               for attempt in extended)
 
 
 def test_each_search_request_obeys_its_own_attempt_ceiling():

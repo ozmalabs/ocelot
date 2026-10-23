@@ -525,6 +525,9 @@ def run_p22_training_proposal_probe(*, family: str,
                     if agent.native.neighbours(derived, "derived_from_attempt") == [trial_attempt]]
                 independent_trial_rows.append({
                     "attempt_id": str(trial_attempt),
+                    "expression_key": agent.attrs(trial_attempt).get("expression_key"),
+                    "operator_kind": agent.attrs(trial_attempt).get("operator_kind"),
+                    "depth": agent.attrs(trial_attempt).get("depth"),
                     "status": agent.attrs(trial_attempt).get("status"),
                     "task_key": (agent.attrs(trial_tasks[0]).get("training_trial_key")
                                  if len(trial_tasks) == 1 else None),
@@ -532,6 +535,14 @@ def run_p22_training_proposal_probe(*, family: str,
                                    if len(trial_tasks) == 1 else None),
                     "trial_request_statuses": [agent.attrs(request).get("status")
                                                for request in trial_requests],
+                    "parent_candidate_ids": [str(parent) for parent in
+                        agent.native.neighbours(trial_attempt, "extends_candidate")],
+                    "parent_process_sources": [{
+                        "name": agent.attrs(parent).get("name"),
+                        "source_digest": agent.attrs(parent).get("source_digest"),
+                        "params": agent.attrs(parent).get("params"),
+                    } for parent in agent.native.neighbours(
+                        trial_attempt, "uses_parent_process")],
                     "derived_candidate_ids": [str(derived) for derived in trial_candidates],
                     "derived_candidate_statuses": [agent.attrs(derived).get("status")
                                                     for derived in trial_candidates],

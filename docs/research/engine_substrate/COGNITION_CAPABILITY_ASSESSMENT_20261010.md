@@ -661,3 +661,8 @@ Loopover received a fresh four-goal panel at 30,000 attempts per task and the
 independent goals and did not qualify; all four tasks were stuck. This extends
 the negative training-only evidence but does not establish or revise any
 capability level.
+
+A bounded two-held-process extension increased native Loopover transfer trials
+to 156 on one fresh independent goal, but all remained residual and no
+candidate qualified. This additional training search establishes no new
+capability level; Loopover transfer and P22.E2–E3 remain open.

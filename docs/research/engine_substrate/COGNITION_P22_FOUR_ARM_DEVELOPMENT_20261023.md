@@ -1486,3 +1486,32 @@ matches that hash. The gzip SHA-256 is
 `ed95e7c721311197e59d3788a89d02952b75870a4ba764437e90cc3ca4c99b53`. Draws
 0673–0676 are consumed training-only evidence. This panel adds no candidate
 authorization, efficacy or held-out result.
+
+## Two-held-process candidate transfer extension (2026-10-23)
+
+The native search grammar now tests a digest-attested candidate followed by
+two held processes on a distinct training task, preserving both source schema
+digests, the nested expression tree, composed parameters, finite effect
+fingerprint and cumulative declared work. The rule applies only to stuck
+training tasks and uses the shared global and per-request attempt counters. A
+focused four-element regression generated and verified the expression on a
+second distinct training goal. The search/qualification/CLI suite passed 44
+tests; the arm/checkpoint/profile suite passed 93 tests.
+
+On fresh Loopover v2 training goals 0680/0681, each task received 10,000
+attempts (20,000 total). Both tasks ended stuck. Candidate `#10761` (digest
+`586f9baa5497dd7a205f5d6a23d44ddbd338b9e14bfae8bab8fbb8c8b43317a0`) had 156
+residual independent-goal trials on the second goal: 24 from the existing
+one-step rule and 132 from the new two-step rule. It did not qualify. The run
+took 334.859 seconds, with 26 native rule steps, 1,105,047,552 bytes peak RSS,
+20,768 nodes, 101,008 edges and 2,982,288,403 native term evaluations. There
+were zero approvals, receipts, validation worlds or held-out exposures.
+
+Raw JSON SHA-256 is
+`f3bd632aba0dc9c41defbc98a8b0e897a5ae0e048ca2bef4173ee10142402aa3`; the
+deterministic gzip artifact
+[`p22_training_panel_loopover_0680_0681_two_step.json.gz`](../../../evaluation/process_mastery/results/p22_training_panel_loopover_0680_0681_two_step.json.gz)
+has SHA-256 `815fab0a70752e6144e2e0121df3b5c5c3fba860757947a909b30c726efbec78`
+and decompresses to that raw digest. Draws 0680/0681 are consumed
+training-only data. Search coverage increased, but Loopover qualification
+remains unmet.

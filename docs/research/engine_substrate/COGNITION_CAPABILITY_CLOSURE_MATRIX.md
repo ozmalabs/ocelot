@@ -143,3 +143,8 @@ inference and retained with hashes in the P22 development report.
 A fresh Loopover panel at 30,000 attempts per goal also left candidate `#30761`
 unqualified after 72 residual trials across three later goals. No Loopover
 generation-one descendant or efficacy evidence is established.
+
+The native Loopover transfer search now tries a candidate followed by two held
+processes. A fresh two-goal panel produced 156 candidate trials on the
+independent goal, all residual. No generation-one Loopover descendant or
+efficacy evidence is established.

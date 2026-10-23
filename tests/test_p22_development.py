@@ -175,7 +175,7 @@ def test_v2_native_training_proposals_are_qualified_and_scored_nonactionably():
                    for row in result["candidates"])
 
 
-def test_noncomposable_candidates_do_not_qualify_across_distinct_goals():
+def test_distinct_goal_probe_retains_native_qualification_without_actions():
     cases = {"d4": (200, 201), "loopover": (206, 207)}
     for family, training_draws in cases.items():
         result = run_p22_training_proposal_probe(family=family,
@@ -187,11 +187,23 @@ def test_noncomposable_candidates_do_not_qualify_across_distinct_goals():
         assert result["candidate_count"] > 0
         assert result["approval_count"] == 0
         assert result["world_receipt_count"] == 0
-        assert all(row["qualification_count"] == 0
-                   and row["panel"]["world_count"] == 8
-                   and row["panel"]["approval_created"] is False
-                   and row["panel"]["world_receipts_created"] is False
-                   for row in result["candidates"])
+        for row in result["candidates"]:
+            assert row["qualification_count"] in (0, 1)
+            if row["qualification_count"]:
+                qualification, = row["qualifications"]
+                assert qualification["kind"] == "independent_goal_composition"
+                assert qualification["status"] == "qualified_for_candidate_specific_approval"
+                assert qualification["declared_trial_count"] == 2.0
+                assert len(set(qualification["task_ids"])) == 2
+                assert len(set(qualification["training_trial_keys"])) == 2
+                verified = [trial for trial in row["independent_goal_trials"]
+                            if trial["status"] == "verified"]
+                assert len(verified) == 1
+                assert verified[0]["parent_candidate_ids"] == [row["candidate_id"]]
+                assert verified[0]["task_key"] != result["training_world_ids"][0]
+            assert row["panel"]["world_count"] == 8
+            assert row["panel"]["approval_created"] is False
+            assert row["panel"]["world_receipts_created"] is False
 
 
 def test_distinct_goal_native_composition_qualifies_in_both_families():

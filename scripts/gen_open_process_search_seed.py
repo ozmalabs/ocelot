@@ -511,6 +511,93 @@ def _independent_candidate_compose_rule(*, reverse=False):
         batch=False)
 
 
+def _independent_candidate_two_step_compose_rule():
+    """Try a candidate with two held operators on a distinct training goal.
+
+    A single held-process composition is too shallow for larger task groups.
+    This keeps the candidate and both source operators explicit in the native
+    expression and provenance graph while widening the bounded transfer test
+    by one generic composition step.
+    """
+    first_params = PCompose(A("candidate", "params"), A("a", "params"))
+    params = PCompose(first_params, A("b", "params"))
+    first_applied = PApply(first_params, A("task", "initial_state"))
+    applied = PApply(params, A("task", "initial_state"))
+    key = StringConcat(L("independent-compose-2:"),
+        A("candidate", "expression_digest"), L(":"), A("a", "source_digest"),
+        L(":"), A("b", "source_digest"), L(":candidate_then_held_then_held"))
+    first_tree = Vec(L("independent_compose"), A("candidate", "expression_tree"),
+                     A("a", "name"), L("candidate_then_held"))
+    tree = Vec(L("guard"), A("task", "initial_state"),
+        Vec(L("independent_compose"), first_tree, A("b", "name"),
+            L("candidate_then_held")))
+    return rule("ops_test_candidate_composition_two_held", ONLINE_AREA, 17,
+        "Test a digest-attested training candidate followed by two held operators on a distinct training goal.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_candidate", "candidate"],
+         ["candidate", "derived_from_attempt", "source"],
+         ["source", "about_task", "source_task"],
+         ["agent", "has_open_process_search_request", "source_request"],
+         ["source_request", "has_search_attempt", "source"],
+         ["candidate", "has_expression_digest_receipt", "digest_receipt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "searches_task", "task"], ["task", "about_domain", "d"],
+         ["d", "has_held_process", "a"], ["d", "has_held_process", "b"]],
+        And(policy_on(), Eq(A("source_task", "split"), L("training")),
+            Eq(A("task", "split"), L("training")),
+            Eq(A("source", "status"), L("verified")),
+            Eq(A("candidate", "status"), L("unapproved_candidate")),
+            Eq(A("candidate", "expression_digest_status"), L("verified")),
+            Eq(A("digest_receipt", "status"), L("verified")),
+            Eq(A("digest_receipt", "expression_digest"), A("candidate", "expression_digest")),
+            Eq(A("digest_receipt", "effect_digest"), A("candidate", "effect_digest")),
+            Or(Eq(A("source_request", "status"), L("funded")),
+               Eq(A("source_request", "status"), L("proposal_recorded"))),
+            Or(Eq(A("request", "status"), L("funded")),
+               Eq(A("request", "status"), L("proposal_recorded"))),
+            Eq(A("task", "status"), L("stuck")),
+            Eq(A("candidate", "domain"), A("d", "name")),
+            Eq(A("candidate", "kind"), A("d", "kind")),
+            Eq(A("candidate", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("candidate", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("candidate", "frame_epoch"), A("d", "frame_epoch")),
+            Not(Eq(A("source_task", "goal"), A("task", "goal"))),
+            Lt(Count(N("agent", "has_open_process_search_attempt")),
+               A("pol", "max_attempts")),
+            Lt(Count(N("request", "has_search_attempt")),
+               A("request", "max_attempts")),
+            Not(Exists(N("request", "has_search_attempt"), "old",
+                       Eq(A("old", "expression_key"), key)))),
+        [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
+            "expression_key": T(key), "operator_kind": "recursive_compose",
+            "expression_tree": T(tree), "params": T(params),
+            "predicted_state": T(applied), "goal_state": T(A("task", "goal")),
+            "guard_state": T(A("task", "initial_state")),
+            "subgoal_state": T(first_applied), "depth": 2.0,
+            "effect_digest": T(PFingerprint(params, A("d", "probes"))),
+            "expression_digest": "pending_native_expression_attestation",
+            "expression_digest_status": "pending", "domain": T(A("d", "name")),
+            "kind": T(A("d", "kind")), "source_epoch": T(A("d", "source_epoch")),
+            "model_epoch": T(A("d", "model_epoch")), "frame_epoch": T(A("d", "frame_epoch")),
+            "work_cost": T(Plus(Plus(A("candidate", "work_cost"),
+                                      A("a", "cost")), A("b", "cost"))),
+            "status": T(IfThenElse(Eq(applied, A("task", "goal")),
+                                   L("verified"), L("residual"))),
+            "rank_score": T(Times(L(-1.0), Plus(Plus(A("candidate", "work_cost"),
+                                                       A("a", "cost")),
+                                                   A("b", "cost"))))},
+         "pol", "attempts_reserved", T(A("pol", "max_attempts")),
+         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         ["add_edge", "request", "has_search_attempt", "trial", {}],
+         ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
+         ["add_edge", "trial", "about_task", "task", {}],
+         ["add_edge", "trial", "uses_parent_process", "a", {}],
+         ["add_edge", "trial", "uses_parent_process", "b", {}],
+         ["add_edge", "trial", "extends_candidate", "candidate", {}],
+         ["add_edge", "candidate", "has_independent_trial_attempt", "trial", {}]],
+        batch=False)
+
+
 def build():
     specs = [
         ("Agent", "has_open_process_search_policy", "OpenProcessSearchPolicy"),
@@ -570,6 +657,7 @@ def build():
     rules = [_link_failure_evidence_rule(), request, funded]
     rules.extend((_independent_candidate_compose_rule(),
                   _independent_candidate_compose_rule(reverse=True),
+                  _independent_candidate_two_step_compose_rule(),
                   _mint_candidate_composition_rule(), _mint_recursive_compose_rule()))
     rules.extend(_expression_rule("compose", 0))
     rules.extend(_expression_rule("compose", 1, reverse=True))
