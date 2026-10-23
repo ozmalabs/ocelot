@@ -162,16 +162,16 @@ because the 24-checkpoint descendant manifest and per-checkpoint measured
 resource/ceiling manifest are incomplete, and candidate-specific decisions
 remain pending. No held-out allocation may be accessed.
 
-The current native provenance audit was `ATTESTED` with no issues before the
-2026-10-24 analyzer/protocol amendment. The analyzer hash below is now stale by
-design; the final freeze must recompute every provenance hash and attest the
-runtime after the amendment and all remaining implementation changes.
+At commit `d390d58383a48eb48a13a8da1e9206dc0a64ebe6`, the current native
+provenance audit is `ATTESTED` with no issues after the 2026-10-24
+analyzer/protocol amendment. The final freeze must recompute every provenance
+hash and attest the runtime after all remaining implementation changes.
 
 | Provenance item | SHA-256 |
 |---|---|
 | Runner | `14f911f6bbf8083a080eab868b77350b9c028f26b8f2e8d92dafebb228866ec7` |
-| Analyzer | `dd737d2bbf2561b2d3279e205ad64c11c809d3c6e227b3b0345fe0bf64cf26af` |
-| Source bundle | `6a94207da61a315bb370878cd30909a7e24bb4925f3127078773819c2aa61e24` |
+| Analyzer | `10dce1e6e0b23f7a1f100ad3c7120829ab5335bf87f792b2a08408f5c4122643` |
+| Source bundle | `52af8bdd7a91cd536a4a2c4b02322a7d67e4d8a56bff20a1d77bb2841108cde4` |
 | Python wrapper | `b149923864fd6e5c786906b57929b73d42aa42284cceff200383fd8c1d60e9e5` |
 | Loaded native extension | `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07` |
 | Native build receipt | `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66` |

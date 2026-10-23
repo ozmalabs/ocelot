@@ -904,3 +904,13 @@ would remain after those actions. The previously approved D4 identity
 candidate `#6731` already consumed its one-shot authorization and is outside
 these registered roots. No held-out world has been constructed or scored, no
 efficacy claim is established, and L1–L7 dispositions remain unchanged.
+
+At P22 implementation commit `d390d58383a48eb48a13a8da1e9206dc0a64ebe6`,
+the current native provenance recomputation reports `ATTESTED` with no issues:
+runner SHA-256 `14f911f6bbf8083a080eab868b77350b9c028f26b8f2e8d92dafebb228866ec7`,
+analyzer `10dce1e6e0b23f7a1f100ad3c7120829ab5335bf87f792b2a08408f5c4122643`,
+source bundle `52af8bdd7a91cd536a4a2c4b02322a7d67e4d8a56bff20a1d77bb2841108cde4`,
+loaded extension `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07`,
+and build receipt `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66`.
+The final preregistration freeze must recompute and bind provenance again after
+all implementation changes.
