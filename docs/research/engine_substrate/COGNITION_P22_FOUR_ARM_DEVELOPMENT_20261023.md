@@ -940,3 +940,16 @@ verified, ceilings held, and no approvals or receipts were added. The values
 remain unmatched and the roots are generation zero, so no efficiency or
 efficacy claim follows. Exact artifact hashes and per-arm timing/resource
 medians are recorded in the build plan.
+
+## Matched-resource claim gate (2026-10-23)
+
+A final analyzer audit found that score thresholds alone could mark the
+registered phase `PASS` even when measured paired resources differed. The
+contract says such outcomes support capability observations only. The
+analyzer now separates score-threshold success from resource matching and
+requires complete all-arm, all-generation, all-world matching for a registered
+phase pass. A synthetic held-out regression supplies score-threshold success
+with one resource mismatch and verifies `NOT_ESTABLISHED` / `CAPABILITY_ONLY`.
+The focused P22 suite passes 53 tests; runner and analyzer self-checks pass.
+No registered held-out allocation was accessed. This tightens claim
+classification and does not create approved lineages or efficacy evidence.
