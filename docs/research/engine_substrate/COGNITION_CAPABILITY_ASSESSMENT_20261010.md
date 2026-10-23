@@ -734,3 +734,9 @@ outside that request. No action or checkpoint has been created, and the
 request is awaiting exact approval. The panel used the full 40,000-attempt
 training ceiling and produced no validation or held-out evidence. This adds a
 qualified proposal, not Loopover transfer efficacy; L1–L7 remain unchanged.
+
+A read-only replay of the same Loopover allocation reproduced candidate
+`#10761`, both qualifications and their exact witnesses. It added no approval
+or receipt and accessed no validation or held-out worlds. This strengthens
+the reproducibility of the pending action request only; all capability-level
+dispositions remain unchanged.

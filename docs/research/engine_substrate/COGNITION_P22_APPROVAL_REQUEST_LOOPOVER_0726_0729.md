@@ -38,7 +38,7 @@ inferred.
 
 The machine request is
 [`COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0726_0729.json`](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0726_0729.json),
-SHA-256 `28a14064d1e314a5398a1e417cd146fd03098afe05267f6fc99a93a448badd1f`.
+SHA-256 `0a7f3d5382eb7e351bbdca77e562b7a0c7840761a59eaefe8b26b2f27a004d07`.
 It binds depth-three transfer, the 10,000 per-request and 40,000 global
 training ceilings, the 30 search ticks, the four distinct training draws, the
 selected qualification and the single output path
@@ -51,3 +51,15 @@ its decompressed raw SHA-256 is
 `0338b3be46c8f4944c5963fe04c390764d38e5af8e4aec5bd4a74d412d820c6d`.
 The guarded CLI reconstructs the candidate from these training draws and
 requires this exact digest and reviewer-reported time before the one action.
+
+## Read-only request reconstruction check
+
+The exact four-draw request was replayed without approval flags on the same
+training-only allocation. It reproduced candidate `#10761`, the expression
+digest, parameters, both qualification IDs and witness pairs exactly. The
+replay used 40,000 search attempts, created no approval or receipt, and had no
+validation allocation. Its compressed artifact is
+[`p22_candidate_approval_replay_loopover_0726_0729.json.gz`](../../../evaluation/process_mastery/results/p22_candidate_approval_replay_loopover_0726_0729.json.gz),
+SHA-256 `9da556763aa04d34deac9fdb3d926a5d18cdeaf837bd89ad9a437e75462243a8`;
+decompressed raw SHA-256
+`bdf4dea9c0e8a7c6bbf9d77e78f5894d17ef9a33b3cca2f1b6e040a4b079cdb5`.
