@@ -966,3 +966,6 @@ P22 qualification now rejects identity permutation effects for both the proposed
 
 
 A fresh D4 full-arm generation-one continuation on training goals 0002/0003 passed the repaired P22 identity-effect qualification guard: candidate `#9440` transferred to non-identity child `#22382` and qualified on distinct goals 0988/0003; exact replay matched. The source/replay artifacts retain only the inherited approval and receipt and have no validation or held-out worlds. A request is prepared for one exact candidate-specific training transition from the full-arm g1 parent and remains awaiting authorization. This is lineage mechanism evidence, not a capability or efficacy result.
+
+
+After the identity-effect qualification repair, a fresh D4 invention-only g2 continuation on training goals 0004/0005 retained the identity candidate as a proposal artifact but gave it zero qualifications; its identity transfer child also received none. A malformed inherited qualification remained excluded. The two fresh tasks each exhausted 10,000 attempts, with no new approval or receipt and no validation or held-out allocation. D4 invention-only g3 remains unavailable; this is negative search-mechanism evidence, not an efficacy result.

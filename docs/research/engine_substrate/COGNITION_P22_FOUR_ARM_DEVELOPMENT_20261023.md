@@ -1953,3 +1953,24 @@ They inherit one approval/receipt, add none, and contain no validation or
 held-out allocation. The candidate-specific [request](COGNITION_P22_APPROVAL_REQUEST_D4_FULL_G1_0002_0003.md)
 binds one proposed action on training draw 0002 to the exact parent and replay;
 it remains unapproved.
+
+## D4 invention-only generation-two post-guard continuation (2026-10-24)
+
+On fresh distinct training draws 0004/0005 from checkpoint
+`p22-d4-g2-84854777d0e3`, each task used 10,000 additional attempts and
+remained stuck. The identity candidate `#25873` remained in the artifact but
+received zero native qualifications under the repaired guard; its identity
+transfer child `#56760` also received zero. Candidate `#9459` had a missing
+qualification kind and was excluded. No improving generation-three candidate
+was found.
+
+The panel added 20,000 attempts and brought cumulative reserved attempts to
+64,280. It recorded 226 native rule steps, 3,628.322 seconds wall-time, and
+3,130,404,864-byte peak RSS. Raw artifact SHA-256
+`5c6f85a29afc5d72d21fdea84f2c182d1af6a3f215169ad0f1197a48c92a2469`, resource
+snapshot SHA-256
+`809b6718fab6d77acb7a1281372cfdba08f1167599ee573a08424b2bf1fbb98b`, and
+native-rule-work SHA-256
+`79519697f192951e6482e62ff85114c70dfe0e6b00dbca84a9baf3244d975ca6`
+(complete identity coverage, no unresolved rules). It inherits two approvals
+and receipts, adds none, and has no validation or held-out allocation.
