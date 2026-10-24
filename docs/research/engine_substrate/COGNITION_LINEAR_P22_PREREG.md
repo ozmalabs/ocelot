@@ -167,8 +167,12 @@ panels; candidate `#31551` had no independent-goal trials in 0804–0807;
 90,000-attempt, 120-tick panel on 0815–0817 found no candidate on any goal.
 The D4 invention-only g1 continuation on 0818–0821 independently replayed
 candidate `#9458` (`84854777d0e3b48f447ecd04236a794eff39a46546edb3f19e47f506492ce66a`)
-and qualification `#15851` (0960/0818); its one-action packet awaits exact
-approval. The approved D4 invention-only g2 search on worlds 0822/0823/0825
+and qualification `#15851` (0960/0818); its exact request was approved with 12
+reviewer-reported seconds and consumed once on training draw 0818, producing
+verified receipt `#45865` and generation-two checkpoint
+`p22-d4-g2-84854777d0e3` (digest
+`d8a916474c8e3bafd44dda0082fd7c71ccb3dac1c0a2daf9bbe7f759c70fb4df`). The
+approved D4 invention-only g2 search on worlds 0822/0823/0825
 did not find an improving g3 candidate: its only formally qualified candidate
 was an identity effect and was excluded; one other qualification record had a
 missing kind and was rejected. The Loopover invention-only g1 continuation on worlds 0826–0829 produced three
@@ -181,6 +185,25 @@ because the 24-checkpoint descendant manifest and per-checkpoint measured
 resource/ceiling manifest are incomplete, and candidate-specific decisions
 remain for eight future transitions; two exact candidate requests are awaiting
 separate decisions. No held-out allocation may be accessed.
+
+**Current checkpoint resource snapshot audit (2026-10-24):** The two registered
+family root artifacts, the passive-control lineage artifact, and four exact
+approved-action results contain 24 digest-valid checkpoint records: 8 roots,
+12 unchanged/adaptive descendants, and 4 invention/full descendants. The native
+resource snapshots for all 24 records pass digest validation and report measured
+values for all 20 analyzer resource fields. This is 16 of the required 24
+descendant checkpoints; the other eight require later arm-specific lineage
+actions and, where applicable, exact user approval. The audit does not supply
+the final development scoring panel's isolated wall-time measurements or freeze
+the per-field ceilings. Raw input SHA-256 values: D4 roots
+`bb88741136b5c2dc88daa33cdd0bbe6dbb94b261c45292b2cdef0b79c1661aee`, Loopover
+roots `3cbcc409fb0572dc6cfb0cc3d013f0084c2ae21ab12e3705dca181bb9818e346`,
+passive lineages `11478f6b590f5923464c7ec2f1b4f04c0c9dd2bdbd601f02bf9c00905ed2d0b3`,
+D4 invention g1 `50e54f9b6decd864abab66d3138be9b8c91c949b7379da0ae13823d838a988b4`,
+D4 invention g2 `f72db827c1e05f382ae7fd84c1655f4f0c4d1cac61dbe57823438d092feb1bc7`,
+Loopover invention g1 `f1b709141893c88975ebc09356e81ea28873a2638c634c05e8e784b2aaf5dbb9`,
+and D4 full g1
+`2355279174397e964cfb66a960696f69e27764c2c8c7fd4911616005ddafba2c`.
 
 At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
 identity-effect qualification guard, the current provenance audit is `ATTESTED`
