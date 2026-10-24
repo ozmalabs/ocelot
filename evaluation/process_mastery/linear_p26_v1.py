@@ -73,6 +73,7 @@ PROVENANCE_FILES = (
     "evaluation/process_mastery/common_target_learner.py",
     "evaluation/process_mastery/target_learner.py",
     "evaluation/process_mastery/target_learning_worlds.py",
+    "evaluation/process_mastery/native_process_execution.py",
     "evaluation/process_mastery/harness.py",
     "evaluation/process_mastery/runtime_attestation.py",
     "scripts/gen_useful_evidence_selection_seed.py", "seeds/useful_evidence_selection.json",

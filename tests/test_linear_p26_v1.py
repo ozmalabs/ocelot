@@ -78,6 +78,7 @@ def test_p26_development_panel_has_matched_pools_and_executable_controls():
     assert analysis["primary"]["gain_reselected_stronger_control"]["n"] == 4
     assert set(analysis["primary"]["pairwise_residual_minus_control"]) == {"fixed", "random"}
     assert payload["provenance"]["runtime_attestation"]["status"] == "ATTESTED"
+    assert "evaluation/process_mastery/native_process_execution.py" in payload["provenance"]["source_file_sha256"]
     assert {row["kind"] for row in payload["integrity_controls"]} == set(CONTROL_KINDS)
     for stream in payload["streams"]:
         assert len({arm["train_pool_sha256"] for arm in stream["arms"]}) == 1
