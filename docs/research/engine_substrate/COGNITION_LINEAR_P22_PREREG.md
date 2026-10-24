@@ -310,3 +310,21 @@ does not make the draft freeze-ready: the 24-checkpoint manifest still lacks
 eight invention/full descendants, and final isolated wall-time measurements,
 per-field ceilings, exact candidate decisions, and refreshed final provenance
 remain outstanding. No validation or held-out allocation was accessed.
+
+**D4 invention-only generation-three search update (2026-10-24):** A
+proposal-only continuation from the digest-valid g2 checkpoint used fresh
+distinct training worlds 0924–0926, reserving 20,000 attempts per world and
+60,000 total. All three tasks remained stuck. The seven recorded proposals
+yielded no valid improving qualification: one qualification record lacked its
+required kind, and identity-effect candidates received no qualifications.
+The run inherited its two approvals and two receipts but added none; it created
+no child checkpoint and used no validation or held-out allocation. Resource
+and native-rule-work digests verify, with complete rule identity coverage.
+The [raw training artifact](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_d4_g2_0924_0926_ticks60_depth3.json)
+SHA-256 is `583e31d86471d5a032284f2a5a894bcb255c8418827b56599076924db628e24b`;
+the resource snapshot SHA-256 is
+`a57af5f61107cc70d352a731961b9ae874af511e65072f403fd68b7cc7f716c0`, and the
+native-rule-work SHA-256 is
+`daaf7de53df49757bedb03a4f77a748954ce364002a8c14b09059b9109ea03f4`. This
+negative search does not satisfy the missing D4 invention-only g3 lineage or
+change the draft/freeze disposition.
