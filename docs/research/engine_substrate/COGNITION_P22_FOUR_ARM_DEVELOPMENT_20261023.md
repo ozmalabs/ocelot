@@ -2035,3 +2035,27 @@ native-rule-work SHA-256
 `53750fdf767df6857b50cb7386be84a5a08a727ad1530f51e6dae44cdcc676ba`
 (complete identity coverage, no unresolved rules). One approval and receipt
 are inherited; no new action or held-out allocation occurred.
+
+## Loopover invention-only g1 maximum cumulative panel
+
+Four fresh distinct goals 0016–0019 were searched at 25,000 attempts each,
+reaching the 120,000 cumulative ceiling. All tasks remained stuck; candidates
+`#16551`, `#21555`, `#71575`, `#96579`, and `#121583` had zero
+independent-goal qualifications. The run recorded 95 native rule steps,
+871.714 seconds wall-time and 2,029,412,352-byte peak RSS. There was one
+inherited approval/receipt and no new action, validation, or held-out access.
+
+Raw artifact SHA-256
+`a7481175d53701789a94d0573eb9ea203aa8390ad29bef050f2767a001445238`, resource
+snapshot SHA-256
+`8df416ef8603affe313dcfeaf60a42370e5ba143ab19cae20cc6535bae634776`, and
+native-rule-work SHA-256
+`8b1fac6b3604a9d46b31f9ae831c785281d2865d9ad37932b48f1bd05ee0426b`
+(complete identity coverage, no unresolved rules).
+
+A separate allocation preflight sequencing error briefly launched an invalid
+0012–0015 panel because draw 0015 had already been allocated. The process was
+terminated after six observed seconds and produced no terminal search result.
+An `INTERRUPTED_INVALID_ALLOCATION` marker was recorded at the expected path,
+with unknown attempt count; draws 0012–0015 are consumed and excluded. No
+approval or adoption flags were supplied.

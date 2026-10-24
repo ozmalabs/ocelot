@@ -981,3 +981,6 @@ Increasing the Loopover invention-only g1 per-request ceiling to 20,000 on fresh
 
 
 A fresh Loopover invention-only g1 continuation at 30,000 attempts per request on goals 0010/0011 again produced three candidates with zero qualification. It reserved 60,000 new attempts without an approval or receipt; validation and held-out worlds remained unused. The lineage gate remains unmet.
+
+
+A four-goal Loopover invention-only g1 continuation on 0016–0019 reached 120,000 cumulative attempts but produced five candidates with zero independent-goal qualifications. It adds no generation-two descendant or efficacy evidence. A separate invalid draw-allocation launch was stopped before completion and recorded as `INTERRUPTED_INVALID_ALLOCATION`; it is excluded from results.
