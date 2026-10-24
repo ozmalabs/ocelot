@@ -1993,3 +1993,11 @@ native-rule-work SHA-256
 `104ebf9249f67611192b1d133a69d40e9e16648bc6f49f4c8e541dc3518ae5db`
 (complete identity coverage, no unresolved rules). It inherits one approval and
 receipt, adds none, and has no validation or held-out allocation.
+
+## Loopover invention-only g1 continuation detail
+
+The 0006/0007 run produced three candidates (`#16551`, `#21555`, `#31572`),
+with zero qualifications. Each new task used 10,000 attempts and ended stuck.
+No approval or receipt was added; validation and held-out allocations are
+empty. The measured run and provenance hashes are recorded in the build plan
+and capability assessment.

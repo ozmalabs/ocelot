@@ -972,3 +972,6 @@ After the identity-effect qualification repair, a fresh D4 invention-only g2 con
 
 
 A further Loopover invention-only g1 continuation on distinct training goals 0006/0007 yielded three candidates and zero independent-goal qualifications. Both tasks used 10,000 new attempts; no approval or receipt was added, and validation/held-out allocations remained empty. Loopover invention-only g2 remains unavailable. This result does not estimate efficacy.
+
+
+The latest distinct-goal Loopover invention-only g1 continuation on draws 0006/0007 produced three candidates without qualification. This continues the training-search limitation; it creates no new descendant and does not estimate efficacy.
