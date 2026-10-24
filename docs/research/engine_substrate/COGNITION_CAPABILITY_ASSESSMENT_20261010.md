@@ -990,3 +990,6 @@ A fresh four-goal Loopover full-arm continuation from the registered g0 root on 
 
 
 A five-goal Loopover full-arm panel on fresh distinct goals 0029–0033 reached the 120,000-attempt ceiling and returned `NO_CANDIDATE_FIRST_TRIAL`. Four proposals were produced but none qualified; there were zero approvals, receipts, validation, or held-out access. The full-arm g1 lineage gate remains unmet.
+
+
+After the 120,000-attempt Loopover full-arm panel exhausted all five task caps without transfer trials, a fresh four-goal panel reserved 10,000 attempts per request and left headroom for independent-goal transfer. Candidate `#1611` qualified on goals 0034/0035, transferred to non-identity child `#16963`, and exact replay reproduced both. Both effects differ from the registered full-arm g0 root's active processes. The resulting exact candidate request remains unapproved; no action or receipt has been created, and validation/held-out allocations remain empty. This is lineage mechanism evidence, not efficacy.

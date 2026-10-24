@@ -179,8 +179,8 @@ coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen
 because the 24-checkpoint descendant manifest and per-checkpoint measured
 resource/ceiling manifest are incomplete, and candidate-specific decisions
-remain for eight future transitions; one exact request is awaiting its separate
-decision. No held-out allocation may be accessed.
+remain for eight future transitions; two exact candidate requests are awaiting
+separate decisions. No held-out allocation may be accessed.
 
 At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
 identity-effect qualification guard, the current provenance audit is `ATTESTED`

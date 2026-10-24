@@ -2096,3 +2096,28 @@ native-rule-work SHA-256
 `43e44de5c72702ec0ab829578229884140c9038b8a8e2f3393d80f454c4d0a2a`
 (complete identity coverage, no unresolved rules). There were zero approvals,
 receipts, validation allocations, and held-out worlds.
+
+## Loopover full-arm transfer-headroom correction
+
+The five-goal full-root panel on 0029–0033 used all 24,000 attempts on each
+world for base search and generated four candidates with no transfer trials.
+On four fresh distinct goals 0034–0037, reducing the per-request cap to 10,000
+preserved transfer headroom. Candidate `#1611` (digest
+`c9f470ba163917fc8061b27fe6a0fc93e1626d6bb435718aa5f3a120403ffc29`, effect
+`[[0,1,2,5,3,4,7,8,6]]`) qualified as `#41560` on goals 0034/0035. Its selected
+transfer child `#16963` has digest
+`e5604deb448518c2a11190497120513c1266a8a64081096511385b77aac31aaf` and effect
+`[[3,0,1,2,6,4,7,5,8]]`. Both source and child differ from all twelve active
+processes in the registered full-arm root and are non-identity. Exact replay
+reproduced the candidate, qualification, witness pair and child. No approval,
+receipt, validation or held-out allocation was created.
+
+The source reserved 40,000 attempts, recorded 70 native rule steps, 1,219.864
+seconds wall-time and 937,930,752-byte peak RSS. Source and replay SHA-256
+values are `f3b5bafad8bf9e9046500494e79c77effc1039e265812b14a6fe656c5bdda6c8`
+and `8560eb7903e13fc75150b64da70bfb6356bc5f9cea7dc9341a38ab439446c01a`.
+Native-rule-work SHA-256 is
+`47cd8dd3a24e748bd72fd8453721ffc5f1ddee33af01565e8d8bd1211e8947e0`
+(complete identity coverage, no unresolved rules). The [request](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_FULL_G0_0034_0035.md)
+for one generation-one transition from this exact parent remains awaiting
+separate authorization.
