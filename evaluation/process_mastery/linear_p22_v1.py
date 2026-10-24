@@ -270,8 +270,13 @@ def _index_manifest(manifest: dict) -> tuple[dict, dict]:
 
 
 def _preflight_checkpoint_resources(freeze: dict, lineages: dict,
-                                   ceilings: dict) -> None:
+                                   ceilings: dict, *,
+                                   cumulative_primitive_ceiling: int) -> None:
     """Reject an incomplete resource manifest before any held-out world is built."""
+    if (isinstance(cumulative_primitive_ceiling, bool)
+            or not isinstance(cumulative_primitive_ceiling, int)
+            or not 1 <= cumulative_primitive_ceiling <= 120_000):
+        raise RuntimeError("invalid cumulative primitive ceiling in resource preflight")
     wall_times = freeze.get("checkpoint_wall_time_seconds")
     expected_keys = {f"{family}:{arm}:g{generation}" for family in FAMILIES
                      for arm in ARMS for generation in GENERATIONS}
@@ -282,6 +287,9 @@ def _preflight_checkpoint_resources(freeze: dict, lineages: dict,
             for generation in GENERATIONS:
                 checkpoint = lineages[(family, arm, generation)]
                 key = f"{family}:{arm}:g{generation}"
+                if checkpoint.cumulative_primitive_work > cumulative_primitive_ceiling:
+                    raise RuntimeError(
+                        f"checkpoint cumulative work exceeds shared primitive ceiling before holdout: {key}")
                 wall_time = wall_times[key]
                 if (isinstance(wall_time, bool)
                         or not isinstance(wall_time, (int, float))
@@ -361,7 +369,8 @@ def _verify_freeze(path: Path, requested_hash: str) -> tuple[dict, dict, dict]:
     ceilings = freeze.get("resource_ceilings")
     if not isinstance(ceilings, dict) or set(ceilings) != set(RESOURCE_FIELDS):
         raise RuntimeError("P22 freeze must declare a ceiling for every resource field")
-    _preflight_checkpoint_resources(freeze, lineages, ceilings)
+    _preflight_checkpoint_resources(freeze, lineages, ceilings,
+        cumulative_primitive_ceiling=primitive_ceiling)
     analysis_plan["resource_ceilings"] = ceilings
     recorded_plan = freeze.get("allocation_plan")
     if recorded_plan != analysis_plan or freeze.get("allocation_sha256") != _digest(analysis_plan):

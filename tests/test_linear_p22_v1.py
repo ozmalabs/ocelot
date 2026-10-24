@@ -261,6 +261,33 @@ def test_resource_preflight_rejects_partial_approval_cost_before_holdout():
         ceilings = {field: 1_000_000_000 for field in RESOURCE_FIELDS}
         with pytest.raises(RuntimeError,
                            match="not fully measured before holdout: .*:approval_cost"):
-            _preflight_checkpoint_resources(freeze, lineages, ceilings)
+            _preflight_checkpoint_resources(freeze, lineages, ceilings,
+                cumulative_primitive_ceiling=120_000)
+    finally:
+        del agent
+
+
+def test_resource_preflight_rejects_checkpoint_over_shared_work_ceiling():
+    agent = adoption_agent()
+    try:
+        agent.add_domain("d4", "permutation", [[0, 1, 2, 3]],
+                         {"d4": [1, 0, 2, 3]})
+        root = capture_held_process_checkpoint(agent, agent.schemas("d4")[0],
+            checkpoint_id="over-shared-budget-root",
+            declared_primitive_work=120_001,
+            runtime_counters={"native_rule_steps": 10, "native_model_calls": 0,
+                "process_peak_rss_bytes": 4096},
+            native_rule_work=_native_rule_work(12))
+        lineages = {(family, arm, generation): root for family in FAMILIES
+                    for arm in ARMS for generation in GENERATIONS}
+        freeze = {"checkpoint_wall_time_seconds": {
+            f"{family}:{arm}:g{generation}": 0.01 for family in FAMILIES
+            for arm in ARMS for generation in GENERATIONS}}
+        ceilings = {field: 1_000_000_000 for field in RESOURCE_FIELDS}
+        ceilings["cumulative_primitive_work"] = 500_000
+        with pytest.raises(RuntimeError,
+                match="cumulative work exceeds shared primitive ceiling before holdout: d4:unchanged:g1"):
+            _preflight_checkpoint_resources(freeze, lineages, ceilings,
+                cumulative_primitive_ceiling=120_000)
     finally:
         del agent
