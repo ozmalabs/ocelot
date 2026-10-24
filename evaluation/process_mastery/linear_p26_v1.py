@@ -761,6 +761,11 @@ def _assert_heldout_preregistration_committed() -> None:
     if (expected_hashes != current["source_file_sha256"]
             or document.get("source_bundle_sha256") != current["source_bundle_sha256"]):
         raise RuntimeError("P26 runner/source hashes differ from the preregistered freeze")
+    for key in ("runner_sha256", "analyzer_sha256", "loaded_extension_path",
+                "loaded_extension_sha256", "build_receipt_path", "build_receipt_sha256",
+                "runtime_attestation", "profile_seed_ids", "loaded_seed_closures", "python"):
+        if document.get(key) != current.get(key):
+            raise RuntimeError(f"P26 preregistration runtime/source freeze differs: {key}")
     if document.get("allocation_sha256") != _digest(allocation("heldout")):
         raise RuntimeError("held-out allocation differs from the preregistered seed matrix")
 
