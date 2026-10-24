@@ -969,3 +969,6 @@ A fresh D4 full-arm generation-one continuation on training goals 0002/0003 pass
 
 
 After the identity-effect qualification repair, a fresh D4 invention-only g2 continuation on training goals 0004/0005 retained the identity candidate as a proposal artifact but gave it zero qualifications; its identity transfer child also received none. A malformed inherited qualification remained excluded. The two fresh tasks each exhausted 10,000 attempts, with no new approval or receipt and no validation or held-out allocation. D4 invention-only g3 remains unavailable; this is negative search-mechanism evidence, not an efficacy result.
+
+
+A further Loopover invention-only g1 continuation on distinct training goals 0006/0007 yielded three candidates and zero independent-goal qualifications. Both tasks used 10,000 new attempts; no approval or receipt was added, and validation/held-out allocations remained empty. Loopover invention-only g2 remains unavailable. This result does not estimate efficacy.

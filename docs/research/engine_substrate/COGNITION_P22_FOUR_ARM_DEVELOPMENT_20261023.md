@@ -1974,3 +1974,22 @@ native-rule-work SHA-256
 `79519697f192951e6482e62ff85114c70dfe0e6b00dbca84a9baf3244d975ca6`
 (complete identity coverage, no unresolved rules). It inherits two approvals
 and receipts, adds none, and has no validation or held-out allocation.
+
+## Loopover invention-only generation-one continuation (2026-10-24)
+
+Continued from checkpoint `p22-loopover-g1-2638da0f23ae` (digest
+`c91670f7a91ba3d9f958f865dc85c4d4596d852a8a97c0e99e1f8d3d7b925057`) on
+fresh distinct training goals 0006/0007. Each task used 10,000 new attempts and
+remained stuck. Candidates `#16551`, `#21555`, and `#31572` received zero
+independent-goal qualifications; no approval-eligible candidate resulted.
+
+The run recorded 76 native rule steps, 1,479.115 seconds wall-time,
+2,028,687,360-byte peak RSS, and 40,000 cumulative reserved attempts. Raw
+artifact SHA-256
+`873a947db4155d2bd76eb3ca788f091193311c606b926f016f8c2d69bb656994`, resource
+snapshot SHA-256
+`f1c5d78a0ab297829b6824951194697900ca1d070525b3d990412ae56b3abe1f`, and
+native-rule-work SHA-256
+`104ebf9249f67611192b1d133a69d40e9e16648bc6f49f4c8e541dc3518ae5db`
+(complete identity coverage, no unresolved rules). It inherits one approval and
+receipt, adds none, and has no validation or held-out allocation.
