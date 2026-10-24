@@ -975,3 +975,6 @@ A further Loopover invention-only g1 continuation on distinct training goals 000
 
 
 The latest distinct-goal Loopover invention-only g1 continuation on draws 0006/0007 produced three candidates without qualification. This continues the training-search limitation; it creates no new descendant and does not estimate efficacy.
+
+
+Increasing the Loopover invention-only g1 per-request ceiling to 20,000 on fresh distinct goals 0008/0009 yielded three candidates and no independent-goal qualification. This extends the negative candidate-search evidence only; no approval, receipt, validation, held-out allocation, descendant, or efficacy result was added.

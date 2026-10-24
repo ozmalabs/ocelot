@@ -2001,3 +2001,20 @@ with zero qualifications. Each new task used 10,000 attempts and ended stuck.
 No approval or receipt was added; validation and held-out allocations are
 empty. The measured run and provenance hashes are recorded in the build plan
 and capability assessment.
+
+## Loopover invention-only generation-one higher-ceiling continuation (2026-10-24)
+
+On fresh distinct training draws 0008/0009, the per-request cap was raised to
+20,000. Both tasks remained stuck. Candidates `#16551`, `#21555`, and `#61575`
+received zero independent-goal qualifications. The run reserved 40,000 new
+attempts and reached 60,000 cumulative attempts; it recorded 72 native rule
+steps, 475.228 seconds wall-time and 2,029,527,040-byte peak RSS.
+
+Raw artifact SHA-256
+`5c38cd3528105ede92cb7270bea100fb4728746a3662260509433d42d009f99f`, resource
+snapshot SHA-256
+`840622b7be7feceb2f03c84a25ada5d0e79fab7e852925e8152ea01463d8c75b`, and
+native-rule-work SHA-256
+`5d5b650e086b6b04cf663f1e0ce15ca5f27c5027f904c96e6798cadb3f8e9d15`
+(complete identity coverage, no unresolved rules). One approval and receipt
+are inherited; no new action, validation, or held-out allocation occurred.
