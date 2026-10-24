@@ -2077,3 +2077,22 @@ snapshot SHA-256
 native-rule-work SHA-256
 `a7b18b8ebe4e6fd6f62c71c2c2c02c213f295b172c1cfe591e890e8e7faaccc4`
 (complete identity coverage, no unresolved rules).
+
+## Loopover full-arm five-goal maximum panel
+
+The registered generation-zero checkpoint `p22-loopover-full-g0` was continued
+on five fresh pairwise-distinct training goals 0029–0033. Every task remained
+stuck and the runner returned `NO_CANDIDATE_FIRST_TRIAL`; four candidates
+(`#49548`, `#73552`, `#97556`, `#121560`) had zero independent-goal
+qualifications. The run used the full 120,000-attempt ceiling at 24,000 per
+task. It recorded 69 native rule steps, 280.434 seconds wall-time and
+937,930,752-byte peak RSS.
+
+Raw artifact SHA-256
+`fd2903160db7124acd1611c420002739bb3b4a5c7716fa9ea8ce555d24361fda`, resource
+snapshot SHA-256
+`209447192085eb321545a4804246195ea8cc3854dbdf7f03b5697f21de21dc2b`, and
+native-rule-work SHA-256
+`43e44de5c72702ec0ab829578229884140c9038b8a8e2f3393d80f454c4d0a2a`
+(complete identity coverage, no unresolved rules). There were zero approvals,
+receipts, validation allocations, and held-out worlds.

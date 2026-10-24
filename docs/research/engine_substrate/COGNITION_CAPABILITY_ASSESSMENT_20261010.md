@@ -987,3 +987,6 @@ A four-goal Loopover invention-only g1 continuation on 0016–0019 reached 120,0
 
 
 A fresh four-goal Loopover full-arm continuation from the registered g0 root on 0020–0023 exhausted 25,000 attempts per task and returned `NO_CANDIDATE_FIRST_TRIAL` for every task. It generated two unqualified candidates, with no approval, receipt, validation, or held-out access. The full-arm g1 gate remains unmet.
+
+
+A five-goal Loopover full-arm panel on fresh distinct goals 0029–0033 reached the 120,000-attempt ceiling and returned `NO_CANDIDATE_FIRST_TRIAL`. Four proposals were produced but none qualified; there were zero approvals, receipts, validation, or held-out access. The full-arm g1 lineage gate remains unmet.
