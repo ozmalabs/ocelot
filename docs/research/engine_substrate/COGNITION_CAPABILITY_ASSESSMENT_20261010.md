@@ -963,3 +963,6 @@ A Loopover invention-only g1 continuation on fresh distinct training worlds 0826
 
 
 P22 qualification now rejects identity permutation effects for both the proposed source and its independent-goal transfer child using a domain-bound identity fingerprint. This repairs a loophole exposed by the D4 full-arm g1 training diagnostic on draws 0830–0833: candidate `#9440` qualified, but its selected transfer child `#12379` was identity. The diagnostic remains preserved as training-only historical evidence and created no approval or receipt. The affected native-rule, restored-checkpoint, and CLI coverage passes 43 tests. This does not establish an efficacy gain, create a descendant, or close P22.E2–E3.
+
+
+A fresh D4 full-arm generation-one continuation on training goals 0002/0003 passed the repaired P22 identity-effect qualification guard: candidate `#9440` transferred to non-identity child `#22382` and qualified on distinct goals 0988/0003; exact replay matched. The source/replay artifacts retain only the inherited approval and receipt and have no validation or held-out worlds. A request is prepared for one exact candidate-specific training transition from the full-arm g1 parent and remains awaiting authorization. This is lineage mechanism evidence, not a capability or efficacy result.

@@ -1933,3 +1933,23 @@ Verification: `tests/test_independent_improvement.py
 `4461debc542c0bd3de79e61b8812057cdeb7588c1d28ec74fe5bd192158aab5c`. No new
 approval, receipt, validation, or held-out access occurred. The guard repair
 creates no descendant and establishes no efficacy result.
+
+## D4 full-arm generation-one continuation under the identity guard (2026-10-24)
+
+From parent checkpoint `p22-d4-g1-15ab127dc160` (digest
+`e83c1fb3b84f589b8ca400b4b39fa03d8c04528aba262adc3b53a4c1eeca9af9`), fresh
+training goals 0002/0003 qualified candidate `#9440` (digest
+`2d2cb9ecda29351e1d0f513498eb6089c0f48b2dc1f8ee8650ebb2bbf39cdc46`) as
+qualification `#32385` with witnesses 0988/0003. Its selected transfer child
+`#22382` has non-identity effect `[[3,1,2,0]]`. The exact training-only replay
+reproduced the source candidate, qualification, witnesses, and child digest.
+
+The source reserved 30,811 attempts, recorded 170 native rule steps, 619.116
+seconds wall-time and 937,930,752-byte peak RSS. Native rule identity coverage
+is complete with no unresolved rules. Source and replay raw hashes are
+`b30b06795498887643b1c325372cf2e90086e0fbb654455ba7d24f0286334792` and
+`6a73de04a148a0f4b6c319342b043dd70f3caeadf5f46523a4137c0f90b21594`.
+They inherit one approval/receipt, add none, and contain no validation or
+held-out allocation. The candidate-specific [request](COGNITION_P22_APPROVAL_REQUEST_D4_FULL_G1_0002_0003.md)
+binds one proposed action on training draw 0002 to the exact parent and replay;
+it remains unapproved.
