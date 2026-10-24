@@ -88,7 +88,7 @@ def test_missing_or_pending_output_retained_and_training_blocked():
     world = {"world_id": "train", "split": "train", "goal_state": [1]}
     checkpoints = {"combined": _sequence("combined", [[1], [1], [1], [1]],
                                           world_allocation_digest([world]))}
-    with pytest.raises(ValueError, match="validation or heldout"):
+    with pytest.raises(ValueError, match="nontraining worlds only"):
         score_common_world_panel(checkpoints=checkpoints,
             worlds=[world],
             native_predictor=lambda _graph, _world: None)

@@ -24,7 +24,7 @@ _COMPONENT_NODE_TYPES = {
         "LearningMemoryCache"},
     "new_processes": {"ProcessSchema", "ProcessCandidate", "OpenProcessCandidate"},
 }
-SEALED_SPLITS = frozenset({"validation", "heldout"})
+SEALED_SPLITS = frozenset({"development", "validation", "heldout"})
 
 
 def _digest(value: object) -> str:
@@ -45,26 +45,34 @@ def _graph(checkpoint: ScheduledLearningCheckpoint) -> dict:
 
 
 def score_common_world_panel(*, checkpoints: dict[str, tuple[ScheduledLearningCheckpoint, ...]],
-        worlds: list[dict], native_predictor: Callable[[dict, dict], object]) -> dict:
+        worlds: list[dict], native_predictor: Callable[[dict, dict], object],
+        allocation_sha256: str | None = None) -> dict:
     """Query each frozen state on identical sealed worlds; never return scores to it."""
-    if not checkpoints or not worlds or not callable(native_predictor):
+    if not checkpoints or not worlds or not (callable(native_predictor)
+            or isinstance(native_predictor, dict)):
         raise ValueError("checkpoints, worlds and a native predictor are required")
     world_ids = [world.get("world_id") for world in worlds]
     if any(not isinstance(x, str) or not x for x in world_ids) or len(set(world_ids)) != len(world_ids):
         raise ValueError("sealed world IDs must be present and unique")
     for world in worlds:
         if world.get("split") not in SEALED_SPLITS:
-            raise ValueError("scoring panel accepts validation or heldout worlds only")
+            raise ValueError("scoring panel accepts registered nontraining worlds only")
         if not isinstance(world.get("goal_state", world.get("expected_after_value")),
                           (list, tuple, str, int, float, bool)):
             raise ValueError("scored world must have an external expected outcome")
-    expected_allocation_sha = world_allocation_digest(worlds)
+    expected_allocation_sha = allocation_sha256 or world_allocation_digest(worlds)
     rows = []
     for arm, sequence in sorted(checkpoints.items()):
-        if not arm or len(sequence) != len(CHECKPOINTS):
-            raise ValueError("each arm must provide the complete g0-g3 schedule")
-        if any(cp.arm != arm or cp.checkpoint != CHECKPOINTS[i]
-               for i, cp in enumerate(sequence)):
+        predictor = (native_predictor.get(arm) if isinstance(native_predictor, dict)
+                     else native_predictor)
+        if not callable(predictor):
+            raise ValueError(f"missing native predictor for arm {arm}")
+        valid_sequence = (len(sequence) == len(CHECKPOINTS)
+            and tuple(cp.checkpoint for cp in sequence) == CHECKPOINTS) or (
+                len(sequence) == 1 and sequence[0].checkpoint == "g3")
+        if not arm or not valid_sequence:
+            raise ValueError("each arm must provide g0-g3 or the registered final g3 checkpoint")
+        if any(cp.arm != arm for cp in sequence):
             raise ValueError("checkpoint arm and schedule identity mismatch")
         allocation_hashes = {cp.world_allocation_sha256 for cp in sequence}
         if allocation_hashes != {expected_allocation_sha}:
@@ -78,7 +86,8 @@ def score_common_world_panel(*, checkpoints: dict[str, tuple[ScheduledLearningCh
                 query_world = {key: copy.deepcopy(value) for key, value in world.items()
                     if key not in {"goal_state", "expected_after_value", "score",
                                    "solvable", "witness", "relation_class"}}
-                prediction = native_predictor(copy.deepcopy(graph), query_world)
+                prediction = predictor(copy.deepcopy(graph), query_world)
+                raw_prediction = copy.deepcopy(prediction)
                 expected = world.get("expected_after_value", world.get("goal_state"))
                 if isinstance(prediction, dict):
                     prediction = (prediction.get("expected_after_value")
@@ -90,6 +99,7 @@ def score_common_world_panel(*, checkpoints: dict[str, tuple[ScheduledLearningCh
                     "checkpoint_sha256": checkpoint.checkpoint_sha256,
                     "world_id": world["world_id"], "split": world["split"],
                     "prediction_missing": prediction is None, "score": score,
+                    "prediction": raw_prediction, "expected_outcome": expected,
                     "primitive_work": checkpoint.cumulative["primitive_work"],
                     "source_exposure": checkpoint.cumulative["source_exposure"],
                     "native_rule_steps": checkpoint.cumulative["native_rule_steps"],
@@ -159,7 +169,12 @@ def make_native_common_target_predictor(*, owner_id: str, agent_factory):
     if not isinstance(owner_id, str) or not owner_id or not callable(agent_factory):
         raise ValueError("native predictor requires a checkpoint owner and agent factory")
 
+    agent = agent_factory()
+    loaded_graph_sha = None
+    loaded_split = None
+
     def predict(graph: dict, world: dict):
+        nonlocal loaded_graph_sha, loaded_split
         required = {"action_kind", "object_type", "feature_key", "before_value",
                     "object_id", "world_id", "split"}
         if not required.issubset(world):
@@ -167,21 +182,22 @@ def make_native_common_target_predictor(*, owner_id: str, agent_factory):
         if world["split"] not in {"development", *SEALED_SPLITS}:
             raise ValueError("native target prediction requires a nontraining split")
         from evaluation.process_mastery.common_target_learner import CommonTargetLearner
-        agent = agent_factory()
-        try:
-            native = getattr(agent, "inner", None) or getattr(agent, "native", None)
-            if native is None:
-                raise TypeError("agent factory must return a native cognition profile")
+        native = getattr(agent, "inner", None) or getattr(agent, "native", None)
+        if native is None:
+            raise TypeError("agent factory must return a native cognition profile")
+        graph_sha = _digest(graph)
+        if graph_sha != loaded_graph_sha or world["split"] != loaded_split:
             native.graph_from_dict(copy.deepcopy(graph))
-            learner = CommonTargetLearner(agent=agent, owner_id=owner_id,
-                enabled=True, policy_enabled=False, additive_transfer_enabled=False)
-            return learner.predict(query_id=f"p27:{world['world_id']}",
-                action_kind=world["action_kind"], object_type=world["object_type"],
-                feature_key=world["feature_key"], before_value=world["before_value"],
-                object_id=world["object_id"], source_epoch=world.get("source_epoch", 3),
-                model_epoch=world.get("model_epoch", 2),
-                frame_epoch=world.get("frame_epoch", 5), split=world["split"])
-        finally:
-            agent.close()
+            loaded_graph_sha, loaded_split = graph_sha, world["split"]
+        learner = CommonTargetLearner(agent=agent, owner_id=owner_id,
+            enabled=True, policy_enabled=False, additive_transfer_enabled=False)
+        return learner.predict(query_id=f"p27:{world['world_id']}",
+            action_kind=world["action_kind"], object_type=world["object_type"],
+            feature_key=world["feature_key"], before_value=world["before_value"],
+            object_id=world["object_id"], source_epoch=world.get("source_epoch", 3),
+            model_epoch=world.get("model_epoch", 2),
+            frame_epoch=world.get("frame_epoch", 5), split=world["split"])
+
+    predict.close = agent.close
 
     return predict
