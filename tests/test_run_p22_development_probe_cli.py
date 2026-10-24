@@ -270,8 +270,7 @@ def test_registered_root_approval_packets_match_their_exact_states(
     assert request["training_goal_relation"] == "distinct"
     assert request["validation_draws"] == []
     result_path = ROOT / request["output_path"]
-    expect_consumed = "_G1_" not in request_name
-    assert result_path.exists() == expect_consumed
+    assert result_path.exists()
     parent = CLI._parent_checkpoint_from_binding(request)
     assert parent.generation == (1 if "_G1_" in request_name else 0)
     assert parent.checkpoint_digest == binding["parent_checkpoint_digest"]
@@ -302,10 +301,6 @@ def test_registered_root_approval_packets_match_their_exact_states(
             qualification["kind"], qualification["attempt_ids"],
             sorted(qualification["training_trial_keys"])))
     assert replay_signatures[0] == replay_signatures[1]
-
-    if not expect_consumed:
-        assert request["status"] == "awaiting_exact_user_approval"
-        return
 
     result = json.loads(result_path.read_text(encoding="utf-8"))
     adoption = result["simulated_adoption"]

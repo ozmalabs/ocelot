@@ -155,7 +155,9 @@ the final 24-checkpoint panel or the full multi-generation lineages. The D4
 and Loopover invention-only requests and the D4 full-arm request for generation
 one have each been approved and consumed once, with 12 reviewer-reported
 seconds; their receipts and generation-one checkpoints verify. These complete
-3 of 12 invention/full descendants. Loopover full-arm still lacks a qualified
+3 of 12 invention/full descendants. D4 invention-only generation two has now
+also been approved and captured with a verified receipt; 4 of 12 descendants
+are present, leaving eight separately approved invention/full transitions. Loopover full-arm still lacks a qualified
 generation-one candidate, and nine further invention/full transitions remain,
 each requiring its own approval. Fresh Loopover full-root training-only
 searches on worlds 0800–0817 failed to qualify a candidate. Candidate `#11545`
