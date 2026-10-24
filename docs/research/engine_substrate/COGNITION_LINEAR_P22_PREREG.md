@@ -277,3 +277,15 @@ all remaining implementation changes.
 | Cognition profile | `2034d2d4b67caf69d9c6da327895b468d8cb07942c58f031ee2a0f531ae725e4` |
 | World adapter | `8dee84864837b4d6bc72ef4e06b6d5d7babad8a8f867f85221d0178bfee63c4d` |
 | Dependency closure | `a1a6e531f12703e2f0de0bdcf7632072fb85af10a28e7a5f704eaf726ae66a15` |
+
+**Current-checkout gate refresh (2026-10-24):** The seven-module P22 regression
+bundle listed in the build plan passes 86 tests. Runner and analyzer self-checks
+pass, the runner verifies all 24 structural lineage links and the four required
+structural controls, and it reports `heldout_accessed=false`. A separate
+read-only audit confirms the four-world resource artifact has 96 unique
+checkpoint/world cells, all 96 resource digests verify, and every recorded
+cell respects its 600,000 primitive and 20,000 native-rule-step limits. This
+does not make the draft freeze-ready: the 24-checkpoint manifest still lacks
+eight invention/full descendants, and final isolated wall-time measurements,
+per-field ceilings, exact candidate decisions, and refreshed final provenance
+remain outstanding. No validation or held-out allocation was accessed.
