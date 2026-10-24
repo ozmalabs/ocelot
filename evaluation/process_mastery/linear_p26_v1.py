@@ -752,16 +752,32 @@ def _assert_heldout_preregistration_committed() -> None:
                                         cwd=ROOT)
     if committed != prereg.read_bytes():
         raise RuntimeError("working preregistration differs from its committed bytes")
-    document = json.loads(committed)
+    document = _parse_preregistration_freeze(committed)
     if document.get("code_commit") != parent:
         raise RuntimeError("P26 preregistration is not immediately after its frozen code commit")
     current = provenance()
     expected_hashes = document.get("source_file_sha256", {})
-    if any(current["source_file_sha256"].get(path) != digest
-           for path, digest in expected_hashes.items()):
+    if (expected_hashes != current["source_file_sha256"]
+            or document.get("source_bundle_sha256") != current["source_bundle_sha256"]):
         raise RuntimeError("P26 runner/source hashes differ from the preregistered freeze")
     if document.get("allocation_sha256") != _digest(allocation("heldout")):
         raise RuntimeError("held-out allocation differs from the preregistered seed matrix")
+
+
+def _parse_preregistration_freeze(committed: bytes) -> dict:
+    """Read the one machine-bound freeze record from the Markdown preregistration."""
+    prefix = "P26_FREEZE_JSON: "
+    records = [line[len(prefix):] for line in committed.decode("utf-8").splitlines()
+               if line.startswith(prefix)]
+    if len(records) != 1:
+        raise RuntimeError("P26 preregistration must contain one P26_FREEZE_JSON record")
+    try:
+        value = json.loads(records[0])
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("P26 preregistration freeze record is invalid JSON") from exc
+    if not isinstance(value, dict):
+        raise RuntimeError("P26 preregistration freeze record must be a JSON object")
+    return value
 
 
 def main() -> int:

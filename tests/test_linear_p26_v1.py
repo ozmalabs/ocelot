@@ -11,7 +11,7 @@ from evaluation.process_mastery.evidence_search_worlds import (
 )
 from evaluation.process_mastery.linear_p26_v1 import (
     ARMS, CONTROL_KINDS, HELDOUT_CONTROLS_PER_KIND, HELDOUT_STREAMS_PER_CELL,
-    PRIOR_NUMERIC_INTERVALS, allocation, run_payload,
+    PRIOR_NUMERIC_INTERVALS, _parse_preregistration_freeze, allocation, run_payload,
 )
 from evaluation.process_mastery.target_learning_worlds import WorldReceipt
 
@@ -31,6 +31,16 @@ def test_p26_allocation_is_fixed_disjoint_and_complete():
                    for lo, hi in PRIOR_NUMERIC_INTERVALS)
     with pytest.raises(ValueError):
         allocation("heldout", streams_per_cell=1)
+
+
+def test_p26_freeze_gate_requires_one_machine_record():
+    assert _parse_preregistration_freeze(
+        b"# P26 freeze\n\nP26_FREEZE_JSON: {\"code_commit\":\"abc\"}\n") == {
+            "code_commit": "abc"}
+    with pytest.raises(RuntimeError, match="one P26_FREEZE_JSON"):
+        _parse_preregistration_freeze(b"# P26 freeze\n")
+    with pytest.raises(RuntimeError, match="invalid JSON"):
+        _parse_preregistration_freeze(b"P26_FREEZE_JSON: {broken}\n")
 
 
 def test_p26_world_keeps_scorer_labels_and_heldout_out_of_selector_view():
