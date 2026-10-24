@@ -205,6 +205,8 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None,
                     or row.get("source_information_units") != 0):
                 failures.append("source_free_arm_leakage:" + str(stream) + ":" + arm)
             limits = allocation.get("resource_limits", {})
+            if row.get("external_model_queries") != limits.get("external_model_queries"):
+                failures.append("external_model_query_count_mismatch:" + str(stream) + ":" + arm)
             budget = row.get("shared_budget", {})
             if (budget.get("capacity") != limits.get("native_budget_capacity")
                     or budget.get("capacity_ceiling") != limits.get("native_budget_capacity_ceiling")
@@ -332,6 +334,7 @@ def self_check() -> dict:
                     "map_pair_count": map_count,
                     "map_verification_queries": verification_count,
                     "native_rule_work": 12, "source_native_rule_work": 12 if source_count else 0,
+                    "external_model_queries": 0,
                     "graph": {"bytes": 60_000},
                     "shared_budget": {"enabled": 1.0, "remaining": 100 - budget_debits,
                                       "capacity": 16.0, "capacity_ceiling": 64.0},
@@ -348,6 +351,7 @@ def self_check() -> dict:
         "status": "development_only", "heldout_accessed": False,
         "allocation": {"arms": list(ARMS), "families": list(FAMILIES),
             "streams": streams, "controls": [], "resource_limits": {
+                    "external_model_queries": 0,
                 "native_rule_steps_per_learner": 80_000,
                 "graph_bytes_per_target_learner": 100_000,
                 "native_budget_capacity": 16.0,

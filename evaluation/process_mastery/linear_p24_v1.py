@@ -330,12 +330,15 @@ def _run_panel(plan: dict) -> tuple[list[dict], list[dict]]:
             row["allocation_split"] = plan["split"]
             row["shared_stream_elapsed_seconds"] = shared_elapsed
             row["resource_limits"] = dict(plan["resource_limits"])
+            row["external_model_queries"] = 0
             if row["target_actions"] > plan["resource_limits"]["target_actions_per_arm"]:
                 raise RuntimeError("P24 target action ceiling exceeded")
             if row["native_rule_work"] > plan["resource_limits"]["native_rule_steps_per_learner"]:
                 raise RuntimeError("P24 target learner native-work ceiling exceeded")
             if row["source_native_rule_work"] > plan["resource_limits"]["native_rule_steps_per_learner"]:
                 raise RuntimeError("P24 source learner native-work ceiling exceeded")
+            if row["external_model_queries"] > plan["resource_limits"]["external_model_queries"]:
+                raise RuntimeError("P24 external model-query ceiling exceeded")
             if row["graph"]["bytes"] > plan["resource_limits"]["graph_bytes_per_target_learner"]:
                 raise RuntimeError("P24 target learner graph-byte ceiling exceeded")
             if (row["shared_budget"].get("capacity")
