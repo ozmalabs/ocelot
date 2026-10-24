@@ -179,18 +179,21 @@ coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen
 because the 24-checkpoint descendant manifest and per-checkpoint measured
 resource/ceiling manifest are incomplete, and candidate-specific decisions
-remain for the nine future transitions. No held-out allocation may be accessed.
+remain for eight future transitions; one exact request is awaiting its separate
+decision. No held-out allocation may be accessed.
 
-At commit `d390d58383a48eb48a13a8da1e9206dc0a64ebe6`, the current native
-provenance audit is `ATTESTED` with no issues after the 2026-10-24
-analyzer/protocol amendment. The final freeze must recompute every provenance
-hash and attest the runtime after all remaining implementation changes.
+At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
+identity-effect qualification guard, the current provenance audit is `ATTESTED`
+with no issues; source-bundle/build-source match and native symbol binding are
+true. Runner and analyzer self-checks pass with `heldout_accessed=false`. The
+final freeze must recompute every provenance hash and attest the runtime after
+all remaining implementation changes.
 
 | Provenance item | SHA-256 |
 |---|---|
 | Runner | `14f911f6bbf8083a080eab868b77350b9c028f26b8f2e8d92dafebb228866ec7` |
 | Analyzer | `10dce1e6e0b23f7a1f100ad3c7120829ab5335bf87f792b2a08408f5c4122643` |
-| Source bundle | `52af8bdd7a91cd536a4a2c4b02322a7d67e4d8a56bff20a1d77bb2841108cde4` |
+| Source bundle | `fb648693eb50024b4e240c0a7877a361826c048a2f1eb793a538bc62b6f39c52` |
 | Python wrapper | `b149923864fd6e5c786906b57929b73d42aa42284cceff200383fd8c1d60e9e5` |
 | Loaded native extension | `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07` |
 | Native build receipt | `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66` |
