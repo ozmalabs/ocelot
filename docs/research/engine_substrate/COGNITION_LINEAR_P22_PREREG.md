@@ -278,6 +278,27 @@ all remaining implementation changes.
 | World adapter | `8dee84864837b4d6bc72ef4e06b6d5d7babad8a8f867f85221d0178bfee63c4d` |
 | Dependency closure | `a1a6e531f12703e2f0de0bdcf7632072fb85af10a28e7a5f704eaf726ae66a15` |
 
+**Latest development provenance refresh (2026-10-24):** Recomputed from
+checkout `3e3ef32f6b34f3c5030ccf09114d22a0d3348bd8`. Runtime attestation is
+`ATTESTED` with no issues; the native extension is loaded from
+`runners/dsl/python/substrate_rs/_native.abi3.so`, its digest matches the build
+receipt, build sources match the checkout, and native symbol bindings verify.
+This refresh supersedes the older snapshot above for current-checkout
+readiness, but is not the freeze provenance because the preregistration is not
+frozen and source changes may still occur.
+
+| Provenance item | SHA-256 |
+|---|---|
+| Runner | `fb65b52691a51b0d258a5bed9ae916b322516f151a6a9df1282add22f4dcce4d` |
+| Analyzer | `10dce1e6e0b23f7a1f100ad3c7120829ab5335bf87f792b2a08408f5c4122643` |
+| Source bundle | `633a01942426ec17adf605b2898b5d6e7150c5e1ebe8cfc6c5cc6939949ee39a` |
+| Python wrapper | `b149923864fd6e5c786906b57929b73d42aa42284cceff200383fd8c1d60e9e5` |
+| Loaded native extension | `5b8c1b5d35e38d0c574b32f2089cc92b79ed9916c281e4670887f6542931ac07` |
+| Native build receipt | `661f708a7709a544d6606f3cab00a3540fa930c019849c25c84aebcf7047ad66` |
+| Cognition profile | `2034d2d4b67caf69d9c6da327895b468d8cb07942c58f031ee2a0f531ae725e4` |
+| World adapter | `375a8ed6c008ff710855bca23ef5f2b86281fa36c35fdd696f03ccfb048950d0` |
+| Dependency closure | `a1a6e531f12703e2f0de0bdcf7632072fb85af10a28e7a5f704eaf726ae66a15` |
+
 **Current-checkout gate refresh (2026-10-24):** The seven-module P22 regression
 bundle listed in the build plan passes 86 tests. Runner and analyzer self-checks
 pass, the runner verifies all 24 structural lineage links and the four required
