@@ -207,13 +207,21 @@ and D4 full g1
 
 The captured D4 invention-only g2 checkpoint
 `p22-d4-g2-84854777d0e3` has digest-bound cumulative primitive work `487906`,
-above the current runner/scorer maximum `120000`. It therefore cannot enter a
-valid frozen manifest under the current budget contract. Do not raise the cap
-implicitly or score this checkpoint as if it fit. Before freeze, resolve this
-through an explicit versioned protocol/implementation change with resource
-feasibility evidence, or select a separately authorized and verified alternate
-lineage checkpoint that satisfies the existing bound. Preserve this approved
-checkpoint and its result as historical evidence.
+above the runner/scorer's original `120000` implementation limit. Before any
+preregistration freeze, a resource-feasibility amendment raised the supported
+maximum to `1000000`; this leaves the final shared ceiling to be fixed only
+after the full checkpoint manifest and development resource panel are complete.
+A one-world training-only feasibility probe scored this checkpoint under a
+`600000` cumulative ceiling on unused registered draw `p22:d4-v2:train:0607`.
+It solved the task, ended at 487,911 cumulative work, respected the ceiling,
+added no approval or receipt, and did not access held-out data. The isolated
+worker took 21.128 seconds and peaked at 2,796,838,912 bytes RSS. Raw artifact
+SHA-256: `47b7f80ae417b27ec638ed27822e029cf0cefbbe5f973ad59ec9789c84548b18`.
+This single cell establishes feasibility at 600,000 only; it does not complete
+the common-world development panel, choose the final resource ceilings, or
+establish efficacy. Preserve the earlier checkpoint and run as historical
+evidence. The final shared ceiling must be at least 487,911 and no greater than
+the supported maximum, and every other checkpoint must pass the same preflight.
 
 At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
 identity-effect qualification guard, the current provenance audit is `ATTESTED`

@@ -21,6 +21,8 @@ from evaluation.process_mastery.p22_resource_accounting import (
     snapshot_native_resources,
 )
 
+MAX_CUMULATIVE_PRIMITIVE_WORK = 1_000_000
+
 
 def score_unapproved_candidate_on_validation(agent, candidate: int,
                                              world: dict) -> dict:
@@ -703,8 +705,9 @@ def score_restored_checkpoint_task(checkpoint: CheckpointExpression, *,
     goal_state = world["goal_state"]
     if (isinstance(cumulative_primitive_ceiling, bool)
             or not isinstance(cumulative_primitive_ceiling, int)
-            or not 1 <= cumulative_primitive_ceiling <= 120_000):
-        raise ValueError("cumulative primitive ceiling must be an integer in [1, 120000]")
+            or not 1 <= cumulative_primitive_ceiling <= MAX_CUMULATIVE_PRIMITIVE_WORK):
+        raise ValueError(
+            "cumulative primitive ceiling must be an integer in [1, 1000000]")
     if checkpoint.cumulative_primitive_work > cumulative_primitive_ceiling:
         raise ValueError("checkpoint cumulative work exceeds the shared primitive ceiling")
     if (isinstance(native_rule_progress_ceiling, bool)
@@ -985,8 +988,9 @@ def compare_restored_checkpoint_panel(checkpoints: dict[str, CheckpointExpressio
         raise ValueError("training world identities must be present and unique")
     if (isinstance(cumulative_primitive_ceiling, bool)
             or not isinstance(cumulative_primitive_ceiling, int)
-            or not 1 <= cumulative_primitive_ceiling <= 120_000):
-        raise ValueError("cumulative primitive ceiling must be an integer in [1, 120000]")
+            or not 1 <= cumulative_primitive_ceiling <= MAX_CUMULATIVE_PRIMITIVE_WORK):
+        raise ValueError(
+            "cumulative primitive ceiling must be an integer in [1, 1000000]")
     if (isinstance(native_rule_progress_ceiling, bool)
             or not isinstance(native_rule_progress_ceiling, int)
             or not 1 <= native_rule_progress_ceiling <= 10_000_000):

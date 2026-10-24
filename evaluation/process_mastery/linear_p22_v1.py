@@ -27,7 +27,8 @@ from evaluation.process_mastery.analyze_linear_p22_v1 import (
     self_check as analyzer_self_check,
 )
 from evaluation.process_mastery.checkpoint_world_adapter import (
-    CheckpointExpression, CheckpointWorldAdapter,
+    MAX_CUMULATIVE_PRIMITIVE_WORK, CheckpointExpression,
+    CheckpointWorldAdapter,
 )
 from evaluation.process_mastery.p22_checkpoint_panel import (
     score_checkpoint_world_isolated,
@@ -275,7 +276,7 @@ def _preflight_checkpoint_resources(freeze: dict, lineages: dict,
     """Reject an incomplete resource manifest before any held-out world is built."""
     if (isinstance(cumulative_primitive_ceiling, bool)
             or not isinstance(cumulative_primitive_ceiling, int)
-            or not 1 <= cumulative_primitive_ceiling <= 120_000):
+            or not 1 <= cumulative_primitive_ceiling <= MAX_CUMULATIVE_PRIMITIVE_WORK):
         raise RuntimeError("invalid cumulative primitive ceiling in resource preflight")
     wall_times = freeze.get("checkpoint_wall_time_seconds")
     expected_keys = {f"{family}:{arm}:g{generation}" for family in FAMILIES
@@ -342,7 +343,7 @@ def _verify_freeze(path: Path, requested_hash: str) -> tuple[dict, dict, dict]:
     rule_progress_ceiling = freeze.get("native_rule_progress_ceiling")
     if (isinstance(primitive_ceiling, bool)
             or not isinstance(primitive_ceiling, int)
-            or not 1 <= primitive_ceiling <= 120_000):
+            or not 1 <= primitive_ceiling <= MAX_CUMULATIVE_PRIMITIVE_WORK):
         raise RuntimeError("freeze must declare a bounded cumulative primitive ceiling")
     if (isinstance(rule_progress_ceiling, bool)
             or not isinstance(rule_progress_ceiling, int)

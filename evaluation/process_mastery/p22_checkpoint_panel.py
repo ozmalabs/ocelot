@@ -14,7 +14,8 @@ import time
 from pathlib import Path
 
 from evaluation.process_mastery.checkpoint_world_adapter import (
-    CheckpointExpression, _checkpoint_digest_valid,
+    MAX_CUMULATIVE_PRIMITIVE_WORK, CheckpointExpression,
+    _checkpoint_digest_valid,
     score_restored_checkpoint_task,
 )
 from evaluation.process_mastery.independent_worlds import (
@@ -129,8 +130,9 @@ def run_isolated_checkpoint_panel(checkpoints: dict[str, dict], worlds: list[dic
         raise ValueError("isolated P22 panel requires registered training worlds")
     if (isinstance(cumulative_primitive_ceiling, bool)
             or not isinstance(cumulative_primitive_ceiling, int)
-            or not 1 <= cumulative_primitive_ceiling <= 120_000):
-        raise ValueError("cumulative primitive ceiling must be an integer in [1, 120000]")
+            or not 1 <= cumulative_primitive_ceiling <= MAX_CUMULATIVE_PRIMITIVE_WORK):
+        raise ValueError(
+            "cumulative primitive ceiling must be an integer in [1, 1000000]")
     if (isinstance(native_rule_progress_ceiling, bool)
             or not isinstance(native_rule_progress_ceiling, int)
             or not 1 <= native_rule_progress_ceiling <= 10_000_000):

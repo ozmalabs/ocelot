@@ -291,3 +291,28 @@ def test_resource_preflight_rejects_checkpoint_over_shared_work_ceiling():
                 cumulative_primitive_ceiling=120_000)
     finally:
         del agent
+
+
+def test_resource_preflight_accepts_measured_work_under_extended_shared_ceiling():
+    agent = adoption_agent()
+    try:
+        agent.add_domain("d4", "permutation", [[0, 1, 2, 3]],
+                         {"d4": [1, 0, 2, 3]})
+        checkpoint = capture_held_process_checkpoint(agent,
+            agent.schemas("d4")[0], checkpoint_id="extended-shared-budget-root",
+            declared_primitive_work=487_906,
+            runtime_counters={"native_rule_steps": 10, "native_model_calls": 0,
+                "process_peak_rss_bytes": 4096},
+            native_rule_work=_native_rule_work(12))
+        lineages = {(family, arm, generation): checkpoint
+                    for family in FAMILIES for arm in ARMS
+                    for generation in GENERATIONS}
+        keys = {f"{family}:{arm}:g{generation}" for family in FAMILIES
+                for arm in ARMS for generation in GENERATIONS}
+        freeze = {"checkpoint_wall_time_seconds": {key: 0.01 for key in keys}}
+        ceilings = {field: 1_000_000 for field in RESOURCE_FIELDS}
+        ceilings["cumulative_primitive_work"] = 600_000
+        _preflight_checkpoint_resources(freeze, lineages, ceilings,
+            cumulative_primitive_ceiling=600_000)
+    finally:
+        del agent
