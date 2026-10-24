@@ -957,3 +957,6 @@ The D4 invention-only generation-one continuation on draws 0818–0821 reproduce
 
 
 A D4 invention-only g2 continuation on distinct training worlds 0822/0823/0825 found one formally qualified candidate, `#25873`, but its `power2:flip_r` effect is the identity permutation and cannot count as improvement; it was not approved. Candidate `#9459` had a malformed qualification with no kind and was excluded. The run reserved 60,000 attempts and measured 227 native rule steps, 3,726.471 seconds wall-time, and 3,130,871,808-byte peak RSS. It inherited two approvals/receipts and created none; validation and held-out access remained empty. D4 invention-only g3 remains unavailable.
+
+
+A Loopover invention-only g1 continuation on fresh distinct training worlds 0826–0829 produced three candidates, all with zero qualifications. It reserved 60,000 attempts and measured 93 native rule steps, 815.398 seconds wall-time, and 2,030,424,064-byte peak RSS, with complete native rule identity coverage. It inherited the g1 approval/receipt but created no new action; validation and held-out access remained empty. Loopover invention-only generation two remains unavailable.

@@ -171,7 +171,9 @@ and qualification `#15851` (0960/0818); its one-action packet awaits exact
 approval. The approved D4 invention-only g2 search on worlds 0822/0823/0825
 did not find an improving g3 candidate: its only formally qualified candidate
 was an identity effect and was excluded; one other qualification record had a
-missing kind and was rejected. Exact realized resource equality
+missing kind and was rejected. The Loopover invention-only g1 continuation on worlds 0826–0829 produced three
+candidates with zero qualifications; no action packet is available from that
+lineage yet. Exact realized resource equality
 is not a freeze prerequisite after the feasibility amendment; measured resource
 coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen
