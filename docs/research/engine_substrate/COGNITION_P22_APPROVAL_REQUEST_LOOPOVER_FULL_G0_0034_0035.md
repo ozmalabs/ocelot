@@ -27,6 +27,14 @@ seconds wall-time, and 937,930,752-byte peak RSS. Native-rule identity coverage
 is complete with no unresolved rules. Validation and held-out allocations are
 empty.
 
+## Resource feasibility
+
+The source snapshot reports 192,281 cumulative primitive work at candidate
+qualification. This is below the current 600,000 development ceiling and the
+1,000,000 implementation maximum. The output remains unused; the resulting
+checkpoint must retain its measured work and pass the shared-ceiling preflight
+before it can enter the final manifest.
+
 ## Requested transition
 
 If approved, the runner will record reviewer-reported review time, execute exactly
