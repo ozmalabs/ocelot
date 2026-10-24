@@ -168,7 +168,10 @@ panels; candidate `#31551` had no independent-goal trials in 0804–0807;
 The D4 invention-only g1 continuation on 0818–0821 independently replayed
 candidate `#9458` (`84854777d0e3b48f447ecd04236a794eff39a46546edb3f19e47f506492ce66a`)
 and qualification `#15851` (0960/0818); its one-action packet awaits exact
-approval. Exact realized resource equality
+approval. The approved D4 invention-only g2 search on worlds 0822/0823/0825
+did not find an improving g3 candidate: its only formally qualified candidate
+was an identity effect and was excluded; one other qualification record had a
+missing kind and was rejected. Exact realized resource equality
 is not a freeze prerequisite after the feasibility amendment; measured resource
 coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen
