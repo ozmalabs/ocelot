@@ -333,7 +333,9 @@ change the draft/freeze disposition.
 proposal-only continuation from the digest-valid generation-one checkpoint
 `p22-loopover-g1-2638da0f23ae` used fresh distinct training worlds 0924–0926.
 Each task reserved 20,000 attempts, for 60,000 new attempts; all three remained
-stuck, and none of the three proposals qualified. The run inherited its one
+stuck, and none of the three proposals qualified. The parent snapshot recorded
+20,000 reserved attempts, bringing the recorded lineage total to 80,000 against
+the run's 120,000 ceiling. The run inherited its one
 approval and one receipt but added neither, created no child checkpoint, and
 used no validation or held-out allocation. Resource and native-rule-work
 digests verify with complete native identity coverage. The [raw training
