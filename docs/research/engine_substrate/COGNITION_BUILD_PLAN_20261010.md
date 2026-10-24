@@ -1,8 +1,8 @@
 # Cognition build — single linear execution plan
 
-**Reconciled:** 2026-10-22 through P11.E3 heldout closeout; includes Track I foundation commit `53da7321`.
+**Reconciled:** 2026-10-24 at `f3fd59be`, after P16–P21 results and P22 development review; includes Track I foundation commit `53da7321`. Phases 23–27 are planned continuation, not new measured results.
 
-This is the **sole execution order** for the cognition build and former Track I. Phases 0–5 are completed implementation/reporting cycles with the limits below. Phases 6–15 now also have completed reporting cycles with explicit failed/unestablished capabilities. Continue with Phase 16, then execute Phases 17–22 in order. Former P6 and I0–I7 work is integrated here; the post-P15 review adds behavioral/provenance closure phases, and there is no parallel Track I schedule. Original IDs are retained in the coverage table and task headings so existing code, tests and results remain traceable.
+This is the **sole execution order** for the cognition build and former Track I. Phases 0–5 are completed implementation/reporting cycles with the limits below. Phases 6–15 now also have completed reporting cycles with explicit failed/unestablished capabilities. Phases 16–21 now have completed reporting cycles; P22 remains development-only with its freeze gate unmet. Continue with diagnostic Phase 23, then Phases 24–27 in order. Phase 27 records whether original P22 can be re-entered or requires a separately versioned successor. Former P6 and I0–I7 work is integrated here; the post-P15 review adds behavioral/provenance closure phases, and there is no parallel Track I schedule. Original IDs are retained in the coverage table and task headings so existing code, tests and results remain traceable.
 
 The [archived overarching roadmap](COGNITION_BUILD_PLAN_20261010_ARCHIVE.md), [former Phase 6 plan](COGNITION_BUILD_P6_NEW_FACULTIES_PLAN.md) and [former Track I specification](COGNITION_BUILD_TRACK_I_PROCESS_INVENTION.md) are historical design references. Their ordering and completion assumptions are superseded here. P0–P5 detailed plans and all preregistrations/results remain historical evidence; do not rewrite a failed or invalidated result to fit this schedule.
 
@@ -59,8 +59,13 @@ This audit read committed code, tests, commit history and recorded results. **No
 | 20 | Fresh learning, transfer and social acquisition | Post-P15 review closure; details below | 19 |
 | 21 | Finite-memory retention and useful curriculum | Post-P15 review closure; details below | 20 |
 | 22 | Independent-goal repeated improvement and capability audit | Post-P15 review closure; details below | 21 |
+| 23 | Exact reachability/search/qualification diagnosis | P22 repeated-search review | P22 archived development inputs; no held-out prerequisite |
+| 24 | Additive transfer over one common learner | P20 shared-evidence-path finding | 23 |
+| 25 | Persistent learned-state retention under actual pressure | P21 protected-source/relearning finding | 24 |
+| 26 | Useful evidence selection and diagnosed generic search | P23 remedies + P24/P25 actual learner | 25 |
+| 27 | Scheduled independent-goal learning checkpoints | P22 re-entry or new version, without success-selected readiness | 26 |
 
-Rows 6–15 are closed reporting cycles, not uniformly passed capability gates; rows 16–22 are planned. These are delivery phases, not the old L0–L7 capability levels. Close a level only when its assembled evidence satisfies the criteria in §6. No later capability is presumed available to an earlier implementation: replay v0 and explicit held processes suffice before library learning; early targeted search does not require a future strategy library.
+Rows 6–15 are closed reporting cycles, not uniformly passed capability gates; rows 16–21 have reported outcomes, P22 remains unfrozen development, and rows 23–27 are planned. These are delivery phases, not the old L0–L7 capability levels. Close a level only when its assembled evidence satisfies the criteria in §6. No later capability is presumed available to an earlier implementation: replay v0 and explicit held processes suffice before library learning; early targeted search does not require a future strategy library.
 
 ## 3. Task contract
 
@@ -2085,6 +2090,8 @@ Regression verification (2026-10-22): `failure_baseline.py verify --list results
 
 ## Phase 22 — Independent-goal multi-generation improvement and capability audit
 
+**Continuation decision (2026-10-24):** P22.E2/E3 remain unmet. The current next action is P23.01, not another undiagnosed search-ceiling increase. Existing draft, approvals, checkpoints and unsuccessful branches are retained. P23–P26 address the prerequisites; P27 explicitly decides original-protocol re-entry versus a versioned scheduled-learning successor. This note changes no frozen outcome or candidate authorization.
+
 **Entry:** P16 exact execution/provenance, P17–P21 supported learned behavior and P19 generic proposals; all claimed prerequisites reviewed. P21 mechanisms are available but both efficacy primaries failed at ceiling, so P22 must use a new independent-goal panel and cannot rely on a P21 benefit. **Status:** active. P22.01 estimand, P22.02 generic training-only proposals with two-trial qualification, P22.03 Loopover/D4 task adapters and native checkpoint scoring fixtures, and P22.04 evidence matrix are implemented. The cognition-on fixture now traverses native search, a digest-bound approval fixture, native action execution and a verified local-world receipt; a perturbed guard state abstains before the sink. A new post-approval operator-mutation regression confirms the exact approval binding also blocks execution before the world transition. These tests verify the native boundary, not external human authorization. The earlier D4 `#16750` and Loopover `#10761` requests were superseded because their parent lineages did not descend from the registered four-arm roots. The restored-root search path now disables the inherited SolverPolicy in its isolated proposal-search working graph; checkpoint scoring installs its own fixed solver. A correct-root D4 continuation on draws 0932–0935 generated candidate `#1870` and two recorded qualifications, but an effect audit found the candidate identical to held process `rot90` in the same root. Its request was superseded and neither qualification can support improvement. Native qualification now requires both the source candidate and its independent-goal transfer child to have effects absent from active/adopted processes. Base candidate minting skips active held effects; transfer-child candidates remain available as native proof artifacts. Regression tests cover held source and held child effects. A fresh registered-root Loopover panel produced novel candidate `#6542`, qualified on distinct training-goal pairs 0951/0953 and 0951/0954 under the stricter guard; exact replay reproduced its digest and witnesses. A fresh registered-root D4 panel also qualified a novel transfer for candidate `#1908` on goals 0962/0972. This is the same source expression as the invalid 0955/0957 request, but the new child effect is absent from the root; exact replay reproduced the new qualification. The registered D4 invention-only, Loopover invention-only, and D4 full-arm generation-one requests were each approved and consumed with 12 reviewer-reported seconds; each produced a verified receipt and digest-valid g1 checkpoint. These approvals authorize no later transition. The D4 invention-only g1 candidate `#9458` was subsequently approved with 12 reviewer seconds and consumed once, producing a verified generation-two checkpoint; invention/full descendants now total 4/12, with eight later transitions requiring separate approvals. The Loopover full arm still lacks a qualified g1 candidate. Earlier nonregistered-root approval records do not satisfy the P22 common-ancestor lineage gate. The approved multi-generation cross-family lineages, fixed-ceiling learner comparators with complete measured resource coverage, standalone preregistration, 24-checkpoint manifest, held-out evaluation, and general independent-goal efficacy remain open. Exact realized-resource matches are required for efficiency claims, not for the registered capability estimand. P22.E1 integration mechanisms pass; P22.E2–E3 remain open.
 
 **Reason:** Replace operator-aligned targets and hard-coded successors with an actual learning/invention loop on independent task distributions. This is a new protocol on untouched goals; it must not repair/rescore the P15 trend or assume a human comparison.
@@ -2302,6 +2309,604 @@ The refreshed combined P22 regression bundle, including `tests/test_p22_four_arm
 - **Non-goals:** closing a missing mechanism as merely an unfavorable efficacy result; rewriting P15 or earlier holdout outcomes.
 - **Done when:** the specified mechanism, provenance and §5 regression gates pass; the phase evaluation reports its registered outcomes without weakening criteria. A passing fixture cannot replace a missing end-to-end consumer or comparator.
 
+
+## Post-P22 continuation — diagnosis before further scale
+
+**Added:** 2026-10-24 at `f3fd59be`, following the [source/results review and continuation decisions](COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md). **All tasks below are planned.** No implementation tests, searches or held-out evaluations were run by this documentation update.
+
+Execute **P23 → P24 → P25 → P26 → P27**. Phases 16–21 retain their completed reporting cycles and limited outcomes. P22's multi-generation evaluation remains open: its draft has not frozen, its held-out world gate stays closed, and no result is inferred from development branches. These phases remedy its unresolved prerequisites and the transfer/retention design findings. They do not require waiting for another failed search branch or eight additional approvals before useful diagnostic work can begin.
+
+Use the existing §3 task format, ≤3 touch groups and ≤5 read references. A generator and regenerated seed count as one group. New native functionality must use existing Terms when sufficient; before adding a Term, freeze its semantics and split all binder/evaluator/serialization/reflection/cache changes into explicit ≤3-file subtasks. Keep world/scoring/diagnostic oracles separate from agent reasoning. The runtime graph chooses evidence, candidates, actions, eviction priorities and adoption; Python mechanically ingests/serializes/emits and performs external analysis only.
+
+**No new blanket approval requirement:** existing candidate-specific promotion/action boundaries remain in force. Ordinary reversible diagnostics and code implementation proceed within the user's authorization. An approval is not a mechanism test result or a generation clock, and approvals already consumed on P22 candidates do not authorize any new expression or transition.
+
+## Phase 23 — Exact diagnosis of search and qualification bottlenecks
+
+**Entry:** P22 immutable registered roots/checkpoints and training-only branch artifacts; no held-out access. **Status:** planned.
+
+**Purpose:** Distinguish no admissible solution, grammar gap, search omission, qualification rejection, resource exhaustion and missing approval before spending more search. The reviewed D4 g2 snapshot has only three novel nonidentity effects left; enumerate them exactly as an external diagnostic, without teaching the agent an oracle solution.
+
+**Exit evidence:** A reproducible barrier matrix for each inspected root/goal pair, exact D4 closure and reachable/expressible/qualifiable sets, representative Loopover depth-bounded witnesses and a measured attempt funnel. Every claimed impossibility has a finite exhaustive bound or proof; UNKNOWN is allowed outside that bound. No new efficacy preregistration or human approval is needed to read/analyze existing artifacts. A runtime repair requires its own focused acceptance, not a new benchmark claim.
+
+### P23.01 — Freeze the diagnostic questions and immutable input inventory
+
+- **ID:** P23.01
+- **Tier:** T1
+- **Goal:** Freeze the diagnostic questions and immutable input inventory.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P22_PREREG.md`; `evaluation/process_mastery/independent_worlds.py::generate_d4_world_v2`; `scripts/gen_independent_improvement_seed.py::build`; `evaluation/process_mastery/p22_development.py::run_p22_training_proposal_probe`; `docs/research/engine_substrate/COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_SEARCH_DIAGNOSIS_CONTRACT.md`; new `tests/test_search_diagnostic_inputs.py`.
+- **Pattern to copy:** existing checkpoint digests, fixed proposal grammar and source-bound resource snapshots.
+- **Steps:** 1. Inventory exact roots, parent digests, enabled policies, primitive effects, expression grammar, source/child novelty and independent-goal requirements. 2. Record all restored branches, including failed/interrupted/duplicate allocations; aggregate work without double-counting inherited counters. 3. State the finite questions each diagnostic can decide, and prohibit diagnostic witnesses/held-out goals from entering candidate qualification.
+- **Guard:** read-only diagnostics on archived or declared development inputs.
+- **Acceptance:** `test_checkpoint_inputs_are_hash_bound`, `test_restored_branch_work_not_double_counted`, `test_diagnostic_has_no_agent_output_channel`, `test_heldout_ids_rejected`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_diagnostic_inputs.py tests/test_p22_resource_accounting.py -q -p no:cacheprovider`.
+- **Non-goals:** assuming another search ceiling or another approval will resolve a representational barrier.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P23.01 completion (2026-10-24):** Added `COGNITION_SEARCH_DIAGNOSIS_CONTRACT.md` with hash-bound P22 implementation, root, ancestor, and reviewed restored-branch inputs; preserved completed, no-candidate, replay, and interrupted statuses; specified incremental attempt accounting and prohibited diagnostic-to-agent output. It explicitly distinguishes later development draws in the `train` namespace from the preregistered 0–199 allocation and excludes validation/held-out IDs. Verification: `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_diagnostic_inputs.py tests/test_p22_resource_accounting.py -q -p no:cacheprovider` — 18 passed. This freezes inputs and boundaries only; P23.02–P23.04 analysis remains outstanding.
+
+### P23.02 — Enumerate finite effect reachability and qualification feasibility
+
+- **ID:** P23.02
+- **Tier:** T2
+- **Goal:** Enumerate finite effect reachability and qualification feasibility.
+- **Read first:** `docs/research/engine_substrate/COGNITION_SEARCH_DIAGNOSIS_CONTRACT.md`; `evaluation/process_mastery/independent_worlds.py`; `scripts/gen_independent_improvement_seed.py`; `tests/test_independent_improvement.py`.
+- **Touch:** new `evaluation/process_mastery/search_feasibility_audit.py`; new `tests/test_search_feasibility_audit.py`.
+- **Pattern to copy:** offline permutation oracle, exact ProcessApply semantics and existing qualification predicates.
+- **Steps:** 1. Enumerate D4 closure from the exact held effects, then subtract active/adopted/identity effects for each root. 2. For every remaining source/child effect and declared goal pair, evaluate the same guard/precondition/novelty conditions and attach a witness or exact rejection. 3. Enumerate Loopover only to a declared depth/node bound and compare primitive witnesses with grammar-expressible effects; distinguish globally unreachable from not found within the bound.
+- **Guard:** external scorer/diagnostic only; no world state or checkpoint mutation.
+- **Acceptance:** `test_d4_closure_has_eight_effects`, `test_each_remaining_effect_has_feasibility_record`, `test_guard_failure_not_unreachable_claim`, `test_bounded_loopover_reports_unknown_beyond_bound`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_feasibility_audit.py tests/test_independent_improvement.py -q -p no:cacheprovider`.
+- **Non-goals:** using exhaustive external witnesses as the measured agent’s learned strategy.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P23.02 completion (2026-10-24):** Added the read-only `search_feasibility_audit.py` and its acceptance tests. The frozen D4 generation-zero and generation-two roots each produce the exact eight-effect closure. Generation zero leaves five nonidentity effects after active/adopted/identity exclusions; four have finite training-goal source/child witnesses and one has no matching source goal in the inspected training corpus. Generation two leaves three; two have finite distinct-goal composition witnesses and one lacks a source-goal witness. These are mathematical feasibility records only; native trial/receipt qualification is explicitly NOT_ESTABLISHED. Loopover BFS was bounded at composition depth 3 and 100,000 nodes: 845 effects visited and 4/5 archived training goals witnessed within the bound; the fifth is `UNKNOWN_OUTSIDE_BOUND`. No held-out worlds were accessed and no agent graph was mutated. Result: `evaluation/process_mastery/results/p23_search_feasibility_audit_20261024.json` (SHA-256 `d455feca1cf26b404c2e46cb657b36ed71b998fd776112f3359e4a901ddb0e6b`). Verification: P23.02 bundle — 17 passed; P23.01 and resource-accounting bundle — 18 passed.
+
+### P23.03 — Trace where native search attempts are lost or repeated
+
+- **ID:** P23.03
+- **Tier:** T2
+- **Goal:** Trace where native search attempts are lost or repeated.
+- **Read first:** `docs/research/engine_substrate/COGNITION_SEARCH_DIAGNOSIS_CONTRACT.md`; `evaluation/process_mastery/p22_resource_accounting.py`; `scripts/gen_open_process_search_seed.py`; `scripts/gen_independent_improvement_seed.py`.
+- **Touch:** new `evaluation/process_mastery/search_funnel_audit.py`; new `tests/test_search_funnel_audit.py`; `scripts/gen_open_process_search_seed.py` + `seeds/open_process_search.json` only for necessary provenance counters.
+- **Pattern to copy:** digest-bound native rule-work attribution and existing per-request attempt receipts.
+- **Steps:** 1. Report attempts→well-formed expressions→unique effects→legal candidates→independent trials→qualification→approval→world receipt. 2. Separate same effect/different syntax, exact-context guard rejection, exhausted trial headroom, stale parent and true precondition failure. 3. Attribute time, peak memory and node/edge growth per unique useful effect; add only missing diagnostic readouts with reproducible generation.
+- **Guard:** diagnostic readouts disabled by default; no candidate policy change.
+- **Acceptance:** `test_funnel_conserves_attempt_counts`, `test_duplicate_effect_not_new_candidate`, `test_trial_budget_distinguished_from_search_budget`, `test_rejection_has_exact_predicate_and_parent`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_funnel_audit.py tests/test_p22_resource_accounting.py -q -p no:cacheprovider`.
+- **Non-goals:** adding success heuristics or silently changing the qualification standard while measuring it.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P23.03 completion (2026-10-24):** Added read-only `search_funnel_audit.py` over the frozen input inventory. It classified 30 restored allocations: 20 unique completed branches, 8 completed no-candidate branches, 1 replay, and 1 invalid interrupted allocation. Distinct restoration increments total 1,401,440 search attempts; replay and interrupted work are excluded. Counters reconcile attempt status partitions and request totals to graph attempt counts. The D4 g2 branch 0992/0993 adds 20,000 attempts (17,271 residual, 2,729 verified), 2 candidate nodes but 0 legal new effects (one active held effect, one duplicate), 882 independent-goal trials (801 residual, 81 verified), 0 qualifications, approvals, or receipts. Candidate-specific rejections bind the exact P22 parent checkpoint and native predicate. The historical artifacts do not expose expression/unique-effect linkage for 19,998 of those attempts; the report labels that gap PARTIAL rather than inventing counts. No seed policy changed. P23.04 must decide whether a separate opt-in attempt detail export is warranted before P26/P27. Result: `evaluation/process_mastery/results/p23_search_funnel_audit_20261024.json` (SHA-256 `4fea7e6d2704cefa6c2a8a426bee483f49cb542b9a3579b1fef0d04673ce70d7`). Verification: P23.03/resource bundle — 18 passed; hash-bound input/resource bundle — 18 passed. No held-out access or graph mutation.
+
+### P23.04 — Select a justified remedy and a finite resource experiment
+
+- **ID:** P23.04
+- **Tier:** T1
+- **Goal:** Select a justified remedy and a finite resource experiment.
+- **Read first:** `docs/research/engine_substrate/COGNITION_SEARCH_DIAGNOSIS_CONTRACT.md`; `evaluation/process_mastery/search_feasibility_audit.py`; `evaluation/process_mastery/search_funnel_audit.py`; `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_SEARCH_REMEDY_DECISION.md`; new `tests/test_search_remedy_contract.py`.
+- **Pattern to copy:** counterexample-based contract revision with old results retained.
+- **Steps:** 1. For each bottleneck choose exactly the justified action: fix invalid expression/guard lifecycle; effect dedup for repeated syntax; reserve trial budget; expand a missing generic representation; or stop searching a proved exhausted effect set. 2. Specify any runtime change in ≤3-file implementation subtasks with prewritten tests, controls and a fixed small development budget. 3. Record whether original P22 can be completed honestly; insufficient novelty does not authorize approving identity or held-equivalent candidates.
+- **Guard:** decision document only; runtime changes separately enumerated before edits.
+- **Acceptance:** `test_each_remedy_names_a_measured_barrier`, `test_no_identity_or_held_effect_promoted`, `test_trial_headroom_within_total_ceiling`; no increase in search budget without a measured scaling hypothesis.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_remedy_contract.py tests/test_search_feasibility_audit.py -q -p no:cacheprovider`.
+- **Non-goals:** choosing an easier world or lowering novelty merely to manufacture three generations.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P23.04 completion (2026-10-24):** Added `COGNITION_SEARCH_REMEDY_DECISION.md` and checks binding each remedy to a measured barrier. The chosen action does not increase the 120,000 cumulative attempt ceiling: a later four-goal development probe allocates 10,000 discovery attempts and a separately bounded 5,000 transfer reserve per goal, for 60,000 new attempts and at most 80,000 cumulative from the immutable 20,000-attempt Loopover g1 checkpoint. Exact-effect deduplication blocks active/identity and repeated effects; a read-only optional attempt export is specified for the historical 19,998/20,000 expression-link gap. Existing malformed qualification records remain uncounted; neither identity nor held-equivalent effects can be promoted. P22 stays DRAFT; no new efficacy or approval claim. Verification: remedy-contract + feasibility bundle — 7 passed. The refreshed P23 funnel artifact with request-level and global headroom is `evaluation/process_mastery/results/p23_search_funnel_audit_20261024.json` (SHA-256 `4fea7e6d2704cefa6c2a8a426bee483f49cb542b9a3579b1fef0d04673ce70d7`).
+
+### P23.05 — Close diagnosis and set the P22 re-entry disposition
+
+- **ID:** P23.05
+- **Tier:** T1
+- **Goal:** Close diagnosis and set the P22 re-entry disposition.
+- **Read first:** `evaluation/process_mastery/search_feasibility_audit.py`; `evaluation/process_mastery/search_funnel_audit.py`; `docs/research/engine_substrate/COGNITION_SEARCH_REMEDY_DECISION.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P22_PREREG.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P23_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** historical P22 branch/resource ledger without hold-out claims.
+- **Steps:** 1. Publish barrier matrix, exact input hashes, bounded proofs/witnesses and raw diagnostic paths. 2. Keep P22 draft/held-out status unchanged unless every original gate is actually met; label any successor a separate protocol. 3. Authorize P24’s independent common-learning work and list search remedies required before P26/P27.
+- **Guard:** read-only result analysis and documentation.
+- **Acceptance:** every reviewed failure has a supported category or explicit unresolved question; no diagnostic oracle leaks; cumulative development work and next action are unambiguous.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_feasibility_audit.py tests/test_search_funnel_audit.py tests/test_search_remedy_contract.py -q -p no:cacheprovider`.
+- **Non-goals:** running sealed P22 worlds or asserting no solution because native search did not find one.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+## Phase 24 — Additive transfer over one common target learner
+
+**Entry:** P23 diagnostic ledger; P20/P21 native observation and receipt interfaces. **Status:** complete; structural gates pass, P24 v2 efficacy fails in both families.
+
+**Purpose:** Every target action outcome must reach the same ordinary learner, whether or not an optional source-map path runs. Isolate map-construction cost, prior value and negative transfer rather than comparing different evidence-assimilation pipelines.
+
+**Exit evidence:** 200 paired streams per direction in two domain pairs, using fresh, compatible source, wrong source and same-target/no-source map-work control arms. Same target affordances, receipt stream, informative opportunities and primitive/model-query ceilings. Primary normalized learning-curve AUC gain ≥0.10 over the stronger source-free arm, with zero receipt loss/double credit and no final accuracy loss >0.02. Include 100 duplicate/stale/mismatch controls. Mapping benefit may fail; ordinary target learning must continue without it.
+
+### P24.01 — Specify common target receipt delivery and causal transfer contrasts
+
+- **ID:** P24.01
+- **Tier:** T1
+- **Goal:** Specify common target receipt delivery and causal transfer contrasts.
+- **Read first:** `evaluation/process_mastery/target_learning_curve.py::_fresh_stream`; `evaluation/process_mastery/target_learning_curve.py::_mapped_stream`; `evaluation/process_mastery/target_learner.py::observe_map_pair`; `docs/research/engine_substrate/COGNITION_LEARNING_TRANSFER_CONTRACT.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P20_RESULTS.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_ADDITIVE_TRANSFER_CONTRACT.md`; new `tests/test_common_target_evidence.py`.
+- **Pattern to copy:** typed observed receipts and native source-prior verification.
+- **Steps:** 1. Define one event/epoch identity for each target receipt, delivered to ordinary learning and optionally projected into a source/target pairing view. 2. Separate action cost from fan-out of the same evidence; prohibit double-counting support or budget. 3. Define compatible/wrong/unknown maps, source acquisition and verification costs, native fallback, and exact arm interventions.
+- **Guard:** new additive-transfer policy disabled.
+- **Acceptance:** planned `test_all_arms_assimilate_each_target_receipt`, `test_pairing_does_not_duplicate_observation_credit`, `test_missing_map_cannot_block_fresh_learning`, `test_source_exposure_cost_visible`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_target_learner.py tests/test_target_learning_curve.py -q -p no:cacheprovider`.
+- **Non-goals:** rewriting P20’s frozen result or claiming all negative transfer is an adapter artifact.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P24.01 completion (2026-10-24):** Added `COGNITION_ADDITIVE_TRANSFER_CONTRACT.md` defining one target event/epoch identity, common ordinary receipt assimilation in every arm, optional map fan-out without duplicate support/action credit, four arm interventions, cost denominators, fixed curve contrasts, and fail-closed source-prior use. P20's −0.3333 transfer result remains unchanged. Verification: contract-spec tests — 4 passed; P24.01 prerequisite learner/curve bundle — 23 passed. The native fan-out assertions are design intent until P24.02 integration.
+
+### P24.02 — Deliver one observed event to native learning and optional map induction
+
+- **ID:** P24.02
+- **Tier:** T2
+- **Goal:** Deliver one observed event to native learning and optional map induction.
+- **Read first:** `docs/research/engine_substrate/COGNITION_ADDITIVE_TRANSFER_CONTRACT.md`; `evaluation/process_mastery/target_learner.py`; `scripts/gen_target_learning_seed.py`; `scripts/gen_process_induction_seed.py`.
+- **Touch:** new `scripts/gen_common_target_evidence_seed.py` + `seeds/common_target_evidence.json`; new `evaluation/process_mastery/common_target_learner.py`; `tests/test_common_target_evidence.py`.
+- **Pattern to copy:** native owner/event/epoch JOIN, existing process induction and mechanical typed I/O.
+- **Steps:** 1. Ingest the same target receipt once and derive required ordinary/map views in graph rules. 2. Ensure source-missing/map-pending/wrong-map states leave ordinary inference operational. 3. Make replay idempotent, support counts event-based and one actual action cost distinct from optional inference work.
+- **Guard:** CommonTargetEvidencePolicy opt-in; no Python reasoning or learner-state cache.
+- **Acceptance:** `test_two_target_events_teach_in_every_arm`, `test_duplicate_receipt_no_extra_support`, `test_map_pending_does_not_delay_prediction`, `test_wrong_source_keeps_real_counterexample`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_common_target_evidence.py tests/test_process_induction.py -q -p no:cacheprovider`.
+- **Non-goals:** a host-side decision choosing when map evidence is good enough for ordinary learning.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P24.02 completion (2026-10-24):** Added `CommonTargetEvidencePolicy` and a typed `CommonTargetEvidence` graph ingress. Native rules fan each authorized ingress into exactly one ordinary `TransitionObservation` with joined action/outcome receipts, and optionally project a `map_pending` view referencing the same target event. Replay is graph-idempotent; conflicting event payloads reject; source/map projection remains pending until P24.03 supplies verified source structure. The adapter does no effect selection and counts target action once. All four arm paths, duplicate replay, pending-map prediction, wrong-source counterevidence, opt-out and generated-seed determinism are covered. Verification: `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_common_target_evidence.py tests/test_process_induction.py -q -p no:cacheprovider` — 18 passed. This closes P24.02 only; profile integration, matched curves and efficacy remain open.
+
+### P24.03 — Use source structure as a native optional proposal with fallback
+
+- **ID:** P24.03
+- **Tier:** T2
+- **Goal:** Use source structure as a native optional proposal with fallback.
+- **Read first:** `docs/research/engine_substrate/COGNITION_ADDITIVE_TRANSFER_CONTRACT.md`; `scripts/gen_target_learning_seed.py`; `seeds/representation_search.json`; `seeds/experiment_design.json`.
+- **Touch:** new `scripts/gen_additive_transfer_seed.py` + `seeds/additive_transfer.json`; new `tests/test_additive_transfer.py`.
+- **Pattern to copy:** candidate-only recall, map verification and competing native hypotheses.
+- **Steps:** 1. Propose compatible source models into the common target portfolio without overwriting observed alternatives. 2. Let native evidence resolve conflict; count mapping construction and verification work and retain rejected maps. 3. Prior failure falls back to the unchanged common learner; no per-arm host prediction switch.
+- **Guard:** AdditiveTransferPolicy disabled; existing evidence/adoption boundaries.
+- **Acceptance:** `test_source_changes_candidate_portfolio`, `test_target_counterexample_overrides_bad_prior`, `test_no_map_still_learns`, `test_prior_knockout_changes_only_source_path`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_additive_transfer.py tests/test_common_target_evidence.py tests/test_process_transfer.py -q -p no:cacheprovider`.
+- **Non-goals:** guaranteeing transfer helps, using a verified target answer as a free source prior, or weakening receipts.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P24.03 completion (2026-10-24):** Added opt-in `AdditiveTransferPolicy`, native authorization/funding of map views backed by typed authorized source receipts, and a native `SourceModelProposal` importer. The existing target-learning rules induce a map candidate from two funded distinct pairs. Only verified map and independent exact target-effect receipt records become `TargetProcessPrior` candidates; the existing target-learning rule then joins that prior to the same ordinary target transition before forming a source-confirmed hypothesis. If the exact ordinary hypothesis already exists, the native importer retains a `portfolio_candidate` instead of creating a duplicate prediction. Missing or rejected map/effect evidence remains visible and leaves ordinary target learning intact. Map and source costs remain separate from target action/support counts. Verification: `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_additive_transfer.py tests/test_common_target_evidence.py tests/test_process_transfer.py -q -p no:cacheprovider` — 24 passed; common/ordinary/P20 regression bundle — 40 passed. No P24 efficacy or held-out result is claimed.
+
+### P24.04 — Build matched learning streams and information-cost controls
+
+- **ID:** P24.04
+- **Tier:** T2
+- **Goal:** Build matched learning streams and information-cost controls.
+- **Read first:** `docs/research/engine_substrate/COGNITION_ADDITIVE_TRANSFER_CONTRACT.md`; `evaluation/process_mastery/target_learning_worlds.py`; `evaluation/process_mastery/target_learning_curve.py`; `tests/test_common_target_evidence.py`.
+- **Touch:** new `evaluation/process_mastery/target_learning_curve_v2.py`; new `tests/test_additive_transfer_curves.py`; `docs/research/engine_substrate/PMB_V1_SPEC.md`.
+- **Pattern to copy:** existing paired-world generator and external success-at-checkpoint scoring.
+- **Steps:** 1. Share exact target receipts/opportunities across arms while varying only registered source availability or native mapping enablement. 2. Measure success at identical interaction/work checkpoints and count source acquisition separately and cumulatively. 3. Include simple sanity tasks and independently varied relations/context shifts; freeze distributions using coverage/solvability checks, not treatment advantage.
+- **Guard:** new evaluation adapter; historical v1 unchanged.
+- **Acceptance:** `test_receipt_sets_match_by_checkpoint`, `test_target_learner_identical_across_arms`, `test_auc_uses_same_horizon`, `test_source_and_target_costs_not_hidden`, `test_all_fail_and_all_pass_retained`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_additive_transfer_curves.py tests/test_common_target_evidence.py -q -p no:cacheprovider`.
+- **Non-goals:** changing old v1 expectation tests to erase their negative result or scoring only treatment successes.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P24.04 completion (2026-10-24):** Added `target_learning_curve_v2.py` and matched four-arm streams with identical target receipt/owner identities, checkpoints 0/1/2, crossed heat→thermal and lever→latch families with target frame epochs 5/6, same-target reciprocal map-work control, separate source/map/budget/native-work fields, and no row filtering. Updated PMB v1 spec for the new protocol while leaving historical v1/P20 unchanged. Self-check artifact: `evaluation/process_mastery/results/p24_target_learning_curve_v2_selfcheck_20261024.json` (SHA-256 `7d17164f7e11685fa360ed46291bd13ebabfb03fdb6fa9df4ce9fd0cfab4fef0`), 16 records. All arms received two identical target events/actions; map-work arms each incurred two map debits; compatible maps/effect receipts verified and wrong-source maps rejected. Each arm's development normalized AUC was 0.25. This small self-check is not an efficacy estimate and shows no advantage. Verification: P24.04 command — 14 passed; combined P24.02–P24.04 and P20 learner/transfer regression bundle — 60 passed.
+
+### P24.E1 — Integrate and establish the phase-specific causal checks
+
+- **ID:** P24.E1
+- **Tier:** T2
+- **Goal:** Integrate and establish the phase-specific causal checks.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** P16 attested native boundary, P17 causal perturbation and one-budget profile tests.
+- **Steps:** 1. Integrate common native target receipt assimilation and additive source hypotheses under disabled defaults and one shared budget. 2. Exercise evidence→learned state→native choice→authorized result→receipt, including the phase’s knockout/fallback. 3. Measure complete dynamic memory, source exposure, native work and isolated boot; test checkpoint/restart and default/conversation isolation.
+- **Guard:** explicit cognition-on opt-in; existing approval scopes unchanged.
+- **Acceptance:** `test_p24_native_learning_chain`, `test_p24_causal_perturbation`, `test_p24_default_isolation`, `test_p24_shared_budget`; structural gates cannot be closed by merely reporting no benefit.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_common_target_evidence.py tests/test_additive_transfer.py tests/test_additive_transfer_curves.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** activating new policies globally or routing decisions through the evaluator.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P24.E1 completion (2026-10-24):** Integrated common target and additive transfer manifests into the opt-in cognition-on seed closure with both policies disabled at profile boot. The adapter recognizes already-installed full-profile rules to avoid duplicate imports, uses the existing shared `ThinkingBudget`, and continues through `WorldAdapter.save/load`. Profile tests exercise observed receipts→native learning→prediction→actual world action→receipt, rejected-source causal knockout, default/conversation isolation, and exact shared-budget debits. Verification: `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_common_target_evidence.py tests/test_additive_transfer.py tests/test_additive_transfer_curves.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider` — 81 passed. This is structural evidence only; P24 efficacy and held-out evaluation remain open.
+
+### P24.E2 — Freeze new tasks and a valid matched-arm evaluation
+
+- **ID:** P24.E2
+- **Tier:** T1
+- **Goal:** Freeze new tasks and a valid matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/PMB_V1_SPEC.md`; `evaluation/process_mastery/runtime_attestation.py`; `evaluation/process_mastery/scorecard.py`; `docs/research/engine_substrate/COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md`.
+- **Touch:** new `evaluation/process_mastery/linear_p24_v1.py`; new `evaluation/process_mastery/analyze_linear_p24_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P24_PREREG.md`. Following the frozen v1 analyzer defect, the corrected protocol is separately versioned as `linear_p24_v2.py`, `analyze_linear_p24_v2.py`, and `COGNITION_LINEAR_P24_V2_PREREG.md` on untouched allocations.
+- **Pattern to copy:** corrected attestation and immutable allocation gates in the existing linear runners.
+- **Steps:** 1. Implement all stated arm/family/control paths and development self-checks. 2. Freeze task distributions, resource ceilings, concrete seed sets, hypothesis/estimand definitions and all loaded/source artifacts. 3. Verify disjointness from every previous train/selection/validation/held-out range, then commit preregistration alone before the single sealed draw. Flat/ceiling/floor outcomes remain valid outcomes.
+- **Guard:** evaluation only; no previous runner/protocol patched.
+- **Acceptance:** working adapters, event/receipt parity, causal controls and attestation pass before freeze; all primaries, controls, censoring and exposure denominators fixed in advance.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_common_target_evidence.py tests/test_additive_transfer.py tests/test_additive_transfer_curves.py -q -p no:cacheprovider`.
+- **Non-goals:** post-holdout tuning, choosing only successful episodes, hiding a nonworking comparator or requiring positive development efficacy to freeze.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P24.E3 — Run once report every outcome and reconcile the next entry
+
+- **ID:** P24.E3
+- **Tier:** T1
+- **Goal:** Run once report every outcome and reconcile the next entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P24_PREREG.md`; corrected `docs/research/engine_substrate/COGNITION_LINEAR_P24_V2_PREREG.md`; `evaluation/process_mastery/linear_p24_v2.py`; `evaluation/process_mastery/analyze_linear_p24_v2.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P24_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** P20/P21 retained negative outcomes and P16 artifact evidence.
+- **Steps:** 1. Run the complete fixed allocation once and archive raw bytes, hashes and runtime identity. 2. Report every outcome, interval, resource stratum, missing/pending record and structural failure; preserve prior negative results. 3. Update support/maturity and the next entry: a missing causal mechanism blocks its dependent task; a valid negative advantage informs scope without becoming a new pass.
+- **Guard:** frozen protocol; documentation closeout.
+- **Acceptance:** complete allocation and all hypotheses classified; next phase uses only demonstrated interfaces; no retrospective rescoring or automatic L-level closure.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_common_target_evidence.py tests/test_additive_transfer.py tests/test_additive_transfer_curves.py -q -p no:cacheprovider`.
+- **Non-goals:** treating reporting-cycle completion as evidence of acquired advantage.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P24.E2/E3 completion (2026-10-24):** The P24 v1 runner completed its frozen draw but its frozen analyzer raised `UnboundLocalError` before producing any metrics. The v1 raw artifact remains preserved and invalid for efficacy; it was not rescored. Following the plan's version-on-defect rule, corrected v2 runner/analyzer code was committed in `4e26c05d`, then its standalone preregistration in `e625c8b1`, with untouched allocation IDs disjoint from P24 v1 and P16–P22. V2 completed 400 paired streams (200 per direction) and all 300 structural controls, with `ATTESTED` runtime, exact target receipt parity and no action/support loss or double credit. Both families had identical 0.25 AUC in every arm, final accuracy 1.0, compatible-minus-stronger-source-free gain 0.00, 99% CI [0, 0], Holm-adjusted p=1.00, and zero final accuracy loss; both registered ≥0.10 benefit gates **FAIL**. The complete raw/analysis ledger and resource strata are in [`COGNITION_LINEAR_P24_RESULTS.md`](COGNITION_LINEAR_P24_RESULTS.md). Verification: v1 E2 structural bundle 23 passed; P24.E1 bundle 81 passed; Track I/P20 regression bundle 97 passed; corrected v2 focused bundle 26 passed. Baseline sweep: 16 GREEN, two inherited RED, one 420-second `NOT_ESTABLISHED`, one `ALL_SKIPPED`; baseline verifier found four inherited RED and no new GREEN/RED. Orphan lint found 2,243 repository-wide entries and P24 seed boot status had no broken dependencies. P24 establishes receipt and optional map mechanisms but not transfer benefit; P25 may use the common learner without assuming an advantage, and P20's −0.3333 result remains unchanged.
+
+## Phase 25 — Retention of one persistent learner under actual memory pressure
+
+**Entry:** P24 common native learner and P13/P21 replay/capacity interfaces. **Status:** complete; registered retention efficacy passed with unseen-task transfer at floor.
+
+**Purpose:** Test learned-state retention rather than constructing a fresh learner from protected target records after the delay. Charge every retained representation capable of recovering the tested effect; compression may preserve competence, but hidden original evidence cannot.
+
+**Exit evidence:** 200 streams per capacity/load stratum across two learned-mechanism families; full sleep, replay-only, matched-work awake and no-offline arms. Three preregistered capacity ratios relative to serialized dynamic learning content, with common eviction/protection semantics and independently generated interference. Primary delayed success-AUC gain ≥0.10 over replay-only with new-task accuracy loss ≤0.02. Include 100 eviction/restart/absent-source controls. Report learning, pre-delay competence, retained information, delayed behavior and capacity curves even when effects are zero.
+
+### P25.01 — Define semantic memory accounting and a persistent learner lifecycle
+
+- **ID:** P25.01
+- **Tier:** T1
+- **Goal:** Define semantic memory accounting and a persistent learner lifecycle.
+- **Read first:** `evaluation/process_mastery/linear_p21_v1.py::_sleep_arm`; `evaluation/process_mastery/developmental_memory.py::ChargedMemory`; `docs/research/engine_substrate/COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`; `evaluation/process_mastery/common_target_learner.py`; `tests/test_developmental_memory.py`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_PERSISTENT_RETENTION_CONTRACT.md`; new `tests/test_persistent_retention_contract.py`.
+- **Pattern to copy:** native save/load, source-epoch invalidation and charged capacity audits.
+- **Steps:** 1. Define acquire→pre-delay test→offline/interference→delayed test on the same native learner identity. 2. Inventory raw episodes, hypotheses, dimensions, chunks, cached predictions, rule bodies and durable rebuild data that retain the tested information; charge all dynamic content and report fixed runtime overhead separately. 3. Forbid target-specific protection; fixed safety/audit metadata may retain provenance only, with no uncharged payload from which the answer can be recovered.
+- **Guard:** specification only; no runtime memory deletion yet.
+- **Acceptance:** planned `test_same_learner_across_delay`, `test_recoverable_information_is_charged`, `test_target_receipts_not_selectively_protected`, `test_world_history_not_agent_memory`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_developmental_memory.py tests/test_rules_checkpoint.py -q -p no:cacheprovider`.
+- **Non-goals:** artificially erasing only the baseline’s competence or treating a storage zlib gain as learned consolidation.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.01 completion (2026-10-24):** Added [`COGNITION_PERSISTENT_RETENTION_CONTRACT.md`](COGNITION_PERSISTENT_RETENTION_CONTRACT.md) and contract tests covering stable learner/substrate identity across delay, canonical serialized payload plus index charging, equal unprotected treatment of source/target receipts, and separation of external world history from explicitly delivered learner evidence. This is specification evidence only; runtime eviction and persistence remain for P25.02 onward. Verification: prescribed developmental-memory/checkpoint bundle, 10 passed; new contract bundle, 4 passed.
+
+### P25.02 — Enforce native availability and equal eviction semantics on learned content
+
+- **ID:** P25.02
+- **Tier:** T2
+- **Goal:** Enforce native availability and equal eviction semantics on learned content.
+- **Read first:** `docs/research/engine_substrate/COGNITION_PERSISTENT_RETENTION_CONTRACT.md`; `runners/dsl/src/memory.rs`; `seeds/executable_memory_lifecycle.json`; `seeds/common_target_evidence.json`.
+- **Touch:** new `scripts/gen_learning_memory_budget_seed.py` + `seeds/learning_memory_budget.json`; new `tests/test_learning_memory_budget.py`; `runners/dsl/src/memory.rs` only for missing mechanical accounting/eviction primitives.
+- **Pattern to copy:** existing memory faculty capacity and graph-resident availability checks.
+- **Steps:** 1. Use native rules for eviction/retention priorities over learned content, with mechanical storage I/O only. 2. Remove or mark unavailable evicted content and dependent caches/views so stale pointers or host archives cannot recover it for free. 3. Apply the same budget, protected data classes and durable-read costs in every arm; retain source metadata without answer payloads.
+- **Guard:** LearningMemoryBudgetPolicy disabled; bounded dependency invalidation.
+- **Acceptance:** `test_evicted_effect_cannot_be_read_via_hypothesis`, `test_all_arms_same_protection_policy`, `test_rebuild_cost_charged`, `test_stale_cached_prediction_invalidated`, `test_checkpoint_retains_capacity_state`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_learning_memory_budget.py tests/test_persistent_retention_contract.py -q -p no:cacheprovider`.
+- **Non-goals:** Python choosing useful memories or a new primitive with undocumented binders hidden in this task.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.02 completion (2026-10-24):** Added a disabled-by-default native `LearningMemoryBudgetPolicy` seed and mechanical graph-node eviction executor. Native rules charge pending items before availability, reject oversized items, select resident content by admission age and a fixed priority for verified summaries under shared byte pressure (without a target/source branch), clear its answer payload, invalidate dependent predictions, and account for durable rebuild bytes before exposing a read. The adapter removes only graph nodes referenced by a native eviction decision. Tests exercised actual P20 hypothesis/evidence node removal through that path, common ordinary protection labels, durable-read charging, cache invalidation, graph checkpoint capacity state, and disabled defaults. The existing Rust memory faculty already provides byte-bounded graph deletion primitives; no broad `memory.rs` policy was added because its global type eviction would include runtime infrastructure and is not the P25 per-content selector. Verification: P25.02 prescribed bundle, 10 passed. This establishes the bounded policy mechanism only, not held-out retention benefit.
+
+### P25.03 — Consolidate verified learned structure on the persistent agent
+
+- **ID:** P25.03
+- **Tier:** T2
+- **Goal:** Consolidate verified learned structure on the persistent agent.
+- **Read first:** `docs/research/engine_substrate/COGNITION_PERSISTENT_RETENTION_CONTRACT.md`; `scripts/gen_sleep_regime_seed.py`; `scripts/gen_library_learning_seed.py`; `seeds/learning_memory_budget.json`.
+- **Touch:** new `scripts/gen_persistent_consolidation_seed.py` + `seeds/persistent_consolidation.json`; new `tests/test_persistent_consolidation.py`.
+- **Pattern to copy:** P13 once-owned replay and verified library equivalence witnesses.
+- **Steps:** 1. Replay only resident or paid-for durable experience into the same learner, verifying learned summaries against retained witnesses. 2. Store generalized process/dimension content under the same capacity accounting, with definition, decoder and exception cost included. 3. Preserve genuine counterexamples, stop at foreground demand and resume without duplicate replay/debit.
+- **Guard:** PersistentConsolidationPolicy disabled; existing sleep owner retained.
+- **Acceptance:** `test_consolidation_changes_persistent_learned_state`, `test_summary_used_after_source_eviction`, `test_summary_does_not_drop_counterexamples`, `test_interrupt_resume_once`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_persistent_consolidation.py tests/test_learning_memory_budget.py tests/test_sleep_regime_migrated.py -q -p no:cacheprovider`.
+- **Non-goals:** reconstructing a fresh learner after delay and calling successful replay retention.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.03 completion (2026-10-24):** Added a disabled-by-default native consolidation seed and mechanical summary-size adapter. Native rules require a candidate effect, two distinct same-owner observations with matching action/outcome, zero counterexamples, available shared budget, and an uninterrupted foreground-idle work record; they create one verified summary and a persistent native hypothesis projection, retire the source hypothesis, and close the work record once. The adapter measures the serialized summary/projection bundle, decoder, exceptions, witness IDs, key/index overhead and graph references before the native budget rule admits the bundle. Verification exercised state change, prediction after source evidence eviction on the same learner, refusal to consolidate an actually disputed counterexample, and interrupt/resume exactly once; the prescribed sleep regression was included. P25.03 gate: 24 passed. This verifies the bounded categorical mechanism, not sleep efficacy.
+
+### P25.04 — Build capacity and interference panels with semantic checks
+
+- **ID:** P25.04
+- **Tier:** T2
+- **Goal:** Build capacity and interference panels with semantic checks.
+- **Read first:** `docs/research/engine_substrate/COGNITION_PERSISTENT_RETENTION_CONTRACT.md`; `evaluation/process_mastery/observed_worlds.py`; `evaluation/process_mastery/target_learning_worlds.py`; `tests/test_persistent_consolidation.py`.
+- **Touch:** new `evaluation/process_mastery/persistent_retention_worlds.py`; new `tests/test_persistent_retention_worlds.py`; `docs/research/engine_substrate/PMB_V1_SPEC.md`.
+- **Pattern to copy:** independent simulator receipts and native checkpoint restoration.
+- **Steps:** 1. Generate learned relations and unrelated/confusable new tasks from an independent world distribution. 2. Set capacity strata by a frozen content-size rule and verify pressure reaches behaviorally relevant information in development, without selecting a stratum for sleep benefit. 3. Record pre-delay learning separately; score later recognition/prediction/action from the persisted state, with inaccessible source and no host retraining.
+- **Guard:** new simulator/scorer adapter only.
+- **Acceptance:** `test_pressure_affects_relevant_learned_content`, `test_delay_does_not_replace_learner`, `test_external_archive_not_visible`, `test_capacity_assignment_independent_of_arm`, `test_unsolved_pre_delay_not_hidden`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_persistent_retention_worlds.py tests/test_learning_memory_budget.py tests/test_persistent_consolidation.py -q -p no:cacheprovider`.
+- **Non-goals:** a planted probabilistic forgetting curve, artificial control failures or removing all ceiling/floor rows from analysis.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.04 completion (2026-10-24):** Added deterministic thermal/latch retention streams, independent confusable/unrelated interference task generation, an external receipt archive separated from delivered learner inputs, pre-delay and delayed scoring that retains unsolved rows, and arm-independent capacity assignment at registered 0.5/1/2 ratios of canonical serialized learning content. Updated the PMB v1 contract with P25 lifecycle, arms, capacities, information boundaries, reporting and preregistration requirements. The prescribed world/budget/consolidation bundle passed, 15 tests. This establishes simulator and assignment behavior; integration and held-out efficacy remain open.
+
+### P25.E1 — Integrate and establish the phase-specific causal checks
+
+- **ID:** P25.E1
+- **Tier:** T2
+- **Goal:** Integrate and establish the phase-specific causal checks.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** P16 attested native boundary, P17 causal perturbation and one-budget profile tests.
+- **Steps:** 1. Integrate persistent bounded learning memory and native consolidation under disabled defaults and one shared budget. 2. Exercise evidence→learned state→native choice→authorized result→receipt, including the phase’s knockout/fallback. 3. Measure complete dynamic memory, source exposure, native work and isolated boot; test checkpoint/restart and default/conversation isolation.
+- **Guard:** explicit cognition-on opt-in; existing approval scopes unchanged.
+- **Acceptance:** `test_p25_native_learning_chain`, `test_p25_causal_perturbation`, `test_p25_default_isolation`, `test_p25_shared_budget`; structural gates cannot be closed by merely reporting no benefit.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_learning_memory_budget.py tests/test_persistent_consolidation.py tests/test_persistent_retention_worlds.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** activating new policies globally or routing decisions through the evaluator.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.E1 completion (2026-10-24):** Added the P25 memory/consolidation manifests to the explicit cognition-on closure and a data-only profile parameter node for disabled defaults, shared capacity and registered ratios. `boot_cognition_on()` validates and applies the profile's disabled P25 defaults while retaining exactly one shared `ThinkingBudget`; default and conversation boots remain isolated. Integration tests exercised authorized target receipts through native learning, consolidation, measured capacity admission, native prediction, authorized action, receipt ingestion, and checkpoint restoration. The causal knockout removes the consolidation path under matched evidence/pressure: the source arm loses prediction after eviction while the consolidated arm retains it. Consolidation debits the existing shared budget once. Prescribed E1 bundle: 80 passed. Mechanism evidence only; no held-out efficacy inference.
+
+### P25.E2 — Freeze new tasks and a valid matched-arm evaluation
+
+- **ID:** P25.E2
+- **Tier:** T1
+- **Goal:** Freeze new tasks and a valid matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/PMB_V1_SPEC.md`; `evaluation/process_mastery/runtime_attestation.py`; `evaluation/process_mastery/scorecard.py`; `docs/research/engine_substrate/COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md`.
+- **Touch:** new `evaluation/process_mastery/linear_p25_v1.py`; new `evaluation/process_mastery/analyze_linear_p25_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P25_PREREG.md`.
+- **Pattern to copy:** corrected attestation and immutable allocation gates in the existing linear runners.
+- **Steps:** 1. Implement all stated arm/family/control paths and development self-checks. 2. Freeze task distributions, resource ceilings, concrete seed sets, hypothesis/estimand definitions and all loaded/source artifacts. 3. Verify disjointness from every previous train/selection/validation/held-out range, then commit preregistration alone before the single sealed draw. Flat/ceiling/floor outcomes remain valid outcomes.
+- **Guard:** evaluation only; no previous runner/protocol patched.
+- **Acceptance:** working adapters, event/receipt parity, causal controls and attestation pass before freeze; all primaries, controls, censoring and exposure denominators fixed in advance.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_learning_memory_budget.py tests/test_persistent_consolidation.py tests/test_persistent_retention_worlds.py -q -p no:cacheprovider`.
+- **Non-goals:** post-holdout tuning, choosing only successful episodes, hiding a nonworking comparator or requiring positive development efficacy to freeze.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.E2 completion (2026-10-25):** Implemented the four fixed arms, two task families, three capacity ratios, paired event/receipt checks, three structural controls, resource ceilings, runtime attestation, concrete disjoint development/held-out seed blocks, and standalone analyzer. A 1-stream-per-cell development smoke produced 24 arm rows and three passing controls; the analyzer returned `VALID` with no structural failures. Runner acceptance tests cover deterministic allocations, held-out allocation size, event parity, structural rejection, and attestation. P25 mechanism plus runner bundle: 19 passed; E1 integration bundle: 80 passed. The source bundle and standalone preregistration were committed separately; the preregistration-only commit freezes all loaded/source artifacts and the 1,200-stream/300-control allocation before the held-out draw.
+
+### P25.E3 — Run once report every outcome and reconcile the next entry
+
+- **ID:** P25.E3
+- **Tier:** T1
+- **Goal:** Run once report every outcome and reconcile the next entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P25_PREREG.md`; `evaluation/process_mastery/linear_p25_v1.py`; `evaluation/process_mastery/analyze_linear_p25_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P25_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** P20/P21 retained negative outcomes and P16 artifact evidence.
+- **Steps:** 1. Run the complete fixed allocation once and archive raw bytes, hashes and runtime identity. 2. Report every outcome, interval, resource stratum, missing/pending record and structural failure; preserve prior negative results. 3. Update support/maturity and the next entry: a missing causal mechanism blocks its dependent task; a valid negative advantage informs scope without becoming a new pass.
+- **Guard:** frozen protocol; documentation closeout.
+- **Acceptance:** complete allocation and all hypotheses classified; next phase uses only demonstrated interfaces; no retrospective rescoring or automatic L-level closure.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_learning_memory_budget.py tests/test_persistent_consolidation.py tests/test_persistent_retention_worlds.py -q -p no:cacheprovider`.
+- **Non-goals:** treating reporting-cycle completion as evidence of acquired advantage.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P25.E3 completion (2026-10-25):** Executed the frozen held-out draw exactly once: 1,200 paired streams, 4,800 arm rows, 300/300 passing structural controls, zero missing/censored rows, valid analyzer and attested runtime. Registered sleep-minus-replay delayed-AUC gain was 0.7222 (99% paired bootstrap interval [0.7103, 0.7336]); the registered 0.10 gate passed. New-task accuracy loss was 0.0000 ([0, 0]), so the preregistered non-loss condition passed, but all arms scored 0/1,200 on that unseen task. Treat this as a target-relation retention result with transfer at floor, not broad useful-learning evidence. Exact cumulative native-rule counts were checked against the 250,000 ceiling at runtime but not serialized; the results ledger records this reporting limitation. Raw and analysis artifacts and hashes are in [`COGNITION_LINEAR_P25_RESULTS.md`](COGNITION_LINEAR_P25_RESULTS.md). P26 is next and may use the demonstrated persistent learner and measured-memory interfaces; it must not treat P25 as evidence for curriculum or search advantage.
+
+## Phase 26 — Useful evidence selection and diagnosed process search
+
+**Entry:** P23 barrier/remedy report, P24 common learner and P25 persistent-state accounting. **Status:** planned.
+
+**Purpose:** Curriculum should select evidence that changes the learner, while process search should spend work on feasible unresolved effects. Deliver only generic repairs justified by the diagnostic report; do not add benchmark-specific recipes.
+
+**Exit evidence:** 200 paired training streams per family for at least two heterogeneous finite worlds; residual-directed/random/fixed selection over the same accessible task pools and a same-budget native search comparator. Primary fixed-work learning-curve AUC gain ≥0.10 over the stronger selector, with zero held-out leakage; separately measure unique verified process effects and later unseen-binding use. All attempts, failures, repeated effects and paid approvals remain visible. Selection advantage may fail; a task-created receipt without learned-state change cannot pass the causal mechanism gate.
+
+### P26.01 — Freeze diagnosed remedies and useful-learning contrasts
+
+- **ID:** P26.01
+- **Tier:** T1
+- **Goal:** Freeze diagnosed remedies and useful-learning contrasts.
+- **Read first:** `docs/research/engine_substrate/COGNITION_SEARCH_REMEDY_DECISION.md`; `docs/research/engine_substrate/COGNITION_DEVELOPMENTAL_MEMORY_CONTRACT.md`; `scripts/gen_process_curriculum_seed.py`; `scripts/gen_open_process_search_seed.py`; `docs/research/engine_substrate/COGNITION_OPEN_PROCESS_SEARCH_CONTRACT.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_EVIDENCE_SEARCH_CONTRACT.md`; new `tests/test_evidence_search_contract.py`.
+- **Pattern to copy:** source-grounded residual selection and finite diagnostic counterexamples.
+- **Steps:** 1. Select only P23-supported generic search remedies and define equivalent-effect, partial-solution and qualification identities. 2. Define how a task/probe changes a common learner under shared work/data caps, including uncertain/irrelevant/unlearnable cases. 3. Freeze candidate proposals and criteria before training, with no per-world-name rules or success-required generation clock.
+- **Guard:** new evidence/search extensions disabled.
+- **Acceptance:** planned `test_each_search_change_has_diagnostic_witness`, `test_same_task_pool_in_all_selectors`, `test_candidate_recipe_not_task_name`, `test_no_gain_is_valid_outcome`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_remedy_contract.py tests/test_process_curriculum.py -q -p no:cacheprovider`.
+- **Non-goals:** expanding grammar or budget solely because previous search was unsuccessful.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P26.01 completion (2026-10-25):** Added [`COGNITION_EVIDENCE_SEARCH_CONTRACT.md`](COGNITION_EVIDENCE_SEARCH_CONTRACT.md) and contract checks for the P23-measured generic remedies, exact-context effect identity, same-pool selector access, causal learning requirements, and the P25 unseen-task floor limitation. The contract keeps the 120,000 attempt ceiling, reserves at most 5,000 qualification attempts per target from the fixed P26.02 development allocation, and leaves optional attempt-detail export off by default. P26.01 contract and P23/process-curriculum regression bundle: 15 passed. This closes specification only; search repair, evidence-selection behavior, and efficacy remain open.
+
+### P26.02 — Apply measured generic search repairs and preserve qualification headroom
+
+- **ID:** P26.02
+- **Tier:** T2
+- **Goal:** Apply measured generic search repairs and preserve qualification headroom.
+- **Read first:** `docs/research/engine_substrate/COGNITION_EVIDENCE_SEARCH_CONTRACT.md`; `scripts/gen_open_process_search_seed.py`; `scripts/gen_independent_improvement_seed.py`; `tests/test_search_feasibility_audit.py`.
+- **Touch:** `scripts/gen_open_process_search_seed.py` + `seeds/open_process_search.json`; `scripts/gen_independent_improvement_seed.py` + `seeds/independent_improvement.json`; new `tests/test_diagnosed_process_search.py`.
+- **Pattern to copy:** P23 exact effect/qualification matrices and native attempt funnel.
+- **Steps:** 1. Implement the explicitly selected finite remedy: effect-aware dedup, correct generic guards or deterministic budget reservation for independent trials as diagnosed. 2. Reuse exact algebraic effect keys where complete, retaining witnesses; do not dedup partial/stochastic effects as exact. 3. Compare useful unique effects, attempts, failed evaluations and qualification outcomes on the diagnostic inputs without injecting oracle expressions.
+- **Guard:** existing search policy opt-in; no approval/novelty standard weakened.
+- **Acceptance:** `test_known_feasible_expression_reachable_by_native_search`, `test_exhausted_set_stops_with_reason`, `test_qualification_headroom_reserved`, `test_duplicate_syntax_no_budget_explosion`, `test_oracle_witness_not_input`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_diagnosed_process_search.py tests/test_search_feasibility_audit.py tests/test_independent_improvement.py -q -p no:cacheprovider`.
+- **Non-goals:** requiring an impossible new effect after finite closure or approving identity/held-equivalent processes.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P26.02 completion (2026-10-25):** Applied exact finite effect deduplication and the fixed 10,000-discovery/5,000-transfer request split without changing the 120,000 global ceiling. On the immutable Loopover g1 checkpoint and four distinct training goals, the retained branch added 41,722 attempts to 20,000 inherited attempts; 1,722 reserved transfer trials were spent and 18,278 remained unused. Two differently expressed verified attempts with the same exact effect produced only one new candidate. That candidate received 1,722 independent-goal trials and zero qualifications; there were no new approvals, receipts or adoptions. All 61,722 attempt records, exact resource counters and the opt-in attempt projection are hash-bound in [`COGNITION_P26_02_SEARCH_REPAIR_RESULTS.md`](COGNITION_P26_02_SEARCH_REPAIR_RESULTS.md). Two earlier same-allocation invocations failed in the exporter before persisting results; their in-memory counts were lost and are disclosed in the ledger, so the retained 41,722-attempt branch is not a total compute-work claim. Verification: focused P26.02/search/export regression bundle — 45 passed; modified Python files compile. Search-repair mechanism only; no efficacy or capability increase. P26.03 is next.
+
+### P26.03 — Select and execute training evidence through the common learner
+
+- **ID:** P26.03
+- **Tier:** T2
+- **Goal:** Select and execute training evidence through the common learner.
+- **Read first:** `docs/research/engine_substrate/COGNITION_EVIDENCE_SEARCH_CONTRACT.md`; `scripts/gen_curriculum_learning_bridge_seed.py`; `seeds/common_target_evidence.json`; `seeds/learning_memory_budget.json`.
+- **Touch:** new `scripts/gen_useful_evidence_selection_seed.py` + `seeds/useful_evidence_selection.json`; new `tests/test_useful_evidence_selection.py`.
+- **Pattern to copy:** existing native competing predictions, counterexamples and authorized task delivery.
+- **Steps:** 1. Rank admissible evidence opportunities from native prediction disagreement, recurring residuals and verified learning progress. 2. Execute the chosen task/probe, deliver each actual receipt through the common learner and measure changed state plus subsequent behavior. 3. Random/fixed arms receive the same pool/affordances/budget; track repeats, failed learning and source/model changes.
+- **Guard:** UsefulEvidenceSelectionPolicy disabled; same common learner and memory rules.
+- **Acceptance:** `test_selected_evidence_changes_prediction`, `test_unlearnable_source_not_repeated_forever`, `test_random_arm_has_identical_access`, `test_receipt_fanout_not_extra_exposure`, `test_source_epoch_changes_reopen_question`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_useful_evidence_selection.py tests/test_common_target_evidence.py tests/test_learning_memory_budget.py -q -p no:cacheprovider`.
+- **Non-goals:** host selection of an informative task or scoring task creation as learning progress.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P26.03 completion (2026-10-25):** Added the opt-in native useful-evidence selector and generated seed. It materializes training-only prediction/counterexample disagreements, recurring residuals (two distinct counterexamples), and verified progress tied to an authorized common-target receipt plus changed learner state and later behavior. Residual selection ranks only those epoch-matched signals; fixed/random selectors use the same pool and preregistered ranks. All arms pass selection work through the shared ThinkingBudget, and a task is exposed only after budget approval. Receipt delivery and post-delivery behavior are tested through the common learner; no-progress or state-only changes become terminal for that evidence/epoch, while a source-epoch change reopens it. Added optional split provenance to common-target receipts and native prediction queries; omitted split preserves existing behavior. Verification: P26.03/common-target/memory bundle — 23 passed; modified Python files compile. This closes mechanism specification and tests only; efficacy awaits P26.E2/E3. P26.04 is next.
+
+### P26.04 — Build heterogeneous independent task pools and search cost curves
+
+- **ID:** P26.04
+- **Tier:** T2
+- **Goal:** Build heterogeneous independent task pools and search cost curves.
+- **Read first:** `docs/research/engine_substrate/COGNITION_EVIDENCE_SEARCH_CONTRACT.md`; `evaluation/process_mastery/observed_worlds.py`; `evaluation/process_mastery/independent_worlds.py`; `evaluation/process_mastery/search_funnel_audit.py`.
+- **Touch:** new `evaluation/process_mastery/evidence_search_worlds.py`; new `tests/test_evidence_search_worlds.py`; `docs/research/engine_substrate/PMB_V1_SPEC.md`.
+- **Pattern to copy:** independent goal generators and paired world/hash controls.
+- **Steps:** 1. Generate broad structural/difficulty strata with latent, repeated, irrelevant and transferable relations using world-owned mechanisms. 2. Separate task opportunities from scorer-only solvability and generate goal/effect diversity independent of current candidate names or expressions. 3. Measure success-versus-work, unique effect coverage and memory growth; include fixed geometric effort ceilings rather than open-ended retries.
+- **Guard:** external worlds/scorers only; no agent oracle access.
+- **Acceptance:** `test_pool_identity_shared_across_selectors`, `test_goal_not_active_operator_function`, `test_finite_space_reports_exhaustion`, `test_all_search_costs_and_failures_counted`, `test_no_heldout_task_used_for_selection`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_evidence_search_worlds.py tests/test_diagnosed_process_search.py tests/test_useful_evidence_selection.py -q -p no:cacheprovider`.
+- **Non-goals:** tuning world distribution until residual selection wins or reporting random repeated seeds as new goal structure.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P26.04 completion (2026-10-25):** Added `evidence_search_worlds.py` with deterministic, split-namespaced task pools across cyclic and branching state spaces; world-owned latent, repeated, irrelevant, transferable, partial and unlearnable relation strata; selector-visible opportunities and legal affordance names separate from scorer-only transitions, solvability and witnesses; and a verified external receipt boundary. The fixed geometric-effort search curve counts invalid/failed attempts, unique effects and finite exhaustion. Residual/fixed/random arms receive the same task/opportunity records, and selector materialization rejects validation/held-out pools. Updated PMB v1 with the P26 separation and accounting contract. Verification: dedicated world tests — 9 passed; broader P26.E1 required integration bundle — 89 passed; generator compiles and `git diff --check` passes. These are generator/search mechanism checks only, not an efficacy result. P26.E1 follows.
+
+### P26.E1 — Integrate and establish the phase-specific causal checks
+
+- **ID:** P26.E1
+- **Tier:** T2
+- **Goal:** Integrate and establish the phase-specific causal checks.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** P16 attested native boundary, P17 causal perturbation and one-budget profile tests.
+- **Steps:** 1. Integrate diagnosed generic process search and useful native evidence selection under disabled defaults and one shared budget. 2. Exercise evidence→learned state→native choice→authorized result→receipt, including the phase’s knockout/fallback. 3. Measure complete dynamic memory, source exposure, native work and isolated boot; test checkpoint/restart and default/conversation isolation.
+- **Guard:** explicit cognition-on opt-in; existing approval scopes unchanged.
+- **Acceptance:** `test_p26_native_learning_chain`, `test_p26_causal_perturbation`, `test_p26_default_isolation`, `test_p26_shared_budget`; structural gates cannot be closed by merely reporting no benefit.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_diagnosed_process_search.py tests/test_useful_evidence_selection.py tests/test_evidence_search_worlds.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** activating new policies globally or routing decisions through the evaluator.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P26.E1 completion (2026-10-25):** Added the opt-in selector seed to the explicit cognition-on profile; it remains disabled on boot, while existing diagnosed process search stays independently policy-gated. Profile integration tests now exercise the native training-opportunity selection, one shared ThinkingBudget debit, external authorized simulator receipt, common-learner state change, later fresh-binding prediction, checkpoint/restart, and selector knockout. The checks record graph-node growth, checkpoint bytes, learner native-rule steps and source exposure; default and conversation boots do not load the selector seed/rules. Runtime attestation confirms the loaded native extension and symbol binding (development tree remains dirty, so no clean-build claim). Verification: prescribed P26.E1 integration bundle — 88 passed in 37.24s; focused post-accounting assertion — 2 passed. Structural integration only; no efficacy or capability uplift. P26.E2 is next.
+
+### P26.E2 — Freeze new tasks and a valid matched-arm evaluation
+
+- **ID:** P26.E2
+- **Tier:** T1
+- **Goal:** Freeze new tasks and a valid matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/PMB_V1_SPEC.md`; `evaluation/process_mastery/runtime_attestation.py`; `evaluation/process_mastery/scorecard.py`; `docs/research/engine_substrate/COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md`.
+- **Touch:** new `evaluation/process_mastery/linear_p26_v1.py`; new `evaluation/process_mastery/analyze_linear_p26_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P26_PREREG.md`.
+- **Pattern to copy:** corrected attestation and immutable allocation gates in the existing linear runners.
+- **Steps:** 1. Implement all stated arm/family/control paths and development self-checks. 2. Freeze task distributions, resource ceilings, concrete seed sets, hypothesis/estimand definitions and all loaded/source artifacts. 3. Verify disjointness from every previous train/selection/validation/held-out range, then commit preregistration alone before the single sealed draw. Flat/ceiling/floor outcomes remain valid outcomes.
+- **Guard:** evaluation only; no previous runner/protocol patched.
+- **Acceptance:** working adapters, event/receipt parity, causal controls and attestation pass before freeze; all primaries, controls, censoring and exposure denominators fixed in advance.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_diagnosed_process_search.py tests/test_useful_evidence_selection.py tests/test_evidence_search_worlds.py -q -p no:cacheprovider`.
+- **Non-goals:** post-holdout tuning, choosing only successful episodes, hiding a nonworking comparator or requiring positive development efficacy to freeze.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P26.E3 — Run once report every outcome and reconcile the next entry
+
+- **ID:** P26.E3
+- **Tier:** T1
+- **Goal:** Run once report every outcome and reconcile the next entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P26_PREREG.md`; `evaluation/process_mastery/linear_p26_v1.py`; `evaluation/process_mastery/analyze_linear_p26_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P26_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** P20/P21 retained negative outcomes and P16 artifact evidence.
+- **Steps:** 1. Run the complete fixed allocation once and archive raw bytes, hashes and runtime identity. 2. Report every outcome, interval, resource stratum, missing/pending record and structural failure; preserve prior negative results. 3. Update support/maturity and the next entry: a missing causal mechanism blocks its dependent task; a valid negative advantage informs scope without becoming a new pass.
+- **Guard:** frozen protocol; documentation closeout.
+- **Acceptance:** complete allocation and all hypotheses classified; next phase uses only demonstrated interfaces; no retrospective rescoring or automatic L-level closure.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_diagnosed_process_search.py tests/test_useful_evidence_selection.py tests/test_evidence_search_worlds.py -q -p no:cacheprovider`.
+- **Non-goals:** treating reporting-cycle completion as evidence of acquired advantage.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+## Phase 27 — Scheduled learning checkpoints and cumulative competence
+
+**Entry:** P23 P22 disposition plus demonstrated P24–P26 interfaces, not assumed efficacy. **Status:** in progress; P27.01–P27.E3 remain.
+
+**Purpose:** Evaluate accumulated learning at fixed resource/time checkpoints, including intervals with no improving candidate. This avoids requiring three successful adoptions merely to create an evaluable experiment. Preserve all native approval/rollback boundaries; scheduled checkpoints do not authorize an operator.
+
+**Exit evidence:** At least two independently structured supported families; 200 sealed common test worlds/family at g0 and three scheduled training checkpoints, plus 200 fresh validation worlds/family and 100 integrity controls. Four arms: frozen ancestor, evidence-selection only, process-search only and combined. Every arm receives the same primitive/model interface, actual training opportunity ceilings and fixed cumulative-work checkpoints. Primary paired final gain ≥0.10 and ≥0.05/checkpoint slope in full-minus-ancestor success at one-sided 99% lower bound>0, Holm-adjusted across the preregistered family/outcome claims. All-success/flat/failure/no-adoption intervals remain; cost differences preclude efficiency claims even when capability improves.
+
+### P27.01 — Decide original P22 re-entry versus a versioned successor
+
+- **ID:** P27.01
+- **Tier:** T1
+- **Goal:** Decide original P22 re-entry versus a versioned successor.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P22_PREREG.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P23_RESULTS.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P24_RESULTS.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P25_RESULTS.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P26_RESULTS.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_CUMULATIVE_LEARNING_CONTRACT.md`; `docs/research/engine_substrate/PMB_V1_SPEC.md`; new `tests/test_scheduled_checkpoint_contract.py`.
+- **Pattern to copy:** immutable ancestor lineages and predeclared paired checkpoint estimands.
+- **Steps:** 1. Record which original P22 prerequisites are feasible/fulfilled and keep its draft status explicit; no old allocation is rescored. 2. Define new scheduled checkpoint identity by cumulative work/exposure, with ancestor links and actual learned-state deltas even when no process is adopted. 3. Freeze capability versus efficiency estimands, pending-approval handling, data splits and all resource denominators; a new design gets a new protocol, not a retrospective P22 success.
+- **Guard:** specification only; approvals retain exact expression/transition scope.
+- **Acceptance:** planned `test_no_adoption_interval_is_evaluable`, `test_checkpoints_not_success_selected`, `test_pending_approval_not_implicit_permission`, `test_p22_history_not_reinterpreted`, `test_flat_score_zero_improvement`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scheduled_checkpoint_contract.py tests/test_improvement_estimand.py -q -p no:cacheprovider`.
+- **Non-goals:** creating sham operator adoptions or waiting indefinitely for three beneficial mutations before evaluation can freeze.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P27.02 — Capture actual persistent learner state at fixed training budgets
+
+- **ID:** P27.02
+- **Tier:** T2
+- **Goal:** Capture actual persistent learner state at fixed training budgets.
+- **Read first:** `docs/research/engine_substrate/COGNITION_CUMULATIVE_LEARNING_CONTRACT.md`; `evaluation/process_mastery/checkpoint_world_adapter.py`; `evaluation/process_mastery/p22_resource_accounting.py`; `seeds/learning_memory_budget.json`.
+- **Touch:** new `evaluation/process_mastery/scheduled_learning_checkpoints.py`; new `tests/test_scheduled_learning_checkpoints.py`; new `scripts/gen_scheduled_learning_state_seed.py` + `seeds/scheduled_learning_state.json`.
+- **Pattern to copy:** native immutable snapshots, shared budget receipts and persistent learner availability.
+- **Steps:** 1. Let native budget/exposure markers trigger checkpoint readiness at the fixed intervals; host serializes state mechanically. 2. Capture every arm at g0/g1/g2/g3 including failed-search/no-change/authorization-pending states; retain all spent work and memory. 3. Verify ancestry, actual approvals, receipts and inactive candidate state without requiring a new adoption event for an unchanged learning interval.
+- **Guard:** ScheduledLearningStatePolicy disabled; inherited host/action gates unchanged.
+- **Acceptance:** `test_fixed_budget_captures_failed_interval`, `test_pending_operator_not_executed`, `test_same_world_access_across_arms`, `test_resource_counters_include_restored_branch_work`, `test_restart_preserves_schedule`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scheduled_learning_checkpoints.py tests/test_p22_resource_accounting.py tests/test_learning_memory_budget.py -q -p no:cacheprovider`.
+- **Non-goals:** padding passive arms with sham approvals or copying checkpoints across arms instead of measuring their states.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P27.03 — Evaluate fresh independent goals with causal component controls
+
+- **ID:** P27.03
+- **Tier:** T2
+- **Goal:** Evaluate fresh independent goals with causal component controls.
+- **Read first:** `docs/research/engine_substrate/COGNITION_CUMULATIVE_LEARNING_CONTRACT.md`; `evaluation/process_mastery/p22_checkpoint_panel.py`; `evaluation/process_mastery/evidence_search_worlds.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** new `evaluation/process_mastery/cumulative_checkpoint_panel.py`; new `tests/test_cumulative_checkpoint_panel.py`; new `tests/test_cumulative_causal_controls.py`.
+- **Pattern to copy:** isolated native checkpoint evaluation and P17 acquired-axis perturbation.
+- **Steps:** 1. Restore each actual checkpoint in an isolated evaluator and apply common sealed world/primitive interfaces at fixed per-task ceilings. 2. Score native predictions/actions from the stored learned state; no host arm switch chooses expressions or repairs missing knowledge. 3. On development-only causal controls, disable learned distinctions, shared transfer priors, consolidated representations or new processes one at a time; verify the claimed path changes or its absence is reported.
+- **Guard:** read-only checkpoint scoring; no training on sealed results.
+- **Acceptance:** `test_common_test_worlds_at_each_checkpoint`, `test_no_scoring_feedback_into_training`, `test_evicted_content_stays_unavailable`, `test_component_ablation_follows_actual_path`, `test_missing_or_pending_output_retained`.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_cumulative_checkpoint_panel.py tests/test_cumulative_causal_controls.py tests/test_scheduled_learning_checkpoints.py -q -p no:cacheprovider`.
+- **Non-goals:** changing goals with checkpoint generation, selecting only worlds a learned macro solves or treating independent simulator receipt as physical validation.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P27.04 — Define final evidence scope and unresolved capability obligations
+
+- **ID:** P27.04
+- **Tier:** T1
+- **Goal:** Define final evidence scope and unresolved capability obligations.
+- **Read first:** `docs/research/engine_substrate/COGNITION_CAPABILITY_CLOSURE_MATRIX.md`; `docs/research/engine_substrate/COGNITION_CUMULATIVE_LEARNING_CONTRACT.md`; `docs/research/engine_substrate/COGNITION_LINEAR_P26_RESULTS.md`; this plan §6.
+- **Touch:** `docs/research/engine_substrate/COGNITION_CAPABILITY_CLOSURE_MATRIX.md`; `docs/research/engine_substrate/PMB_V1_SPEC.md`.
+- **Pattern to copy:** existing per-level supported input and matched-human comparison gates.
+- **Steps:** 1. Map native model, qualia, transfer, retention, strategy and multi-checkpoint outcomes to the original L-level prerequisites. 2. Preserve failed advantages, opaque process forms and unavailable human baselines. 3. State which claim is supported by which independent family and whether more work/data/approval was needed; no blanket powerful-system or human-parity designation follows from finishing the plan.
+- **Guard:** documentation only.
+- **Acceptance:** each capability has exact source/evidence/unsupported disposition and measurable next obligation; no original failure removed.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scheduled_checkpoint_contract.py tests/test_cumulative_checkpoint_panel.py -q -p no:cacheprovider`.
+- **Non-goals:** adding a score threshold after results or equating approval/lifecycle correctness with recursive competence.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P27.E1 — Integrate and establish the phase-specific causal checks
+
+- **ID:** P27.E1
+- **Tier:** T2
+- **Goal:** Integrate and establish the phase-specific causal checks.
+- **Read first:** `substrate/boot_profiles.py::COGNITION_ON_SEEDS`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`; `evaluation/process_mastery/runtime_attestation.py`.
+- **Touch:** `substrate/boot_profiles.py`; `seeds/cognition_on_params.json`; `tests/test_cognition_profile_integration.py`.
+- **Pattern to copy:** P16 attested native boundary, P17 causal perturbation and one-budget profile tests.
+- **Steps:** 1. Integrate scheduled persistent-learning checkpoints and independent-goal evaluation under disabled defaults and one shared budget. 2. Exercise evidence→learned state→native choice→authorized result→receipt, including the phase’s knockout/fallback. 3. Measure complete dynamic memory, source exposure, native work and isolated boot; test checkpoint/restart and default/conversation isolation.
+- **Guard:** explicit cognition-on opt-in; existing approval scopes unchanged.
+- **Acceptance:** `test_p27_native_learning_chain`, `test_p27_causal_perturbation`, `test_p27_default_isolation`, `test_p27_shared_budget`; structural gates cannot be closed by merely reporting no benefit.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scheduled_checkpoint_contract.py tests/test_scheduled_learning_checkpoints.py tests/test_cumulative_checkpoint_panel.py tests/test_cumulative_causal_controls.py tests/test_cognition_profile_integration.py -q -p no:cacheprovider`.
+- **Non-goals:** activating new policies globally or routing decisions through the evaluator.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P27.E2 — Freeze new tasks and a valid matched-arm evaluation
+
+- **ID:** P27.E2
+- **Tier:** T1
+- **Goal:** Freeze new tasks and a valid matched-arm evaluation.
+- **Read first:** `docs/research/engine_substrate/PMB_V1_SPEC.md`; `evaluation/process_mastery/runtime_attestation.py`; `evaluation/process_mastery/scorecard.py`; `docs/research/engine_substrate/COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md`.
+- **Touch:** new `evaluation/process_mastery/linear_p27_v1.py`; new `evaluation/process_mastery/analyze_linear_p27_v1.py`; new `docs/research/engine_substrate/COGNITION_LINEAR_P27_PREREG.md`.
+- **Pattern to copy:** corrected attestation and immutable allocation gates in the existing linear runners.
+- **Steps:** 1. Implement all stated arm/family/control paths and development self-checks. 2. Freeze task distributions, resource ceilings, concrete seed sets, hypothesis/estimand definitions and all loaded/source artifacts. 3. Verify disjointness from every previous train/selection/validation/held-out range, then commit preregistration alone before the single sealed draw. Flat/ceiling/floor outcomes remain valid outcomes.
+- **Guard:** evaluation only; no previous runner/protocol patched.
+- **Acceptance:** working adapters, event/receipt parity, causal controls and attestation pass before freeze; all primaries, controls, censoring and exposure denominators fixed in advance.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scheduled_checkpoint_contract.py tests/test_scheduled_learning_checkpoints.py tests/test_cumulative_checkpoint_panel.py tests/test_cumulative_causal_controls.py -q -p no:cacheprovider`.
+- **Non-goals:** post-holdout tuning, choosing only successful episodes, hiding a nonworking comparator or requiring positive development efficacy to freeze.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+### P27.E3 — Run once report every outcome and reconcile the next entry
+
+- **ID:** P27.E3
+- **Tier:** T1
+- **Goal:** Run once report every outcome and reconcile the next entry.
+- **Read first:** `docs/research/engine_substrate/COGNITION_LINEAR_P27_PREREG.md`; `evaluation/process_mastery/linear_p27_v1.py`; `evaluation/process_mastery/analyze_linear_p27_v1.py`; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Touch:** new `docs/research/engine_substrate/COGNITION_LINEAR_P27_RESULTS.md`; this plan; `docs/research/engine_substrate/COGNITION_CAPABILITY_ASSESSMENT_20261010.md`.
+- **Pattern to copy:** P20/P21 retained negative outcomes and P16 artifact evidence.
+- **Steps:** 1. Run the complete fixed allocation once and archive raw bytes, hashes and runtime identity. 2. Report every outcome, interval, resource stratum, missing/pending record and structural failure; preserve prior negative results. 3. Update support/maturity and the next entry: a missing causal mechanism blocks its dependent task; a valid negative advantage informs scope without becoming a new pass.
+- **Guard:** frozen protocol; documentation closeout.
+- **Acceptance:** complete allocation and all hypotheses classified; next phase uses only demonstrated interfaces; no retrospective rescoring or automatic L-level closure.
+- **Verify cmd:** `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_scheduled_checkpoint_contract.py tests/test_scheduled_learning_checkpoints.py tests/test_cumulative_checkpoint_panel.py tests/test_cumulative_causal_controls.py -q -p no:cacheprovider`.
+- **Non-goals:** treating reporting-cycle completion as evidence of acquired advantage.
+- **Done when:** named acceptance and the applicable §5 regression/attestation gates pass; future test names are planned assertions, not current results. Efficacy outcomes are reported against the preregistration without substituting mechanism tests.
+
+**P23.05 completion (2026-10-24):** Published `COGNITION_LINEAR_P23_RESULTS.md` with the exact bound inputs, raw artifact hashes, D4 finite witnesses, bounded Loopover unknown, branch attempt accounting, supported barriers and unresolved expression-detail gap. Updated the capability assessment without changing P16–P22 dispositions. P22 remains DRAFT with held-out access closed; P24 common-target learning is authorized as the next independent phase, and P26 must apply the measured search remedies before P27 decides P22 re-entry versus a versioned successor. Verification: `OZMA_SEED_PERSIST_DISABLED=1 .venv/bin/python -m pytest tests/test_search_feasibility_audit.py tests/test_search_funnel_audit.py tests/test_search_remedy_contract.py -q -p no:cacheprovider` — 11 passed in 17.48s.
+
+**P26.E2 completion (2026-10-25):** Froze the matched residual/fixed/random selector allocation and native-search comparator in the preregistration-only commit `14b08988196810ab94311ab887bdd0638c52d4ce`, parented by the frozen implementation. The concrete seed closure is disjoint, the committed development self-check is structurally valid, and exact source/build/runtime hashes are bound. No heldout rows were opened before this commit.
+
+**P26.E3 completion (2026-10-25):** Executed the sealed draw once: 800 paired streams, 2,400 selector rows, 800 search rows and 300 controls. Analyzer status is `VALID`; runtime is `ATTESTED`; no structural failures. Residual AUC was 0.00875, fixed 0.00297 and random 0.02484. The primary residual-minus-stronger-control gain was −0.01609 (99% CI [−0.02563, −0.00750]); the registered ≥0.10 gate failed. All four cells were near floor. Search recorded 25,600 attempts and 981 unapproved proposals, with zero unique verified effects, approvals, receipts or unseen-binding use. Full outcomes, resource strata, controls and hashes are in [`COGNITION_LINEAR_P26_RESULTS.md`](COGNITION_LINEAR_P26_RESULTS.md) and retained raw/analysis artifacts. P26 closes as a valid negative advantage result, not an efficacy pass; capability levels remain unchanged. P27 proceeds only as its own scheduled-checkpoint protocol, with no assumed P26 benefit. Verification: prescribed E3 regression bundle — 20 passed.
+
+**P27.01 completion (2026-10-25):** Kept the original P22 preregistration `DRAFT — NOT FROZEN` because its descendant/resource gates remain incomplete and the P23–P26 results do not satisfy or repair them. Chose a separately versioned scheduled-checkpoint successor: immutable per-arm g0–g3 state ancestry at fixed cumulative-work/exposure thresholds, including no-change, failed-search and pending-approval intervals; same sealed goals at every checkpoint; independent final validation; paired world-cluster estimands; explicit cost matching for efficiency; and no heldout feedback or action authority. Added [`COGNITION_CUMULATIVE_LEARNING_CONTRACT.md`](COGNITION_CUMULATIVE_LEARNING_CONTRACT.md), the P27 section in `PMB_V1_SPEC.md`, and contract tests. Verification: P27.01 plus existing improvement-estimand bundle — 16 passed. P27.02 is next.
+
 ## 5. Common integration, evaluation and regression gates
 
 Every new phase uses its own registered protocol and `.E1 → .E2 → .E3` ordering. E1 completes integration **before** freezing hashes. E2 freezes a runner with working adapters and records the full engine build provenance and dependency closure. E3 runs once on the fixed draw and reports all hypotheses, controls, unknowns and failure limits. If an implementation defect invalidates a comparison, preserve it, version the corrected protocol and use an untouched split; never rescore the defective report into success.
@@ -2337,6 +2942,15 @@ Self-checks use development-only seeds and exercise null, timeout, unsafe output
 - **Independent goals:** task generation cannot use active operator/candidate name, power, generation index or learned solution. All arms share the same world and primitive/model access; checkpoint evaluation uses fixed task distribution and matched primitive-work ceilings. Record literal task IDs/seeds and enforce disjoint training/selection/evaluation allocations. Extend the existing namespace with phase codes 16–22 and check every prior recorded range for collisions before freeze.
 - **Working controls:** every comparator must execute and learn on declared development sanity worlds before E2 freezes. Missing adapters are hard errors. All-zero held-out performance is allowed when it comes from a real learner, and all-success outcomes must yield an honest zero improvement under the chosen estimator. Do not condition primary work comparisons only on successful treatment cases or silently drop censored failures.
 - **Coverage and order:** required native consumer/provenance/support tests must pass before advancing. Failed benefit hypotheses remain failed with named safe fallbacks. L-level closure additionally requires its particular model, learning, transfer, explanation or human-baseline evidence in the closure matrix; no new arbitrary stopping criterion is introduced by this planning update.
+
+### Additional gates for Phases 23–27
+
+- **Phase 23 is diagnosis:** use archived/training-only inputs, exact bounds and known checkpoints. Its closeout needs no efficacy preregistration or new successful operator; external diagnostic witnesses must never be installed into the measured learner. Runtime remediation, if required, is separately scoped and tested before use.
+- **Target evidence parity:** all new transfer arms assimilate each target receipt through the same ordinary learner. Extra map views cannot suppress that path, double evidence credit or hide verification/source acquisition costs. Preserve P20’s frozen FAIL and v1 adapter as historical evidence.
+- **Retention semantics:** one learner persists from acquisition to delayed evaluation. Any representation capable of reconstructing the tested effect is counted under the common dynamic-memory budget; no target-specific `protected=True`, host-held source archive or freshly initialized delayed learner may substitute for retained competence. Fixed safety/audit metadata cannot contain uncharged answer payloads.
+- **Scheduled checkpoints:** successful discovery/adoption is an outcome, not a prerequisite to schedule or score a learning checkpoint. Keep no-change, unsuccessful search and pending authorization visible. Existing approval rules remain in force; do not invent passive approvals to equalize costs. Report actual unequal data/work/approval costs separately from equal ceilings.
+- **New protocols only:** P24–P27 use new runner/analyzer/preregistration files and untouched allocations. Use the §5 CLI/self-check contract and exact loaded-extension attestation. Select capacity/work/difficulty strata by predeclared semantic/coverage rules rather than treatment efficacy, retain ceiling/floor rows and freeze every primary before the draw. Use paired world-cluster intervals and Holm correction at the existing α=.01; flat scores must produce zero gain, not an alternative success metric.
+- **P22 disposition:** preserve the current unfrozen draft and all historical development/approval artifacts. P23 determines feasibility; P27 states whether the original hypothesis is actually evaluable or a separately named successor is needed. Neither a diagnostic oracle nor resampling goals can turn earlier development into held-out efficacy.
 
 ### Regression gate
 
@@ -2411,6 +3025,16 @@ L7 categories describe specific measured advantages. Proof coverage or a positiv
 P3 rung-1 cache speedup remains failed. P4 C5's incremental-resolution test remains failed, and new Phase 8 evidence does not rewrite it. P5 v1 and v2 retain their recorded limitations. Irregular-time streams, arbitrary continuous imagery angles, broad SCM identification, unrestricted natural-language understanding and physical/open-world breadth are not established by this plan's bounded input contracts. A future extension needs an explicit representation/evidence task before adoption; existing unsupported cases must remain honest. Quadratic GenInfer default features and real-valued Pareto stay deferred until a concrete supported consumer justifies a separate engine decision.
 
 ## 7. Next executable action
+
+Start **P23.01**: freeze the archived inputs and diagnostic questions. Then execute P23.02–P23.05 before planning any further search expansion. Enumerate D4’s remaining finite effects and qualification failures, and separate Loopover grammar/search/guard/headroom barriers. These diagnostics need no new operator promotion and must not access held-out worlds.
+
+Continue **P24 → P25 → P26 → P27** only through their structural gates. P24 delivers every target receipt to the same ordinary learner; P25 retains one actual learned agent under charged, non-target-protected memory; P26 connects useful evidence selection and justified search repairs; P27 measures scheduled checkpoints including failed/no-change intervals. Positive benefit is not a prerequisite for recording a valid result, but a missing behavioral consumer or broken comparator is not a completed capability.
+
+The P22 draft remains unfrozen. Prior candidate approvals stay exact and already consumed where recorded. Any required new approval follows existing scope; no new blanket authorization or automatic adoption is granted by this plan. The P23 closeout and P27 contract make the original-versus-successor protocol decision explicit.
+
+### Historical P22 next-action snapshot (superseded 2026-10-24)
+
+The following is preserved as the state of the previous search/approval ledger, not the current execution instruction:
 
 Continue **P22.03** by completing the registered-root multi-generation lineages and resource-ceiling records. The D4 invention-only `#1908`, Loopover invention-only `#6542`, and D4 full-arm `#1541` generation-one requests were each approved and consumed exactly once with 12 reviewer-reported seconds. Their receipts and digest-valid child checkpoints verify; these first three fulfill 3 of 12 invention/full descendants. D4 invention-only g2 candidate `#9458` has since been approved and captured with a verified receipt, bringing the total to 4 of 12; eight later arm-specific invention/full transitions require separate candidate approvals. Loopover full-arm still lacks a qualified generation-one candidate; fresh distinct-goal searches from its registered g0 on worlds 0800–0803 and 0804–0807 both failed to qualify a candidate. Candidate `#11545` had 16,236 residual independent-goal trials on the first panel; the second panel found no candidate on its first task and candidate `#31551` later with no qualification trials. The third fresh panel on worlds 0808–0811 again yielded candidate `#11545`, but all 16,236 independent-goal trials were residual. A higher-budget variant on worlds 0812–0814 (three distinct goals, 100 ticks, 20,000 attempts per request) yielded candidate `#21545`, but all 10,824 independent-goal trials were residual. The latest three-goal search used the 90,000-attempt ceiling and 120 ticks but returned `NO_CANDIDATE_FIRST_TRIAL` on all goals. The accumulated full-root training evidence has not produced a qualified Loopover full-arm g1 candidate. A fresh four-goal continuation on worlds 0020–0023 used 100,000 attempts at 25,000 per request and returned `NO_CANDIDATE_FIRST_TRIAL` for all tasks; it produced two unqualified candidates and no action. A five-goal continuation on worlds 0029–0033 used the full 120,000-attempt ceiling and again returned `NO_CANDIDATE_FIRST_TRIAL`; four proposals were unqualified and no action occurred. That panel exhausted each 24,000-attempt task cap and left its four candidates without transfer trials. A new four-goal panel on 0034–0037 reserved 10,000 per task, leaving qualification headroom; candidate `#1611` qualified on goals 0034/0035, and exact replay reproduced its non-identity child `#16963`. A candidate-specific full-arm generation-one request is prepared and awaiting exact approval. Continue the other registered-root lineages: a D4 invention-only g1 continuation reproduced candidate `#9458` (digest `84854777d0e3b48f447ecd04236a794eff39a46546edb3f19e47f506492ce66a`) and qualification `#15851` on training goals 0960/0818. Exact replay matches; its candidate-specific one-transition packet was approved and consumed, producing a verified g2 checkpoint. A distinct-goal continuation from that g2 on 0822/0823/0825 found no improving g3 candidate: the only qualified candidate was `#25873` (`power2:flip_r`, params `[0,1,2,3]`), an identity effect that cannot count as improvement. It was not approved or actioned. A fresh post-guard continuation on worlds 0004/0005 again found identity candidate `#25873`, now with zero qualifications; malformed candidate `#9459` also remains excluded. The two new requests each used 10,000 attempts; cumulative reserved attempts reached 64,280. This adds no improving g3 candidate or action. The 90,000-attempt Loopover full-root panel found no candidate, so do not repeat that ceiling unchanged. A Loopover invention-only g1 continuation on worlds 0826–0829 produced three unqualified candidates; none had qualification witnesses, so there is no candidate-specific approval packet from that lineage yet. A further continuation on fresh distinct worlds 0006/0007 again produced three candidates and zero qualifications; it reserved 20,000 new attempts, with cumulative reserved attempts at 40,000, and created no action. Raising the per-request ceiling to 20,000 on fresh draws 0008/0009 produced three candidates and zero qualifications after 40,000 new attempts; cumulative reserved attempts reached 60,000 without an action. A 30,000-attempt continuation on fresh draws 0010/0011 again produced three unqualified candidates; it reserved 60,000 new attempts and reached 80,000 cumulative, with no action. A four-goal max-branch panel on fresh draws 0016–0019 used 25,000 attempts per request and reached the 120,000 cumulative ceiling; five candidates remained unqualified. A D4 full-arm g1 continuation on worlds 0830–0833 did formally qualify candidate `#9440`, but its selected transferred child `#12379` has the identity effect; this is not an improving descendant and was not approved. The native qualification guard now excludes identity effects by comparing each source and transfer effect with a domain-bound identity fingerprint. With this guard, a fresh D4 full-arm g1 continuation on worlds 0002/0003 qualified candidate `#9440` only when its transfer child `#22382` had non-identity effect `[3,1,2,0]`; exact replay reproduced the same qualification and witnesses 0988/0003. A candidate-specific request is now prepared for one training action from the full-arm g1 parent, but remains unapproved. The 12 unchanged/adaptive passive descendants, common registered-world evaluator, cumulative resource accounting, isolated wall-time/RSS capture, and fail-closed held-out runner are available. The runner and analyzer self-checks pass, and the unfrozen-preregistration guard confirms no held-out access. The preregistration is still a design draft; the 24-checkpoint manifest and per-checkpoint measured ceilings are incomplete. Do not freeze or score held-out allocation until all lineage, instrumentation, and provenance gates pass. Every later adoption needs its own exact approval. P21's valid failures and P15's `NOT_ESTABLISHED` trend remain unchanged; do not rerun or rescore historical sealed allocations.
 
