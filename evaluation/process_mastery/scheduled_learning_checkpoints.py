@@ -13,6 +13,7 @@ from typing import Any
 
 CHECKPOINTS = ("g0", "g1", "g2", "g3")
 DEFAULT_CUMULATIVE_WORK_THRESHOLDS = (0, 1_000, 2_000, 4_000)
+DEFAULT_CUMULATIVE_ACCESS_THRESHOLDS = (0, 1, 2, 4)
 COUNTER_KEYS = (
     "primitive_work", "source_exposure", "native_rule_steps", "graph_bytes",
     "budget_debits", "task_world_accesses",
@@ -41,6 +42,7 @@ class ScheduledLearningCheckpoint:
     world_allocation_sha256: str
     state_sha256: str
     graph_snapshot_json: str
+    auxiliary_snapshots_json: str
     graph_bytes: int
     cumulative: dict[str, int]
     interval_delta: dict[str, int]
@@ -54,9 +56,11 @@ class ScheduledLearningCheckpoint:
 
 
 def checkpoint_ready(cumulative_primitive_work: int, next_checkpoint: str,
-                     thresholds: tuple[int, ...] = DEFAULT_CUMULATIVE_WORK_THRESHOLDS
+                     thresholds: tuple[int, ...] = DEFAULT_CUMULATIVE_WORK_THRESHOLDS,
+                     cumulative_task_world_accesses: int = 0,
+                     access_thresholds: tuple[int, ...] = DEFAULT_CUMULATIVE_ACCESS_THRESHOLDS
                      ) -> bool:
-    """Return readiness at a predeclared work marker, independent of outcomes."""
+    """Return readiness at a fixed charged-work or task-access marker."""
     if next_checkpoint not in CHECKPOINTS:
         raise ValueError("unknown scheduled checkpoint")
     if len(thresholds) != len(CHECKPOINTS) or any(
@@ -64,10 +68,21 @@ def checkpoint_ready(cumulative_primitive_work: int, next_checkpoint: str,
         raise ValueError("thresholds must be four nonnegative integer work markers")
     if tuple(sorted(thresholds)) != thresholds:
         raise ValueError("thresholds must be monotonic")
+    if (len(access_thresholds) != len(CHECKPOINTS)
+            or any(isinstance(x, bool) or not isinstance(x, int) or x < 0
+                   for x in access_thresholds)
+            or tuple(sorted(access_thresholds)) != access_thresholds):
+        raise ValueError("access thresholds must be four monotonic nonnegative integers")
     if isinstance(cumulative_primitive_work, bool) or not isinstance(
             cumulative_primitive_work, int) or cumulative_primitive_work < 0:
         raise ValueError("cumulative work must be a nonnegative integer")
-    return cumulative_primitive_work >= thresholds[CHECKPOINTS.index(next_checkpoint)]
+    if (isinstance(cumulative_task_world_accesses, bool)
+            or not isinstance(cumulative_task_world_accesses, int)
+            or cumulative_task_world_accesses < 0):
+        raise ValueError("cumulative task-world accesses must be a nonnegative integer")
+    index = CHECKPOINTS.index(next_checkpoint)
+    return (cumulative_primitive_work >= thresholds[index]
+            or cumulative_task_world_accesses >= access_thresholds[index])
 
 
 def snapshot_native_graph(agent) -> dict:
@@ -91,6 +106,7 @@ def capture_scheduled_checkpoint(*, arm: str, checkpoint: str,
         native_graph: dict, cumulative: dict[str, int], interval_status: str,
         parent: ScheduledLearningCheckpoint | None = None,
         world_allocation_sha256: str,
+        auxiliary_native_graphs: dict[str, dict] | None = None,
         pending_candidate_ids: tuple[str, ...] = (),
         approval_ids: tuple[str, ...] = (), receipt_ids: tuple[str, ...] = (),
         thresholds: tuple[int, ...] = DEFAULT_CUMULATIVE_WORK_THRESHOLDS,
@@ -122,7 +138,8 @@ def capture_scheduled_checkpoint(*, arm: str, checkpoint: str,
     for key, value in cumulative.items():
         if isinstance(value, bool) or not isinstance(value, int) or value < 0:
             raise ValueError(f"counter {key} must be a nonnegative integer")
-    if not checkpoint_ready(cumulative["primitive_work"], checkpoint, thresholds):
+    if not checkpoint_ready(cumulative["primitive_work"], checkpoint, thresholds,
+            cumulative_task_world_accesses=cumulative["task_world_accesses"]):
         raise ValueError("scheduled checkpoint work marker has not been reached")
     if cumulative["graph_bytes"] > max_graph_bytes:
         raise ValueError("complete dynamic graph exceeds memory ceiling")
@@ -135,7 +152,13 @@ def capture_scheduled_checkpoint(*, arm: str, checkpoint: str,
             if cumulative[key] < parent.cumulative[key]:
                 raise ValueError(f"cumulative {key} regressed across restored branch")
     graph_json = _canonical(native_graph)
-    graph_bytes = len(graph_json.encode())
+    auxiliary_native_graphs = auxiliary_native_graphs or {}
+    if any(not isinstance(name, str) or not name or not isinstance(graph, dict)
+           for name, graph in auxiliary_native_graphs.items()):
+        raise ValueError("auxiliary native snapshots require named graph objects")
+    auxiliary_json = _canonical(auxiliary_native_graphs)
+    graph_bytes = len(graph_json.encode()) + (
+        len(auxiliary_json.encode()) if auxiliary_native_graphs else 0)
     if cumulative["graph_bytes"] != graph_bytes:
         raise ValueError("graph_bytes counter must equal the complete serialized graph size")
     if graph_bytes > max_graph_bytes:
@@ -156,6 +179,7 @@ def capture_scheduled_checkpoint(*, arm: str, checkpoint: str,
         parent_checkpoint_sha256=parent.checkpoint_sha256 if parent else None,
         world_allocation_sha256=world_allocation_sha256,
         state_sha256=state_hash, graph_snapshot_json=graph_json,
+        auxiliary_snapshots_json=auxiliary_json,
         graph_bytes=graph_bytes, cumulative=dict(cumulative), interval_delta=delta,
         interval_status=interval_status,
         pending_candidate_ids=tuple(sorted(pending_candidate_ids)),
@@ -170,11 +194,18 @@ def verify_scheduled_checkpoint(checkpoint: ScheduledLearningCheckpoint) -> bool
         return False
     try:
         graph = json.loads(checkpoint.graph_snapshot_json)
+        auxiliary = json.loads(checkpoint.auxiliary_snapshots_json)
     except (TypeError, ValueError):
         return False
     if _canonical(graph) != checkpoint.graph_snapshot_json:
         return False
     if hashlib.sha256(checkpoint.graph_snapshot_json.encode()).hexdigest() != checkpoint.state_sha256:
+        return False
+    if _canonical(auxiliary) != checkpoint.auxiliary_snapshots_json:
+        return False
+    expected_graph_bytes = len(checkpoint.graph_snapshot_json.encode()) + (
+        len(checkpoint.auxiliary_snapshots_json.encode()) if auxiliary else 0)
+    if checkpoint.graph_bytes != expected_graph_bytes:
         return False
     fields = asdict(checkpoint)
     digest = fields.pop("checkpoint_sha256")

@@ -13,7 +13,8 @@ def test_no_adoption_interval_is_evaluable():
     contract = _read("COGNITION_CUMULATIVE_LEARNING_CONTRACT.md")
     assert "no state changed" in contract
     assert "If search failed, no candidate qualified, or authorization is pending, capture that interval" in contract
-    assert "Readiness is triggered by cumulative charged work/exposure markers, never by candidate quality" in contract
+    assert "Readiness is triggered by either fixed charged-work or task-access markers" in contract
+    assert "never by candidate quality, approval, adoption, or a score" in contract
 
 
 def test_checkpoints_not_success_selected():

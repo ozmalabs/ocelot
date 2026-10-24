@@ -12,6 +12,7 @@ SEED = {
              "process_search_only", "combined"],
     "checkpoints": ["g0", "g1", "g2", "g3"],
     "cumulative_primitive_work_thresholds": [0, 1000, 2000, 4000],
+    "cumulative_task_world_access_thresholds": [0, 1, 2, 4],
     "cumulative_source_exposure_thresholds": [0, 0, 0, 0],
     "max_graph_bytes": 2000000,
     "max_native_rule_steps": 250000,
