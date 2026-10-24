@@ -56,6 +56,15 @@ BOOTSTRAPS = 20_000
 BOOTSTRAP_SEED = 25_010_241
 SEED_BASES = {"development": 110_000_000, "heldout": 120_000_000}
 CONTROL_BASES = {"development": 130_000_000, "heldout": 131_000_000}
+# Numeric envelopes reserved by prior frozen P16–P19 and P22–P24 panels.
+# P20/P21 use protocol-owned string namespaces and distinct stream-ID prefixes.
+PRIOR_NUMERIC_INTERVALS = (
+    (26_000_000, 28_999_999), (29_000_000, 29_999_999),
+    (31_000_000, 33_999_999), (41_000_000, 43_999_999),
+    (90_010_000, 90_010_007), (90_020_000, 90_020_007),
+    (93_010_000, 93_010_199), (93_020_000, 93_020_199),
+    (94_000_000, 94_002_001), (97_000_000, 97_002_099),
+)
 RESOURCE_LIMITS = {
     "target_actions_per_arm": 2,
     "interference_actions_per_arm": INTERFERENCE_COUNT,
@@ -192,6 +201,14 @@ def allocation(split: str, *, streams_per_cell: int | None = None,
     controls = {kind: [CONTROL_BASES[split] + kind_index * 10_000 + index
                        for index in range(controls_per_kind)]
                 for kind_index, kind in enumerate(CONTROL_KINDS)}
+    all_seeds = [seed for cell in stream_cells for seed in cell["seeds"]]
+    all_seeds.extend(seed for values in controls.values() for seed in values)
+    overlaps = [(seed, lo, hi) for seed in all_seeds for lo, hi in PRIOR_NUMERIC_INTERVALS
+                if lo <= seed <= hi]
+    if overlaps:
+        raise RuntimeError(f"P25 allocation overlaps a prior numeric seed range: {overlaps[0]}")
+    if len(all_seeds) != len(set(all_seeds)):
+        raise RuntimeError("P25 allocation contains duplicate numeric seeds")
     return {
         "phase": PHASE, "split": split, "families": list(FAMILIES),
         "capacity_ratios": list(CAPACITY_RATIOS), "arms": list(ARMS),
