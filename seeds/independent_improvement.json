@@ -2176,6 +2176,65 @@
                     ]
                   }
                 }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_process_domain",
+                    "any_type": false
+                  },
+                  "var_name": "identity_domain",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "candidate"
+                          },
+                          "key": "domain"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "identity_domain"
+                          },
+                          "key": "name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "candidate"
+                          },
+                          "key": "effect_digest"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "identity_domain"
+                          },
+                          "key": "identity_effect_digest"
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             ]
           },
@@ -2830,6 +2889,65 @@
                     ]
                   }
                 }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_process_domain",
+                    "any_type": false
+                  },
+                  "var_name": "identity_domain",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "candidate"
+                          },
+                          "key": "domain"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "identity_domain"
+                          },
+                          "key": "name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "candidate"
+                          },
+                          "key": "effect_digest"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "identity_domain"
+                          },
+                          "key": "identity_effect_digest"
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             ]
           },
@@ -2993,6 +3111,65 @@
                         "b": {
                           "type": "Lit",
                           "value": "approved"
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_process_domain",
+                    "any_type": false
+                  },
+                  "var_name": "identity_domain",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "trial_candidate"
+                          },
+                          "key": "domain"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "identity_domain"
+                          },
+                          "key": "name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "trial_candidate"
+                          },
+                          "key": "effect_digest"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "identity_domain"
+                          },
+                          "key": "identity_effect_digest"
                         }
                       }
                     ]

@@ -31,7 +31,7 @@ def build():
         "type": "has_independent_improvement_policy", "tgt": {"local": local_id}, "attrs": {}})
     local_id += 1
     def novel_effect(candidate):
-        """Exclude a proposal whose permutation effect is already active."""
+        """Exclude active/adopted effects and identity permutations."""
         same_schema = Exists(N("agent", "has_process_schema"), "same_schema",
             And(Eq(A("same_schema", "domain"), A(candidate, "domain")),
                 Eq(A("same_schema", "params"), A(candidate, "params")),
@@ -42,7 +42,12 @@ def build():
                 Eq(A("same_adopted", "params"), A(candidate, "params")),
                 Eq(A("same_adopted", "status"), L("adopted_candidate")),
                 Eq(A("same_adopted", "adoption_status"), L("approved"))))
-        return And(Not(same_schema), Not(same_adopted))
+        identity_effect = Exists(N("agent", "has_process_domain"),
+            "identity_domain", And(
+                Eq(A(candidate, "domain"), A("identity_domain", "name")),
+                Eq(A(candidate, "effect_digest"),
+                   A("identity_domain", "identity_effect_digest"))))
+        return And(Not(same_schema), Not(same_adopted), Not(identity_effect))
     base["nodes"].append({"local_id": local_id,
         "type": "IndependentImprovementCurriculumBridgePolicy", "attrs": {
             "name": "p22_curriculum_search_bridge", "enabled": 0.0,

@@ -290,6 +290,9 @@ def run_p22_training_proposal_probe(*, family: str,
                     "restored checkpoint must contain one family-specific development domain")
             domain = domains[0]
             domain_name = agent.attrs(domain).get("name")
+            if agent.attrs(domain).get("kind") == "permutation":
+                agent.s.set_attr(domain, "identity_effect_digest",
+                                 [list(range(size))])
             agent.domains[domain_name] = domain
             prior_training_ids = {agent.attrs(task).get("training_trial_key")
                 for task in agent.nodes("SolveTask")

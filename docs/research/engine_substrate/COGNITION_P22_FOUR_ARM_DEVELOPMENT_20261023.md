@@ -1887,3 +1887,49 @@ spent, graph bytes/memory, and peak RSS. The 48-row panel is
 SHA-256 `047eee711378c306e342f251f5f6aa33a7c344a952bbe3071d565cb3702d2c5d`.
 It contains only two arms; exact four-arm resource matching remains untested
 and the P22 freeze gate remains closed.
+
+## Identity effects excluded from native improvement qualification (2026-10-24)
+
+A D4 full-arm g1 continuation on fresh distinct training draws 0830–0833
+qualified source candidate `#9440` (effect `[[1,0,3,2]]`), while its selected
+transfer trial derived child `#12379` with identity effect `[[0,1,2,3]]`. The
+historical artifact remains preserved; no approval or action was created. This
+candidate cannot count as an improving descendant.
+
+The qualification rule previously checked whether source and transfer effects
+were active or approved-adopted, but identity could pass when the domain had no
+identity process installed. Permutation domains now carry a domain-bound
+`identity_effect_digest`; native qualification requires source and transfer
+child effects to differ from it. New and restored P22 domains populate that
+fingerprint. The generator and checked-in seed are synchronized. A regression
+covers an identity transfer without an installed identity process.
+
+Verification: `tests/test_independent_improvement.py
+ tests/test_p22_development.py tests/test_run_p22_development_probe_cli.py` —
+43 passed. Diagnostic raw SHA-256:
+`4461debc542c0bd3de79e61b8812057cdeb7588c1d28ec74fe5bd192158aab5c`. No new
+approval, receipt, validation, or held-out access occurred. The guard repair
+creates no descendant and establishes no efficacy result.
+
+## Identity effects excluded from native improvement qualification (2026-10-24)
+
+A D4 full-arm g1 continuation on fresh distinct training draws 0830–0833
+qualified source candidate `#9440` (effect `[[1,0,3,2]]`), while its selected
+transfer trial derived child `#12379` with identity effect `[[0,1,2,3]]`. The
+historical artifact remains preserved; no approval or action was created. This
+candidate cannot count as an improving descendant.
+
+The qualification rule previously checked whether source and transfer effects
+were active or approved-adopted, but identity could pass when the domain had no
+identity process installed. Permutation domains now carry a domain-bound
+`identity_effect_digest`; native qualification requires source and transfer
+child effects to differ from it. New and restored P22 domains populate that
+fingerprint. The generator and checked-in seed are synchronized. A regression
+covers an identity transfer without an installed identity process.
+
+Verification: `tests/test_independent_improvement.py
+ tests/test_p22_development.py tests/test_run_p22_development_probe_cli.py` —
+43 passed. Diagnostic raw SHA-256:
+`4461debc542c0bd3de79e61b8812057cdeb7588c1d28ec74fe5bd192158aab5c`. No new
+approval, receipt, validation, or held-out access occurred. The guard repair
+creates no descendant and establishes no efficacy result.

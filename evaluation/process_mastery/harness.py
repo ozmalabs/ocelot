@@ -88,6 +88,12 @@ class Agent:
 
     # -- world installation ------------------------------------------------
     def add_domain(self, name, kind, probes, held: dict[str, object], trees=None, **attrs):
+        # Give native qualification rules a domain-bound identity fingerprint.
+        # A candidate must not count an identity permutation as an improvement
+        # merely because no identity process has been installed yet.
+        if kind == "permutation" and probes:
+            attrs.setdefault("identity_effect_digest",
+                             [list(range(len(probes[0])))])
         d = self.s.add_node("ProcessDomain", {
             "name": name, "kind": kind, "probes": probes, "probe_epoch": 0,
             "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0, **attrs,

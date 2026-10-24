@@ -960,3 +960,6 @@ A D4 invention-only g2 continuation on distinct training worlds 0822/0823/0825 f
 
 
 A Loopover invention-only g1 continuation on fresh distinct training worlds 0826–0829 produced three candidates, all with zero qualifications. It reserved 60,000 attempts and measured 93 native rule steps, 815.398 seconds wall-time, and 2,030,424,064-byte peak RSS, with complete native rule identity coverage. It inherited the g1 approval/receipt but created no new action; validation and held-out access remained empty. Loopover invention-only generation two remains unavailable.
+
+
+P22 qualification now rejects identity permutation effects for both the proposed source and its independent-goal transfer child using a domain-bound identity fingerprint. This repairs a loophole exposed by the D4 full-arm g1 training diagnostic on draws 0830–0833: candidate `#9440` qualified, but its selected transfer child `#12379` was identity. The diagnostic remains preserved as training-only historical evidence and created no approval or receipt. The affected native-rule, restored-checkpoint, and CLI coverage passes 43 tests. This does not establish an efficacy gain, create a descendant, or close P22.E2–E3.
