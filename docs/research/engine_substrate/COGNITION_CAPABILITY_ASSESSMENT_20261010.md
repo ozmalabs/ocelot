@@ -984,3 +984,6 @@ A fresh Loopover invention-only g1 continuation at 30,000 attempts per request o
 
 
 A four-goal Loopover invention-only g1 continuation on 0016–0019 reached 120,000 cumulative attempts but produced five candidates with zero independent-goal qualifications. It adds no generation-two descendant or efficacy evidence. A separate invalid draw-allocation launch was stopped before completion and recorded as `INTERRUPTED_INVALID_ALLOCATION`; it is excluded from results.
+
+
+A fresh four-goal Loopover full-arm continuation from the registered g0 root on 0020–0023 exhausted 25,000 attempts per task and returned `NO_CANDIDATE_FIRST_TRIAL` for every task. It generated two unqualified candidates, with no approval, receipt, validation, or held-out access. The full-arm g1 gate remains unmet.

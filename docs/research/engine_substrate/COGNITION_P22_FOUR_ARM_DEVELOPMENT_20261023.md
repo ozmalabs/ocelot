@@ -2059,3 +2059,21 @@ terminated after six observed seconds and produced no terminal search result.
 An `INTERRUPTED_INVALID_ALLOCATION` marker was recorded at the expected path,
 with unknown attempt count; draws 0012–0015 are consumed and excluded. No
 approval or adoption flags were supplied.
+
+## Loopover full-arm max-branch g0 continuation
+
+Restored `p22-loopover-full-g0` (digest
+`d6d3c24fa68c512767e43d45c79985597d659cd28f726b04786100fa25f52f8c`) on fresh
+distinct goals 0020–0023. All four tasks used 25,000 attempts and returned
+`NO_CANDIDATE_FIRST_TRIAL`; two candidates appeared but neither qualified.
+There were zero approvals and receipts, with empty validation and held-out
+allocations.
+
+The run recorded 56 native rule steps, 820.077 seconds wall-time and
+937,930,752-byte peak RSS. Raw artifact SHA-256
+`5c12bd508ab64ea162a0827d13731a25174d662d80334b94b477c7f8d9238352`, resource
+snapshot SHA-256
+`26a21cc577c6c936201e5bffbc8c66116d54101d171772b076ffd3552dd715f1`, and
+native-rule-work SHA-256
+`a7b18b8ebe4e6fd6f62c71c2c2c02c213f295b172c1cfe591e890e8e7faaccc4`
+(complete identity coverage, no unresolved rules).
