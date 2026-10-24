@@ -205,6 +205,16 @@ Loopover invention g1 `f1b709141893c88975ebc09356e81ea28873a2638c634c05e8e784b2a
 and D4 full g1
 `2355279174397e964cfb66a960696f69e27764c2c8c7fd4911616005ddafba2c`.
 
+The captured D4 invention-only g2 checkpoint
+`p22-d4-g2-84854777d0e3` has digest-bound cumulative primitive work `487906`,
+above the current runner/scorer maximum `120000`. It therefore cannot enter a
+valid frozen manifest under the current budget contract. Do not raise the cap
+implicitly or score this checkpoint as if it fit. Before freeze, resolve this
+through an explicit versioned protocol/implementation change with resource
+feasibility evidence, or select a separately authorized and verified alternate
+lineage checkpoint that satisfies the existing bound. Preserve this approved
+checkpoint and its result as historical evidence.
+
 At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
 identity-effect qualification guard, the current provenance audit is `ATTESTED`
 with no issues; source-bundle/build-source match and native symbol binding are
