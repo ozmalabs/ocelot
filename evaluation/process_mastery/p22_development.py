@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import resource
 import sys
 import time
@@ -38,6 +39,26 @@ _FAMILIES = {
 def _process_peak_rss_bytes() -> int:
     peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return int(peak if sys.platform == "darwin" else peak * 1024)
+
+
+def _process_peak_rss_observations(parent_runtime: dict) -> tuple[int, list[dict]]:
+    """Keep cumulative peak RSS with the process identity that measured it.
+
+    Older checkpoints stored only the maximum value. Preserve that value as an
+    explicitly unattributed observation so a later process cannot silently
+    make it appear to have measured the inherited peak itself.
+    """
+    inherited = int(parent_runtime.get("process_peak_rss_bytes", 0))
+    observations = list(parent_runtime.get("process_peak_rss_observations", []))
+    if inherited and not observations:
+        observations.append({"pid": None, "observed_at_unix_ns": None,
+            "peak_rss_bytes": inherited,
+            "scope": "inherited_legacy_unattributed"})
+    current = _process_peak_rss_bytes()
+    observations.append({"pid": os.getpid(), "observed_at_unix_ns": time.time_ns(),
+        "peak_rss_bytes": current,
+        "scope": "resource.getrusage(RUSAGE_SELF).ru_maxrss"})
+    return max(inherited, current), observations
 
 
 def _search_attempts_reserved(agent) -> int:
@@ -398,11 +419,13 @@ def run_p22_training_proposal_probe(*, family: str,
                 "frame_epoch": 0, "probe_epoch": 0, "source_probe_epoch": 0})
             agent.s.add_edge(agent.ag, "has_process_schema", identity, {})
             agent.s.add_edge(domain, "has_held_process", identity, {})
+            root_peak_rss, root_peak_observations = _process_peak_rss_observations(
+                parent_runtime)
             root_runtime = {"native_rule_steps": native_rule_steps,
                 "native_model_calls": int(parent_runtime.get("native_model_calls", 0)),
                 "search_attempts_reserved": search_attempts_reserved,
-                "process_peak_rss_bytes": max(int(parent_runtime.get(
-                    "process_peak_rss_bytes", 0)), _process_peak_rss_bytes()),
+                "process_peak_rss_bytes": root_peak_rss,
+                "process_peak_rss_observations": root_peak_observations,
                 "wall_time_seconds": float(parent_runtime.get("wall_time_seconds", 0.0))
                     + time.perf_counter() - started}
             root_rule_work = rule_capture.snapshot() if rule_capture else None
@@ -548,12 +571,14 @@ def run_p22_training_proposal_probe(*, family: str,
                     or accepted["count"] != 1):
                 raise RuntimeError("approved simulated adoption did not complete exactly once: "
                     + json.dumps(simulated_adoption, sort_keys=True, default=str))
+            final_peak_rss, final_peak_observations = _process_peak_rss_observations(
+                parent_runtime)
             final_runtime = {"native_rule_steps": native_rule_steps,
                 "native_model_calls": int(parent_runtime.get("native_model_calls", 0)),
                 "search_attempts_reserved": search_attempts_reserved,
                 "native_candidate_validation_evaluations": 0,
-                "process_peak_rss_bytes": max(int(parent_runtime.get(
-                    "process_peak_rss_bytes", 0)), _process_peak_rss_bytes()),
+                "process_peak_rss_bytes": final_peak_rss,
+                "process_peak_rss_observations": final_peak_observations,
                 "wall_time_seconds": float(parent_runtime.get("wall_time_seconds", 0.0))
                     + time.perf_counter() - started}
             final_snapshot = snapshot_native_resources(agent,
@@ -700,6 +725,8 @@ def run_p22_training_proposal_probe(*, family: str,
                 else increment_rule_work)
         final_resource_snapshot = adoption_resource_snapshot
         if final_resource_snapshot is None:
+            final_peak_rss, final_peak_observations = _process_peak_rss_observations(
+                parent_runtime)
             runtime_counters = {
                 "native_rule_steps": native_rule_steps,
                 "native_model_calls": int(parent_runtime.get("native_model_calls", 0)),
@@ -708,8 +735,8 @@ def run_p22_training_proposal_probe(*, family: str,
                     row["panel"]["world_count"] for row in candidate_rows
                     if row.get("panel") is not None) + int(
                         parent_runtime.get("native_candidate_validation_evaluations", 0)),
-                "process_peak_rss_bytes": max(int(parent_runtime.get(
-                    "process_peak_rss_bytes", 0)), _process_peak_rss_bytes()),
+                "process_peak_rss_bytes": final_peak_rss,
+                "process_peak_rss_observations": final_peak_observations,
                 "wall_time_seconds": float(parent_runtime.get("wall_time_seconds", 0.0))
                     + time.perf_counter() - started,
             }

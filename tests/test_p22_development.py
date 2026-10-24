@@ -1,6 +1,8 @@
 import json
+import os
 
 from evaluation.process_mastery.p22_development import (
+    _process_peak_rss_observations,
     _select_approved_qualification,
     run_p22_training_proposal_probe,
 )
@@ -26,6 +28,12 @@ def test_training_only_probe_binds_native_rule_work_to_resource_snapshot():
     assert native_rule_work_digest_valid(snapshot["native_rule_work"])
     assert snapshot["resource_measurement_coverage"][
         "wall_time_seconds"]["status"] == "MEASURED"
+    assert snapshot["runtime_counters"]["process_peak_rss_observations"][-1][
+        "pid"] == os.getpid()
+    assert snapshot["runtime_counters"]["process_peak_rss_observations"][-1][
+        "scope"] == "resource.getrusage(RUSAGE_SELF).ru_maxrss"
+    assert snapshot["runtime_counters"]["process_peak_rss_observations"][-1][
+        "observed_at_unix_ns"] > 0
     assert snapshot["runtime_counters"]["search_attempts_reserved"] == sum(
         row["reserved_attempts"] for row in result["search_requests"])
     assert snapshot["resource_event_counts"][
@@ -34,6 +42,41 @@ def test_training_only_probe_binds_native_rule_work_to_resource_snapshot():
     assert ancestor["generation"] == 0
     assert ancestor["native_graph_snapshot_json"]
     assert ancestor["checkpoint_digest"]
+
+
+def test_peak_rss_attribution_preserves_legacy_unknown_and_current_pid(monkeypatch):
+    import evaluation.process_mastery.p22_development as development
+
+    monkeypatch.setattr(development, "_process_peak_rss_bytes", lambda: 900)
+    monkeypatch.setattr(development.os, "getpid", lambda: 12345)
+    monkeypatch.setattr(development.time, "time_ns", lambda: 456)
+    peak, observations = _process_peak_rss_observations(
+        {"process_peak_rss_bytes": 1000})
+    assert peak == 1000
+    assert observations == [
+        {"pid": None, "observed_at_unix_ns": None, "peak_rss_bytes": 1000,
+         "scope": "inherited_legacy_unattributed"},
+        {"pid": 12345, "observed_at_unix_ns": 456, "peak_rss_bytes": 900,
+         "scope": "resource.getrusage(RUSAGE_SELF).ru_maxrss"},
+    ]
+
+
+def test_peak_rss_attribution_keeps_prior_measured_maximum(monkeypatch):
+    import evaluation.process_mastery.p22_development as development
+
+    prior = [{"pid": 7, "peak_rss_bytes": 1200,
+              "scope": "resource.getrusage(RUSAGE_SELF).ru_maxrss"}]
+    monkeypatch.setattr(development, "_process_peak_rss_bytes", lambda: 800)
+    monkeypatch.setattr(development.os, "getpid", lambda: 12345)
+    monkeypatch.setattr(development.time, "time_ns", lambda: 789)
+    peak, observations = _process_peak_rss_observations({
+        "process_peak_rss_bytes": 1200,
+        "process_peak_rss_observations": prior})
+    assert peak == 1200
+    assert observations[:-1] == prior
+    assert observations[-1] == {"pid": 12345, "observed_at_unix_ns": 789,
+        "peak_rss_bytes": 800,
+        "scope": "resource.getrusage(RUSAGE_SELF).ru_maxrss"}
 
 
 def test_training_probe_accepts_multiple_pairwise_distinct_goals():

@@ -7,7 +7,7 @@ import pytest
 from evaluation.process_mastery.p22_resource_accounting import (
     NativeRuleWorkCapture, analyzer_resource_record, compare_resource_snapshots,
     merge_native_rule_work_snapshots, native_rule_work_digest_valid,
-    snapshot_native_resources,
+    resource_snapshot_digest_valid, snapshot_native_resources,
 )
 from tests.test_open_process_search import _agent as _p19_agent
 
@@ -169,11 +169,19 @@ def test_isolated_process_peak_rss_is_digest_bound_and_comparable():
         low = snapshot_native_resources(agent,
             runtime_counters={"native_rule_steps": 1, "native_model_calls": 0,
                               "process_peak_rss_bytes": 1000,
+                              "process_peak_rss_observations": [{"pid": 101,
+                                  "observed_at_unix_ns": 501,
+                                  "peak_rss_bytes": 1000, "scope": "test"}],
                               "wall_time_seconds": 1.25})
         high = snapshot_native_resources(agent,
             runtime_counters={"native_rule_steps": 1, "native_model_calls": 0,
                               "process_peak_rss_bytes": 1001,
+                              "process_peak_rss_observations": [{"pid": 102,
+                                  "observed_at_unix_ns": 502,
+                                  "peak_rss_bytes": 1001, "scope": "test"}],
                               "wall_time_seconds": 1.5})
+        assert low["runtime_counters"]["process_peak_rss_observations"][0]["pid"] == 101
+        assert resource_snapshot_digest_valid(low)
         result = compare_resource_snapshots({"low": low, "high": high})
         assert result["matched"]["process_peak_rss_bytes"] is False
         assert result["matched"]["wall_time_seconds"] is False
@@ -185,6 +193,16 @@ def test_isolated_process_peak_rss_is_digest_bound_and_comparable():
             snapshot_native_resources(agent,
                 runtime_counters={"native_rule_steps": 1, "native_model_calls": 0,
                                   "wall_time_seconds": -0.1})
+        with pytest.raises(ValueError, match="maximum must match"):
+            snapshot_native_resources(agent,
+                runtime_counters={"native_rule_steps": 1, "native_model_calls": 0,
+                    "process_peak_rss_bytes": 1000,
+                    "process_peak_rss_observations": [{"pid": 103,
+                        "observed_at_unix_ns": 503,
+                        "peak_rss_bytes": 999, "scope": "test"}]})
+        tampered = deepcopy(low)
+        tampered["runtime_counters"]["process_peak_rss_observations"][0]["pid"] = 999
+        assert not resource_snapshot_digest_valid(tampered)
     finally:
         del agent
 

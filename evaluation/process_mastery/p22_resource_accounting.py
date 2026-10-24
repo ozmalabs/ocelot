@@ -325,6 +325,40 @@ def snapshot_native_resources(agent, *, runtime_counters: dict | None = None,
             if isinstance(value, bool) or not isinstance(value, int) or value < 0:
                 raise ValueError(f"runtime counter {key} must be a nonnegative integer")
             measured_runtime[key] = value
+        if "process_peak_rss_observations" in runtime_counters:
+            observations = runtime_counters["process_peak_rss_observations"]
+            peak = runtime_counters.get("process_peak_rss_bytes")
+            if not isinstance(observations, list) or not observations or peak is None:
+                raise ValueError("process RSS observations require a measured peak")
+            normalized = []
+            for observation in observations:
+                if not isinstance(observation, dict):
+                    raise ValueError("process RSS observation must be a mapping")
+                pid = observation.get("pid")
+                observed_at = observation.get("observed_at_unix_ns")
+                rss = observation.get("peak_rss_bytes")
+                scope = observation.get("scope")
+                if (pid is not None and (isinstance(pid, bool)
+                        or not isinstance(pid, int) or pid < 0)):
+                    raise ValueError("process RSS observation PID must be nonnegative or null")
+                if (observed_at is not None and (isinstance(observed_at, bool)
+                        or not isinstance(observed_at, int) or observed_at < 0)):
+                    raise ValueError("process RSS observation timestamp must be nonnegative or null")
+                if (isinstance(rss, bool) or not isinstance(rss, int) or rss < 0):
+                    raise ValueError("process RSS observation bytes must be nonnegative")
+                if not isinstance(scope, str) or not scope:
+                    raise ValueError("process RSS observation scope must be nonempty")
+                if (scope == "inherited_legacy_unattributed"
+                        and (pid is not None or observed_at is not None)):
+                    raise ValueError("legacy unattributed RSS observation cannot name a process")
+                if scope != "inherited_legacy_unattributed" and (
+                        pid is None or observed_at is None):
+                    raise ValueError("measured RSS observation requires PID and timestamp")
+                normalized.append({"pid": pid, "observed_at_unix_ns": observed_at,
+                    "peak_rss_bytes": rss, "scope": scope})
+            if max(row["peak_rss_bytes"] for row in normalized) != peak:
+                raise ValueError("process RSS observation maximum must match the measured peak")
+            measured_runtime["process_peak_rss_observations"] = normalized
         if "wall_time_seconds" in runtime_counters:
             value = runtime_counters["wall_time_seconds"]
             if (isinstance(value, bool) or not isinstance(value, (int, float))
@@ -459,7 +493,8 @@ def snapshot_native_resources(agent, *, runtime_counters: dict | None = None,
             else "UNAVAILABLE", "scope": "caller-supplied runtime counter"},
         "process_peak_rss_bytes": {"status": "MEASURED" if measured_runtime is not None
             and "process_peak_rss_bytes" in measured_runtime else "UNAVAILABLE",
-            "scope": "isolated process peak RSS counter"},
+            "scope": ("maximum isolated-process getrusage peak; runtime counter also retains "
+                "per-process PID observations and labels legacy unattributed peaks")},
         "wall_time_seconds": {"status": "MEASURED" if measured_runtime is not None
             and "wall_time_seconds" in measured_runtime else "UNAVAILABLE",
             "scope": "isolated probe elapsed time from perf_counter"},
