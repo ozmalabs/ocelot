@@ -328,3 +328,20 @@ native-rule-work SHA-256 is
 `daaf7de53df49757bedb03a4f77a748954ce364002a8c14b09059b9109ea03f4`. This
 negative search does not satisfy the missing D4 invention-only g3 lineage or
 change the draft/freeze disposition.
+
+**Loopover invention-only generation-two search update (2026-10-24):** A
+proposal-only continuation from the digest-valid generation-one checkpoint
+`p22-loopover-g1-2638da0f23ae` used fresh distinct training worlds 0924–0926.
+Each task reserved 20,000 attempts, for 60,000 new attempts; all three remained
+stuck, and none of the three proposals qualified. The run inherited its one
+approval and one receipt but added neither, created no child checkpoint, and
+used no validation or held-out allocation. Resource and native-rule-work
+digests verify with complete native identity coverage. The [raw training
+artifact](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_loopover_g1_0924_0926_ticks60_depth3.json)
+SHA-256 is `355a1976960782789b2a6b87474b6d70c2d1002ddb9e5db045ba66230330a7d7`;
+the resource snapshot SHA-256 is
+`73c409c9f41334cc673c61a84baa8145cb3ebc6937da53772043dc1327b6f53e`, and the
+native-rule-work SHA-256 is
+`d26ec03630aa6e8e9898d0139564a969a244126f3c7c9bae999f42ce96781c7c`. The
+generation-two lineage gate remains unmet; this does not change the draft or
+held-out disposition.
