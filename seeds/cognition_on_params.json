@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "self_load_only": true,
   "depends_on": [],
-  "description": "Data-only cognition-on parameters. P15 portfolio, curriculum and recursive-improvement policies, plus P24 common-target and additive-transfer policies, are installed by opt-in manifests and remain disabled unless a phase explicitly enables them; all funded work uses the single shared ThinkingBudget.",
+  "description": "Data-only cognition-on parameters. P15 and P24 policies plus P25 persistent-memory and consolidation policies remain disabled unless a phase explicitly enables them; all funded work uses the single shared ThinkingBudget.",
   "microtheory": {
     "name": "cognition_on_params",
     "description": "Opt-in policy and parameter nodes for the cognition-on profile."
@@ -249,6 +249,18 @@
         "frozen_criteria_digest": "pmb-v1-frozen-criteria",
         "human_gate": 1
       }
+    },
+    {
+      "local_id": 22,
+      "type": "PersistentRetentionProfileParams",
+      "attrs": {
+        "enabled": 0.0,
+        "learning_memory_enabled": 0.0,
+        "persistent_consolidation_enabled": 0.0,
+        "capacity_bytes": 8192.0,
+        "capacity_ratios": [0.5, 1.0, 2.0],
+        "protection_policy": "uniform_content_no_target_exemption"
+      }
     }
   ],
   "edges": [
@@ -443,6 +455,16 @@
         "local": 21
       },
       "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_persistent_retention_profile_params",
+      "tgt": {
+        "local": 22
+      },
+      "attrs": {}
     }
   ],
   "productions": [
@@ -528,6 +550,18 @@
       "tgt": {
         "type": "InventionOperatorAuthorshipPolicy",
         "var": "policy"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-persistent-retention-params",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_persistent_retention_profile_params",
+      "tgt": {
+        "type": "PersistentRetentionProfileParams",
+        "var": "params"
       }
     }
   ],

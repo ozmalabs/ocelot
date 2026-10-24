@@ -1,0 +1,1020 @@
+{
+  "id": "persistent_consolidation",
+  "version": "1.0.0",
+  "depends_on": [
+    "target_learning",
+    "learning_memory_budget"
+  ],
+  "self_load_only": true,
+  "area": "persistent_consolidation",
+  "description": "Opt-in, once-owned consolidation of verified native learned effects onto the persistent learner.",
+  "microtheory": {
+    "name": "persistent_consolidation",
+    "description": "Retain learned process structure and witnesses on the same native learner."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "PersistentConsolidationPolicy",
+      "attrs": {
+        "name": "persistent_consolidation_policy",
+        "enabled": 0.0,
+        "work_cost": 1.0,
+        "summary_priority": 100.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_persistent_consolidation_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:persistent_consolidation:has_persistent_consolidation_policy:Agent:PersistentConsolidationPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_persistent_consolidation_policy",
+      "tgt": {
+        "type": "PersistentConsolidationPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:has_persistent_consolidation_work:Agent:PersistentConsolidationWork",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_persistent_consolidation_work",
+      "tgt": {
+        "type": "PersistentConsolidationWork",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:has_process_induction_hypothesis:Agent:ProcessInductionHypothesis",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_induction_hypothesis",
+      "tgt": {
+        "type": "ProcessInductionHypothesis",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:supported_by_transition:ProcessInductionHypothesis:TransitionObservation",
+      "src": {
+        "type": "ProcessInductionHypothesis",
+        "var": "src"
+      },
+      "edge_type": "supported_by_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:has_persistent_learned_summary:Agent:PersistentLearnedSummary",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_persistent_learned_summary",
+      "tgt": {
+        "type": "PersistentLearnedSummary",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:has_consolidation_witness:PersistentLearnedSummary:TransitionObservation",
+      "src": {
+        "type": "PersistentLearnedSummary",
+        "var": "src"
+      },
+      "edge_type": "has_consolidation_witness",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:projects_to_process_hypothesis:PersistentLearnedSummary:ProcessInductionHypothesis",
+      "src": {
+        "type": "PersistentLearnedSummary",
+        "var": "src"
+      },
+      "edge_type": "projects_to_process_hypothesis",
+      "tgt": {
+        "type": "ProcessInductionHypothesis",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:supported_by_persistent_summary:ProcessInductionHypothesis:PersistentLearnedSummary",
+      "src": {
+        "type": "ProcessInductionHypothesis",
+        "var": "src"
+      },
+      "edge_type": "supported_by_persistent_summary",
+      "tgt": {
+        "type": "PersistentLearnedSummary",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:persistent_consolidation:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "pc_consolidate_verified_effect_on_same_learner",
+      "area": "persistent_consolidation",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Persist a verified native effect summary with two independent witnesses; do not consolidate disputed or interrupted work.",
+      "match": [
+        [
+          "ag",
+          "has_persistent_consolidation_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_persistent_consolidation_work",
+          "work"
+        ],
+        [
+          "ag",
+          "has_process_induction_hypothesis",
+          "hyp"
+        ],
+        [
+          "hyp",
+          "supported_by_transition",
+          "first"
+        ],
+        [
+          "hyp",
+          "supported_by_transition",
+          "second"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "work"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "work"
+              },
+              "key": "interrupted"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "work"
+              },
+              "key": "foreground_demand"
+            },
+            "b": {
+              "type": "Lit",
+              "value": false
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "support_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "counterexample_count"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "event_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "second"
+                },
+                "key": "event_id"
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "after_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "after_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "after_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "after_value"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_persistent_learned_summary",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "source_hypothesis_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "hyp"
+                  },
+                  "key": "hypothesis_key"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "summary",
+          "PersistentLearnedSummary",
+          {
+            "summary_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "persistent-summary:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "hyp"
+                    },
+                    "key": "hypothesis_key"
+                  }
+                ]
+              }
+            },
+            "source_hypothesis_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "hypothesis_key"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "owner_id"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "action_kind"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "object_type"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "before_value"
+              }
+            },
+            "after_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "after_value"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "support_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "support_count"
+              }
+            },
+            "counterexample_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "counterexample_count"
+              }
+            },
+            "witness_event_1": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "event_id"
+              }
+            },
+            "witness_event_2": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "second"
+                },
+                "key": "event_id"
+              }
+            },
+            "serialized_bytes": 0.0,
+            "summary_charge_status": "pending_mechanical_measurement",
+            "status": "verified",
+            "decoder_kind": "native_process_induction_hypothesis",
+            "exceptions_retained": {
+              "__term__": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "persistent_hyp",
+          "ProcessInductionHypothesis",
+          {
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "owner_id"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "action_kind"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "object_type"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "before_value"
+              }
+            },
+            "after_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "after_value"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "support_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "support_count"
+              }
+            },
+            "counterexample_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "counterexample_count"
+              }
+            },
+            "law_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "law_kind"
+              }
+            },
+            "hypothesis_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "persistent:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "hyp"
+                    },
+                    "key": "hypothesis_key"
+                  }
+                ]
+              }
+            },
+            "status": "candidate",
+            "persistent_summary": true,
+            "consolidation_verified": true
+          }
+        ],
+        [
+          "add_node",
+          "summary_item",
+          "LearningMemoryItem",
+          {
+            "item_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "persistent-summary:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "hyp"
+                    },
+                    "key": "hypothesis_key"
+                  }
+                ]
+              }
+            },
+            "content_class": "persistent_summary",
+            "charged_bytes": 0.0,
+            "retention_priority": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "summary_priority"
+              }
+            },
+            "payload": null,
+            "protection_class": "ordinary",
+            "availability": "awaiting_charge"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_persistent_learned_summary",
+          "summary",
+          {}
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_learning_memory_item",
+          "summary_item",
+          {}
+        ],
+        [
+          "add_edge",
+          "summary",
+          "has_consolidation_witness",
+          "first",
+          {}
+        ],
+        [
+          "add_edge",
+          "summary",
+          "has_consolidation_witness",
+          "second",
+          {}
+        ],
+        [
+          "add_edge",
+          "summary",
+          "projects_to_process_hypothesis",
+          "persistent_hyp",
+          {}
+        ],
+        [
+          "add_edge",
+          "persistent_hyp",
+          "supported_by_persistent_summary",
+          "summary",
+          {}
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_process_induction_hypothesis",
+          "persistent_hyp",
+          {}
+        ],
+        [
+          "set_attr",
+          "hyp",
+          "status",
+          "consolidated_source"
+        ],
+        [
+          "set_attr",
+          "hyp",
+          "persistent_summary_id",
+          {
+            "__term__": {
+              "type": "StringConcat",
+              "parts": [
+                {
+                  "type": "Lit",
+                  "value": "persistent-summary:"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "hyp"
+                  },
+                  "key": "hypothesis_key"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "hyp",
+          "consolidation_verified",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "work",
+          "status",
+          "completed"
+        ],
+        [
+          "set_attr",
+          "work",
+          "completed_summary_id",
+          {
+            "__term__": {
+              "type": "StringConcat",
+              "parts": [
+                {
+                  "type": "Lit",
+                  "value": "persistent-summary:"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "hyp"
+                  },
+                  "key": "hypothesis_key"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "budget"
+                },
+                "key": "remaining"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "work_cost"
+              }
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

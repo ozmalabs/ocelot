@@ -863,6 +863,9 @@ COGNITION_ON_SEEDS = (
     # Both policies remain disabled until a phase-specific evaluator opts in.
     "common_target_evidence",
     "additive_transfer",
+    # P25 persistent learner capacity accounting and same-learner consolidation.
+    "learning_memory_budget",
+    "persistent_consolidation",
 )
 
 
@@ -876,6 +879,23 @@ def boot_cognition_on():
         world.close()
         raise RuntimeError(f"cognition-on profile requires one shared ThinkingBudget, found {len(budgets)}")
     world.inner.set_attr(budgets[0], "enabled", 1.0)
+    retention_params = list(world.inner.neighbours(
+        world.agent, "has_persistent_retention_profile_params"))
+    if len(retention_params) != 1:
+        world.close()
+        raise RuntimeError("cognition-on profile requires one persistent retention parameter node")
+    params = world.s.node(retention_params[0])["attrs"]
+    memory_policies = world.s.nodes("LearningMemoryBudgetPolicy")
+    consolidation_policies = world.s.nodes("PersistentConsolidationPolicy")
+    if len(memory_policies) != 1 or len(consolidation_policies) != 1:
+        world.close()
+        raise RuntimeError("cognition-on profile requires one P25 memory and consolidation policy")
+    world.inner.set_attr(memory_policies[0], "enabled",
+                         float(params.get("learning_memory_enabled", 0.0)))
+    world.inner.set_attr(memory_policies[0], "capacity_bytes",
+                         float(params.get("capacity_bytes", 8192.0)))
+    world.inner.set_attr(consolidation_policies[0], "enabled",
+                         float(params.get("persistent_consolidation_enabled", 0.0)))
     return world
 
 

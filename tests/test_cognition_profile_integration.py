@@ -1041,6 +1041,207 @@ def test_p12_profile_chain():
     agent.close()
 
 
+def test_p25_native_learning_chain(tmp_path):
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.learning_memory_budget import charge_persistent_summaries
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        memory = _nodes(world, "LearningMemoryBudgetPolicy")[0]
+        consolidation = _nodes(world, "PersistentConsolidationPolicy")[0]
+        world.s.set_attr(memory, "enabled", 1.0)
+        world.s.set_attr(consolidation, "enabled", 1.0)
+        target = ThermalWorld(object_ids=("p25-a", "p25-b", "p25-c"))
+        for key in ("p25-a", "p25-b"):
+            learner.observe_world_receipt(target.apply(key, "warm"))
+        learner.settle()
+        assert len(learner.hypotheses()) == 1
+        work = world.s.add_node("PersistentConsolidationWork", {
+            "work_id": "p25-profile-consolidation", "status": "requested",
+            "interrupted": False, "foreground_demand": False,
+        })
+        _edge(world, world.agent, "has_persistent_consolidation_work", work)
+        learner.settle()
+        measured = charge_persistent_summaries(world)
+        learner.settle()
+        assert measured and len(world.s.nodes("PersistentLearnedSummary")) == 1
+        assert world.s.node(memory)["attrs"]["resident_bytes"] == measured[0]["charged_bytes"]
+
+        prediction = learner.predict(query_id="p25-profile-next", action_kind="warm",
+                                     object_type="ThermalSample", feature_key="temperature",
+                                     before_value="cold", object_id="p25-c")
+        assert prediction and prediction["expected_after_value"] == "warm"
+        receipt = target.apply("p25-c", "warm")
+        assert receipt.action_authorized and receipt.status == "observed"
+        learner.observe_world_receipt(receipt)
+        learner.settle()
+        observed = [world.s.node(n)["attrs"] for n in world.s.nodes("TransitionObservation")
+                    if world.s.node(n)["attrs"].get("event_id") == receipt.event_id]
+        assert len(observed) == 1 and observed[0]["after_value"] == "warm"
+        checkpoint = tmp_path / "p25-cognition-on.json"
+        world.save(checkpoint)
+    finally:
+        world.close()
+
+    resumed = WorldAdapter.load(checkpoint)
+    try:
+        assert len(resumed.s.nodes("PersistentLearnedSummary")) == 1
+        policies = resumed.s.nodes("LearningMemoryBudgetPolicy")
+        assert len(policies) == 1
+        assert resumed.s.node(policies[0])["attrs"]["resident_bytes"] > 0
+    finally:
+        resumed.close()
+
+
+def test_p25_causal_perturbation():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.learning_memory_budget import (
+        apply_native_evictions,
+        charge_persistent_summaries,
+    )
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    outcomes = {}
+    for consolidation_enabled in (False, True):
+        world = boot_cognition_on()
+        try:
+            learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                          enabled=True, policy_enabled=True)
+            memory = _nodes(world, "LearningMemoryBudgetPolicy")[0]
+            consolidation = _nodes(world, "PersistentConsolidationPolicy")[0]
+            world.s.set_attr(memory, "enabled", 1.0)
+            world.s.set_attr(consolidation, "enabled", float(consolidation_enabled))
+            target = ThermalWorld(object_ids=(f"p25-causal-{consolidation_enabled}-{i}"
+                                              for i in range(3)))
+            learned_ids = (f"p25-causal-{consolidation_enabled}-0",
+                           f"p25-causal-{consolidation_enabled}-1")
+            for object_id in learned_ids:
+                learner.observe_world_receipt(target.apply(object_id, "warm"))
+            learner.settle()
+            if consolidation_enabled:
+                work = world.s.add_node("PersistentConsolidationWork", {
+                    "work_id": "p25-causal-work", "status": "requested",
+                    "interrupted": False, "foreground_demand": False,
+                })
+                _edge(world, world.agent, "has_persistent_consolidation_work", work)
+                learner.settle()
+                charge = charge_persistent_summaries(world)[0]["charged_bytes"]
+                learner.settle()
+                world.s.set_attr(memory, "capacity_bytes", float(charge + 119))
+            else:
+                world.s.set_attr(memory, "capacity_bytes", 100.0)
+
+            # In the treatment, the original hypothesis is retired and joins
+            # source evidence in the eviction bundle; the charged summary
+            # projection remains. In the knockout, the ordinary hypothesis is
+            # part of that same bundle and is deleted.
+            if consolidation_enabled:
+                source_hyp = [n for n in world.s.nodes("ProcessInductionHypothesis")
+                              if world.s.node(n)["attrs"].get("status") == "consolidated_source"]
+            else:
+                source_hyp = [n for n in world.s.nodes("ProcessInductionHypothesis")
+                              if world.s.node(n)["attrs"].get("status") == "candidate"]
+            item = world.s.add_node("LearningMemoryItem", {
+                "item_id": f"p25-causal-source-{consolidation_enabled}",
+                "content_class": "acquired_target_evidence",
+                "availability": "pending_admission", "charged_bytes": 80.0,
+                "admission_epoch": 1.0, "retention_priority": 1.0, "payload": "acquired evidence",
+                "protection_class": "ordinary",
+            })
+            _edge(world, world.agent, "has_learning_memory_item", item)
+            source_nodes = (world.s.nodes("TransitionObservation") +
+                            world.s.nodes("CommonTargetEvidence") +
+                            world.s.nodes("TransitionActionReceipt") +
+                            world.s.nodes("TransitionOutcomeReceipt") + source_hyp)
+            for node in source_nodes:
+                wrapper = world.s.add_node("LearningMemoryGraphNode", {
+                    "graph_node_id": int(node.value),
+                    "content_type": world.s.node(node)["type"],
+                })
+                _edge(world, item, "has_learning_memory_graph_node", wrapper)
+            filler = world.s.add_node("LearningMemoryItem", {
+                "item_id": f"p25-causal-filler-{consolidation_enabled}",
+                "content_class": "interference", "availability": "pending_admission",
+                "charged_bytes": 40.0, "admission_epoch": 2.0, "retention_priority": 2.0,
+                "payload": "unrelated", "protection_class": "ordinary",
+            })
+            _edge(world, world.agent, "has_learning_memory_item", filler)
+            learner.settle()
+            assert world.s.node(item)["attrs"]["availability"] == "evicted"
+            apply_native_evictions(world)
+            prediction = learner.predict(query_id=f"p25-causal-{consolidation_enabled}",
+                                         action_kind="warm", object_type="ThermalSample",
+                                         feature_key="temperature", before_value="cold",
+                                         object_id="p25-causal-held")
+            outcomes[consolidation_enabled] = bool(
+                prediction and prediction.get("expected_after_value") == "warm")
+            assert outcomes[consolidation_enabled] is consolidation_enabled
+        finally:
+            world.close()
+    assert outcomes == {False: False, True: True}
+
+
+def test_p25_default_isolation():
+    p25 = {"learning_memory_budget", "persistent_consolidation"}
+    expected_rules = {item["name"] for sid in p25
+                      for item in manifest_for(sid).get("rules", ())
+                      if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    cognition = boot_cognition_on()
+    try:
+        load_conversation_seed_profile(conversation)
+        assert p25.isdisjoint(installed_seeds(default.s))
+        assert p25.isdisjoint(installed_seeds(conversation.s))
+        for node_type in ("LearningMemoryBudgetPolicy", "PersistentConsolidationPolicy"):
+            nodes = cognition.s.nodes(node_type)
+            assert len(nodes) == 1
+            assert cognition.s.node(nodes[0])["attrs"]["enabled"] == 0.0
+        assert cognition.s.node(cognition.s.nodes("LearningMemoryBudgetPolicy")[0])["attrs"]["capacity_bytes"] == 8192.0
+        assert expected_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+        assert expected_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    finally:
+        default.close()
+        conversation.close()
+        cognition.close()
+
+
+def test_p25_shared_budget():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        memory = _nodes(world, "LearningMemoryBudgetPolicy")[0]
+        consolidation = _nodes(world, "PersistentConsolidationPolicy")[0]
+        world.s.set_attr(memory, "enabled", 1.0)
+        world.s.set_attr(consolidation, "enabled", 1.0)
+        budgets = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+        assert len(budgets) == 1
+        budget = budgets[0]
+        target = ThermalWorld(object_ids=("p25-budget-a", "p25-budget-b"))
+        for object_id in ("p25-budget-a", "p25-budget-b"):
+            learner.observe_world_receipt(target.apply(object_id, "warm"))
+        learner.settle()
+        before_consolidation = world.s.node(budget)["attrs"]["remaining"]
+        work = world.s.add_node("PersistentConsolidationWork", {
+            "work_id": "p25-budget-work", "status": "requested",
+            "interrupted": False, "foreground_demand": False,
+        })
+        _edge(world, world.agent, "has_persistent_consolidation_work", work)
+        learner.settle()
+        assert world.s.node(budget)["attrs"]["remaining"] == before_consolidation - 1.0
+        assert len(list(world.inner.neighbours(world.agent, "has_thinking_budget"))) == 1
+        assert world.s.node(memory)["attrs"]["enabled"] == 1.0
+    finally:
+        world.close()
+
+
 def test_p12_default_isolation():
     p12_rules = {item["name"] for sid in {"imitation", "social_process", "process_explanation"}
                  for item in manifest_for(sid).get("rules", ())

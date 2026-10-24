@@ -237,7 +237,8 @@ class NativeTargetLearner:
         raise RuntimeError("native target learner exceeded rule-step bound")
 
     def hypotheses(self):
-        return [self.s.node(node)["attrs"] for node in self.s.nodes("ProcessInductionHypothesis")]
+        return [self.s.node(node)["attrs"] for node in self.s.nodes("ProcessInductionHypothesis")
+                if self.s.node(node)["attrs"].get("status") != "consolidated_source"]
 
     def predict(self, *, query_id, action_kind, object_type, feature_key,
                 before_value, object_id, source_epoch=3, model_epoch=2, frame_epoch=5):
