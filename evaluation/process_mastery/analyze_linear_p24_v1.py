@@ -117,6 +117,19 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None,
                         "comparison": "compatible_minus_stronger_source_free",
                         "minimum_gain": PRIMARY_GAIN}:
                     failures.append("frozen_primary_mismatch")
+                expected_acceptance = {
+                    "maximum_final_accuracy_loss": ACCURACY_TOLERANCE,
+                    "zero_receipt_loss_or_double_credit": True,
+                    "confidence_level": 0.99,
+                    "bootstrap_replicates": BOOTSTRAPS,
+                    "bootstrap_seed_by_family": {"heat_to_thermal": BOOTSTRAP_SEED,
+                                                  "lever_to_latch": BOOTSTRAP_SEED + 1},
+                    "holm_alpha": 0.01, "controls_per_kind": 100,
+                    "streams_per_family": 200}
+                if freeze.get("acceptance") != expected_acceptance:
+                    failures.append("frozen_acceptance_mismatch")
+                if freeze.get("resource_limits") != allocation.get("resource_limits"):
+                    failures.append("frozen_resource_limits_mismatch")
             except (OSError, StopIteration, ValueError, subprocess.SubprocessError):
                 failures.append("preregistration_invalid")
     elif payload.get("heldout_accessed") is not False or payload.get("status") != "development_only":
@@ -168,16 +181,29 @@ def analyze(payload: dict, *, preregistration: str | Path | None = None,
             if len(evidence) != 2 or {item.get("event_id") for item in evidence} != set(target_ids):
                 failures.append("ordinary_support_credit_mismatch:" + str(stream) + ":" + arm)
             expected_source = 2 if arm in {"compatible_source", "wrong_source"} else 0
+            expected_source_units = float(expected_source)
             expected_maps = 0 if arm == "fresh" else 2
             expected_verifications = 5 if arm in {"compatible_source", "wrong_source"} else 0
             expected_map_debits = 0 if arm == "fresh" else 2
             expected_budget_debits = 2 if arm == "fresh" else 4
             if (row.get("source_action_count") != expected_source
+                    or row.get("source_information_units") != expected_source_units
                     or row.get("map_pair_count") != expected_maps
                     or row.get("map_verification_queries") != expected_verifications
                     or row.get("map_work_budget_debits") != expected_map_debits
                     or row.get("shared_budget_debits") != expected_budget_debits):
                 failures.append("arm_exposure_or_work_mismatch:" + str(stream) + ":" + arm)
+            transfer = row.get("transfer", {})
+            if arm == "compatible_source" and (
+                    transfer.get("map_status") != "verified"
+                    or transfer.get("target_effect_status") != "verified"):
+                failures.append("compatible_source_not_verified:" + str(stream))
+            if arm == "wrong_source" and transfer.get("map_status") != "rejected":
+                failures.append("wrong_source_not_rejected:" + str(stream))
+            if arm in {"fresh", "same_target_map_work"} and (
+                    transfer.get("map_status") != "not_attempted"
+                    or row.get("source_information_units") != 0):
+                failures.append("source_free_arm_leakage:" + str(stream) + ":" + arm)
             limits = allocation.get("resource_limits", {})
             budget = row.get("shared_budget", {})
             if (budget.get("capacity") != limits.get("native_budget_capacity")
@@ -311,7 +337,13 @@ def self_check() -> dict:
                                       "capacity": 16.0, "capacity_ceiling": 64.0},
                     "shared_stream_elapsed_seconds": .01,
                     "shared_budget_debits": budget_debits,
-                    "map_work_budget_debits": map_debits})
+                    "map_work_budget_debits": map_debits,
+                    "transfer": ({"map_status": "verified", "target_effect_status": "verified"}
+                                 if arm == "compatible_source" else
+                                 {"map_status": "rejected", "target_effect_status":
+                                  "not_attempted_no_source_model"}
+                                 if arm == "wrong_source" else
+                                 {"map_status": "not_attempted"})})
     payload = {"phase": "linear-p24-v1", "split": "development",
         "status": "development_only", "heldout_accessed": False,
         "allocation": {"arms": list(ARMS), "families": list(FAMILIES),

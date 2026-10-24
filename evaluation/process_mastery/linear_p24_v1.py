@@ -410,6 +410,19 @@ def _verify_preregistration(path: Path) -> tuple[dict, dict, dict]:
                                   "comparison": "compatible_minus_stronger_source_free",
                                   "minimum_gain": 0.10}:
         raise RuntimeError("P24 primary estimand mismatch")
+    if frozen.get("acceptance") != {
+            "maximum_final_accuracy_loss": 0.02,
+            "zero_receipt_loss_or_double_credit": True,
+            "confidence_level": 0.99,
+            "bootstrap_replicates": 10_000,
+            "bootstrap_seed_by_family": {"heat_to_thermal": 24_2026,
+                                          "lever_to_latch": 24_2027},
+            "holm_alpha": 0.01,
+            "controls_per_kind": HELDOUT_CONTROLS_PER_KIND,
+            "streams_per_family": HELDOUT_STREAMS_PER_PAIR}:
+        raise RuntimeError("P24 acceptance criteria mismatch")
+    if frozen.get("resource_limits") != heldout["resource_limits"]:
+        raise RuntimeError("P24 frozen resource ceilings mismatch")
     runtime = current["runtime_attestation"]
     if runtime.get("status") != "ATTESTED" or runtime.get("issues"):
         raise RuntimeError("P24 held-out execution requires attested runtime")
