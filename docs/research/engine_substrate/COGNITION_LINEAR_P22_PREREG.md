@@ -223,6 +223,22 @@ establish efficacy. Preserve the earlier checkpoint and run as historical
 evidence. The final shared ceiling must be at least 487,911 and no greater than
 the supported maximum, and every other checkpoint must pass the same preflight.
 
+**Existing-checkpoint isolated resource panel (2026-10-24):** All 24 currently
+captured root/descendant checkpoints were scored in separate workers on one
+common fresh registered training world per family: D4 draw 0608 and Loopover
+draw 0621. These IDs were absent from prior P22 result artifacts before use.
+All 24 cells completed under a shared `600000` cumulative primitive and `20000`
+native-rule-progress ceiling, with verified resource snapshot digests and
+measured values for all 20 analyzer fields. No approvals or receipts were added;
+no validation or held-out allocation was accessed. All 24 scores were zero on
+this one-world diagnostic, so it is not efficacy evidence. Maximum realized
+wall time was 21.303 seconds, peak RSS was 2,882,777,088 bytes, and cumulative
+primitive work was 487,910, all on D4 g2. The raw [artifact](../../../evaluation/process_mastery/results/p22_resource_panel_existing_checkpoints_0608_0621.json)
+SHA-256 is `2ca76c0de136df6ebb617b5c1952b9630381b5c7dfe5484eecb1c0801fc144da`. This
+panel supplies initial isolated resource measurements for the 16 extant
+descendants; it does not replace the required complete development panel or
+provide measurements for the eight unbuilt descendants.
+
 At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
 identity-effect qualification guard, the current provenance audit is `ATTESTED`
 with no issues; source-bundle/build-source match and native symbol binding are
