@@ -894,6 +894,169 @@ def test_p24_native_learning_chain(tmp_path):
         resumed.close()
 
 
+def _p26_profile_opportunity(learner, *, pool_id="p26-profile-training"):
+    opportunity = learner.s.add_node("UsefulEvidenceOpportunity", {
+        "opportunity_key": "p26-profile-opportunity", "pool_id": pool_id,
+        "status": "eligible", "split": "training", "expected_outcome": "unknown",
+        "answer_fields_absent": True, "sealed_labels_present": False,
+        "source_epoch": 3, "model_epoch": 2, "frame_epoch": 5,
+        "object_id": "p26-selected-target", "object_type": "ThermalSample",
+        "action_kind": "warm", "feature_key": "temperature",
+        "before_value": "cold", "fixed_rank": 0.0, "random_rank": 0.0,
+    })
+    learner.s.add_edge(learner.ag, "has_useful_evidence_opportunity", opportunity, {})
+    return opportunity
+
+
+def _run_p26_profile_chain(*, enabled, tmp_path):
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        world_model = ThermalWorld(object_ids=("p26-baseline", "p26-selected-target", "p26-fresh"))
+        baseline = world_model.apply("p26-baseline", "warm")
+        learner.observe_world_receipt(baseline, source_epoch=3, model_epoch=2,
+                                      frame_epoch=5, split="training")
+        learner.settle()
+        baseline_prediction = learner.predict(query_id="p26-before-selection",
+            action_kind="warm", object_type="ThermalSample",
+            feature_key="temperature", before_value="cold", object_id="p26-fresh",
+            source_epoch=3, model_epoch=2, frame_epoch=5, split="training")
+        policies = world.s.nodes("UsefulEvidenceSelectionPolicy")
+        assert len(policies) == 1
+        policy = policies[0]
+        world.inner.set_attr(policy, "enabled", float(enabled))
+        world.inner.set_attr(policy, "selector_mode", "fixed")
+        world.inner.set_attr(policy, "pool_id", "p26-profile-training")
+        _p26_profile_opportunity(learner)
+        budget, = [node for node in world.s.nodes("ThinkingBudget")
+                   if world.s.node(node)["attrs"].get("enabled") == 1.0]
+        budget_before = world.s.node(budget)["attrs"]["remaining"]
+        learner.settle()
+        selections = world.s.nodes("UsefulEvidenceSelection")
+        if not enabled:
+            assert selections == []
+            assert baseline_prediction is None
+            return None, {"budget_before": budget_before,
+                          "budget_after": world.s.node(budget)["attrs"]["remaining"]}
+        selection_node, = selections
+        selection = world.s.node(selection_node)["attrs"]
+        request, = world.inner.neighbours(selection_node, "has_budget_request")
+        assert world.s.node(request)["attrs"]["status"] == "approved"
+        assert world.s.node(budget)["attrs"]["remaining"] == budget_before - 1.0
+
+        # Persist the selected but answer-free opportunity, restore it, then
+        # let only the external training world produce the authorized receipt.
+        checkpoint = tmp_path / "p26-cognition-on.json"
+        world.save(checkpoint)
+        memory_before = len(world.s.nodes())
+    finally:
+        world.close()
+
+    resumed = WorldAdapter.load(checkpoint)
+    try:
+        learner = CommonTargetLearner(agent=resumed, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        receipt = world_model.apply(selection["object_id"], selection["action_kind"])
+        assert receipt.action_authorized and receipt.status == "observed"
+        learner.observe_world_receipt(receipt, source_epoch=3, model_epoch=2,
+                                      frame_epoch=5, split="training")
+        learner.settle()
+        learned_state_count = len(learner.hypotheses())
+        prediction = learner.predict(query_id="p26-after-restart",
+            action_kind="warm", object_type="ThermalSample",
+            feature_key="temperature", before_value="cold",
+            object_id="p26-fresh", source_epoch=3, model_epoch=2,
+            frame_epoch=5, split="training")
+        assert prediction and prediction["expected_after_value"] == "warm"
+        common_receipt = [resumed.s.node(node)["attrs"]
+            for node in resumed.s.nodes("CommonTargetEvidence")
+            if resumed.s.node(node)["attrs"].get("event_id") == receipt.event_id]
+        assert len(common_receipt) == 1 and common_receipt[0]["split"] == "training"
+        budget = next(node for node in resumed.s.nodes("ThinkingBudget")
+                      if resumed.s.node(node)["attrs"].get("enabled") == 1.0)
+        report = {"receipt_event_id": receipt.event_id,
+            "learned_state_count": learned_state_count,
+            "prediction": prediction["expected_after_value"],
+            "budget_after": resumed.s.node(budget)["attrs"]["remaining"],
+            "dynamic_graph_nodes_before_restart": memory_before,
+            "dynamic_graph_nodes_after_learning": len(resumed.s.nodes()),
+            "checkpoint_bytes": checkpoint.stat().st_size,
+            "source_exposures": len(resumed.s.nodes("TargetSourceExposure")),
+            "native_rule_steps": learner.accounting.native_rule_steps,
+        }
+        return report, report
+    finally:
+        resumed.close()
+
+
+def test_p26_native_learning_chain(tmp_path):
+    report, _ = _run_p26_profile_chain(enabled=True, tmp_path=tmp_path)
+    assert report["learned_state_count"] == 1
+    assert report["prediction"] == "warm"
+    assert report["source_exposures"] == 0
+    assert report["checkpoint_bytes"] > 0
+    assert report["native_rule_steps"] > 0
+    assert report["dynamic_graph_nodes_after_learning"] > report["dynamic_graph_nodes_before_restart"]
+    import substrate_rs
+    from evaluation.process_mastery.runtime_attestation import attest
+    identity = attest(package=substrate_rs)
+    assert identity["loaded_extension_sha256"]
+    assert identity["native_symbols_bound"] is True
+
+
+def test_p26_causal_perturbation(tmp_path):
+    treatment, _ = _run_p26_profile_chain(enabled=True, tmp_path=tmp_path)
+    control, control_budget = _run_p26_profile_chain(enabled=False, tmp_path=tmp_path)
+    assert treatment["prediction"] == "warm"
+    assert control is None
+    assert control_budget["budget_before"] == control_budget["budget_after"]
+
+
+def test_p26_default_isolation():
+    from substrate.seed_loader import manifest_for
+
+    seed_id = "useful_evidence_selection"
+    assert seed_id in COGNITION_ON_SEEDS
+    default, conversation, cognition = WorldAdapter(), WorldAdapter(seeds=()), boot_cognition_on()
+    try:
+        load_conversation_seed_profile(conversation)
+        policies = _nodes(cognition, "UsefulEvidenceSelectionPolicy")
+        assert len(policies) == 1
+        assert cognition.s.node(policies[0])["attrs"].get("enabled") == 0.0
+        assert seed_id not in installed_seeds(default.s)
+        assert seed_id not in installed_seeds(conversation.s)
+        names = {rule.get("name") for rule in manifest_for(seed_id).get("rules", ())
+                 if isinstance(rule, dict) and rule.get("name")}
+        for isolated in (default, conversation):
+            exported = {rule.get("name") for rule in isolated.inner.export_rules()}
+            assert names.isdisjoint(exported)
+    finally:
+        default.close()
+        conversation.close()
+        cognition.close()
+
+
+def test_p26_shared_budget(tmp_path):
+    report, _ = _run_p26_profile_chain(enabled=True, tmp_path=tmp_path)
+    assert report["budget_after"] < 64.0
+    world = boot_cognition_on()
+    try:
+        budgets = [node for node in world.s.nodes("ThinkingBudget")
+                   if world.s.node(node)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        search_policies = _nodes(world, "OpenProcessSearchPolicy")
+        selection_policies = _nodes(world, "UsefulEvidenceSelectionPolicy")
+        assert len(search_policies) == len(selection_policies) == 1
+        assert world.s.node(search_policies[0])["attrs"].get("enabled") == 0.0
+        assert world.s.node(selection_policies[0])["attrs"].get("enabled") == 0.0
+    finally:
+        world.close()
+
+
 def test_p24_causal_perturbation():
     from evaluation.process_mastery.common_target_learner import CommonTargetLearner
     from evaluation.process_mastery.target_learning_worlds import ThermalWorld

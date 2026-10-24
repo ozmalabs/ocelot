@@ -866,6 +866,9 @@ COGNITION_ON_SEEDS = (
     # P25 persistent learner capacity accounting and same-learner consolidation.
     "learning_memory_budget",
     "persistent_consolidation",
+    # P26 native evidence selection. The seed's policy remains disabled until
+    # a phase-specific evaluator enables it; search policy remains separately gated.
+    "useful_evidence_selection",
 )
 
 

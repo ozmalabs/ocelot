@@ -31,7 +31,7 @@ def build_seed():
     ]
     fields = ("owner_id", "episode_id", "event_id", "source_epoch", "model_epoch",
               "frame_epoch", "object_id", "object_type", "action_kind", "feature_key",
-              "before_value", "after_value")
+              "before_value", "after_value", "split")
     observation_attrs = {k: T(A("ev", k)) for k in fields}
     observation_attrs["status"] = "observed"
     common_attrs = {k: T(A("ev", k)) for k in fields[:6]}

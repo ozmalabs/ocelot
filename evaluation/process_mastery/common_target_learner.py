@@ -53,11 +53,14 @@ class CommonTargetLearner(NativeTargetLearner):
 
     def observe_world_receipt(self, receipt: WorldReceipt, *, source_epoch=3,
                               model_epoch=2, frame_epoch=5, action_occurred=True,
-                              map_view: dict | None = None):
+                              map_view: dict | None = None,
+                              split: str | None = None):
         if not isinstance(receipt, WorldReceipt):
             raise TypeError("target learner requires a typed WorldReceipt")
         if receipt.status != "observed" or not receipt.action_authorized:
             raise ValueError("target evidence requires an authorized observed action")
+        if split is not None and split not in {"training", "development", "validation", "heldout"}:
+            raise ValueError("target evidence split is invalid")
         event_attrs = {
             "owner_id": self.owner_id, "episode_id": f"target-episode:{receipt.event_id}",
             "event_id": receipt.event_id, "source_epoch": int(source_epoch),
@@ -69,6 +72,8 @@ class CommonTargetLearner(NativeTargetLearner):
             "action_occurred": bool(action_occurred),
             "map_requested": bool(map_view),
         }
+        if split is not None:
+            event_attrs["split"] = split
         if map_view:
             source_receipt = map_view.get("source_receipt")
             if source_receipt is not None and not isinstance(source_receipt, WorldReceipt):
@@ -100,7 +105,8 @@ class CommonTargetLearner(NativeTargetLearner):
             })
         identity_fields = ("owner_id", "episode_id", "event_id", "source_epoch",
                            "model_epoch", "frame_epoch", "object_id", "object_type",
-                           "action_kind", "feature_key", "before_value", "after_value")
+                           "action_kind", "feature_key", "before_value", "after_value",
+                           "split")
         existing = [n for n in self.s.nodes("CommonTargetEvidence")
                     if self.s.node(n)["attrs"].get("event_id") == receipt.event_id]
         if existing:

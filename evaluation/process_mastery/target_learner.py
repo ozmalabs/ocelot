@@ -241,13 +241,19 @@ class NativeTargetLearner:
                 if self.s.node(node)["attrs"].get("status") != "consolidated_source"]
 
     def predict(self, *, query_id, action_kind, object_type, feature_key,
-                before_value, object_id, source_epoch=3, model_epoch=2, frame_epoch=5):
-        query = self.s.add_node("ProcessPredictionQuery", {
+                before_value, object_id, source_epoch=3, model_epoch=2, frame_epoch=5,
+                split: str | None = None):
+        if split is not None and split not in {"training", "development", "validation", "heldout"}:
+            raise ValueError("prediction split is invalid")
+        query_attrs = {
             "query_id": query_id, "owner_id": self.owner_id, "object_id": object_id,
             "object_type": object_type, "action_kind": action_kind,
             "feature_key": feature_key, "before_value": before_value,
             "source_epoch": int(source_epoch), "model_epoch": int(model_epoch),
-            "frame_epoch": int(frame_epoch), "status": "pending"})
+            "frame_epoch": int(frame_epoch), "status": "pending"}
+        if split is not None:
+            query_attrs["split"] = split
+        query = self.s.add_node("ProcessPredictionQuery", query_attrs)
         self.s.add_edge(self.ag, "has_process_prediction_query", query, {})
         self.settle()
         matches = [self.s.node(node)["attrs"] for node in self.s.nodes("ProcessPrediction")
