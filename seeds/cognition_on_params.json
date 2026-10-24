@@ -258,8 +258,34 @@
         "learning_memory_enabled": 0.0,
         "persistent_consolidation_enabled": 0.0,
         "capacity_bytes": 8192.0,
-        "capacity_ratios": [0.5, 1.0, 2.0],
+        "capacity_ratios": [
+          0.5,
+          1.0,
+          2.0
+        ],
         "protection_policy": "uniform_content_no_target_exemption"
+      }
+    },
+    {
+      "local_id": 23,
+      "type": "ScheduledLearningCheckpointPolicy",
+      "attrs": {
+        "name": "scheduled_learning_checkpoint_policy",
+        "enabled": 0.0,
+        "checkpoints": [
+          "g0",
+          "g1",
+          "g2",
+          "g3"
+        ],
+        "cumulative_primitive_work_thresholds": [
+          0,
+          1000,
+          2000,
+          4000
+        ],
+        "scheduled_capture_authorizes_actions": false,
+        "heldout_feedback": false
       }
     }
   ],
@@ -465,6 +491,16 @@
         "local": 22
       },
       "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_scheduled_learning_checkpoint_policy",
+      "tgt": {
+        "local": 23
+      },
+      "attrs": {}
     }
   ],
   "productions": [
@@ -562,6 +598,18 @@
       "tgt": {
         "type": "PersistentRetentionProfileParams",
         "var": "params"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:scheduled-learning-checkpoint-policy",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_scheduled_learning_checkpoint_policy",
+      "tgt": {
+        "type": "ScheduledLearningCheckpointPolicy",
+        "var": "policy"
       }
     }
   ],

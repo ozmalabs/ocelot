@@ -908,6 +908,94 @@ def _p26_profile_opportunity(learner, *, pool_id="p26-profile-training"):
     return opportunity
 
 
+def test_p27_native_learning_chain_restores_scheduled_snapshot(tmp_path):
+    from evaluation.process_mastery.cumulative_checkpoint_panel import (
+        make_native_common_target_predictor, run_component_knockouts,
+        score_common_world_panel, world_allocation_digest,
+    )
+    from evaluation.process_mastery.scheduled_learning_checkpoints import (
+        capture_scheduled_checkpoint, snapshot_native_graph,
+    )
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert default.s.nodes("ScheduledLearningCheckpointPolicy") == []
+    assert conversation.s.nodes("ScheduledLearningCheckpointPolicy") == []
+    default.close()
+    conversation.close()
+
+    world = boot_cognition_on()
+    owner_id = "p27-scheduled-owner"
+    try:
+        policy, = world.s.nodes("ScheduledLearningCheckpointPolicy")
+        assert world.s.node(policy)["attrs"]["enabled"] == 0.0
+        budgets = [node for node in world.s.nodes("ThinkingBudget")
+                   if world.s.node(node)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        budget_before = world.s.node(budgets[0])["attrs"]["remaining"]
+        learner = CommonTargetLearner(agent=world, owner_id=owner_id,
+            enabled=True, policy_enabled=True)
+        thermal = ThermalWorld(object_ids=("p27-train-a", "p27-train-b"))
+        for object_id in ("p27-train-a", "p27-train-b"):
+            learner.observe_world_receipt(thermal.apply(object_id, "warm"),
+                                          split="training")
+        learner.settle()
+        assert world.s.node(budgets[0])["attrs"]["remaining"] <= budget_before
+        snapshot = snapshot_native_graph(world)
+    finally:
+        world.close()
+
+    predictor = make_native_common_target_predictor(owner_id=owner_id,
+                                                     agent_factory=boot_cognition_on)
+    result = predictor(snapshot, {"world_id": "p27-fresh", "split": "validation",
+        "action_kind": "warm", "object_type": "ThermalSample",
+        "feature_key": "temperature", "before_value": "cold",
+        "object_id": "p27-fresh-object", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5})
+    assert result and result["status"] == "predicted"
+    assert result["expected_after_value"] == "warm"
+    controls = run_component_knockouts(graph=snapshot,
+        world={"world_id": "p27-control", "split": "development",
+            "action_kind": "warm", "object_type": "ThermalSample",
+            "feature_key": "temperature", "before_value": "cold",
+            "object_id": "p27-control-fresh", "source_epoch": 3,
+            "model_epoch": 2, "frame_epoch": 5},
+        native_predictor=predictor)
+    assert controls["source_graph_unchanged"]
+    assert controls["outcomes"]["learned_distinctions"]["prediction_changed"]
+    assert all(not row["prediction_changed"] for name, row in controls["outcomes"].items()
+               if name != "learned_distinctions")
+
+    scored_world = {"world_id": "p27-sealed-fresh", "split": "validation",
+        "action_kind": "warm", "object_type": "ThermalSample",
+        "feature_key": "temperature", "before_value": "cold",
+        "object_id": "p27-sealed-object", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5, "expected_after_value": "warm"}
+    allocation_sha = world_allocation_digest([scored_world])
+    sequence, parent = [], None
+    import hashlib
+    graph_bytes = len(json.dumps(snapshot, sort_keys=True,
+        separators=(",", ":"), ensure_ascii=False, default=str).encode())
+    for checkpoint, work in zip(("g0", "g1", "g2", "g3"),
+                                (0, 1000, 2000, 4000)):
+        parent = capture_scheduled_checkpoint(arm="combined",
+            checkpoint=checkpoint, native_graph=snapshot,
+            cumulative={"primitive_work": work, "source_exposure": 0,
+                "native_rule_steps": work, "graph_bytes": graph_bytes,
+                "budget_debits": work, "task_world_accesses": work},
+            interval_status="initial" if checkpoint == "g0" else "no_change",
+            parent=parent, world_allocation_sha256=allocation_sha)
+        sequence.append(parent)
+    panel = score_common_world_panel(checkpoints={"combined": tuple(sequence)},
+        worlds=[scored_world], native_predictor=predictor)
+    assert len(panel["rows"]) == 4
+    assert [row["score"] for row in panel["rows"]] == [1, 1, 1, 1]
+    assert panel["score_feedback_to_training"] is False
+
+
 def _run_p26_profile_chain(*, enabled, tmp_path):
     from evaluation.process_mastery.common_target_learner import CommonTargetLearner
     from evaluation.process_mastery.target_learning_worlds import ThermalWorld

@@ -1,4 +1,4 @@
-# Capability closure matrix — evidence through P22 (2026-10-24)
+# Capability closure matrix — evidence through P26; P27 pending (2026-10-25)
 
 No L1–L7 level closes from the evidence below. “Failed” means the registered comparison was structurally valid but missed its criterion; “not established” means a required adapter, trend or inference is missing. Human-relative comparison is unavailable for every row because no protocol-matched human dataset or prospective collection has been frozen.
 
@@ -16,7 +16,13 @@ No L1–L7 level closes from the evidence below. “Failed” means the register
 
 Evidence is restricted to declared generated permutation/process, D4 grid-corner, thermal-transition, latch, and bounded language/explanation adapters. The new P22 Loopover and D4 generators are development mechanisms only; they do not yet provide an approved multi-generation held-out comparison. External ARC/LS20 input remains unsupported without a registered ingestion, split, scoring and licensing path. Raw perception, irregular-time world streams, open-world causal/mechanism discovery, long-horizon motor skill acquisition, and broad language understanding lack the required native consumer plus held-out evidence. Graph presence or a passing mechanism fixture does not count as coverage.
 
-The next evidence needed is a complete P22 protocol with independent goal generation, generic non-actionable proposals, separately qualified native checkpoints, exact approval events for every newly promoted expression, common-world causal ablations, and fixed work ceilings. Until those gates and a valid held-out result pass, all seven levels remain open.
+The original P22 draft is not freeze-ready and its held-out allocation remains closed. The currently selected route is a separately versioned P27 scheduled-checkpoint successor; it cannot satisfy P22 retrospectively. P27 must evaluate actual immutable learner states at all scheduled checkpoints, preserve no-change and pending intervals, use common sealed goals and causal component controls, and report cost separately. Until those gates and a valid held-out result pass, all seven levels remain open.
+
+## P24–P26 evidence scope update (2026-10-25)
+
+P24 v2 supports a bounded common-target receipt→ordinary learner mechanism, but does not establish broad transfer. P25 supports simulator-specific retention under tested memory pressure; every arm scored zero on the unseen ButtonWidget task, so transfer remains at floor. P26's valid 800-stream heldout experiment failed its registered residual-selection advantage gate: residual AUC 0.00875 versus random 0.02484, stronger-control gain −0.01609 (99% interval [−0.02563, −0.00750]). Native search logged proposals but no verified unique effect, approval, receipt, or unseen-binding use. These records neither raise nor lower an L-level disposition and do not repair P22. See the P24, P25 and [P26 result ledgers](COGNITION_LINEAR_P26_RESULTS.md).
+
+P27's measurable obligations are: capture hash-linked g0–g3 native learner states at predeclared cumulative-work/exposure markers; retain unchanged, failed-search, missing, and approval-pending intervals; evaluate paired fresh goals from actual state in two independent families; ablate each causal component on development worlds; and report final gain, checkpoint slope, family-level intervals, missingness, work, source exposure, native rule work and complete memory. Human-relative comparison, grounded physical transfer, broad mechanism discovery, general process synthesis, and independent evidence of broad strategic competence remain unsupported and require separately specified evidence.
 
 ## P22 candidate-specific action evidence update (2026-10-23)
 

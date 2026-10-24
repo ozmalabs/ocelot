@@ -890,9 +890,17 @@ def boot_cognition_on():
     params = world.s.node(retention_params[0])["attrs"]
     memory_policies = world.s.nodes("LearningMemoryBudgetPolicy")
     consolidation_policies = world.s.nodes("PersistentConsolidationPolicy")
+    scheduled_checkpoint_policies = world.s.nodes(
+        "ScheduledLearningCheckpointPolicy")
     if len(memory_policies) != 1 or len(consolidation_policies) != 1:
         world.close()
         raise RuntimeError("cognition-on profile requires one P25 memory and consolidation policy")
+    if (len(scheduled_checkpoint_policies) != 1
+            or world.s.node(scheduled_checkpoint_policies[0])["attrs"].get(
+                "enabled") != 0.0):
+        world.close()
+        raise RuntimeError(
+            "cognition-on profile requires one disabled P27 checkpoint policy")
     world.inner.set_attr(memory_policies[0], "enabled",
                          float(params.get("learning_memory_enabled", 0.0)))
     world.inner.set_attr(memory_policies[0], "capacity_bytes",
