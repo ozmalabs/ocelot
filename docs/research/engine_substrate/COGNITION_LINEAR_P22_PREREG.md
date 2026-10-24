@@ -347,3 +347,28 @@ native-rule-work SHA-256 is
 `d26ec03630aa6e8e9898d0139564a969a244126f3c7c9bae999f42ce96781c7c`. The
 generation-two lineage gate remains unmet; this does not change the draft or
 held-out disposition.
+
+**D4 invention-only generation-three follow-up (2026-10-24, draws 0989–0991):** A
+fresh training-only branch restored the digest-valid g2 checkpoint and used
+three globally unused pairwise-distinct goals, reserving 5,240 attempts per
+task. All three tasks remained stuck and the three new candidates received no
+independent-goal qualification. The inherited candidate `#9459` qualification
+record remains malformed because its `kind` is missing; it was not accepted.
+The branch added 15,720 attempts, taking the restored graph counter from 44,280
+to 60,000 under the configured 120,000 ceiling. This is a separate
+uncheckpointed branch from the earlier 0924–0926 search; the latter's attempts
+are not embedded in the immutable parent checkpoint. It inherited two
+approvals and two receipts, added none, and created no child checkpoint. There
+were no validation worlds or held-out access. Resource and native-rule-work
+digests verify, native-rule identity coverage is complete, and unresolved rule
+count is zero. Cumulative wall time rose by 2,568.982 seconds, peak RSS was
+3,244,118,016 bytes, and native rule steps rose by 45. The [raw artifact]
+(../../../evaluation/process_mastery/results/p22_training_panel_registered_root_d4_g2_0989_0991_ticks60_depth3.json)
+SHA-256 is
+`356b388fdae7d6ac7b64c97b6dd7776a6b0609ec04eddea8504e1fd7b861c266`; the
+resource snapshot SHA-256 is
+`bb12c2f52d8938bd3b19c9081bb044da7ff4eeda7743cff546ca99a41b0aeb82`, and the
+native-rule-work SHA-256 is
+`138483f4685927bfa5bccc9c12574848d231b4e470a606a234837beafbc9ccae`. No
+qualified generation-three candidate resulted, so the draft and held-out gates
+remain unchanged.
