@@ -42,6 +42,7 @@ DEVELOPMENT_CONTROLS_PER_KIND = 2
 CONTROL_KINDS = ("heldout_selector_guard", "receipt_replay", "approval_boundary")
 SEED_BASES = {"development": 150_000_000, "heldout": 160_000_000}
 CONTROL_BASES = {"development": 170_000_000, "heldout": 171_000_000}
+BASELINE_SEED_OFFSET = 28_000_000
 SHARED_BUDGET = 32.0
 SELECTOR_SELECTION_LIMIT = 4
 NATIVE_SEARCH_ATTEMPT_LIMIT = 32
@@ -157,29 +158,55 @@ def allocation(split: str, *, streams_per_cell: int | None = None,
     for family_index, family in enumerate(FAMILIES):
         for load_index, (load, pool_size) in enumerate(LOADS.items()):
             seeds = [SEED_BASES[split] + family_index * 1_000_000
-                     + load_index * 10_000 + draw
+                     + load_index * 100_000 + draw * 100
                      for draw in range(streams_per_cell)]
+            train_pool_seeds = [seed + 2_000_000 for seed in seeds]
+            heldout_pool_seeds = [seed + 4_000_000 for seed in seeds]
             cells.append({"family": family, "load_stratum": load,
                 "pool_size": pool_size, "stream_ids": [f"p26:{split}:{seed}" for seed in seeds],
-                "stream_seeds": seeds, "train_pool_seeds": [seed + 2_000_000 for seed in seeds],
-                "heldout_pool_seeds": [seed + 4_000_000 for seed in seeds],
+                "stream_seeds": seeds, "train_pool_seeds": train_pool_seeds,
+                "heldout_pool_seeds": heldout_pool_seeds,
+                "train_world_seeds": [[pool_seed + draw * 17 + draw
+                    for draw in range(pool_size)] for pool_seed in train_pool_seeds],
+                "heldout_world_seeds": [[pool_seed + 3_000_000 + draw * 17 + draw
+                    for draw in range(max(CHECKPOINTS) + 1)] for pool_seed in heldout_pool_seeds],
+                "baseline_pool_seeds": [pool_seed + BASELINE_SEED_OFFSET
+                    for pool_seed in train_pool_seeds],
+                "baseline_world_seeds": [[pool_seed + BASELINE_SEED_OFFSET + draw * 17 + index
+                    for index, draw in enumerate((1, 7, 0))] for pool_seed in train_pool_seeds],
                 "arms": list(ARMS)})
     controls = {kind: [CONTROL_BASES[split] + index * 1_000 + draw
                        for draw in range(controls_per_kind)]
                 for index, kind in enumerate(CONTROL_KINDS)}
-    all_seeds = [seed for cell in cells for key in
-                 ("stream_seeds", "train_pool_seeds", "heldout_pool_seeds")
+    control_world_seeds = {
+        "heldout_selector_guard": [seed + 3_000_000
+            for seed in controls["heldout_selector_guard"]],
+        "receipt_replay": [controls["receipt_replay"][0] + 17],
+        "approval_boundary": [],
+    }
+    root_seeds = [seed for cell in cells for key in
+                 ("stream_seeds", "train_pool_seeds", "heldout_pool_seeds", "baseline_pool_seeds")
                  for seed in cell[key]]
-    all_seeds.extend(seed for values in controls.values() for seed in values)
-    for seed in all_seeds:
+    root_seeds.extend(seed for values in controls.values() for seed in values)
+    for seed in root_seeds:
         if any(lo <= seed <= hi for lo, hi in PRIOR_NUMERIC_INTERVALS):
             raise RuntimeError(f"P26 allocation overlaps prior numeric seed {seed}")
-    if len(all_seeds) != len(set(all_seeds)):
+    if len(root_seeds) != len(set(root_seeds)):
         raise RuntimeError("P26 allocation contains duplicate numeric seed IDs")
+    world_seeds = [seed for cell in cells for key in
+        ("train_world_seeds", "heldout_world_seeds", "baseline_world_seeds")
+        for stream_seeds in cell[key] for seed in stream_seeds]
+    world_seeds.extend(seed for values in control_world_seeds.values() for seed in values)
+    for seed in world_seeds:
+        if any(lo <= seed <= hi for lo, hi in PRIOR_NUMERIC_INTERVALS):
+            raise RuntimeError(f"P26 world-seed allocation overlaps prior numeric seed {seed}")
+    if len(world_seeds) != len(set(world_seeds)):
+        raise RuntimeError("P26 world-seed allocation contains duplicate numeric seed IDs")
     return {"phase": PHASE, "split": split, "families": list(FAMILIES),
         "load_strata": dict(LOADS), "arms": list(ARMS), "stream_cells": cells,
         "streams_per_family_load_cell": streams_per_cell,
         "controls_per_kind": controls_per_kind, "control_seeds": controls,
+        "control_world_seeds": control_world_seeds,
         "checkpoints": list(CHECKPOINTS), "shared_budget": SHARED_BUDGET,
         "selector_selection_limit": SELECTOR_SELECTION_LIMIT,
         "native_search_attempt_limit": NATIVE_SEARCH_ATTEMPT_LIMIT,
@@ -520,7 +547,7 @@ def run_selector_stream(*, mode: str, family: str, load: str,
         # the residual signal opportunity in every arm. They are fixed, charged
         # common exposure and excluded from the selector's remaining pool.
         baseline_pool = generate_evidence_search_pool(split="train", draws=(1, 7, 0),
-            seed=train_seed + 900_000, family=family, initial_state=initial)
+            seed=train_seed + BASELINE_SEED_OFFSET, family=family, initial_state=initial)
         baseline_tasks = baseline_pool.task_pool()
         baseline_receipts = []
         for draw in (1, 7, 0):
@@ -652,7 +679,8 @@ def run_integrity_controls(split: str, control_seeds: dict[str, list[int]],
         except ValueError:
             status = "PASS"
         rows.append({"kind": "heldout_selector_guard", "seed": seed,
-                     "status": status, "heldout_pool_sha256": heldout.pool_sha256})
+                     "status": status, "heldout_pool_sha256": heldout.pool_sha256,
+                     "world_id": heldout.task_pool()[0]["world_id"]})
 
     # One actual verified training receipt is ingested once; each replay is a
     # separately counted idempotent control and cannot add exposure or state.
@@ -682,7 +710,8 @@ def run_integrity_controls(split: str, control_seeds: dict[str, list[int]],
                 "observations_after": after_observations,
                 "replay_added_exposure": (after != before
                     or after_observations != before_observations),
-                "replay_disposition": "deduplicated", "returned_evidence_node": str(replay_node)})
+                "replay_disposition": "deduplicated", "returned_evidence_node": str(replay_node),
+                "receipt_world_id": receipt_task["world_id"]})
     finally:
         del learner
 

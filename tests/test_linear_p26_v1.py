@@ -29,6 +29,18 @@ def test_p26_allocation_is_fixed_disjoint_and_complete():
     assert len(seeds) == len(set(seeds))
     assert not any(lo <= seed <= hi for seed in seeds
                    for lo, hi in PRIOR_NUMERIC_INTERVALS)
+    world_seeds = [seed for cell in plan["stream_cells"] for key in
+        ("train_world_seeds", "heldout_world_seeds", "baseline_world_seeds")
+        for stream_seeds in cell[key] for seed in stream_seeds]
+    world_seeds.extend(seed + 3_000_000
+        for seed in plan["control_seeds"]["heldout_selector_guard"])
+    world_seeds.append(plan["control_seeds"]["receipt_replay"][0] + 17)
+    assert len(world_seeds) == len(set(world_seeds))
+    assert not any(lo <= seed <= hi for seed in world_seeds
+                   for lo, hi in PRIOR_NUMERIC_INTERVALS)
+    assert all(baseline == train + 28_000_000
+        for cell in plan["stream_cells"]
+        for train, baseline in zip(cell["train_pool_seeds"], cell["baseline_pool_seeds"]))
     with pytest.raises(ValueError):
         allocation("heldout", streams_per_cell=1)
 

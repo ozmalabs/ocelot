@@ -27,6 +27,14 @@ def _sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def _world_seed(world_id: str) -> int | None:
+    parts = world_id.split(":")
+    try:
+        return int(parts[3]) if len(parts) == 5 and parts[0] == "p26" else None
+    except (TypeError, ValueError):
+        return None
+
+
 def _percentile(values: list[float], q: float) -> float:
     ordered = sorted(values)
     position = (len(ordered) - 1) * q
@@ -123,9 +131,12 @@ def _validate(payload: dict) -> tuple[list[str], dict]:
 
     expected_streams = {}
     for cell in plan.get("stream_cells", []):
-        for stream_id in cell.get("stream_ids", []):
+        for index, stream_id in enumerate(cell.get("stream_ids", [])):
             expected_streams[stream_id] = {"family": cell["family"],
-                "load_stratum": cell["load_stratum"], "pool_size": cell["pool_size"]}
+                "load_stratum": cell["load_stratum"], "pool_size": cell["pool_size"],
+                "train_world_seeds": cell["train_world_seeds"][index],
+                "heldout_world_seeds": cell["heldout_world_seeds"][index],
+                "baseline_world_seeds": cell["baseline_world_seeds"][index]}
     observed = {}
     for stream in payload.get("streams", []):
         stream_id = stream.get("stream_id")
@@ -134,8 +145,8 @@ def _validate(payload: dict) -> tuple[list[str], dict]:
             continue
         observed[stream_id] = stream
         expected = expected_streams[stream_id]
-        for key, value in expected.items():
-            if stream.get(key) != value:
+        for key in ("family", "load_stratum", "pool_size"):
+            if stream.get(key) != expected[key]:
                 failures.append(f"stream_stratum_mismatch:{stream_id}:{key}")
         arms = {row.get("arm"): row for row in stream.get("arms", [])}
         if set(arms) != set(ARMS) or len(stream.get("arms", [])) != len(ARMS):
@@ -146,6 +157,13 @@ def _validate(payload: dict) -> tuple[list[str], dict]:
         available = {tuple(arms[arm].get("available_opportunity_ids", ())) for arm in ARMS}
         if len(pools) != 1 or len(pool_ids) != 1 or len(available) != 1:
             failures.append(f"selector_pool_identity_mismatch:{stream_id}")
+        observed_train_world_ids = list(dict.fromkeys(
+            opportunity.split(":act:", 1)[0]
+            for opportunity in arms[ARMS[0]].get("available_opportunity_ids", ())))
+        if [_world_seed(world_id) for world_id in observed_train_world_ids] != expected["train_world_seeds"]:
+            failures.append(f"training_world_seed_matrix_mismatch:{stream_id}")
+        if stream.get("native_search", {}).get("task_world_ids", []) != observed_train_world_ids:
+            failures.append(f"native_search_task_pool_order_mismatch:{stream_id}")
         for arm in ARMS:
             row = arms[arm]
             if row.get("status") != "complete":
@@ -157,6 +175,12 @@ def _validate(payload: dict) -> tuple[list[str], dict]:
                     failures.append(f"test_curve_provenance:{stream_id}:{arm}")
                 if point.get("prediction_missing") != (point.get("prediction") is None):
                     failures.append(f"prediction_missing_flag:{stream_id}:{arm}")
+                checkpoint = point.get("cumulative_selection_work")
+                if (not isinstance(checkpoint, int) or checkpoint < 0
+                        or checkpoint >= len(expected["heldout_world_seeds"])
+                        or _world_seed(point.get("world_id", ""))
+                            != expected["heldout_world_seeds"][checkpoint]):
+                    failures.append(f"heldout_world_seed_matrix_mismatch:{stream_id}:{arm}")
             try:
                 area = _auc(row["curve"])
                 if not math.isclose(area, row.get("normalized_auc", area), abs_tol=1e-12):
@@ -178,6 +202,10 @@ def _validate(payload: dict) -> tuple[list[str], dict]:
             baseline_ids = [receipt.get("event_id") for receipt in row.get("baseline_receipts", ())]
             if any(not event_id for event_id in baseline_ids) or len(set(baseline_ids)) != 3:
                 failures.append(f"baseline_receipt_identity:{stream_id}:{arm}")
+            baseline_world_seeds = [_world_seed(receipt.get("world_id", ""))
+                for receipt in row.get("baseline_receipts", ())]
+            if baseline_world_seeds != expected["baseline_world_seeds"]:
+                failures.append(f"baseline_world_seed_matrix_mismatch:{stream_id}:{arm}")
             if row.get("selection_receipts", 0) > plan.get("selector_selection_limit", -1):
                 failures.append(f"selection_receipt_ceiling:{stream_id}:{arm}")
             delivered = [selection for selection in row.get("selection_rows", ())
@@ -285,12 +313,21 @@ def _validate(payload: dict) -> tuple[list[str], dict]:
             failures.append(f"control_count:{kind}")
         if any(row.get("status") != "PASS" for row in rows):
             failures.append(f"control_failure:{kind}")
-        if kind == "receipt_replay":
+        if kind == "heldout_selector_guard":
+            expected_world_seeds = dict(zip(plan.get("control_seeds", {}).get(kind, ()),
+                plan.get("control_world_seeds", {}).get(kind, ())))
+            for row in rows:
+                if _world_seed(row.get("world_id", "")) != expected_world_seeds.get(row.get("seed")):
+                    failures.append("heldout_control_world_seed_mismatch")
+        elif kind == "receipt_replay":
+            expected_receipt_seed = next(iter(
+                plan.get("control_world_seeds", {}).get(kind, ())), None)
             for row in rows:
                 if (row.get("replay_added_exposure") is not False
                         or row.get("evidence_count_before") != row.get("evidence_count_after")
                         or row.get("observations_before") != row.get("observations_after")
-                        or row.get("replay_disposition") != "deduplicated"):
+                        or row.get("replay_disposition") != "deduplicated"
+                        or _world_seed(row.get("receipt_world_id", "")) != expected_receipt_seed):
                     failures.append("receipt_replay_changed_exposure")
         elif kind == "approval_boundary":
             for row in rows:
