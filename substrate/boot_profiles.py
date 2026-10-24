@@ -859,6 +859,10 @@ COGNITION_ON_SEEDS = (
     "process_explanation",
     # P20 incidental sequence candidates are evidence-only and policy-off.
     "observed_sequence_learning",
+    # P24 common target receipt fan-out and candidate-only source transfer.
+    # Both policies remain disabled until a phase-specific evaluator opts in.
+    "common_target_evidence",
+    "additive_transfer",
 )
 
 

@@ -1,0 +1,831 @@
+{
+  "id": "common_target_evidence",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_induction",
+    "target_learning"
+  ],
+  "self_load_only": true,
+  "area": "common_target_evidence",
+  "description": "Opt-in P24 common target receipt projection; one event may have an ordinary view and an optional map view.",
+  "microtheory": {
+    "name": "common_target_evidence",
+    "description": "Ordinary learning is independent of optional map projection."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CommonTargetEvidencePolicy",
+      "attrs": {
+        "name": "common_target_evidence_policy",
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_common_target_evidence_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:common_target_evidence:has_common_target_evidence_policy:Agent:CommonTargetEvidencePolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_common_target_evidence_policy",
+      "tgt": {
+        "type": "CommonTargetEvidencePolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:common_target_evidence:has_common_target_evidence:Agent:CommonTargetEvidence",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_common_target_evidence",
+      "tgt": {
+        "type": "CommonTargetEvidence",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:common_target_evidence:projects_to_transition:CommonTargetEvidence:TransitionObservation",
+      "src": {
+        "type": "CommonTargetEvidence",
+        "var": "src"
+      },
+      "edge_type": "projects_to_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:common_target_evidence:projects_to_map_pair:CommonTargetEvidence:TargetMapObservation",
+      "src": {
+        "type": "CommonTargetEvidence",
+        "var": "src"
+      },
+      "edge_type": "projects_to_map_pair",
+      "tgt": {
+        "type": "TargetMapObservation",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "cte_project_one_event_to_ordinary_transition",
+      "area": "common_target_evidence",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_common_target_evidence_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_common_target_evidence",
+          "ev"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "action_authorized"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_transition_observation",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "event_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ev"
+                  },
+                  "key": "event_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "obs",
+          "TransitionObservation",
+          {
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "episode_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "object_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "object_id"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "object_type"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "action_kind"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "before_value"
+              }
+            },
+            "after_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "after_value"
+              }
+            },
+            "status": "observed"
+          }
+        ],
+        [
+          "add_node",
+          "ar",
+          "TransitionActionReceipt",
+          {
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "episode_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "observed"
+          }
+        ],
+        [
+          "add_node",
+          "orr",
+          "TransitionOutcomeReceipt",
+          {
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "episode_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "observed"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_transition_observation",
+          "obs",
+          {}
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_action_receipt",
+          "ar",
+          {}
+        ],
+        [
+          "add_edge",
+          "obs",
+          "has_outcome_receipt",
+          "orr",
+          {}
+        ],
+        [
+          "add_edge",
+          "ev",
+          "projects_to_transition",
+          "obs",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "cte_project_optional_map_view_of_same_event",
+      "area": "common_target_evidence",
+      "order": 2,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_common_target_evidence_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_common_target_evidence",
+          "ev"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "action_authorized"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "map_requested"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_target_map_observation",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "pair_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "ev"
+                  },
+                  "key": "map_pair_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "pair",
+          "TargetMapObservation",
+          {
+            "pair_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "map_pair_id"
+              }
+            },
+            "source_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_event_id"
+              }
+            },
+            "source_status": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_status"
+              }
+            },
+            "source_action_authorized": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_action_authorized"
+              }
+            },
+            "target_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_object_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_object_id"
+              }
+            },
+            "target_object_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "object_id"
+              }
+            },
+            "source_action": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_action"
+              }
+            },
+            "target_action": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "action_kind"
+              }
+            },
+            "source_object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_object_type"
+              }
+            },
+            "target_object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "object_type"
+              }
+            },
+            "source_feature": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_feature"
+              }
+            },
+            "target_feature": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "feature_key"
+              }
+            },
+            "source_before": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_before"
+              }
+            },
+            "target_before": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "before_value"
+              }
+            },
+            "source_after": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_after"
+              }
+            },
+            "target_after": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "after_value"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "map_source_epoch"
+              }
+            },
+            "target_frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "map_pending",
+            "same_target_event": true,
+            "target_action_authorized": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "action_authorized"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_target_map_observation",
+          "pair",
+          {}
+        ],
+        [
+          "add_edge",
+          "ev",
+          "projects_to_map_pair",
+          "pair",
+          {}
+        ]
+      ]
+    }
+  ]
+}

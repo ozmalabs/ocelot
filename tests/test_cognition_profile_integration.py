@@ -855,6 +855,143 @@ def test_p16_native_execution_profile_is_opt_in_and_budgeted():
     conversation.close()
 
 
+def test_p24_native_learning_chain(tmp_path):
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        target = ThermalWorld(object_ids=("p24-a", "p24-b", "p24-c"))
+        for key in ("p24-a", "p24-b"):
+            learner.observe_world_receipt(target.apply(key, "warm"))
+        learner.settle()
+        assert len(learner.hypotheses()) == 1
+        checkpoint = tmp_path / "p24-cognition-on.json"
+        world.save(checkpoint)
+    finally:
+        world.close()
+
+    resumed = WorldAdapter.load(checkpoint)
+    try:
+        learner = CommonTargetLearner(agent=resumed, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        prediction = learner.predict(query_id="p24-profile-next",
+                                     action_kind="warm", object_type="ThermalSample",
+                                     feature_key="temperature", before_value="cold",
+                                     object_id="p24-c")
+        assert prediction and prediction["expected_after_value"] == "warm"
+        receipt = target.apply("p24-c", "warm")
+        learner.observe_world_receipt(receipt)
+        learner.settle()
+        observations = [resumed.s.node(n)["attrs"]
+                        for n in resumed.s.nodes("TransitionObservation")
+                        if resumed.s.node(n)["attrs"].get("event_id") == receipt.event_id]
+        assert len(observations) == 1
+        assert len(resumed.s.nodes("ProcessInductionHypothesis")) == 1
+    finally:
+        resumed.close()
+
+
+def test_p24_causal_perturbation():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    records = []
+    for source_enabled in (False, True):
+        world = boot_cognition_on()
+        try:
+            learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                          enabled=True, policy_enabled=True,
+                                          additive_transfer_enabled=source_enabled)
+            target = ThermalWorld(object_ids=("p24-a", "p24-b", "p24-c"))
+            for key in ("p24-a", "p24-b"):
+                learner.observe_world_receipt(target.apply(key, "warm"))
+            if source_enabled:
+                learner.propose_source_model(
+                    prior_id="p24-rejected-prior", source_id="wrong-source",
+                    action_kind="warm", object_type="ThermalSample",
+                    feature_key="temperature", before_value="cold", after_value="cold",
+                    map_evidence={"map_id": "p24-rejected-map", "status": "rejected",
+                                  "mapping_kind": "exact_categorical_effect",
+                                  "target_frame_epoch": 5},
+                    target_receipt={"receipt_id": "p24-rejected-effect",
+                                    "source_prior_id": "p24-rejected-prior",
+                                    "target_event_id": "thermal:2:p24-b",
+                                    "status": "rejected", "exact_effect_match": False})
+            learner.settle()
+            prediction = learner.predict(query_id=f"p24-perturb-{source_enabled}",
+                                         action_kind="warm", object_type="ThermalSample",
+                                         feature_key="temperature", before_value="cold",
+                                         object_id="p24-c")
+            observations = [world.s.node(n)["attrs"]
+                            for n in world.s.nodes("TransitionObservation")]
+            records.append((prediction["expected_after_value"] if prediction else None,
+                            observations, len(world.s.nodes("TargetProcessPrior"))))
+            if source_enabled:
+                assert len(world.s.nodes("SourceModelProposal")) == 1
+        finally:
+            world.close()
+    assert records[0] == records[1]
+
+
+def test_p24_default_isolation():
+    p24 = {"common_target_evidence", "additive_transfer"}
+    expected_rules = {item["name"] for sid in p24 for item in manifest_for(sid).get("rules", ())
+                      if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    cognition = boot_cognition_on()
+    try:
+        load_conversation_seed_profile(conversation)
+        for ptype in ("CommonTargetEvidencePolicy", "AdditiveTransferPolicy"):
+            policies = _nodes(cognition, ptype)
+            assert len(policies) == 1
+            assert cognition.s.node(policies[0])["attrs"].get("enabled") == 0.0
+        assert p24.isdisjoint(installed_seeds(default.s))
+        assert p24.isdisjoint(installed_seeds(conversation.s))
+        assert expected_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+        assert expected_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    finally:
+        default.close()
+        conversation.close()
+        cognition.close()
+
+
+def test_p24_shared_budget():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import HeatSourceWorld, ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True,
+                                      additive_transfer_enabled=True)
+        budgets = [n for n in world.s.nodes("ThinkingBudget")
+                   if world.s.node(n)["attrs"].get("enabled") == 1.0]
+        attached = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+        assert len(budgets) == len(attached) == 1
+        budget = budgets[0]
+        before = world.s.node(budget)["attrs"]["remaining"]
+        source = HeatSourceWorld(sample_ids=("source-a", "source-b"))
+        target = ThermalWorld(object_ids=("target-a", "target-b"))
+        for i, (source_id, target_id) in enumerate((
+                ("source-a", "target-a"), ("source-b", "target-b")), 1):
+            source_receipt = source.apply_heat(source_id, "apply_heat")
+            learner.observe_world_receipt(target.apply(target_id, "warm"), map_view={
+                "pair_id": f"p24-budget-{i}", "source_receipt": source_receipt})
+        learner.settle()
+        requests = [world.s.node(n)["attrs"] for n in world.s.nodes("ThinkingBudgetRequest")]
+        map_requests = [r for r in requests if r.get("requester_kind") == "target_map_observation"]
+        induction_requests = [r for r in requests if r.get("requester_kind") == "process_induction"]
+        assert len(map_requests) == len(induction_requests) == 2
+        assert all(r.get("status") == "approved" for r in map_requests + induction_requests)
+        assert world.s.node(budget)["attrs"]["remaining"] == before - 4.0
+    finally:
+        world.close()
+
+
 def test_p12_profile_chain():
     p12 = {"imitation", "social_process", "process_explanation"}
     agent = boot_cognition_on()
