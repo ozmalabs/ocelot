@@ -248,8 +248,10 @@ snapshot digests verify and every cell has measured values for all 20 analyzer
 fields. Outcomes include 35 solved and 61 unsolved rows; these are development
 training diagnostics, not efficacy evidence. No approvals or receipts were
 added, and no validation or held-out allocation was accessed. Maximum observed
-wall time was 21.159 seconds, peak RSS 2,884,263,936 bytes, and cumulative work
-487,911 (D4 g2). The compressed [artifact](../../../evaluation/process_mastery/results/p22_resource_panel_existing_checkpoints_0609_0612_0622_0625.json.gz)
+maximum isolated cell wall time was 21.159 seconds; maximum cumulative
+`wall_time_seconds` was 1,651.274 seconds, which includes lineage work. Peak RSS
+was 2,884,263,936 bytes and cumulative primitive work 487,911 (D4 g2). The
+compressed [artifact](../../../evaluation/process_mastery/results/p22_resource_panel_existing_checkpoints_0609_0612_0622_0625.json.gz)
 has SHA-256 `147462e7e21039c2ebb89d790c39248ae1e1e44efd50cefa15b583e06a947779`;
 decompressed JSON SHA-256 is
 `cffd355b7803b415798b5b4ee676f0a940c6fdd397a725a3da7abb3c950069e8`. This
