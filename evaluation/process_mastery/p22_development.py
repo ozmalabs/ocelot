@@ -112,7 +112,11 @@ def run_p22_training_proposal_probe(*, family: str,
                                     measure_native_rule_work: bool = False,
                                     approved_candidate_binding: dict | None = None,
                                     parent_checkpoint: CheckpointExpression | None = None,
-                                    candidate_transfer_depth: int | None = None) -> dict:
+                                    candidate_transfer_depth: int | None = None,
+                                    discovery_attempt_limit_per_request: int | None = None,
+                                    transfer_reserve_per_request: int = 0,
+                                    effect_dedup_enabled: bool = False,
+                                    export_attempt_details: bool = False) -> dict:
     """Run native search on two training worlds and score every proposal.
 
     The default ``same`` mode reproduces the original qualification probe.
@@ -142,6 +146,23 @@ def run_p22_training_proposal_probe(*, family: str,
             or not isinstance(global_attempt_ceiling, int)
             or not 1 <= global_attempt_ceiling <= 120000):
         raise ValueError("global attempt ceiling must be in [1, 120000]")
+    if (isinstance(transfer_reserve_per_request, bool)
+            or not isinstance(transfer_reserve_per_request, int)
+            or transfer_reserve_per_request < 0):
+        raise ValueError("transfer reserve must be a nonnegative integer")
+    if discovery_attempt_limit_per_request is not None:
+        if (isinstance(discovery_attempt_limit_per_request, bool)
+                or not isinstance(discovery_attempt_limit_per_request, int)
+                or discovery_attempt_limit_per_request < 1):
+            raise ValueError("discovery attempt limit must be a positive integer")
+        if discovery_attempt_limit_per_request + transfer_reserve_per_request > per_request_attempt_ceiling:
+            raise ValueError("discovery plus transfer reserve exceeds the per-request ceiling")
+    elif transfer_reserve_per_request:
+        raise ValueError("a transfer reserve requires an explicit discovery attempt limit")
+    if not isinstance(effect_dedup_enabled, bool) or not isinstance(export_attempt_details, bool):
+        raise ValueError("P26 search flags must be boolean")
+    if export_attempt_details and (validation_draws or training_goal_relation != "distinct"):
+        raise ValueError("attempt-detail export is restricted to training-only distinct-goal probes")
     if not isinstance(measure_native_rule_work, bool):
         raise ValueError("native rule-work measurement flag must be boolean")
     if (approved_candidate_binding is not None
@@ -275,6 +296,12 @@ def run_p22_training_proposal_probe(*, family: str,
         # parent's value here silently ignored higher continuation ceilings.
         agent.s.set_attr(search_policies[0], "max_attempts_per_request",
                          float(per_request_attempt_ceiling))
+        agent.s.set_attr(search_policies[0], "effect_dedup_enabled",
+                         float(effect_dedup_enabled))
+        agent.s.set_attr(search_policies[0], "discovery_attempt_limit_per_request",
+                         float(discovery_attempt_limit_per_request or 0))
+        agent.s.set_attr(search_policies[0], "transfer_reserve_per_request",
+                         float(transfer_reserve_per_request))
         if measure_native_rule_work:
             rule_capture = NativeRuleWorkCapture(agent.native).start()
         if parent_checkpoint is None:
@@ -723,6 +750,20 @@ def run_p22_training_proposal_probe(*, family: str,
                 "attempt_count": len(agent.native.neighbours(request, "has_search_attempt")),
                 "max_attempts": agent.attrs(request).get("max_attempts"),
                 "reserved_attempts": agent.attrs(request).get("attempts_reserved"),
+                "request_kind": agent.attrs(request).get("request_kind"),
+                "discovery_attempt_limit": agent.attrs(request).get(
+                    "discovery_attempt_limit"),
+                "discovery_attempts_reserved": agent.attrs(request).get(
+                    "discovery_attempts_reserved"),
+                "transfer_attempt_reserve": agent.attrs(request).get(
+                    "transfer_attempt_reserve"),
+                "transfer_attempts_reserved": agent.attrs(request).get(
+                    "transfer_attempts_reserved"),
+                "transfer_candidate_ids": [str(candidate) for candidate in
+                    agent.native.neighbours(request, "qualifies_candidate")],
+                "transfer_source_task_keys": [agent.attrs(task).get("training_trial_key")
+                    for attempt in agent.native.neighbours(request, "has_transfer_source_attempt")
+                    for task in agent.native.neighbours(attempt, "about_task")],
             } for request in agent.nodes("OpenProcessSearchRequest")],
             "candidate_independent_goal_trials": {
                 str(candidate): [str(attempt) for attempt in agent.native.neighbours(
@@ -737,7 +778,18 @@ def run_p22_training_proposal_probe(*, family: str,
             "approval_count": len(agent.nodes("OpenProcessAdoptionApproval")),
             "simulated_adoption": simulated_adoption,
             "world_receipt_count": len(agent.nodes("OpenProcessWorldReceipt")),
-            "resource_snapshot": final_resource_snapshot}
+            "resource_snapshot": final_resource_snapshot,
+            "p26_search_configuration": {
+                "effect_dedup_enabled": effect_dedup_enabled,
+                "discovery_attempt_limit_per_request": discovery_attempt_limit_per_request,
+                "transfer_reserve_per_request": transfer_reserve_per_request,
+                "global_attempt_ceiling_unchanged": global_attempt_ceiling,
+            },
+            **({"attempt_detail_export": __import__(
+                "evaluation.process_mastery.search_attempt_export",
+                fromlist=["export_attempt_details"]).export_attempt_details(
+                    {"graph": agent.native.graph_to_dict()})}
+               if export_attempt_details else {})}
     finally:
         if rule_capture is not None:
             rule_capture.close()

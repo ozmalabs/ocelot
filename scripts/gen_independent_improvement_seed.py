@@ -12,7 +12,7 @@ if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
 from track_i_seed_lib import (A, And, Count, Eq, Exists, IfThenElse, L, Lt, N,
-    Not, Or, T, policy_on, productions)
+    Not, Or, PFingerprint, T, policy_on, productions)
 
 
 def build():
@@ -34,12 +34,16 @@ def build():
         """Exclude active/adopted effects and identity permutations."""
         same_schema = Exists(N("agent", "has_process_schema"), "same_schema",
             And(Eq(A("same_schema", "domain"), A(candidate, "domain")),
-                Eq(A("same_schema", "params"), A(candidate, "params")),
-                Eq(A("same_schema", "status"), L("active"))))
+                Eq(A("same_schema", "status"), L("active")),
+                Exists(N("agent", "has_process_domain"), "same_domain",
+                    And(Eq(A("same_domain", "name"), A(candidate, "domain")),
+                        Eq(PFingerprint(A("same_schema", "params"),
+                                        A("same_domain", "probes")),
+                           A(candidate, "effect_digest"))))))
         same_adopted = Exists(N("agent", "has_open_process_candidate"),
             "same_adopted", And(
                 Eq(A("same_adopted", "domain"), A(candidate, "domain")),
-                Eq(A("same_adopted", "params"), A(candidate, "params")),
+                Eq(A("same_adopted", "effect_digest"), A(candidate, "effect_digest")),
                 Eq(A("same_adopted", "status"), L("adopted_candidate")),
                 Eq(A("same_adopted", "adoption_status"), L("approved"))))
         identity_effect = Exists(N("agent", "has_process_domain"),

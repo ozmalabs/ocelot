@@ -122,6 +122,16 @@ def main() -> int:
     parser.add_argument("--search-ticks", type=int, default=30)
     parser.add_argument("--candidate-transfer-depth", type=int, choices=(1, 2, 3),
         help="bind the independent candidate composition depth for training-only reconstruction")
+    parser.add_argument("--discovery-attempt-limit-per-request", type=int,
+        help="optional P26 discovery tranche inside the per-request ceiling")
+    parser.add_argument("--transfer-reserve-per-request", type=int, default=0,
+        help="optional P26 independent-goal trial reserve inside the same request ceiling")
+    parser.add_argument("--effect-dedup", action="store_true",
+        help="opt in to exact finite effect deduplication before candidate minting")
+    parser.add_argument("--export-attempt-details", action="store_true",
+        help="write a separate read-only native attempt projection (disabled by default)")
+    parser.add_argument("--attempt-details-output", type=Path,
+        help="new external output path required with --export-attempt-details")
     parser.add_argument("--measure-native-rule-work", action="store_true",
         help="enable isolated per-rule native work counters; development only")
     parser.add_argument("--approved-candidate-binding", type=Path,
@@ -149,6 +159,29 @@ def main() -> int:
     continuation_flags_used = (args.continuation_parent_artifact is not None
         or args.continuation_parent_record_path is not None
         or args.continuation_parent_digest is not None)
+    p26_flags_used = (args.discovery_attempt_limit_per_request is not None
+        or args.transfer_reserve_per_request != 0 or args.effect_dedup
+        or args.export_attempt_details or args.attempt_details_output is not None)
+    if p26_flags_used and approval_flags_used:
+        parser.error("P26 development search flags cannot be combined with candidate adoption")
+    if p26_flags_used and (args.validation_count != 0
+                           or args.training_goal_relation != "distinct"):
+        parser.error("P26 search repair flags are restricted to training-only distinct-goal probes")
+    if args.transfer_reserve_per_request and args.discovery_attempt_limit_per_request is None:
+        parser.error("a transfer reserve requires --discovery-attempt-limit-per-request")
+    if (args.discovery_attempt_limit_per_request is not None
+            and args.discovery_attempt_limit_per_request + args.transfer_reserve_per_request
+                > args.per_request_attempt_ceiling):
+        parser.error("discovery plus transfer reserve exceeds the per-request ceiling")
+    if args.export_attempt_details:
+        if args.attempt_details_output is None:
+            parser.error("--export-attempt-details requires --attempt-details-output")
+        if args.attempt_details_output.exists():
+            parser.error("attempt-detail report path already exists")
+        if args.output is None:
+            parser.error("attempt-detail export requires a saved development result artifact")
+    elif args.attempt_details_output is not None:
+        parser.error("--attempt-details-output requires --export-attempt-details")
     if approval_flags_used and continuation_flags_used:
         parser.error("candidate adoption and training-only continuation bindings cannot be combined")
     approved_binding = None
@@ -258,7 +291,11 @@ def main() -> int:
                                   or parent_checkpoint is not None),
         approved_candidate_binding=approved_binding,
         parent_checkpoint=parent_checkpoint,
-        candidate_transfer_depth=args.candidate_transfer_depth)
+        candidate_transfer_depth=args.candidate_transfer_depth,
+        discovery_attempt_limit_per_request=args.discovery_attempt_limit_per_request,
+        transfer_reserve_per_request=args.transfer_reserve_per_request,
+        effect_dedup_enabled=args.effect_dedup,
+        export_attempt_details=args.export_attempt_details)
     if approved_binding is not None:
         result["candidate_approval_authorization"] = {
             "expression_digest": args.approve_digest,
@@ -271,11 +308,16 @@ def main() -> int:
             "training_draws": args.training_draws,
             "training_goal_relation": args.training_goal_relation,
             "validation_draws": []}
+    attempt_details = result.pop("attempt_detail_export", None)
     encoded = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
         args.output.write_text(encoded, encoding="utf-8")
     else:
         sys.stdout.write(encoded)
+    if args.export_attempt_details and attempt_details is not None:
+        args.attempt_details_output.write_text(
+            json.dumps(attempt_details, indent=2, sort_keys=True, default=str) + "\n",
+            encoding="utf-8")
     return 0
 
 

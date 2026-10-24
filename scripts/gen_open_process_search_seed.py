@@ -35,13 +35,48 @@ def _known_failed_subgoal(task, domain, subgoal):
     return IfThenElse(is_none(known), L(False), In(subgoal, known))
 
 
+def _effect_is_unseen(attempt, *, candidate_var="prior_candidate"):
+    """Gate candidate creation on exact finite effect identity when opted in."""
+    active_effect = Exists(N("d", "has_held_process"), "held_effect",
+        And(Eq(A("held_effect", "status"), L("active")),
+            Eq(PFingerprint(A("held_effect", "params"), A("d", "probes")),
+               A(attempt, "effect_digest"))))
+    prior_candidate_effect = Exists(N("agent", "has_open_process_candidate"),
+        candidate_var,
+        And(Eq(A(candidate_var, "domain"), A("d", "name")),
+            Eq(A(candidate_var, "effect_digest"), A(attempt, "effect_digest"))))
+    identity_effect = Eq(A(attempt, "effect_digest"),
+                         A("d", "identity_effect_digest"))
+    return IfThenElse(Eq(A("pol", "effect_dedup_enabled"), L(1.0)),
+        And(Not(active_effect), Not(prior_candidate_effect), Not(identity_effect)),
+        L(True))
+
+
+def _discovery_request_headroom():
+    limit = IfThenElse(Gt(A("request", "discovery_attempt_limit"), L(0.0)),
+                       A("request", "discovery_attempt_limit"),
+                       A("request", "max_attempts"))
+    return And(Lt(A("request", "discovery_attempts_reserved"), limit),
+               Lt(A("request", "attempts_reserved"), A("request", "max_attempts")))
+
+
+def _transfer_request_headroom():
+    limit = IfThenElse(Gt(A("request", "transfer_attempt_reserve"), L(0.0)),
+                       A("request", "transfer_attempt_reserve"),
+                       A("request", "max_attempts"))
+    return And(Lt(A("request", "transfer_attempts_reserved"), limit),
+               Lt(Count(N("request", "has_search_attempt")),
+                  A("request", "max_attempts")))
+
+
 def _unminted_attempts():
     return Filter(N("request", "has_search_attempt"), "eligible",
         And(Not(Exists(N("agent", "has_open_process_candidate"), "old",
                 Eq(A("old", "expression_key"), A("eligible", "expression_key")))),
             Not(Exists(N("d", "has_held_process"), "held_process",
                 And(Eq(A("held_process", "status"), L("active")),
-                    Eq(A("held_process", "params"), A("eligible", "params")))))))
+                    Eq(A("held_process", "params"), A("eligible", "params"))))),
+            _effect_is_unseen("eligible")))
 
 
 def _link_failure_evidence_rule():
@@ -129,7 +164,7 @@ def _expression_rule(operator, order, *, reverse=False):
         And(policy_on(), Eq(A("request", "status"), L("funded")),
             Eq(A("task", "status"), L("stuck")), pair_guard,
             Lt(Count(N("agent", "has_open_process_search_attempt")), A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            _discovery_request_headroom(),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), expr_key)))),
         [["add_node_with_counters", "attempt", "OpenProcessSearchAttempt", {
@@ -149,7 +184,10 @@ def _expression_rule(operator, order, *, reverse=False):
             "status": T(_attempt_status(params, applied, "task", "d", subgoal)),
             "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))},
           "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-          "request", "attempts_reserved", T(A("request", "max_attempts"))],
+          "request", "attempts_reserved", T(A("request", "max_attempts")),
+          "request", "discovery_attempts_reserved", T(IfThenElse(
+              Gt(A("request", "discovery_attempt_limit"), L(0.0)),
+              A("request", "discovery_attempt_limit"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}]] + parent_effects,
@@ -235,7 +273,7 @@ def _recursive_compose_rule(*, reverse=False):
             Lt(A("prior", "depth"), A("pol", "max_depth")),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            _discovery_request_headroom(),
             Not(Eq(V("prior"), V("a"))),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
@@ -255,7 +293,10 @@ def _recursive_compose_rule(*, reverse=False):
             "status": T(_attempt_status(params, applied, "task", "d", prior_state)),
             "rank_score": T(_attempt_rank(params, applied, "task", "d", prior_state, work))},
           "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-          "request", "attempts_reserved", T(A("request", "max_attempts"))],
+          "request", "attempts_reserved", T(A("request", "max_attempts")),
+          "request", "discovery_attempts_reserved", T(IfThenElse(
+              Gt(A("request", "discovery_attempt_limit"), L(0.0)),
+              A("request", "discovery_attempt_limit"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}],
@@ -294,7 +335,7 @@ def _recursive_unary_rule(operator, power=None):
             Lt(A("prior", "depth"), A("pol", "max_depth")),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            _discovery_request_headroom(),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
         [["add_node_with_counters", "attempt", "OpenProcessSearchAttempt", {
@@ -312,7 +353,10 @@ def _recursive_unary_rule(operator, power=None):
             "status": T(_attempt_status(params, applied, "task", "d", subgoal)),
             "rank_score": T(_attempt_rank(params, applied, "task", "d", subgoal, work))},
           "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-          "request", "attempts_reserved", T(A("request", "max_attempts"))],
+          "request", "attempts_reserved", T(A("request", "max_attempts")),
+          "request", "discovery_attempts_reserved", T(IfThenElse(
+              Gt(A("request", "discovery_attempt_limit"), L(0.0)),
+              A("request", "discovery_attempt_limit"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "attempt", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "attempt", {}],
          ["add_edge", "attempt", "about_task", "task", {}],
@@ -407,7 +451,8 @@ def _mint_candidate_composition_rule():
             Eq(A("candidate_trial", "status"), L("verified")),
             Exists(N("candidate_trial", "extends_candidate"), "parent", L(True)),
             Not(Exists(N("agent", "has_open_process_candidate"), "old",
-                Eq(A("old", "expression_key"), A("candidate_trial", "expression_key"))))))
+                Eq(A("old", "expression_key"), A("candidate_trial", "expression_key")))),
+            _effect_is_unseen("candidate_trial")))
     return rule("ops_mint_verified_candidate_composition", ONLINE_AREA, 30,
         "Preserve a verified candidate-plus-held composition as a child candidate with immutable parent lineage.",
         [["agent", "has_open_process_search_policy", "pol"],
@@ -418,6 +463,7 @@ def _mint_candidate_composition_rule():
          ["attempt", "about_task", "task"], ["task", "about_domain", "d"]],
         And(policy_on(), Eq(A("attempt", "operator_kind"), L("recursive_compose")),
             Eq(A("attempt", "status"), L("verified")),
+            _effect_is_unseen("attempt"),
             Eq(V("attempt"), Argmin(eligible, "best", A("best", "rank_score"))),
             Lt(Count(N("agent", "has_open_process_candidate")), A("pol", "max_candidates")),
             Not(Exists(N("request", "has_candidate"), "old", L(True)))),
@@ -442,6 +488,48 @@ def _mint_candidate_composition_rule():
          ["add_edge", "candidate", "derived_from_attempt", "attempt", {}]], batch=False)
 
 
+def _bind_transfer_candidate_rule():
+    return rule("ops_bind_training_candidate_to_distinct_goal_request", ONLINE_AREA, 14,
+        "Bind an independently qualified training candidate to an explicitly reserved request for a distinct training goal.",
+        [["agent", "has_open_process_search_policy", "pol"],
+         ["agent", "has_open_process_candidate", "candidate"],
+         ["candidate", "derived_from_attempt", "source"],
+         ["source", "about_task", "source_task"],
+         ["agent", "has_open_process_search_request", "source_request"],
+         ["source_request", "has_search_attempt", "source"],
+         ["candidate", "has_expression_digest_receipt", "digest_receipt"],
+         ["agent", "has_open_process_search_request", "request"],
+         ["request", "searches_task", "task"], ["task", "about_domain", "d"]],
+        And(policy_on(), Gt(A("pol", "candidate_transfer_depth"), L(1.0)),
+            IfThenElse(Gt(A("pol", "transfer_reserve_per_request"), L(0.0)),
+                Eq(A("request", "request_kind"),
+                   L("discovery_with_independent_transfer_reserve")),
+                Eq(A("request", "request_kind"), L("discovery"))),
+            Eq(A("request", "status"), L("funded")),
+            Eq(A("source_task", "split"), L("training")),
+            Eq(A("task", "split"), L("training")),
+            Not(Eq(A("source_task", "goal"), A("task", "goal"))),
+            Or(Eq(A("source_request", "status"), L("funded")),
+               Eq(A("source_request", "status"), L("proposal_recorded"))),
+            Eq(A("source", "status"), L("verified")),
+            Eq(A("candidate", "status"), L("unapproved_candidate")),
+            Eq(A("candidate", "expression_digest_status"), L("verified")),
+            Eq(A("digest_receipt", "status"), L("verified")),
+            Eq(A("digest_receipt", "expression_digest"), A("candidate", "expression_digest")),
+            Eq(A("digest_receipt", "effect_digest"), A("candidate", "effect_digest")),
+            Eq(A("candidate", "domain"), A("d", "name")),
+            Eq(A("candidate", "kind"), A("d", "kind")),
+            Eq(A("candidate", "source_epoch"), A("d", "source_epoch")),
+            Eq(A("candidate", "model_epoch"), A("d", "model_epoch")),
+            Eq(A("candidate", "frame_epoch"), A("d", "frame_epoch")),
+            Not(Exists(N("request", "qualifies_candidate"), "prior", L(True)))),
+        [["add_edge", "request", "qualifies_candidate", "candidate", {}],
+         ["add_edge", "request", "has_transfer_source_attempt", "source", {}],
+         ["set_attr", "request", "transfer_source_task_key", T(A("source_task", "task_key"))],
+         ["set_attr", "request", "transfer_target_task_key", T(A("task", "task_key"))]],
+        batch=False)
+
+
 def _independent_candidate_compose_rule(*, reverse=False):
     direction = "held_then_candidate" if reverse else "candidate_then_held"
     params = (PCompose(A("a", "params"), A("candidate", "params")) if reverse
@@ -457,7 +545,7 @@ def _independent_candidate_compose_rule(*, reverse=False):
     return rule(f"ops_test_candidate_composition_{direction}", ONLINE_AREA, 15 + int(reverse),
         "Test a digest-attested training candidate as an algebraic operand on a distinct training goal before broad search expansion.",
         [["agent", "has_open_process_search_policy", "pol"],
-         ["agent", "has_open_process_candidate", "candidate"],
+         ["request", "qualifies_candidate", "candidate"],
          ["candidate", "derived_from_attempt", "source"],
          ["source", "about_task", "source_task"],
          ["agent", "has_open_process_search_request", "source_request"],
@@ -487,7 +575,7 @@ def _independent_candidate_compose_rule(*, reverse=False):
             Eq(A("candidate", "frame_epoch"), A("d", "frame_epoch")),
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
             Lt(Count(N("agent", "has_open_process_search_attempt")), A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            _transfer_request_headroom(),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
         [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
@@ -505,7 +593,10 @@ def _independent_candidate_compose_rule(*, reverse=False):
             "status": T(IfThenElse(Eq(applied, A("task", "goal")), L("verified"), L("residual"))),
             "rank_score": T(Times(L(-1.0), Plus(A("candidate", "work_cost"), A("a", "cost"))))},
          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         "request", "attempts_reserved", T(A("request", "max_attempts")),
+         "request", "transfer_attempts_reserved", T(IfThenElse(
+             Gt(A("request", "transfer_attempt_reserve"), L(0.0)),
+             A("request", "transfer_attempt_reserve"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "trial", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
          ["add_edge", "trial", "about_task", "task", {}],
@@ -538,7 +629,7 @@ def _independent_candidate_two_step_compose_rule():
     return rule("ops_test_candidate_composition_two_held", ONLINE_AREA, 17,
         "Test a digest-attested training candidate followed by two held operators on a distinct training goal.",
         [["agent", "has_open_process_search_policy", "pol"],
-         ["agent", "has_open_process_candidate", "candidate"],
+         ["request", "qualifies_candidate", "candidate"],
          ["candidate", "derived_from_attempt", "source"],
          ["source", "about_task", "source_task"],
          ["agent", "has_open_process_search_request", "source_request"],
@@ -568,8 +659,7 @@ def _independent_candidate_two_step_compose_rule():
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")),
-               A("request", "max_attempts")),
+            _transfer_request_headroom(),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
         [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
@@ -591,7 +681,10 @@ def _independent_candidate_two_step_compose_rule():
                                                        A("a", "cost")),
                                                    A("b", "cost"))))},
          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         "request", "attempts_reserved", T(A("request", "max_attempts")),
+         "request", "transfer_attempts_reserved", T(IfThenElse(
+             Gt(A("request", "transfer_attempt_reserve"), L(0.0)),
+             A("request", "transfer_attempt_reserve"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "trial", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
          ["add_edge", "trial", "about_task", "task", {}],
@@ -652,7 +745,7 @@ def _independent_candidate_two_step_order_rule(order):
     return rule(f"ops_test_candidate_composition_{order_label}", ONLINE_AREA, 18,
         "Test a digest-attested training candidate in every bounded position among two held operators.",
         [["agent", "has_open_process_search_policy", "pol"],
-         ["agent", "has_open_process_candidate", "candidate"],
+         ["request", "qualifies_candidate", "candidate"],
          ["candidate", "derived_from_attempt", "source"],
          ["source", "about_task", "source_task"],
          ["agent", "has_open_process_search_request", "source_request"],
@@ -683,7 +776,7 @@ def _independent_candidate_two_step_order_rule(order):
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            _transfer_request_headroom(),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
         [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
@@ -703,7 +796,10 @@ def _independent_candidate_two_step_order_rule(order):
                                    L("verified"), L("residual"))),
             "rank_score": T(Times(L(-1.0), work_cost))},
          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         "request", "attempts_reserved", T(A("request", "max_attempts")),
+         "request", "transfer_attempts_reserved", T(IfThenElse(
+             Gt(A("request", "transfer_attempt_reserve"), L(0.0)),
+             A("request", "transfer_attempt_reserve"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "trial", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
          ["add_edge", "trial", "about_task", "task", {}],
@@ -757,7 +853,7 @@ def _independent_candidate_three_step_order_rule(order):
     return rule(f"ops_test_candidate_composition_{label}", ONLINE_AREA, 19,
         "Test a digest-attested training candidate in each bounded position among three held operators.",
         [["agent", "has_open_process_search_policy", "pol"],
-         ["agent", "has_open_process_candidate", "candidate"],
+         ["request", "qualifies_candidate", "candidate"],
          ["candidate", "derived_from_attempt", "source"],
          ["source", "about_task", "source_task"],
          ["agent", "has_open_process_search_request", "source_request"],
@@ -789,7 +885,7 @@ def _independent_candidate_three_step_order_rule(order):
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
             Lt(Count(N("agent", "has_open_process_search_attempt")),
                A("pol", "max_attempts")),
-            Lt(Count(N("request", "has_search_attempt")), A("request", "max_attempts")),
+            _transfer_request_headroom(),
             Not(Exists(N("request", "has_search_attempt"), "old",
                        Eq(A("old", "expression_key"), key)))),
         [["add_node_with_counters", "trial", "OpenProcessSearchAttempt", {
@@ -810,7 +906,10 @@ def _independent_candidate_three_step_order_rule(order):
                                    L("verified"), L("residual"))),
             "rank_score": T(Times(L(-1.0), work_cost))},
          "pol", "attempts_reserved", T(A("pol", "max_attempts")),
-         "request", "attempts_reserved", T(A("request", "max_attempts"))],
+         "request", "attempts_reserved", T(A("request", "max_attempts")),
+         "request", "transfer_attempts_reserved", T(IfThenElse(
+             Gt(A("request", "transfer_attempt_reserve"), L(0.0)),
+             A("request", "transfer_attempt_reserve"), A("request", "max_attempts")))],
          ["add_edge", "request", "has_search_attempt", "trial", {}],
          ["add_edge", "agent", "has_open_process_search_attempt", "trial", {}],
          ["add_edge", "trial", "about_task", "task", {}],
@@ -828,10 +927,12 @@ def build():
         ("Agent", "has_open_process_search_request", "OpenProcessSearchRequest"),
         ("OpenProcessSearchRequest", "searches_task", "SolveTask"),
         ("OpenProcessSearchRequest", "has_search_attempt", "OpenProcessSearchAttempt"),
+        ("OpenProcessSearchRequest", "qualifies_candidate", "OpenProcessCandidate"),
         ("Agent", "has_open_process_search_attempt", "OpenProcessSearchAttempt"),
         ("OpenProcessSearchAttempt", "about_task", "SolveTask"),
         ("OpenProcessSearchAttempt", "uses_parent_process", "ProcessSchema"),
         ("OpenProcessSearchAttempt", "extends_search_attempt", "OpenProcessSearchAttempt"),
+        ("OpenProcessSearchAttempt", "extends_candidate", "OpenProcessCandidate"),
         ("OpenProcessSearchRequest", "has_candidate", "OpenProcessCandidate"),
         ("Agent", "has_discovered_strategy", "DiscoveredStrategy"),
         ("DiscoveredStrategy", "has_strategy_failure_constraint", "StrategyFailureConstraint"),
@@ -856,6 +957,16 @@ def build():
         [["add_node", "request", "OpenProcessSearchRequest", {
             "task_key": T(_task_identity()), "domain": T(A("d", "name")),
             "max_attempts": T(A("pol", "max_attempts_per_request")),
+            "discovery_attempt_limit": T(IfThenElse(
+                Gt(A("pol", "discovery_attempt_limit_per_request"), L(0.0)),
+                A("pol", "discovery_attempt_limit_per_request"),
+                A("pol", "max_attempts_per_request"))),
+            "transfer_attempt_reserve": T(A("pol", "transfer_reserve_per_request")),
+            "transfer_attempts_reserved": 0.0,
+            "discovery_attempts_reserved": 0.0,
+            "request_kind": T(IfThenElse(
+                Gt(A("pol", "transfer_reserve_per_request"), L(0.0)),
+                L("discovery_with_independent_transfer_reserve"), L("discovery"))),
             "attempts_reserved": 0.0,
             "source_epoch": T(A("d", "source_epoch")),
             "model_epoch": T(A("d", "model_epoch")),
@@ -879,7 +990,8 @@ def build():
             Eq(A("budget_request", "status"), L("approved"))),
         [["set_attr", "request", "status", "funded"]])
     rules = [_link_failure_evidence_rule(), request, funded]
-    rules.extend((_independent_candidate_compose_rule(),
+    rules.extend((_bind_transfer_candidate_rule(),
+                  _independent_candidate_compose_rule(),
                   _independent_candidate_compose_rule(reverse=True),
                   _independent_candidate_two_step_compose_rule(),
                   _independent_candidate_two_step_order_rule(("a", "candidate", "b")),
@@ -925,7 +1037,11 @@ def build():
             "attempts_reserved": 0.0,
             "max_candidates": 16.0,
             "search_cost": 2.0, "max_depth": 4.0,
-            "candidate_transfer_depth": 1.0}}],
+            "candidate_transfer_depth": 1.0,
+            "effect_dedup_enabled": 0.0,
+            "attempt_detail_export_enabled": 0.0,
+            "discovery_attempt_limit_per_request": 0.0,
+            "transfer_reserve_per_request": 0.0}}],
         "edges": [{"src": {"role": "agent_root"}, "type": "has_open_process_search_policy",
             "tgt": {"local": 0}, "attrs": {}}],
         "productions": productions(SEED_ID, specs), "rules": rules}

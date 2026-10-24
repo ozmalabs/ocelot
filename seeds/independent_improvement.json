@@ -2058,30 +2058,78 @@
                             "type": "Var",
                             "name": "same_schema"
                           },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "candidate"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      {
-                        "type": "Eq",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "same_schema"
-                          },
                           "key": "status"
                         },
                         "b": {
                           "type": "Lit",
                           "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_process_domain",
+                          "any_type": false
+                        },
+                        "var_name": "same_domain",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "same_domain"
+                                },
+                                "key": "name"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "candidate"
+                                },
+                                "key": "domain"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "EffectFingerprint",
+                                "p": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "same_schema"
+                                  },
+                                  "key": "params"
+                                },
+                                "probes": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "same_domain"
+                                  },
+                                  "key": "probes"
+                                }
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "candidate"
+                                },
+                                "key": "effect_digest"
+                              }
+                            }
+                          ]
                         }
                       }
                     ]
@@ -2132,7 +2180,7 @@
                             "type": "Var",
                             "name": "same_adopted"
                           },
-                          "key": "params"
+                          "key": "effect_digest"
                         },
                         "b": {
                           "type": "Attr",
@@ -2140,7 +2188,7 @@
                             "type": "Var",
                             "name": "candidate"
                           },
-                          "key": "params"
+                          "key": "effect_digest"
                         }
                       },
                       {
@@ -2771,30 +2819,78 @@
                             "type": "Var",
                             "name": "same_schema"
                           },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "candidate"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      {
-                        "type": "Eq",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "same_schema"
-                          },
                           "key": "status"
                         },
                         "b": {
                           "type": "Lit",
                           "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_process_domain",
+                          "any_type": false
+                        },
+                        "var_name": "same_domain",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "same_domain"
+                                },
+                                "key": "name"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "candidate"
+                                },
+                                "key": "domain"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "EffectFingerprint",
+                                "p": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "same_schema"
+                                  },
+                                  "key": "params"
+                                },
+                                "probes": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "same_domain"
+                                  },
+                                  "key": "probes"
+                                }
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "candidate"
+                                },
+                                "key": "effect_digest"
+                              }
+                            }
+                          ]
                         }
                       }
                     ]
@@ -2845,7 +2941,7 @@
                             "type": "Var",
                             "name": "same_adopted"
                           },
-                          "key": "params"
+                          "key": "effect_digest"
                         },
                         "b": {
                           "type": "Attr",
@@ -2853,7 +2949,7 @@
                             "type": "Var",
                             "name": "candidate"
                           },
-                          "key": "params"
+                          "key": "effect_digest"
                         }
                       },
                       {
@@ -2998,30 +3094,78 @@
                             "type": "Var",
                             "name": "same_schema"
                           },
-                          "key": "params"
-                        },
-                        "b": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "trial_candidate"
-                          },
-                          "key": "params"
-                        }
-                      },
-                      {
-                        "type": "Eq",
-                        "a": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "same_schema"
-                          },
                           "key": "status"
                         },
                         "b": {
                           "type": "Lit",
                           "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Exists",
+                        "source": {
+                          "type": "Neighbours",
+                          "node": {
+                            "type": "Var",
+                            "name": "agent"
+                          },
+                          "edge_type": "has_process_domain",
+                          "any_type": false
+                        },
+                        "var_name": "same_domain",
+                        "predicate": {
+                          "type": "And",
+                          "items": [
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "same_domain"
+                                },
+                                "key": "name"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "trial_candidate"
+                                },
+                                "key": "domain"
+                              }
+                            },
+                            {
+                              "type": "Eq",
+                              "a": {
+                                "type": "EffectFingerprint",
+                                "p": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "same_schema"
+                                  },
+                                  "key": "params"
+                                },
+                                "probes": {
+                                  "type": "Attr",
+                                  "node": {
+                                    "type": "Var",
+                                    "name": "same_domain"
+                                  },
+                                  "key": "probes"
+                                }
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "trial_candidate"
+                                },
+                                "key": "effect_digest"
+                              }
+                            }
+                          ]
                         }
                       }
                     ]
@@ -3072,7 +3216,7 @@
                             "type": "Var",
                             "name": "same_adopted"
                           },
-                          "key": "params"
+                          "key": "effect_digest"
                         },
                         "b": {
                           "type": "Attr",
@@ -3080,7 +3224,7 @@
                             "type": "Var",
                             "name": "trial_candidate"
                           },
-                          "key": "params"
+                          "key": "effect_digest"
                         }
                       },
                       {

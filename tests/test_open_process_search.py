@@ -96,6 +96,83 @@ def test_search_does_not_mint_an_already_held_effect():
                    for candidate in agent.nodes("OpenProcessCandidate"))
 
 
+def test_duplicate_syntax_no_budget_explosion():
+    agent, _ = _agent()
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(policy, "effect_dedup_enabled", 1.0)
+    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
+    params = _compose(agent, left, right)
+    goal = _apply(agent, params, [0, 1, 2, 3])
+    existing = agent.s.add_node("OpenProcessCandidate", {
+        "expression_key": "independent-syntax-for-same-effect",
+        "domain": "search", "kind": "permutation",
+        "effect_digest": [goal], "params": params,
+        "status": "unapproved_candidate"})
+    agent.s.add_edge(agent.ag, "has_open_process_candidate", existing, {})
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    same_effect = [candidate for candidate in agent.nodes("OpenProcessCandidate")
+                   if agent.attrs(candidate).get("effect_digest") == [goal]]
+    assert same_effect == [existing]
+    assert any(agent.attrs(attempt)["status"] == "verified"
+               and agent.attrs(attempt)["effect_digest"] == [goal]
+               for attempt in agent.nodes("OpenProcessSearchAttempt"))
+
+
+def test_qualification_headroom_reserved():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+            "r": [0, 1, 3, 2], "s": [3, 1, 2, 0]}
+    agent, _ = _agent(attempts=100, held=held)
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(policy, "candidate_transfer_depth", 2.0)
+    agent.s.set_attr(policy, "max_attempts_per_request", 5.0)
+    agent.s.set_attr(policy, "discovery_attempt_limit_per_request", 3.0)
+    agent.s.set_attr(policy, "transfer_reserve_per_request", 2.0)
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    initial = [0, 1, 2, 3]
+    candidate_params = _compose(agent, held["p"], held["q"])
+    source = agent.add_solve_task("search", initial,
+        _apply(agent, candidate_params, initial),
+        training_trial_key="p26-reserve-source")
+    agent.s.set_attr(source, "split", "training")
+    agent.s.set_attr(source, "status", "stuck")
+    _tick(agent)
+    candidate = next(node for node in agent.nodes("OpenProcessCandidate")
+                     if agent.attrs(node)["params"] == candidate_params)
+    attest_open_process_candidate(agent, candidate)
+    source_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
+                       if agent.native.neighbours(request, "searches_task") == [source]]
+    assert len(source_requests) == 1
+    assert len(agent.native.neighbours(source_requests[0], "has_search_attempt")) <= 3
+
+    target_params = _compose(agent, _compose(agent, candidate_params, held["r"]), held["s"])
+    target = agent.add_solve_task("search", initial, _apply(agent, target_params, initial),
+        training_trial_key="p26-reserve-target")
+    agent.s.set_attr(target, "split", "training")
+    agent.s.set_attr(target, "status", "stuck")
+    _tick(agent)
+
+    requests = [request for request in agent.nodes("OpenProcessSearchRequest")
+                if agent.native.neighbours(request, "searches_task") == [target]]
+    assert len(requests) == 1
+    request = requests[0]
+    assert agent.attrs(request)["request_kind"] == \
+        "discovery_with_independent_transfer_reserve"
+    assert agent.attrs(request)["discovery_attempt_limit"] == 3.0
+    assert agent.attrs(request)["transfer_attempt_reserve"] == 2.0
+    assert agent.native.neighbours(request, "qualifies_candidate") == [candidate]
+    transfer = [attempt for attempt in agent.native.neighbours(request, "has_search_attempt")
+                if agent.native.neighbours(attempt, "extends_candidate") == [candidate]]
+    assert len(transfer) <= 2
+    assert agent.attrs(request)["transfer_attempts_reserved"] == float(len(transfer))
+    assert all(agent.native.neighbours(attempt, "about_task") == [target]
+               for attempt in transfer)
+    assert all(agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+               for attempt in transfer)
+    assert len(agent.native.neighbours(request, "has_search_attempt")) <= 5
+
+
 def test_renaming_parents_does_not_change_expression_choice():
     results = []
     for held in ({"source-a": [1, 0, 2, 3], "source-b": [0, 2, 1, 3]},

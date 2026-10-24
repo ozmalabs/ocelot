@@ -25,7 +25,11 @@
         "max_candidates": 16.0,
         "search_cost": 2.0,
         "max_depth": 4.0,
-        "candidate_transfer_depth": 1.0
+        "candidate_transfer_depth": 1.0,
+        "effect_dedup_enabled": 0.0,
+        "attempt_detail_export_enabled": 0.0,
+        "discovery_attempt_limit_per_request": 0.0,
+        "transfer_reserve_per_request": 0.0
       }
     }
   ],
@@ -91,6 +95,18 @@
       }
     },
     {
+      "provenance": "seed:open_process_search:qualifies_candidate:OpenProcessSearchRequest:OpenProcessCandidate",
+      "src": {
+        "type": "OpenProcessSearchRequest",
+        "var": "src"
+      },
+      "edge_type": "qualifies_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:open_process_search:has_open_process_search_attempt:Agent:OpenProcessSearchAttempt",
       "src": {
         "type": "Agent",
@@ -135,6 +151,18 @@
       "edge_type": "extends_search_attempt",
       "tgt": {
         "type": "OpenProcessSearchAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:open_process_search:extends_candidate:OpenProcessSearchAttempt:OpenProcessCandidate",
+      "src": {
+        "type": "OpenProcessSearchAttempt",
+        "var": "src"
+      },
+      "edge_type": "extends_candidate",
+      "tgt": {
+        "type": "OpenProcessCandidate",
         "var": "tgt"
       }
     },
@@ -798,6 +826,82 @@
                 "key": "max_attempts_per_request"
               }
             },
+            "discovery_attempt_limit": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "discovery_attempt_limit_per_request"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                },
+                "then": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "discovery_attempt_limit_per_request"
+                },
+                "other": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "max_attempts_per_request"
+                }
+              }
+            },
+            "transfer_attempt_reserve": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "transfer_reserve_per_request"
+              }
+            },
+            "transfer_attempts_reserved": 0.0,
+            "discovery_attempts_reserved": 0.0,
+            "request_kind": {
+              "__term__": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "transfer_reserve_per_request"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0.0
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "discovery_with_independent_transfer_reserve"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "discovery"
+                }
+              }
+            },
             "attempts_reserved": 0.0,
             "source_epoch": {
               "__term__": {
@@ -1026,6 +1130,510 @@
       ]
     },
     {
+      "name": "ops_bind_training_candidate_to_distinct_goal_request",
+      "area": "process_solving",
+      "order": 14,
+      "latency_class": "background",
+      "comment": "Bind an independently qualified training candidate to an explicitly reserved request for a distinct training goal.",
+      "match": [
+        [
+          "agent",
+          "has_open_process_search_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_open_process_candidate",
+          "candidate"
+        ],
+        [
+          "candidate",
+          "derived_from_attempt",
+          "source"
+        ],
+        [
+          "source",
+          "about_task",
+          "source_task"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "source_request"
+        ],
+        [
+          "source_request",
+          "has_search_attempt",
+          "source"
+        ],
+        [
+          "candidate",
+          "has_expression_digest_receipt",
+          "digest_receipt"
+        ],
+        [
+          "agent",
+          "has_open_process_search_request",
+          "request"
+        ],
+        [
+          "request",
+          "searches_task",
+          "task"
+        ],
+        [
+          "task",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "candidate_transfer_depth"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "IfThenElse",
+            "cond": {
+              "type": "Gt",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "transfer_reserve_per_request"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 0.0
+              }
+            },
+            "then": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "request_kind"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "discovery_with_independent_transfer_reserve"
+              }
+            },
+            "other": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "request_kind"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "discovery"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "funded"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "source_task"
+                },
+                "key": "goal"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "goal"
+              }
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "source_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "funded"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "source_request"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposal_recorded"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unapproved_candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "expression_digest_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "digest_receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "digest_receipt"
+              },
+              "key": "expression_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "expression_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "digest_receipt"
+              },
+              "key": "effect_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "effect_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "domain"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "edge_type": "qualifies_candidate",
+                "any_type": false
+              },
+              "var_name": "prior",
+              "predicate": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "request",
+          "qualifies_candidate",
+          "candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "has_transfer_source_attempt",
+          "source",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "transfer_source_task_key",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "source_task"
+              },
+              "key": "task_key"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "request",
+          "transfer_target_task_key",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "task_key"
+            }
+          }
+        ]
+      ],
+      "batch": false
+    },
+    {
       "name": "ops_test_candidate_composition_candidate_then_held",
       "area": "process_solving",
       "order": 15,
@@ -1038,8 +1646,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -1475,27 +2083,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -1969,6 +2627,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -2029,8 +2725,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -2466,27 +3162,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -2960,6 +3706,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -3020,8 +3804,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -3447,27 +4231,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -4059,6 +4893,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -4126,8 +4998,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -4568,27 +5440,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -5180,6 +6102,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -5247,8 +6207,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -5689,27 +6649,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -6301,6 +7311,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -6368,8 +7416,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -6815,27 +7863,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -7542,6 +8640,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -7616,8 +8752,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -8063,27 +9199,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -8790,6 +9976,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -8864,8 +10088,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -9311,27 +10535,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -10038,6 +11312,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -10112,8 +11424,8 @@
           "pol"
         ],
         [
-          "agent",
-          "has_open_process_candidate",
+          "request",
+          "qualifies_candidate",
           "candidate"
         ],
         [
@@ -10559,27 +11871,77 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "transfer_attempt_reserve"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "transfer_attempt_reserve"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "edge_type": "has_search_attempt",
+                    "any_type": false
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -11286,6 +12648,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "transfer_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "transfer_attempt_reserve"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "transfer_attempt_reserve"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -11439,6 +12839,180 @@
             }
           },
           {
+            "type": "IfThenElse",
+            "cond": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "effect_dedup_enabled"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1.0
+              }
+            },
+            "then": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "edge_type": "has_held_process",
+                      "any_type": false
+                    },
+                    "var_name": "held_effect",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "held_effect"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "active"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "EffectFingerprint",
+                            "p": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "held_effect"
+                              },
+                              "key": "params"
+                            },
+                            "probes": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "d"
+                              },
+                              "key": "probes"
+                            }
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "attempt"
+                            },
+                            "key": "effect_digest"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Exists",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_open_process_candidate",
+                      "any_type": false
+                    },
+                    "var_name": "prior_candidate",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior_candidate"
+                            },
+                            "key": "domain"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "name"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "prior_candidate"
+                            },
+                            "key": "effect_digest"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "attempt"
+                            },
+                            "key": "effect_digest"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "type": "Not",
+                  "arg": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "attempt"
+                      },
+                      "key": "effect_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "identity_effect_digest"
+                    }
+                  }
+                }
+              ]
+            },
+            "other": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
             "type": "Eq",
             "a": {
               "type": "Var",
@@ -11541,6 +13115,180 @@
                             "key": "expression_key"
                           }
                         }
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "candidate_trial"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "candidate_trial"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "candidate_trial"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
                       }
                     }
                   ]
@@ -12042,6 +13790,180 @@
                           ]
                         }
                       }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
+                      }
                     }
                   ]
                 }
@@ -12397,27 +14319,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -13366,6 +15334,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -13679,6 +15685,180 @@
                             }
                           ]
                         }
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
                       }
                     }
                   ]
@@ -14035,27 +16215,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -15004,6 +17230,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -15153,27 +17417,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -15841,6 +18151,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -16147,6 +18495,180 @@
                             }
                           ]
                         }
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
                       }
                     }
                   ]
@@ -16483,27 +19005,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -17301,6 +19869,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -17607,6 +20213,180 @@
                             }
                           ]
                         }
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
                       }
                     }
                   ]
@@ -17943,27 +20723,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -18860,6 +21686,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -19166,6 +22030,180 @@
                             }
                           ]
                         }
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
                       }
                     }
                   ]
@@ -19542,27 +22580,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -20550,6 +23634,44 @@
                 "name": "request"
               },
               "key": "max_attempts"
+            }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
             }
           }
         ],
@@ -20740,27 +23862,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -21749,6 +24917,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -21933,27 +25139,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -22660,6 +25912,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -22837,27 +26127,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -23754,6 +27090,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -23931,27 +27305,73 @@
             }
           },
           {
-            "type": "Lt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "request"
+            "type": "And",
+            "items": [
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempts_reserved"
                 },
-                "edge_type": "has_search_attempt",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "request"
+                "b": {
+                  "type": "IfThenElse",
+                  "cond": {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "request"
+                      },
+                      "key": "discovery_attempt_limit"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  "then": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "discovery_attempt_limit"
+                  },
+                  "other": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "request"
+                    },
+                    "key": "max_attempts"
+                  }
+                }
               },
-              "key": "max_attempts"
-            }
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "attempts_reserved"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "max_attempts"
+                }
+              }
+            ]
           },
           {
             "type": "Not",
@@ -24947,6 +28367,44 @@
               },
               "key": "max_attempts"
             }
+          },
+          "request",
+          "discovery_attempts_reserved",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Gt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "discovery_attempt_limit"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0.0
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "discovery_attempt_limit"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "max_attempts"
+              }
+            }
           }
         ],
         [
@@ -25253,6 +28711,180 @@
                             }
                           ]
                         }
+                      }
+                    },
+                    {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "effect_dedup_enabled"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": 1.0
+                        }
+                      },
+                      "then": {
+                        "type": "And",
+                        "items": [
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "edge_type": "has_held_process",
+                                "any_type": false
+                              },
+                              "var_name": "held_effect",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "held_effect"
+                                      },
+                                      "key": "status"
+                                    },
+                                    "b": {
+                                      "type": "Lit",
+                                      "value": "active"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "EffectFingerprint",
+                                      "p": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "held_effect"
+                                        },
+                                        "key": "params"
+                                      },
+                                      "probes": {
+                                        "type": "Attr",
+                                        "node": {
+                                          "type": "Var",
+                                          "name": "d"
+                                        },
+                                        "key": "probes"
+                                      }
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Exists",
+                              "source": {
+                                "type": "Neighbours",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "agent"
+                                },
+                                "edge_type": "has_open_process_candidate",
+                                "any_type": false
+                              },
+                              "var_name": "prior_candidate",
+                              "predicate": {
+                                "type": "And",
+                                "items": [
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "domain"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "d"
+                                      },
+                                      "key": "name"
+                                    }
+                                  },
+                                  {
+                                    "type": "Eq",
+                                    "a": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "prior_candidate"
+                                      },
+                                      "key": "effect_digest"
+                                    },
+                                    "b": {
+                                      "type": "Attr",
+                                      "node": {
+                                        "type": "Var",
+                                        "name": "eligible"
+                                      },
+                                      "key": "effect_digest"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          },
+                          {
+                            "type": "Not",
+                            "arg": {
+                              "type": "Eq",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "eligible"
+                                },
+                                "key": "effect_digest"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "d"
+                                },
+                                "key": "identity_effect_digest"
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": true
                       }
                     }
                   ]
