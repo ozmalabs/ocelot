@@ -239,6 +239,24 @@ panel supplies initial isolated resource measurements for the 16 extant
 descendants; it does not replace the required complete development panel or
 provide measurements for the eight unbuilt descendants.
 
+**Four-world existing-checkpoint resource follow-up (2026-10-24):** Repeated
+the isolated resource panel on four distinct common registered training worlds
+per family, using draws 0609–0612 for D4 and 0622–0625 for Loopover. The 24
+currently captured checkpoints produced 96/96 completed cells; all respected
+the 600,000 cumulative primitive and 20,000 rule-progress ceilings. All resource
+snapshot digests verify and every cell has measured values for all 20 analyzer
+fields. Outcomes include 35 solved and 61 unsolved rows; these are development
+training diagnostics, not efficacy evidence. No approvals or receipts were
+added, and no validation or held-out allocation was accessed. Maximum observed
+wall time was 21.159 seconds, peak RSS 2,884,263,936 bytes, and cumulative work
+487,911 (D4 g2). The compressed [artifact](../../../evaluation/process_mastery/results/p22_resource_panel_existing_checkpoints_0609_0612_0622_0625.json.gz)
+has SHA-256 `147462e7e21039c2ebb89d790c39248ae1e1e44efd50cefa15b583e06a947779`;
+decompressed JSON SHA-256 is
+`cffd355b7803b415798b5b4ee676f0a940c6fdd397a725a3da7abb3c950069e8`. This
+extends isolated measurements for the 16 present descendants but leaves the
+eight missing descendants, final per-field ceilings, and the complete
+development panel outstanding.
+
 At source revision `10af7d389051b3ca3bf249173064e5e0b7c12623`, after the native
 identity-effect qualification guard, the current provenance audit is `ATTESTED`
 with no issues; source-bundle/build-source match and native symbol binding are
