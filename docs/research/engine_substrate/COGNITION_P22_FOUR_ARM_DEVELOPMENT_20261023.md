@@ -2018,3 +2018,20 @@ native-rule-work SHA-256
 `5d5b650e086b6b04cf663f1e0ce15ca5f27c5027f904c96e6798cadb3f8e9d15`
 (complete identity coverage, no unresolved rules). One approval and receipt
 are inherited; no new action, validation, or held-out allocation occurred.
+
+## Loopover invention-only generation-one 30,000-attempt continuation
+
+On fresh distinct goals 0010/0011, both tasks used 30,000 attempts and ended
+stuck. Candidates `#16551`, `#21555`, and `#51572` received zero
+independent-goal qualifications. The continuation reserved 60,000 new
+attempts, bringing the branch total to 80,000; it recorded 76 native rule
+steps, 1,516.177 seconds wall-time and 2,029,036,544-byte peak RSS.
+
+Raw artifact SHA-256
+`d62900c64cd62432609f7b4eb37261825f6ea26ec6df932bb778348a7e69209a`, resource
+snapshot SHA-256
+`4e93010e1ee3b158c716ef6354f85004e076b4d8f7575784bfa65e84e3eb4886`, and
+native-rule-work SHA-256
+`53750fdf767df6857b50cb7386be84a5a08a727ad1530f51e6dae44cdcc676ba`
+(complete identity coverage, no unresolved rules). One approval and receipt
+are inherited; no new action or held-out allocation occurred.
