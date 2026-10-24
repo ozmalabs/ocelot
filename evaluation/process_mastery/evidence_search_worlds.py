@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 import random
+from types import MappingProxyType
 from typing import Any, Iterable
 
 
@@ -34,7 +35,23 @@ class EvidenceSearchPool:
 
     def task_pool(self) -> tuple[dict[str, Any], ...]:
         """Return copies of the selector-visible opportunities only."""
-        return tuple(json.loads(json.dumps(row)) for row in self.opportunities)
+        return tuple(_thaw(row) for row in self.opportunities)
+
+
+def _freeze(value):
+    if isinstance(value, dict):
+        return MappingProxyType({key: _freeze(item) for key, item in value.items()})
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze(item) for item in value)
+    return value
+
+
+def _thaw(value):
+    if hasattr(value, "items"):
+        return {key: _thaw(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw(item) for item in value]
+    return value
 
 
 def _world(seed: int, family: str, draw: int, split: str) -> tuple[dict, dict]:
@@ -117,15 +134,19 @@ def _world(seed: int, family: str, draw: int, split: str) -> tuple[dict, dict]:
         "world_id": world_id, "family": family, "split": split,
         "draw": draw, "difficulty_stratum": f"depth_{length}",
         "capacity_stratum": f"states_{n}", "initial_state": start,
-        "goal_state": target, "primitive_affordances": actions,
-        "transition_model": tuple(transitions),
-        "opportunity_ids": (f"{world_id}:observe", f"{world_id}:act", f"{world_id}:transfer"),
+        "goal_state": target, "primitive_affordances": tuple(sorted(
+            action for action in actions if any(src == start and act == action
+                                                for src, act, _dst in transitions))),
+        "opportunity_ids": tuple(f"{world_id}:act:{action}"
+            for action in sorted(action for action in actions
+                if any(src == start and act == action for src, act, _dst in transitions))),
         "context_features": {"surface_signal": rng.choice(("smooth", "rough")),
             "distractor_marker": rng.choice(("amber", "violet"))},
     }
     private = {"world_id": world_id, "relation_class": relation,
         "solvable": bool(solvable), "witness": tuple(witness) if solvable else (),
         "target_effect": target, "transition_count": len(transitions),
+        "transition_model": tuple(transitions), "action_effects": actions,
         "relation_signature": _digest(actions),
         "transfer_relation": "increment_by_one_mod_state_count"
             if draw % len(RELATIONS) == 3 else None,
@@ -151,8 +172,24 @@ def generate_evidence_search_pool(*, split: str, draws: Iterable[int],
         opportunities.append(public)
         scorer.append(private)
     pool_id = f"p26:{split}:{seed}:{','.join(map(str, draw_ids))}"
-    identity = {"pool_id": pool_id, "opportunities": opportunities}
-    return EvidenceSearchPool(split, tuple(opportunities), tuple(scorer), pool_id, _digest(identity))
+    for task in opportunities:
+        task["evidence_opportunities"] = tuple({
+            "opportunity_key": opportunity_id, "pool_id": pool_id,
+            "status": "eligible", "split": "training",
+            "expected_outcome": "unknown", "answer_fields_absent": True,
+            "sealed_labels_present": False, "source_epoch": 1,
+            "model_epoch": 1, "frame_epoch": 1,
+            "object_id": opportunity_id,
+            "object_type": f"EvidenceState:{task['family']}",
+            "action_kind": action, "feature_key": "state",
+            "before_value": str(task["initial_state"]),
+            "fixed_rank": float(index), "random_rank": float(
+                int(_digest([pool_id, opportunity_id])[:8], 16)),
+        } for index, (opportunity_id, action) in enumerate(zip(
+            task["opportunity_ids"], task["primitive_affordances"])))
+    identity = {"pool_id": pool_id, "opportunities": opportunities, "scorer_only": scorer}
+    return EvidenceSearchPool(split, tuple(_freeze(row) for row in opportunities),
+        tuple(_freeze(row) for row in scorer), pool_id, _digest(identity))
 
 
 def selector_views(pool: EvidenceSearchPool) -> dict[str, tuple[dict[str, Any], ...]]:
@@ -162,14 +199,15 @@ def selector_views(pool: EvidenceSearchPool) -> dict[str, tuple[dict[str, Any], 
     return {name: pool.task_pool() for name in ("residual", "fixed", "random")}
 
 
-def search_cost_curve(task: dict[str, Any], *, ceilings: Iterable[int] = EFFORT_CEILINGS) -> dict:
+def search_cost_curve(task: dict[str, Any], *, world_model: dict[str, Any],
+                      ceilings: Iterable[int] = EFFORT_CEILINGS) -> dict:
     """Exhaustively enumerate finite action words, reporting every charged try.
 
     This is an external simulator scorer. Candidate identifiers/expressions are
     generated from the affordance set and never consulted to generate the goal.
     """
     model = {(int(src), action): int(dst)
-             for src, action, dst in task["transition_model"]}
+             for src, action, dst in world_model["transition_model"]}
     actions = tuple(sorted(task["primitive_affordances"]))
     requested = tuple(int(value) for value in ceilings)
     if any(value <= 0 for value in requested) or tuple(sorted(set(requested))) != requested:
@@ -228,3 +266,48 @@ def search_cost_curve(task: dict[str, Any], *, ceilings: Iterable[int] = EFFORT_
         "failed_or_invalid_attempts": tried - successful_attempts,
         "finite_space_exhausted": exhausted,
         "finite_space_exhaustion_work": tried if exhausted else None}
+
+
+class EvidenceSearchWorld:
+    """Mechanical receipt boundary for selector-visible action opportunities."""
+
+    def __init__(self, task: dict[str, Any], world_model: dict[str, Any]):
+        if task.get("world_id") != world_model.get("world_id"):
+            raise ValueError("task and scorer mechanics identify different worlds")
+        self.task = task
+        self._transitions = {(int(src), str(action)): int(dst)
+                             for src, action, dst in world_model["transition_model"]}
+        self._states = {str(row["opportunity_key"]): int(task["initial_state"])
+                        for row in task.get("evidence_opportunities", ())}
+        self._receipts = {}
+        self.epoch = 0
+
+    def execute(self, opportunity: dict[str, Any]):
+        from evaluation.process_mastery.target_learning_worlds import WorldReceipt
+
+        if opportunity.get("split") != "training":
+            raise ValueError("only authorized training opportunities may be executed")
+        key = str(opportunity.get("opportunity_key", ""))
+        if key not in self._states:
+            raise ValueError("opportunity is not owned by this world")
+        before = self._states[key]
+        declared_before = int(opportunity["before_value"])
+        if before != declared_before:
+            raise ValueError("opportunity has a stale world state")
+        target = self._transitions.get((before, str(opportunity["action_kind"])))
+        if target is None:
+            raise ValueError("action is not a world affordance at this state")
+        self.epoch += 1
+        self._states[key] = target
+        receipt = WorldReceipt(
+            event_id=f"{self.task['world_id']}:receipt:{self.epoch}:{key}",
+            object_id=str(opportunity["object_id"]),
+            object_type=str(opportunity["object_type"]),
+            action_kind=str(opportunity["action_kind"]), feature_key="state",
+            before_value=str(before), after_value=str(target), status="observed",
+            action_authorized=True, world_epoch=self.epoch)
+        self._receipts[receipt.event_id] = receipt
+        return receipt
+
+    def verify_receipt(self, receipt) -> bool:
+        return self._receipts.get(getattr(receipt, "event_id", None)) == receipt

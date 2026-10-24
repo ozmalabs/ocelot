@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from evaluation.process_mastery.evidence_search_worlds import (
-    EFFORT_CEILINGS, EvidenceSearchPool, generate_evidence_search_pool,
+    EFFORT_CEILINGS, EvidenceSearchPool, EvidenceSearchWorld, generate_evidence_search_pool,
     search_cost_curve, selector_views,
 )
 
@@ -16,21 +16,26 @@ def test_pool_identity_shared_across_selectors():
     assert arms["residual"] == arms["fixed"] == arms["random"]
     assert pool.pool_sha256 == generate_evidence_search_pool(
         split="train", draws=range(12), seed=911).pool_sha256
+    with pytest.raises(TypeError):
+        pool.opportunities[0]["goal_state"] = -1
 
 
 def test_goal_not_active_operator_function():
     pool = generate_evidence_search_pool(split="development", draws=range(30), seed=2026)
-    for task in pool.opportunities:
+    for task, world_model in zip(pool.opportunities, pool.scorer_only):
         one_step = {int(mapping[str(task["initial_state"])])
-                    for mapping in task["primitive_affordances"].values()}
+                    for mapping in world_model["action_effects"].values()}
         assert task["goal_state"] not in one_step
+        assert "transition_model" not in task and "action_effects" not in task
+        assert all("after_value" not in opportunity
+                   for opportunity in task["evidence_opportunities"])
 
 
 def test_finite_space_reports_exhaustion():
     task = {"world_id": "dead-end", "initial_state": 0, "goal_state": 3,
-        "primitive_affordances": {"a": {"0": 1}, "b": {"0": 2}},
-        "transition_model": ()}
-    report = search_cost_curve(task, ceilings=(1, 2, 4, 8))
+        "primitive_affordances": ("a", "b")}
+    world_model = {"transition_model": ()}
+    report = search_cost_curve(task, world_model=world_model, ceilings=(1, 2, 4, 8))
     assert report["finite_space_exhausted"] is True
     assert report["finite_space_exhaustion_work"] == 2
     assert report["attempts"] == 2
@@ -39,9 +44,9 @@ def test_finite_space_reports_exhaustion():
 
 def test_all_search_costs_and_failures_counted():
     task = {"world_id": "mixed", "initial_state": 0, "goal_state": 3,
-        "primitive_affordances": {"a": {}, "b": {}},
-        "transition_model": ((0, "a", 1), (1, "a", 3))}
-    report = search_cost_curve(task, ceilings=(1, 2, 4, 8))
+        "primitive_affordances": ("a", "b")}
+    world_model = {"transition_model": ((0, "a", 1), (1, "a", 3))}
+    report = search_cost_curve(task, world_model=world_model, ceilings=(1, 2, 4, 8))
     assert report["attempts"] == 6
     assert report["unique_effect_coverage"] > 0
     assert report["failed_or_invalid_attempts"] == 5
@@ -57,6 +62,7 @@ def test_no_heldout_task_used_for_selection():
         selector_views(heldout)
     assert all("solvable" not in row and "witness" not in row
                for row in heldout.task_pool())
+    assert all("transition_model" not in row for row in heldout.task_pool())
 
 
 def test_scorer_only_solvability_and_structural_strata_are_separate():
@@ -77,17 +83,33 @@ def test_repeated_and_transferable_relations_are_world_owned():
     repeated = [row for row in pool.scorer_only if row["relation_class"] == "repeated"]
     assert len({row["relation_signature"] for row in repeated
                 if row["world_id"].split(":")[1] == "cyclic_relation"}) == 1
-    transferable = [row for row in pool.opportunities if row["draw"] % 6 == 3]
-    assert {row["family"] for row in transferable} == {
+    transferable = [(task, scorer) for task, scorer in zip(pool.opportunities, pool.scorer_only)
+                   if task["draw"] % 6 == 3]
+    assert {task["family"] for task, _scorer in transferable} == {
         "cyclic_relation", "branching_relation"}
-    for task in transferable:
+    for task, scorer in transferable:
         initial = task["initial_state"]
         state_count = 7 if task["family"] == "cyclic_relation" else 9
-        assert task["primitive_affordances"]["act_0"][str(initial)] == (initial + 1) % state_count
+        assert scorer["action_effects"]["act_0"][str(initial)] == (initial + 1) % state_count
+
+
+def test_world_receipt_boundary_hides_outcome_until_execution():
+    pool = generate_evidence_search_pool(split="train", draws=(0,), seed=321)
+    task = pool.task_pool()[0]
+    world_model = pool.scorer_only[0]
+    opportunity = task["evidence_opportunities"][0]
+    world = EvidenceSearchWorld(task, world_model)
+    assert "after_value" not in opportunity
+    receipt = world.execute(opportunity)
+    assert receipt.status == "observed" and receipt.action_authorized
+    assert receipt.before_value == opportunity["before_value"]
+    assert world.verify_receipt(receipt)
+    assert not world.verify_receipt(object())
 
 
 def test_cost_curve_uses_fixed_geometric_effort_ceilings():
     assert EFFORT_CEILINGS == (1, 2, 4, 8, 16, 32, 64)
     with pytest.raises(ValueError, match="strictly increasing"):
         search_cost_curve({"world_id": "x", "initial_state": 0, "goal_state": 1,
-            "primitive_affordances": {"a": {}}, "transition_model": ()}, ceilings=(2, 1))
+            "primitive_affordances": ("a",)}, world_model={"transition_model": ()},
+            ceilings=(2, 1))
