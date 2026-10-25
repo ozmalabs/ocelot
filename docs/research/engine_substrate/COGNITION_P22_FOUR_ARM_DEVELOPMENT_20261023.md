@@ -2208,3 +2208,32 @@ original artifact remains intact at its original path with its original hash
 `b82e4e36d89861f081a46c93874a1edd053f2ef61a393adbb5176e09b05ac53c`); it
 reconciles 26/32 checkpoints and 104/104 cells, leaving six descendants and
 per-field ceilings outstanding. No efficacy inference follows.
+
+## D4 full-arm g2 reduced-budget continuation (2026-10-26, draws 0480–0483)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+pairwise-distinct training goals. The reduced 5,000-attempt per-request cap
+reserved 12,646 new attempts over the parent's 30,703 (43,349 cumulative); all
+four tasks remained stuck. The attempt export covers 43,349 unique IDs (39,518
+residual and 3,831 verified) and eight exact effects. No new candidate
+qualified: `#4022` and `#6521` each received six independent-goal trials (one
+verified, five residual); inherited `#22382` received none; and `#39809`
+received 2,646 (374 verified, 2,272 residual). No adoption or checkpoint was
+created. Two approvals and receipts are inherited; this branch added none.
+Validation and held-out allocations are empty.
+
+Resource snapshot `30b7c423cf0a5ad3a0a7165c06022ef88e2e7a057494dc2278dab6dcfbf5c26c`
+and native-work snapshot
+`b587f553e155e0ce9f87fa800fc68f7bd290507bc765247fca2ed077c814242b` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 219 cumulative native rule steps, 3,219.310 seconds cumulative wall
+time, 2,296,702,928-byte peak RSS attributed to PID `1283039`, and 374,888
+cumulative declared primitive work, within the 600,000 development ceiling.
+
+Raw result SHA-256 is
+`0f5b801aa2170c5eba43f3cc9fd6a77c48d756edbef1061ac5d608b6ccd8f041`; read-only
+attempt-export SHA-256 is
+`5a42de6066b7947e316f3b7bea07c40917617de70ea060318cd2c28e01bfe5a1`. This
+negative training-only search does not create an admissible D4 full-arm g3
+descendant; final resource, preregistration and held-out gates remain open.
