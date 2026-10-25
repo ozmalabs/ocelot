@@ -2268,3 +2268,33 @@ attempt-export SHA-256 is
 `feb03f977b9d611154a80460a5c477b4ab8fb95d7ad196d71c518a40bd020a8b`. This
 negative search does not create an admissible D4 full-arm g3 descendant; final
 resource, preregistration and held-out gates remain open.
+
+## D4 full-arm g2 reduced-budget continuation (2026-10-26, draws 0512–0515)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` on four
+pairwise-distinct training goals. The 5,000-attempt per-request cap added 12,646
+attempts to the parent's 30,703 (43,349 cumulative); all four tasks remained
+stuck. The read-only export covers 43,349 unique IDs (39,474 residual, 3,875
+verified) and eight exact effects. No candidate qualified: `#4022` and `#6521`
+each received six independent-goal trials (one verified, five residual);
+inherited `#22382` received none; and `#39809` received 2,646 (350 verified,
+2,296 residual). Candidate `#39809` has the same expression digest as the
+nonqualifying candidates in the two prior budgeted branches. No adoption or
+checkpoint was created. Two approvals and receipts are inherited; none were
+added. Validation and held-out allocations are empty.
+
+Resource snapshot
+`83a2941457e5a09e5a66f6ec27676f050376ec54369c54790bc8ffd5df03826f` and
+native-work snapshot
+`bc359cdd5757b0248f5403804a943fcdfecb3e68a77ce2fe7cb7798ffbdc774e` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 219 cumulative native rule steps, 3,368.066 seconds cumulative wall
+time, 2,296,610,816-byte peak RSS attributed to PID `1633654`, and 373,333
+cumulative declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`2a4622f13a1ba9499d83b2bc0c04a71f3208f7bce88881ad24004778c7681b29`; read-only
+attempt-export SHA-256 is
+`aee84b43b61124f0ac2a534ebc29eecf9986d422f91ad93dba81fab82502f4d5`. This is
+negative training-search evidence; it does not produce an admissible D4
+full-arm g3 descendant, and final P22 gates remain open.
