@@ -2,6 +2,8 @@
 
 **Status: DRAFT — NOT FROZEN. Protocol feasibility amendment recorded 2026-10-24; do not run on held-out worlds.**
 
+**Continuation review (2026-10-24):** The canonical plan now schedules diagnostic P23 and prerequisite remediation P24–P26 before any further P22 freeze decision. P27 will explicitly select justified original-protocol re-entry or a separately versioned scheduled-checkpoint study. This draft is retained unchanged in its outcome/approval criteria by the planning decision; it is not frozen, completed, or replaced by development results. See [continuation decisions](COGNITION_POST_P22_CONTINUATION_REVIEW_20261024.md).
+
 This file records the protocol choices that can be fixed before the final
 checkpoint manifest exists. It is not a standalone freeze: it contains no
 `P22_FREEZE_JSON`, commit identity, checkpoint manifest hash, or runtime
@@ -151,40 +153,27 @@ same world across arms, respect the shared primitive-work and native-rule
 progress ceilings, and report every contract resource dimension; 0/40 have
 exact realized-resource equality, so they support development capability
 comparisons only. They do not establish per-field frozen resource ceilings for
-the final 24-checkpoint panel or the full multi-generation lineages. The D4
-and Loopover invention-only requests and the D4 full-arm request for generation
-one have each been approved and consumed once, with 12 reviewer-reported
-seconds; their receipts and generation-one checkpoints verify. These complete
-3 of 12 invention/full descendants. D4 invention-only generation two has now
-also been approved and captured with a verified receipt; 4 of 12 descendants
-are present, leaving eight separately approved invention/full transitions. Loopover full-arm still lacks a qualified
-generation-one candidate, and nine further invention/full transitions remain,
-each requiring its own approval. Fresh Loopover full-root training-only
-searches on worlds 0800–0817 failed to qualify a candidate. Candidate `#11545`
-had 16,236 residual independent-goal trials in the 0800–0803 and 0808–0811
-panels; candidate `#31551` had no independent-goal trials in 0804–0807;
-`#21545` had 10,824 residual trials in 0812–0814. The maximum configured
-90,000-attempt, 120-tick panel on 0815–0817 found no candidate on any goal.
-The D4 invention-only g1 continuation on 0818–0821 independently replayed
-candidate `#9458` (`84854777d0e3b48f447ecd04236a794eff39a46546edb3f19e47f506492ce66a`)
-and qualification `#15851` (0960/0818); its exact request was approved with 12
-reviewer-reported seconds and consumed once on training draw 0818, producing
-verified receipt `#45865` and generation-two checkpoint
-`p22-d4-g2-84854777d0e3` (digest
-`d8a916474c8e3bafd44dda0082fd7c71ccb3dac1c0a2daf9bbe7f759c70fb4df`). The
-approved D4 invention-only g2 search on worlds 0822/0823/0825
-did not find an improving g3 candidate: its only formally qualified candidate
-was an identity effect and was excluded; one other qualification record had a
-missing kind and was rejected. The Loopover invention-only g1 continuation on worlds 0826–0829 produced three
-candidates with zero qualifications; no action packet is available from that
-lineage yet. Exact realized resource equality
-is not a freeze prerequisite after the feasibility amendment; measured resource
+the final 24-checkpoint panel or the full multi-generation lineages. The prior D4 invention-only g1 and D4/Loopover full-arm requests were each
+approved and consumed once; D4 invention-only g2 was also approved and
+captured. Two later full-arm packets were then approved with 12
+reviewer-reported seconds each: D4 full-arm g1 candidate `#9440` produced a
+verified g2 checkpoint, and Loopover full-arm g0 candidate `#1611` produced a
+verified g1 checkpoint. These bring captured invention/full descendants to
+6/12; six further transitions remain, each requiring its own exact approval.
+The consumed packets and raw results are recorded in
+[`COGNITION_P22_APPROVAL_REQUEST_D4_FULL_G1_0002_0003.md`](COGNITION_P22_APPROVAL_REQUEST_D4_FULL_G1_0002_0003.md),
+[`COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_FULL_G0_0034_0035.md`](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_FULL_G0_0034_0035.md),
+and the plan's dated ledger. No validation or held-out allocation was used.
+
+Earlier training-only branches remain unchanged: D4 invention-only g2 found
+no improving g3 candidate, while the Loopover invention-only g1 continuation
+did not qualify a g2 candidate. Exact realized resource equality is not a
+freeze prerequisite after the feasibility amendment; measured resource
 coverage, common allocated ceilings, within-ceiling outcomes, and complete
 development plumbing remain required. This draft still cannot be frozen
-because the 24-checkpoint descendant manifest and per-checkpoint measured
-resource/ceiling manifest are incomplete, and candidate-specific decisions
-remain for eight future transitions; two exact candidate requests are awaiting
-separate decisions. No held-out allocation may be accessed.
+because the 24-checkpoint descendant manifest, per-checkpoint measured
+resource/ceiling manifest, and final isolated wall-time panel are incomplete.
+No held-out allocation may be accessed.
 
 **Current checkpoint resource snapshot audit (2026-10-24):** The two registered
 family root artifacts, the passive-control lineage artifact, and four exact
@@ -382,3 +371,17 @@ native-rule-work SHA-256 is
 `138483f4685927bfa5bccc9c12574848d231b4e470a606a234837beafbc9ccae`. No
 qualified generation-three candidate resulted, so the draft and held-out gates
 remain unchanged.
+
+**Approved full-arm lineage updates (2026-10-25):** The exact D4 full-arm g1 candidate `#9440` and Loopover full-arm g0 candidate `#1611` requests described in the plan were approved with 12 reviewer-reported seconds each and consumed exactly once. They created D4 full-arm g2 and Loopover full-arm g1 checkpoints with verified receipts; six of the 12 required invention/full descendants remain. The raw outputs and hashes are in the plan and development ledger. These are training-only transitions. The 24-descendant manifest, shared per-field ceilings, final resource preflight and standalone freeze remain incomplete; do not use held-out worlds.
+
+**D4 full-arm g2 P26 proposal continuation (2026-10-25):** Four fresh distinct training goals 0210–0213 were searched from the new full-arm g2 checkpoint with exact-effect deduplication, 10,000 discovery attempts and a 5,000-attempt transfer reserve per request. All tasks remained stuck; no reserve was used and no new candidate, qualification, approval, receipt or checkpoint resulted. The run added 40,000 attempts to the parent's 30,703, within its unchanged 120,000 graph ceiling. The resource snapshot and complete native-rule-work capture verify; the process peak is PID/timestamp attributed. This remains negative training-only search evidence. P22 is still `DRAFT — NOT FROZEN`, and held-out access remains closed.
+
+**Loopover full-arm g1 P26 proposal continuation (2026-10-25):** Fresh distinct training goals 0214–0217 were searched from the new g1 checkpoint with the same fixed discovery/transfer reserve and exact-effect deduplication. All four tasks remained stuck. The branch added 55,000 attempts to 40,000 inherited attempts, for 95,000 under the unchanged 120,000 graph ceiling. Candidate `#51571` received 15,000 independent-goal trials, all residual, so it did not qualify and cannot be submitted for approval. No new approval, receipt or checkpoint was created. The resource and complete native-rule-work captures verify; process RSS is attributed. No validation or held-out worlds were accessed. The preregistration remains draft, and held-out access remains closed.
+
+**Loopover full-arm g1 P26 follow-up search (2026-10-25):** A second branch from the same immutable g1 checkpoint searched fresh distinct goals 0218–0221. It added 60,000 reserved attempts to 40,000 inherited attempts, for 100,000 under the 120,000 graph ceiling. Candidates `#71577` and `#71671` received 20,000 independent-goal trials in total, all residual; neither qualified. No new approval, receipt or checkpoint was created, and validation/held-out allocations remained empty. Resource and native-rule-work digests verify with complete identity coverage and attributed process RSS. This remains negative training-only evidence; this file remains `DRAFT — NOT FROZEN` and held-out access remains closed.
+
+**Loopover full-arm g1 second follow-up search (2026-10-25):** The third fresh-goal branch from this checkpoint searched 0222–0225, adding 55,000 reserved attempts to the 40,000-attempt parent total (95,000 under the 120,000 graph ceiling). Candidate `#81580` received 15,000 independent-goal trials, all residual, so it did not qualify. No approval, receipt or checkpoint was added. Resource and native-rule-work digests verify with complete identity coverage and attributed process RSS. Validation and held-out allocations remain empty; this file remains `DRAFT — NOT FROZEN`.
+
+**Loopover full-arm g1 second follow-up search (2026-10-25):** The next fresh-goal branch searched 0222–0225 from the same g1 checkpoint, adding 55,000 reserved attempts to the 40,000-attempt parent total. Candidate `#81580` received 15,000 independent-goal trials, all residual, and did not qualify. No approval, receipt or checkpoint was added. Resource and native-rule-work digests verify, with complete native identity coverage and attributed process RSS. Validation and held-out allocations remain empty; this preregistration is still `DRAFT — NOT FROZEN`.
+
+**Captured-checkpoint resource audit (2026-10-25):** The read-only auditor [`audit_p22_checkpoint_resources.py`](../../../scripts/audit_p22_checkpoint_resources.py) inspected eight registered roots, 12 passive descendants, and six approved invention/full descendants. It reports `PASS_PARTIAL_INCOMPLETE`: 26 distinct checkpoint IDs, valid checkpoint and resource-snapshot digests, all 20 registered resource fields measured for every checkpoint, and no issues. The [machine-readable audit](../../../evaluation/process_mastery/results/p22_checkpoint_resource_audit_20261025.json) SHA-256 is `001ac843c08e880e5d06117498d391534cd63de985e53346eeefe6bfa0e1bb23`; it embeds SHA-256 identities for all nine source artifacts. The six missing invention/full descendants are D4 invention-only g3, D4 full g3, Loopover invention-only g2/g3, and Loopover full g2/g3. Per-field ceilings are not frozen, the isolated final wall-time panel is incomplete, and held-out access remains disallowed. Reproduce with `.venv/bin/python scripts/audit_p22_checkpoint_resources.py`; this audit is resource provenance only and does not satisfy the manifest, freeze, or efficacy gates.
