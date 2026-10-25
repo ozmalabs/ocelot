@@ -53,6 +53,7 @@ def build() -> dict[str, Any]:
     checkpoint_rows = {row["checkpoint_id"]: row for row in audit["checkpoints"]}
     panel_rows = list(prior.get("rows", [])) + list(supplement.get("rows", []))
     cells_by_checkpoint: dict[str, list[dict]] = {}
+    isolated_wall_times_by_checkpoint: dict[str, list[float]] = {}
     fields_by_name: dict[str, list[tuple[float | int, str]]] = {
         field: [] for field in RESOURCE_FIELDS
     }
@@ -89,6 +90,14 @@ def build() -> dict[str, Any]:
                 cell_fields[field] = value
         if outcome.get("approval_events_added", 0) or outcome.get("world_receipts_added", 0):
             issues.append({"checkpoint": checkpoint_id, "issue": "cell_added_action_evidence"})
+        isolated_wall_time = outcome.get("isolated_worker_wall_time_seconds")
+        if (isinstance(isolated_wall_time, bool)
+                or not isinstance(isolated_wall_time, (int, float))
+                or not math.isfinite(isolated_wall_time) or isolated_wall_time < 0):
+            issues.append({"checkpoint": checkpoint_id, "issue": "isolated_wall_time_invalid"})
+        else:
+            isolated_wall_times_by_checkpoint.setdefault(checkpoint_id, []).append(
+                float(isolated_wall_time))
         if not outcome.get("primitive_budget_respected"):
             issues.append({"checkpoint": checkpoint_id, "issue": "primitive_ceiling_exceeded"})
         if not outcome.get("rule_progress_limit_respected"):
@@ -143,15 +152,35 @@ def build() -> dict[str, Any]:
                                                 if value == high}),
         }
 
+    checkpoint_wall_time_seconds = {
+        checkpoint_id: max(values)
+        for checkpoint_id, values in isolated_wall_times_by_checkpoint.items()
+        if values
+    }
+    provisional_resource_ceilings = {
+        field: values["maximum"] for field, values in resource_ranges.items()
+    }
+    # Preserve the already exercised shared hard ceilings. These entries are
+    # still provisional because the six descendant checkpoints are missing.
+    provisional_resource_ceilings["primitive_work"] = 600_000
+    provisional_resource_ceilings["cumulative_primitive_work"] = 600_000
+    provisional_resource_ceilings["native_rule_steps"] = 20_000
+
     missing = audit.get("missing_invention_full_descendants", [])
-    expected_total = (audit.get("root_count", 0) + audit.get("passive_descendant_count", 0)
-                      + 12)
+    expected_root_count = audit.get("root_count", 0)
+    expected_descendant_count = audit.get("passive_descendant_count", 0) + 12
+    captured_descendant_count = len(checkpoint_rows) - expected_root_count
+    expected_total = expected_root_count + expected_descendant_count
     return {
         "schema": "p22_current_resource_manifest_v1",
         "status": "PASS_PARTIAL_INCOMPLETE" if not issues else "FAIL",
         "checkpoint_count": len(checkpoint_rows),
         "expected_checkpoint_count": expected_total,
         "missing_checkpoint_count": expected_total - len(checkpoint_rows),
+        "expected_registered_root_count": expected_root_count,
+        "expected_descendant_count": expected_descendant_count,
+        "captured_descendant_count": captured_descendant_count,
+        "missing_descendant_count": expected_descendant_count - captured_descendant_count,
         "missing_invention_full_descendants": missing,
         "isolated_cell_count": len(cell_rows),
         "four_isolated_worlds_per_captured_checkpoint": (
@@ -167,6 +196,12 @@ def build() -> dict[str, Any]:
         "validation_accessed": False,
         "heldout_accessed": False,
         "per_field_ceilings_frozen": False,
+        "provisional_resource_ceiling_method": (
+            "observed field maxima across all current checkpoint/world cells; "
+            "primitive work fixed at 600000 and native rule steps at 20000"),
+        "provisional_resource_ceilings": provisional_resource_ceilings,
+        "checkpoint_wall_time_method": "maximum isolated worker time across four common training worlds",
+        "checkpoint_wall_time_seconds": checkpoint_wall_time_seconds,
         "final_manifest_complete": len(checkpoint_rows) == expected_total,
         "resource_ranges": resource_ranges,
         "sources": sources,
@@ -180,7 +215,8 @@ def main() -> int:
     OUTPUT.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps({key: result[key] for key in (
         "status", "checkpoint_count", "expected_checkpoint_count",
-        "missing_checkpoint_count", "isolated_cell_count",
+        "missing_checkpoint_count", "expected_descendant_count",
+        "captured_descendant_count", "missing_descendant_count", "isolated_cell_count",
         "four_isolated_worlds_per_captured_checkpoint", "all_cells_completed",
         "all_resource_fields_measured", "all_resource_snapshots_digest_valid",
         "approvals_added", "receipts_added", "validation_accessed",
