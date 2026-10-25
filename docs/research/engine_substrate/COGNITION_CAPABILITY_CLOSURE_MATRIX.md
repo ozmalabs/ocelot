@@ -208,3 +208,6 @@ A Loopover full-arm g1 continuation on draws 0070–0073 used 55,000 new trainin
 
 
 A Loopover invention-only g1 continuation on draws 0074–0077 used 55,000 new training attempts and produced no qualified candidate or g2 checkpoint. Full attempt and native-resource provenance is recorded in the canonical build-plan ledger. This negative development result does not change any L1–L7 disposition; P22 remains unfrozen and held-out access remains closed.
+
+
+**P22 Loopover full-arm continuation (2026-10-26, draws 0078–0081):** A fresh four-goal training continuation from registered full-arm g1 remained stuck on every task. Candidate `#1611` and new candidate `#51571` received 16,236 and 15,000 independent-goal trials without qualification; no g2 checkpoint resulted. Full attempt, resource, and native-rule provenance is in the build-plan ledger. This negative result does not change any L1–L7 disposition; P22 remains unfrozen and held-out access remains closed.
