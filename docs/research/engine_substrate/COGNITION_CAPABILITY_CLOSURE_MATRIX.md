@@ -205,3 +205,6 @@ A separate D4 full-arm g2 continuation on draws 0332–0335 used 40,000 new trai
 
 
 A Loopover full-arm g1 continuation on draws 0070–0073 used 55,000 new training attempts and produced no qualified candidate or g2 checkpoint. The full attempt, resource, and native-rule provenance is in the canonical build-plan ledger. This negative development result does not change any L1–L7 disposition; P22 remains unfrozen and held-out access remains closed.
+
+
+A Loopover invention-only g1 continuation on draws 0074–0077 used 55,000 new training attempts and produced no qualified candidate or g2 checkpoint. Full attempt and native-resource provenance is recorded in the canonical build-plan ledger. This negative development result does not change any L1–L7 disposition; P22 remains unfrozen and held-out access remains closed.
