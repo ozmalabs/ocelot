@@ -2237,3 +2237,34 @@ attempt-export SHA-256 is
 `5a42de6066b7947e316f3b7bea07c40917617de70ea060318cd2c28e01bfe5a1`. This
 negative training-only search does not create an admissible D4 full-arm g3
 descendant; final resource, preregistration and held-out gates remain open.
+
+## D4 full-arm g2 reduced-budget continuation (2026-10-26, draws 0488–0491)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+pairwise-distinct training goals. The 5,000-attempt per-request cap reserved
+12,646 new attempts over the parent's 30,703 (43,349 cumulative); all four tasks
+remained stuck. The export covers 43,349 unique IDs (39,580 residual, 3,769
+verified) and eight exact effects. No candidate qualified: `#4022` and `#6521`
+each received six independent-goal trials (one verified, five residual);
+inherited `#22382` received none; candidate `#37306` received 2,646 (320
+verified, 2,326 residual). `#37306` has the same expression digest as the
+nonqualifying candidate in the preceding budgeted branch. No adoption or
+checkpoint was created. Two approvals and receipts are inherited; no new
+approval, receipt, validation allocation or held-out access occurred.
+
+Resource snapshot
+`b5b99101f5144112c71cc7108319794763d5cfa97a4935b00f85c7fc46a62219` and
+native-work snapshot
+`7d4e1a39501e55264c55bc59f4022fe68521ea66517415046299839fc745690b` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 220 cumulative native rule steps, 3,295.398 seconds cumulative wall
+time, 2,297,593,856-byte peak RSS attributed to PID `1457064`, and 373,198
+cumulative declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`67085a5d9f363d0285de710fb0634216875535d441f40b50f8324837951d91cc`; read-only
+attempt-export SHA-256 is
+`feb03f977b9d611154a80460a5c477b4ab8fb95d7ad196d71c518a40bd020a8b`. This
+negative search does not create an admissible D4 full-arm g3 descendant; final
+resource, preregistration and held-out gates remain open.
