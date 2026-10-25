@@ -217,3 +217,6 @@ A Loopover invention-only g1 continuation on draws 0074–0077 used 55,000 new t
 
 
 **P22 Loopover invention-only continuation (2026-10-26, draws 0086–0089):** A fresh four-goal training continuation from registered invention-only g1 remained stuck on every task. Candidate `#6542` and three newly surfaced candidates received 15,000, 7,634, 7,366, and 5,000 independent-goal trials without qualification. No g2 checkpoint resulted. Full attempt, resource, and native-rule provenance is in the build-plan ledger. This negative result does not change any L1–L7 disposition; P22 remains unfrozen and held-out access remains closed.
+
+
+**P22 Loopover full-arm continuation (2026-10-26, draws 0090–0093):** A fresh four-goal training continuation from registered full-arm g1 remained stuck on every task. Candidate `#51571` qualified once on distinct goals 0090/0092 but remains unapproved; exact replay is in progress. No g2 checkpoint resulted. Full attempt, resource, and native-rule provenance is in the build-plan ledger. This qualification alone does not change any L1–L7 disposition; P22 remains unfrozen and held-out access remains closed.

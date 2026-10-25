@@ -445,3 +445,6 @@ remain unchanged.
 
 
 **Loopover invention-only g1 continuation, draws 0086–0089 (2026-10-26):** The registered g1 checkpoint continued on four distinct training goals. All tasks stayed stuck; inherited candidate `#6542` had 15,000 independent-goal trials and new candidates `#41575`, `#51579`, and `#61583` had 7,634, 7,366, and 5,000 trials, respectively. No candidate qualified. The 80,000-attempt graph and unique-ID export, complete native-rule identity coverage, and resource digests are recorded in the canonical build-plan ledger. No new approval, receipt, adoption, checkpoint, validation, or held-out allocation occurred. This negative training result does not satisfy a lineage descendant, freeze, or held-out requirement.
+
+
+**Loopover full-arm g1 continuation, draws 0090–0093 (2026-10-26):** The registered g1 checkpoint was continued on four distinct training goals. All tasks remained stuck. New candidate `#51571` qualified once on distinct training worlds 0090/0092 and remains unapproved; its exact replay is underway. The 95,000-attempt graph and unique-ID export, complete native-rule identity coverage, and resource digests are recorded in the canonical build-plan ledger. No new approval, receipt, adoption, checkpoint, validation, or held-out allocation occurred. The qualification does not yet create a lineage descendant or authorize a transition.
