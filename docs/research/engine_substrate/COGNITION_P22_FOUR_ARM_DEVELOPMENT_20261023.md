@@ -2298,3 +2298,37 @@ attempt-export SHA-256 is
 `aee84b43b61124f0ac2a534ebc29eecf9986d422f91ad93dba81fab82502f4d5`. This is
 negative training-search evidence; it does not produce an admissible D4
 full-arm g3 descendant, and final P22 gates remain open.
+
+## D4 full-arm g2 reduced-budget continuation (2026-10-26, draws 0524–0527)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+distinct training goals with the fixed 2,500 discovery / 2,500 transfer
+reserve per request and exact-effect deduplication. The graph contains 43,349
+unique attempt IDs (30,703 inherited and 12,646 new); the new attempts include
+11,151 residual and 1,495 verified records across eight exact effects. All
+four tasks remained stuck. No candidate qualified: `#4022` and `#6521` each
+received six independent-goal trials, inherited `#22382` received none, and
+branch-local `#37306` received 2,646. `#37306` has expression digest
+`a13113e9485e0a9d0f392a4a4e16e0a4a807d60d98d98bab117263700bbf23ec`, already
+seen in prior nonqualifying branches. No new approval, receipt, adoption or
+checkpoint was created; two approvals and receipts are inherited. Validation
+and held-out allocations are empty.
+
+**Allocation caveat:** These draw IDs overlap the earlier four-arm common-root
+scoring panel on draws 0522–0533. Preserve this run as exploratory negative
+training evidence only; it is not a fresh independent-goal sample and cannot
+count toward a lineage or efficacy gate.
+
+Resource snapshot `74518da0051d7eb31fddd35beeb8610c4cf11735f9c89b7266411a22703c3cbe`
+and native-work snapshot
+`638b70a16992d7869ce7c4f69dbd69ea1b756d09ce5f6f00da0feaae6512687b` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 219 native steps, 3,414.471 seconds cumulative wall time,
+2,297,049,088-byte peak RSS attributed to PID `2014117`, and 373,333 cumulative
+declared primitive work, within the 600,000 ceiling. Raw result SHA-256 is
+`6c1abfd38a86fe9cc2ba214da4d58b8977ae02ef9f55880723646d7bf44b2575`; the
+read-only attempt export SHA-256 is
+`dcbec63d92b200e3f36b5634ff20b4d0464758a72a3f1a831913074ad030864d` and covers
+all 43,349 unique attempts. This is negative training-only evidence and does
+not supply an admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
