@@ -2188,3 +2188,23 @@ attempt-export SHA-256 is
 `221e1fec7a9f74afe4f50d8e0a2ea0aad60517ede37d402ec1df37ee72af384d`. This is
 negative training-search evidence only; the invention-only g3 descendant and
 P22 resource, preregistration and held-out gates remain open.
+
+## Supplementary isolated resource-panel remeasurement (2026-10-26)
+
+Re-ran the existing eight-cell resource panel for approved checkpoints
+`p22-d4-g2-2d2cb9ecda29` and `p22-loopover-g1-c9f470ba1639` on their registered
+common training worlds. All eight cells completed with all 20 resource fields
+measured and valid snapshot digests; no approvals or receipts were added, and
+validation/held-out access remained false. Maximum isolated worker wall time
+was 24.791 seconds, worker peak RSS was 3,518,386,176 bytes, and maximum
+cumulative primitive work was 275,274. Scores remained 1/4 and 2/4 respectively.
+
+The remeasurement is preserved separately as
+`p22_resource_panel_new_approved_checkpoints_0609_0612_0622_0625_rerun_20261026.json.gz`
+(SHA-256
+`39c1f486e48117da5df14534cd6b6def345549f60a823bd4f68534c085977a88`). The
+original artifact remains intact at its original path with its original hash
+`5683a2e475ec5f9821f9dc1df3cc02c743d928b66fb5eca6e0ff79d96362f6dc`. The preserved partial manifest remains the original artifact (SHA-256
+`b82e4e36d89861f081a46c93874a1edd053f2ef61a393adbb5176e09b05ac53c`); it
+reconciles 26/32 checkpoints and 104/104 cells, leaving six descendants and
+per-field ceilings outstanding. No efficacy inference follows.
