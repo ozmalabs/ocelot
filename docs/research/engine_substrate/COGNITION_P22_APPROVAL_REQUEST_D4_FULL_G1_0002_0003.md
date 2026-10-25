@@ -1,6 +1,6 @@
 # P22 D4 full-arm generation-one continuation approval request
 
-Status: **awaiting exact user approval**. This packet requests one candidate-specific
+Status: **approved and consumed**. This packet requested one candidate-specific
 training transition from the registered full-arm D4 generation-one checkpoint.
 It does not authorize any later transition.
 
@@ -47,6 +47,19 @@ The parent artifact, immutable checkpoint record path, source and replay hashes,
 qualification witness pair, candidate expression binding, and output path are
 bound in the accompanying JSON request. The output path is currently unused.
 
-To authorize exactly this transition, reply:
+Original one-shot approval token (now consumed):
 
 `approve 2d2cb9ecda29351e1d0f513498eb6089c0f48b2dc1f8ee8650ebb2bbf39cdc46; review_seconds=12`
+
+## Consumption record
+
+The exact digest was approved with 12 reviewer-reported seconds. The guarded
+runner consumed approval `#32278`, executed exactly one transition on training
+world `p22:d4-v2:train:0002`, verified receipt `#32282`, and captured child
+checkpoint `p22-d4-g2-2d2cb9ecda29` (generation 2; digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) from
+parent digest `e83c1fb3b84f589b8ca400b4b39fa03d8c04528aba262adc3b53a4c1eeca9af9`.
+The result is `evaluation/process_mastery/results/p22_approved_candidate_d4_full_g1_0002_0003.json`,
+SHA-256 `0bfd5df9c522276da17d2fc162fccf7dfb07f222b7152f61e351144ba1b8d39b`.
+It contains no validation or held-out worlds. This training transition does not
+authorize another action or establish efficacy.

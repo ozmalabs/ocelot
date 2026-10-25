@@ -1,8 +1,8 @@
 # P22 Loopover full-arm generation-zero continuation approval request
 
-Status: **awaiting exact user approval**. This packet requests one
-candidate-specific transition from the registered full-arm Loopover generation-zero
-checkpoint. It does not authorize any later transition.
+Status: **approved and consumed**. This packet requested one candidate-specific
+transition from the registered full-arm Loopover generation-zero checkpoint.
+It does not authorize any later transition.
 
 ## Candidate and transfer evidence
 
@@ -48,6 +48,19 @@ The parent checkpoint record, source and replay hashes, exact qualification
 witnesses, candidate expression binding, and output path are bound in the
 accompanying JSON request. The output path is currently unused.
 
-To authorize exactly this transition, reply:
+Original one-shot approval token (now consumed):
 
 `approve c9f470ba163917fc8061b27fe6a0fc93e1626d6bb435718aa5f3a120403ffc29; review_seconds=12`
+
+## Consumption record
+
+The exact digest was approved with 12 reviewer-reported seconds. The guarded
+runner consumed approval `#41561`, executed exactly one transition on training
+world `p22:loopover-v2:train:0034`, verified receipt `#41564`, and captured child
+checkpoint `p22-loopover-g1-c9f470ba1639` (generation 1; digest
+`0b3c72435539f7785833f1ca1474b105ef9d4d358620b92f1950820e718ec491`) from
+parent digest `d6d3c24fa68c512767e43d45c79985597d659cd28f726b04786100fa25f52f8c`.
+The result is `evaluation/process_mastery/results/p22_approved_candidate_loopover_full_g0_0034_0035.json`,
+SHA-256 `1123e5168092c3b288cb2f6064748300a9b7a67c67997e8e96f13423781a19a2`.
+It contains no validation or held-out worlds. This training transition does not
+authorize another action or establish efficacy.

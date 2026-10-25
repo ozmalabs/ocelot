@@ -257,6 +257,8 @@ def test_registered_full_root_request_binds_measured_replay_and_novel_child():
     "COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_0951_0954.json",
     "COGNITION_P22_APPROVAL_REQUEST_D4_FULL_0985_0986.json",
     "COGNITION_P22_APPROVAL_REQUEST_D4_G1_0818_0821.json",
+    "COGNITION_P22_APPROVAL_REQUEST_D4_FULL_G1_0002_0003.json",
+    "COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_FULL_G0_0034_0035.json",
 ])
 def test_registered_root_approval_packets_match_their_exact_states(
         request_name):
@@ -320,8 +322,9 @@ def test_registered_root_approval_packets_match_their_exact_states(
     assert adoption["receipt_status"] == "verified"
     assert adoption["world_transition_count"] == 1
     assert adoption["receipt"]["world_id"] == (
+        request.get("selected_action_world") or
         f"p22:{request['family']}-v2:train:{request['training_draws'][0]:04d}")
-    assert adoption["receipt"]["world_id"] in binding["training_trial_keys"]
+    assert adoption["receipt"]["world_id"] in result["training_world_ids"]
     assert checkpoint["generation"] == parent.generation + 1
     assert checkpoint["parent_digest"] == parent.checkpoint_digest
     assert CheckpointWorldAdapter._checkpoint_digest_valid(checkpoint_value)
