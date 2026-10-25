@@ -72,7 +72,7 @@ def build() -> dict[str, Any]:
         measured = analyzer_resource_record(
             snapshot,
             cumulative_primitive_work=outcome.get("cumulative_primitive_work"),
-            wall_time_seconds=snapshot.get("runtime_counters", {}).get("wall_time_seconds"))
+            wall_time_seconds=outcome.get("isolated_worker_wall_time_seconds"))
         resources = measured.get("resources", {})
         coverage = measured.get("resource_measurements", {})
         cell_fields = {}
