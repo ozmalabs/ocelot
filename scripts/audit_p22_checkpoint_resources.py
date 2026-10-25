@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -118,6 +119,9 @@ def audit() -> dict[str, Any]:
 
     ids: set[str] = set()
     checkpoint_rows = []
+    field_samples: dict[str, list[tuple[str, float | int]]] = {
+        field: [] for field in RESOURCE_FIELDS
+    }
     for key, checkpoint, raw in records:
         if checkpoint.checkpoint_id in ids:
             issues.append({"checkpoint": key, "issue": "duplicate_checkpoint_id"})
@@ -139,6 +143,14 @@ def audit() -> dict[str, Any]:
                     and evidence.get("status") in {
                         "MEASURED", "MEASURED_NODE_PAYLOAD_BYTES"}):
                 measured_count += 1
+                value = measured["resources"][field]
+                if (isinstance(value, bool)
+                        or not isinstance(value, (int, float))
+                        or not math.isfinite(value)):
+                    issues.append({"checkpoint": key,
+                                   "issue": f"resource_non_numeric:{field}"})
+                else:
+                    field_samples[field].append((checkpoint.checkpoint_id, value))
             else:
                 issues.append({"checkpoint": key, "issue": f"resource_unmeasured:{field}"})
         checkpoint_rows.append({
@@ -150,6 +162,21 @@ def audit() -> dict[str, Any]:
             "cumulative_primitive_work": checkpoint.cumulative_primitive_work,
             "measured_resource_fields": measured_count,
         })
+
+    observed_resource_ranges = {}
+    for field, samples in field_samples.items():
+        values = [value for _, value in samples]
+        minimum = min(values) if values else None
+        maximum = max(values) if values else None
+        observed_resource_ranges[field] = {
+            "measured_count": len(samples),
+            "minimum": minimum,
+            "minimum_checkpoint_ids": [checkpoint_id for checkpoint_id, value in samples
+                                       if value == minimum],
+            "maximum": maximum,
+            "maximum_checkpoint_ids": [checkpoint_id for checkpoint_id, value in samples
+                                       if value == maximum],
+        }
 
     observed = {(row["lineage"].rsplit(":g", 1)[0], row["generation"])
                for row in checkpoint_rows}
@@ -176,6 +203,7 @@ def audit() -> dict[str, Any]:
         "isolated_final_wall_time_panel_complete": False,
         "heldout_access_allowed": False,
         "sources": sources,
+        "observed_resource_ranges": observed_resource_ranges,
         "checkpoints": checkpoint_rows,
         "issues": issues,
     }
