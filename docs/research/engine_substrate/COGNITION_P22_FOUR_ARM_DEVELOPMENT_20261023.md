@@ -2157,3 +2157,34 @@ Resource snapshot digest `67b56014d81aec637a3ea89a7a61c94e6f3442150fd0c2f7302fe5
 Restored the immutable full-arm g1 checkpoint again and searched fresh distinct training goals 0222–0225 with exact-effect deduplication, the 10,000 discovery/5,000 transfer-reserve configuration, 60 ticks and depth 3. All four tasks remained stuck. The branch added 55,000 reserved attempts to 40,000 inherited attempts (95,000 total under the 120,000 graph ceiling); three requests used the 5,000 transfer reserve and the fourth did not. The read-only projection covers all 95,000 attempts; the four new requests contain four verified and 54,996 residual attempts, with 4,355 exact effect digests. Candidate `#81580` (digest `9b2840fbd6a5e095ec6280d967467054b2479d7f41a35784eab7277bbd8e0bbb`) received 15,000 independent-goal trials, all residual, and no qualification. Candidate `#16963` is inherited. One approval and receipt are inherited; none were added, and no checkpoint was created. Validation and held-out allocations are empty.
 
 Resource snapshot digest `04d5bb084c383ea0367b42281beff8c11cbf0a627e3b52aa58ea321f0be74ef0` and native-rule-work digest `8ae83638c6ed4dfd136d5d34b6e1ed065dddc264e61c800fd783986545da5993` verify; identity coverage is complete with zero unresolved rules. The snapshot records 121 cumulative native rule steps, 2,336.745 seconds cumulative wall time and a 3,958,915,072-byte process peak RSS attributed to PID `1797381` with a timestamp. Raw result SHA-256 is `cf1feb14da5a3448e8146a87e5006c5885b075e7480a99859272644d98e9c7ad`; read-only attempt projection SHA-256 is `1a0abb081d08b0703d2cbb5a7a63c67d9e513477dee31463a6e2609f6fe86384`. This is bounded negative training evidence; it creates no new descendant or approval candidate.
+
+## D4 invention-only g2 continuation (2026-10-26, draws 0460–0463)
+
+Continued from `p22-d4-g2-84854777d0e3` (digest
+`d8a916474c8e3bafd44dda0082fd7c71ccb3dac1c0a2daf9bbe7f759c70fb4df`) on four
+pairwise-distinct training goals. The run completed all four tasks, which
+remained stuck, and added 43,528 attempts to the 44,280-attempt parent graph.
+The read-only attempt export covers 87,808 unique IDs (76,685 residual and
+11,123 verified). No candidate qualified: `#9456` received six independent-goal
+trials (one verified, five residual); `#9459` received 112 (four verified, 108
+residual), but its inherited qualification remains invalid because `kind` is
+missing; identity-effect candidate `#25873` received 3,528 (408 verified,
+3,120 residual); and `#12174` received none. All four task rows are `stuck`.
+
+No approval, receipt, adoption, checkpoint, validation allocation or held-out
+access was added. The run inherited two approvals and receipts. Resource
+snapshot `7a370c33020519fcdb3adba1746e9464dbffb17cd330b1691d8d2fcadedceb1d`
+and native-work snapshot
+`2e5e1b95f4b2506205b5c356a9003938c6355ad67115a584f8374761c8e610b9` validate;
+native-rule identity coverage is complete with zero unresolved rules. It
+records 256 cumulative native rule steps, 12,418.743 seconds wall time, and
+3,250,761,728-byte peak RSS attributed to PID `520363`. Cumulative declared
+primitive work is 905,115, above the 600,000 development ceiling, so the branch
+cannot supply an admissible invention-only g3 checkpoint.
+
+Raw result SHA-256 is
+`cce5862dc39d8cbff22c95dbce314477d13dc22da8772d5e6905942a109d86ae`; read-only
+attempt-export SHA-256 is
+`221e1fec7a9f74afe4f50d8e0a2ea0aad60517ede37d402ec1df37ee72af384d`. This is
+negative training-search evidence only; the invention-only g3 descendant and
+P22 resource, preregistration and held-out gates remain open.
