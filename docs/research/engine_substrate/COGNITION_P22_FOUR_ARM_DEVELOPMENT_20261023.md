@@ -2449,6 +2449,38 @@ attempt-export SHA-256 is
 all 43,349 unique attempts. This negative training-only branch creates no
 admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
 
+## D4 full-arm g2 continuation (2026-10-26, draws 0578–0581)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+fresh, pairwise-distinct training goals. All four tasks remained stuck. The
+branch added 12,646 attempts to the 30,703-attempt parent graph. Its read-only
+export contains 43,349 unique IDs (39,579 residual, 3,770 verified) across
+eight exact effects. Candidates `#4022` and `#6521` each received six
+independent-goal trials (one verified, five residual); inherited `#22382`
+received none. Candidate `#37306` received 2,646 trials (346 verified, 2,300
+residual), with the same expression digest
+`a13113e9485e0a9d0f392a4a4e16e0a4a807d60d98d98bab117263700bbf23ec` seen in
+prior nonqualifying branches. No candidate qualified. No new approval, receipt,
+adoption or checkpoint was created; two approvals and receipts are inherited.
+Validation and held-out allocations are empty.
+
+Resource snapshot
+`92495282d6e052c3135b2c1d6cd216b26015ef9139ca128505c6d488505a2fa5` and
+native-work snapshot
+`dd0a47be5ce36802999974edc7493c2f715935ed8eba42606b597c8f163fad1f` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 219 cumulative native rule steps, 3,336.086 seconds cumulative wall
+time, 2,296,807,424-byte peak RSS attributed to PID `133305`, and 373,598
+cumulative declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`55fa22fdad29a2e36d1c49276ef024068aabf2e08378ad0ae23571e1d3d63363`; read-only
+attempt-export SHA-256 is
+`8c50defdaa6cdf75ae7e2f5ae3d626d387b4808332214f73085baa8d7aa7a20d` and covers
+all attempts. This negative training-only branch creates no admissible D4
+full-arm g3 descendant; P22.E2–E3 remain open.
+
 ## D4 full-arm g2 continuation (2026-10-26, draws 0554–0557)
 
 Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
