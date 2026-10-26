@@ -2448,3 +2448,33 @@ attempt-export SHA-256 is
 `7637f0811c4d705fb46e9fee7ca438e9f13755a43d8b441338c78f6fcd10802a` and covers
 all 43,349 unique attempts. This negative training-only branch creates no
 admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
+
+## D4 full-arm g2 continuation (2026-10-26, draws 0554–0557)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+fresh, pairwise-distinct training goals. Draws 0554–0557 were checked against
+retained P22 artifacts and were unused. The branch added 10,000 attempts to the
+30,703-attempt parent graph. The read-only export contains 40,703 unique
+attempt IDs (37,155 residual, 3,548 verified) across eight exact effects. All
+four tasks remained stuck. Candidates `#4022` and `#6521` each received six
+independent-goal trials (one verified, five residual); inherited `#22382`
+received none. No candidate qualified. No new approval, receipt, adoption or
+checkpoint was created; two approvals and receipts are inherited. Validation
+and held-out allocations are empty.
+
+Resource snapshot
+`aad355a3713c1b9a1e81cb3d614cbff358545736f73933085d0643a79b65af2c` and
+native-work snapshot
+`5f273858aaab1ca39c5c173b6658d574ca79c573165a80f1c57b53a2f64ff3da` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 211 cumulative native rule steps, 2,809.388 seconds cumulative wall
+time, 2,297,036,800-byte peak RSS attributed to PID `3856289`, and 348,159
+cumulative declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`6ef30bb9db76d6a0e8104cc7903e46f5baaa9b26c06df2648ea0d7b8499b48e0`; read-only
+attempt-export SHA-256 is
+`d776211708b876efd9570582bc68a0b8b2575f86b8363be02013bd7d0be0baf2` and covers
+all 40,703 unique attempts. This negative training-only branch creates no
+admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
