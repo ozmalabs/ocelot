@@ -2769,3 +2769,31 @@ read-only attempt-export SHA-256 is
 negative training-only result creates no Loopover invention-only g2
 qualification or descendant. The six missing descendants and final P22 gates
 remain open.
+
+## Loopover invention-only g2 continuation (2026-10-26; draws 0154–0157)
+
+Continued from registered g1 checkpoint `p22-loopover-g1-2638da0f23ae` on four
+fresh distinct training goals. All remained stuck. The branch added 8,750
+attempts (8,749 residual, one verified) across 1,345 exact effects to its
+20,000-attempt parent graph; the read-only export covers 28,750 unique IDs.
+Candidate `#26581` received 3,750 independent-goal trials without
+qualification. One approval and receipt are inherited; no new approval,
+receipt, adoption or checkpoint was created. Validation and held-out
+allocations are empty.
+
+Resource snapshot
+`8d33cf078f46278cd7e7c31d24ed30ee4efe638199d07206b243b0a55e0fca61` and
+native-work snapshot
+`8e0d3c13ad2523e90c3722c1d550b674d1ef05786edad8908fc0383665487ca6` validate
+with complete native-rule identity coverage and zero unresolved rules. The run
+records 91 cumulative native rule steps, 149.649 seconds cumulative wall time,
+2,030,141,440-byte peak RSS (PID `1199770`), and 142,204 cumulative declared
+primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`82b456b1f52784be4d5cf872f4320ec628159b147de1b6146dd0d0993dd88d15`; read-only
+attempt-export SHA-256 is
+`24f06d4bf5c7e7de282e698c6e141515beb325fe7f35475ebbfa2009992e7958`. This
+negative training-only result creates no Loopover invention-only g2
+qualification or descendant. The six missing descendants and final P22 gates
+remain open.
