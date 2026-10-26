@@ -2478,3 +2478,36 @@ attempt-export SHA-256 is
 `d776211708b876efd9570582bc68a0b8b2575f86b8363be02013bd7d0be0baf2` and covers
 all 40,703 unique attempts. This negative training-only branch creates no
 admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
+
+## D4 full-arm g2 continuation (2026-10-26, draws 0566–0569)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+fresh, pairwise-distinct training goals. Draws 0566–0569 were checked against
+retained P22 artifacts and were unused. The branch added 12,646 attempts to the
+30,703-attempt parent graph; the read-only export contains 43,349 unique IDs
+(39,555 residual, 3,794 verified) across eight exact effects. All four tasks
+stayed stuck. Candidates `#4022` and `#6521` each received six independent-
+goal trials (one verified, five residual); inherited `#22382` received none.
+Candidate `#39809` received 2,646 trials (288 verified, 2,358 residual), but
+repeats the nonqualifying expression digest
+`a13113e9485e0a9d0f392a4a4e16e0a4a807d60d98d98bab117263700bbf23ec`. No
+candidate qualified. No new approval, receipt, adoption or checkpoint was
+created; two approvals and receipts are inherited. Validation and held-out
+allocations are empty.
+
+Resource snapshot
+`42ec3e647e733da54d365b2105aff08dca56be2f928a2f6eca71b1f0954f6690` and
+native-work snapshot
+`e1b093811bcbfa2ad59465f15afa7efa30618e3770f3ffe73173a5a16ec6c7a5` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 220 cumulative native rule steps, 3,274.522 seconds cumulative wall
+time, 2,296,815,616-byte peak RSS attributed to PID `4146357`, and 372,352
+cumulative declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`74942828fc31735d76356b9e2471ac50ee6a2dc120ef505f0cbc8c59e7dd5800`; read-only
+attempt-export SHA-256 is
+`ed21babdb8053eb6155a842156165f9de76bbaa1a29f91f67d5a97c7cf7aed49` and covers
+all 43,349 unique attempts. This negative training-only branch creates no
+admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
