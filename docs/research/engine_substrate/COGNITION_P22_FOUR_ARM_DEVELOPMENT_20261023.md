@@ -2385,3 +2385,34 @@ read-only attempt export SHA-256 is
 `7ccd23e6a5a24c21a723086f3fe5e1c9446e6043481be78518eb368e0f544ae7` and covers
 all 40,703 unique attempts. This negative training-only branch supplies no
 D4 full-arm g3 descendant; P22.E2–E3 remain open.
+
+## D4 full-arm g2 continuation (2026-10-26, draws 0542–0545)
+
+Continued from approved checkpoint `p22-d4-g2-2d2cb9ecda29` (digest
+`2078f32af3e8951d14b7705b38a7f2bfa5074420f3eb105fc9183b6a03919123`) on four
+fresh, distinct training goals. Draws 0542–0545 were checked against retained
+P22 artifacts and were unused. Each request used the 5,000-attempt discovery
+allowance; the 5,000-attempt transfer reserve remained unused. The branch added
+20,000 attempts to the parent's 30,703, for 50,703 unique attempt IDs in the
+read-only export (45,715 residual, 4,988 verified) across eight exact effects.
+All four tasks stayed stuck. Candidates `#4022` and `#6521` each received six
+independent-goal trials (one verified, five residual); inherited `#22382`
+received none. No candidate qualified. No new approval, receipt, adoption or
+checkpoint was created; two approvals and receipts are inherited. Validation
+and held-out allocations are empty.
+
+Resource snapshot
+`7a8c00214bd52c3c734185bf54478517bd79aa199532e7868457ab59eed04c94` and
+native-work snapshot
+`d9616b3fcddfde735cfdabf3504eacce33b0e76475a5102ccafe20acb36c831b` validate;
+native-rule identity coverage is complete with zero unresolved rules. The run
+records 216 cumulative native rule steps, 3,332.524 seconds cumulative wall
+time, 2,297,192,448-byte peak RSS attributed to PID `3493676`, and 454,982
+cumulative declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`6cb405cb2691eb27bbf2a1697b9e928b714db1c72e5d62d99ba51ea24fbeb0f7`; read-only
+attempt-export SHA-256 is
+`b5f20da7c24c5bc2dcc43fbc05199cc45081c49f6579ca15e566ec6d1a06ad01` and covers
+all 50,703 unique attempts. This negative training-only branch creates no
+admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
