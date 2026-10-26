@@ -2546,3 +2546,30 @@ admissible D4 full-arm g3 descendant; P22.E2–E3 remain open.
 
 
 **P22 Loopover full-arm g1 qualification (2026-10-26; draws 0126–0129):** Four fresh, pairwise-distinct training goals were searched from checkpoint `p22-loopover-g1-c9f470ba1639` (digest `0b3c72435539f7785833f1ca1474b105ef9d4d358620b92f1950820e718ec491`); all four tasks stayed stuck. The branch added 17,500 attempts to its 40,000-attempt parent graph. Its read-only export covers 57,500 unique attempts (57,461 residual, 39 verified) and 6,719 exact effects. Candidate `#44071` (digest `20e47b09a3ffcac98a672c43a43cb94c6bccc4a5ae958428d54ff9845ab28b5e`) qualified under `independent_goal_composition` on distinct training worlds 0126/0128; exact replay reproduced the candidate, qualification `#59086`, witness attempts and worlds, and the byte-identical attempt export. Transfer child `#51580` has digest `50b021ab7c8ebc706d9238bdee527c67ed0ae19a77bba2dc0a6115fe97d1a818`; direct audit found both its non-identity effect and the source effect absent from all 12 active parent processes. Candidate-specific [approval request](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_FULL_G1_0126_0128.md) is prepared and awaits exact approval; no action, new receipt or checkpoint was created. One approval/receipt are inherited. Validation and held-out allocations are empty. Source resource/native-work digests `bad1db222202cf3bde4e71095b506b5725865905fe91db10052a715657c5d4eb` and `95985d3a446e5e883ea9f9b1a6186a35b45d4d14827ef7696cd07d8f09d32849` validate with complete native-rule identity coverage and zero unresolved rules. The source records 127 native steps, 1,570.792 seconds wall time, 3,957,927,936-byte peak RSS (PID `343274`), and 292,794 cumulative declared primitive work. Raw [result](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_loopover_full_g1_0126_0129_budget5k_p26.json) SHA-256 `500787ceac7f618e2a99dcb0bd814a6f649418d18dd5f61bc5e6d36fff21eca0`; exact [replay](../../../evaluation/process_mastery/results/p22_training_panel_registered_root_loopover_full_g1_0126_0129_budget5k_p26_replay.json) SHA-256 `33fc4106307607f533376b98ffa42cd4fdff7b13cdcdf167bb507a6fefee6673`; read-only [attempt export](../../../evaluation/process_mastery/results/p22_search_attempt_details_loopover_full_g1_0126_0129_budget5k.json) SHA-256 `3909dd2341bcbd16dd7e2361964f4a6d5e6263b62233712f05caf450344bae8f` is byte-identical to replay. The Loopover full-arm g2 descendant remains pending exact approval; the P22 manifest, freeze and held-out gates remain open.
+
+## D4 invention-only g2 continuation (2026-10-26; draws 0008–0011)
+
+Continued from checkpoint `p22-d4-g2-84854777d0e3` (digest
+`d8a916474c8e3bafd44dda0082fd7c71ccb3dac1c0a2daf9bbe7f759c70fb4df`) on four
+fresh distinct training goals. All remained stuck. The branch added 7,646
+attempts (6,571 residual, 1,075 verified) across eight exact effects to its
+44,280-attempt parent graph; the complete read-only export covers 51,926 unique
+attempt IDs. No new candidate qualified; the identity-effect candidate is
+ineligible. Two approvals and receipts are inherited; no new approval, receipt,
+adoption or checkpoint was created. Validation and held-out allocations are
+empty.
+
+Resource snapshot `2e37fab0540a78f7358bbd1dff2495ce575b7fa20eaef4139a20da9a3776287`
+and native-work snapshot
+`ceaa57406d20217e7da618a3204620e2554176747a9985766f420f328e1f90b3` validate
+with complete native-rule identity coverage and zero unresolved rules. The run
+records 247 cumulative native rule steps, 6,717.936 seconds cumulative wall
+time, 3,130,683,392-byte peak RSS (PID `427423`), and 551,764 cumulative
+declared primitive work, within the 600,000 ceiling.
+
+Raw result SHA-256 is
+`e2979e30ecadda906b00ef896ff1571b4ad29d306278396fd1ce40c08b0c1f68`; read-only
+attempt-export SHA-256 is
+`ae73bac3654c6e0e9f49a3482df5d1818af9f39454eb182c3c8b28cbed4ea2ce`. This
+negative training-only result produces no admissible D4 invention-only g3
+descendant. The six missing descendants and final P22 gates remain open.
