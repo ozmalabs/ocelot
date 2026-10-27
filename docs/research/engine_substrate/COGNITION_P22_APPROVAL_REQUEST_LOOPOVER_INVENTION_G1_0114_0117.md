@@ -41,3 +41,7 @@ This authorization covers one transition and its conditional g2 checkpoint only.
 `approve 7fb1f08e6ac6412d271feffcea1bfdec32dd3a484ecfaf42c13fa6a7a681a3ce; review_seconds=<your seconds>`
 
 Machine packet: [`COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_INVENTION_G1_0114_0117.json`](COGNITION_P22_APPROVAL_REQUEST_LOOPOVER_INVENTION_G1_0114_0117.json).
+
+## Disposition (2026-10-27)
+
+Approved with 12 seconds reviewer-reported time. The single action consumed approval `#81588`, verified receipt `#81592`, and created checkpoint `p22-loopover-g2-7fb1f08e6ac6` (digest `6417726b217eb40db7bf2d6cfcb1424f0bffe2721db590fedb58d4ff5ec26050`). Result artifact: [`p22_approved_candidate_loopover_invention_g1_0114_0117.json`](../../../evaluation/process_mastery/results/p22_approved_candidate_loopover_invention_g1_0114_0117.json), SHA-256 `fc9acda4981e44d75c20a290a27fb3cc05c77c6ae99f288c0533c6cb028f90e7`. No validation or held-out access occurred.

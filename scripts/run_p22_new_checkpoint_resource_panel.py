@@ -34,6 +34,12 @@ CHECKPOINT_SOURCES = {
     "p22-loopover-g1-c9f470ba1639": (
         "p22_approved_candidate_loopover_full_g0_0034_0035.json", "loopover",
         (622, 623, 624, 625)),
+    "p22-loopover-g2-7fb1f08e6ac6": (
+        "p22_approved_candidate_loopover_invention_g1_0114_0117.json", "loopover",
+        (622, 623, 624, 625)),
+    "p22-loopover-g2-0161d4a90b5a": (
+        "p22_approved_candidate_loopover_full_g1_0174_0177.json", "loopover",
+        (622, 623, 624, 625)),
 }
 GENERATORS = {"d4": generate_d4_world_v2, "loopover": generate_loopover_world_v2}
 

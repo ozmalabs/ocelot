@@ -33,9 +33,11 @@ ADOPTION_FILES = {
     "d4:invention_only:g1": "p22_approved_candidate_d4_0962_0972.json",
     "d4:invention_only:g2": "p22_approved_candidate_d4_g1_0818_0821.json",
     "loopover:invention_only:g1": "p22_approved_candidate_loopover_0951_0953.json",
+    "loopover:invention_only:g2": "p22_approved_candidate_loopover_invention_g1_0114_0117.json",
     "d4:full:g1": "p22_approved_candidate_d4_full_0985_0986.json",
     "d4:full:g2": "p22_approved_candidate_d4_full_g1_0002_0003.json",
     "loopover:full:g1": "p22_approved_candidate_loopover_full_g0_0034_0035.json",
+    "loopover:full:g2": "p22_approved_candidate_loopover_full_g1_0174_0177.json",
 }
 EXPECTED_ACTIVE = {
     "d4:invention_only": (1, 2, 3),
