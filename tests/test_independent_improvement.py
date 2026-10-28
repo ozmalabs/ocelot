@@ -78,6 +78,17 @@ def test_qualification_from_native_trials():
     # Candidate proof verification closes the discovery request before its
     # separate-goal qualification trial is run.
     agent.s.set_attr(source_request, "status", "qualified_terminal")
+    # Reproduce the old malformed receipt: it has no qualification_kind and
+    # must not block a later complete qualification proof.
+    proposal = proposals[0]
+    malformed = agent.s.add_node("IndependentImprovementQualification", {
+        "status": "qualified_for_candidate_specific_approval",
+        "trial_count": 2.0, "split": "training",
+        "expression_digest": agent.attrs(proposal)["expression_digest"],
+        "criteria_digest": agent.attrs(proposal)["criteria_digest"],
+    })
+    agent.s.add_edge(proposal, "has_native_qualification", malformed, {})
+    agent.s.set_attr(proposal, "status", "qualified_for_candidate_specific_approval")
     agent.s.set_attr(agent.nodes("OpenProcessSearchPolicy")[0], "max_attempts", 5000.0)
     second_task = agent.add_solve_task("search", [0, 1, 2, 3],
                                        agent.attrs(source_task)["goal"],
@@ -86,16 +97,18 @@ def test_qualification_from_native_trials():
     agent.s.set_attr(second_task, "status", "stuck")
     for _ in range(20):
         agent.s.tick(4000)
-    proposal = proposals[0]
-    qualification = agent.native.neighbours(proposal, "has_native_qualification")
-    assert len(qualification) == 1
-    assert agent.attrs(qualification[0])["trial_count"] == 2.0
+    qualifications = agent.native.neighbours(proposal, "has_native_qualification")
+    assert len(qualifications) == 2
+    qualification = next(q for q in qualifications
+                         if agent.attrs(q).get("qualification_kind") == "independent_native_trials")
+    assert agent.attrs(qualification)["trial_count"] == 2.0
     assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
-    supporting_attempts = agent.native.neighbours(qualification[0], "counts_native_trial")
+    supporting_attempts = agent.native.neighbours(qualification, "counts_native_trial")
     assert len(supporting_attempts) == 2
     assert len({agent.native.neighbours(attempt, "about_task")[0]
                 for attempt in supporting_attempts}) == 2
-    assert len(agent.native.neighbours(proposal, "has_native_qualification")) == 1
+    assert len(agent.native.neighbours(proposal, "has_native_qualification")) == 2
+    assert "qualification_kind" not in agent.attrs(malformed)
     supporting_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
         if any(attempt in agent.native.neighbours(request, "has_search_attempt")
                for attempt in supporting_attempts)]

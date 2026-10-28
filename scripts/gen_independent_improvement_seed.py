@@ -52,6 +52,21 @@ def build():
                 Eq(A(candidate, "effect_digest"),
                    A("identity_domain", "identity_effect_digest"))))
         return And(Not(same_schema), Not(same_adopted), Not(identity_effect))
+    def has_valid_qualification(proposal):
+        """A malformed legacy receipt must not suppress a valid proof."""
+        return Exists(N(proposal, "has_native_qualification"), "prior_qualification",
+            And(Eq(A("prior_qualification", "status"),
+                   L("qualified_for_candidate_specific_approval")),
+                Eq(A("prior_qualification", "trial_count"), L(2.0)),
+                Eq(A("prior_qualification", "split"), L("training")),
+                Eq(A("prior_qualification", "expression_digest"),
+                   A(proposal, "expression_digest")),
+                Eq(A("prior_qualification", "criteria_digest"),
+                   A(proposal, "criteria_digest")),
+                Or(Eq(A("prior_qualification", "qualification_kind"),
+                      L("independent_native_trials")),
+                   Eq(A("prior_qualification", "qualification_kind"),
+                      L("independent_goal_composition")))))
     base["nodes"].append({"local_id": local_id,
         "type": "IndependentImprovementCurriculumBridgePolicy", "attrs": {
             "name": "p22_curriculum_search_bridge", "enabled": 0.0,
@@ -276,12 +291,13 @@ def build():
             Eq(A("trial", "expression_tree"), A("proposal", "expression_tree")),
             {"type": "Not", "arg": Eq({"type": "Var", "name": "source_task"},
                                          {"type": "Var", "name": "task"})},
-            Eq(A("proposal", "status"), L("awaiting_native_qualification")),
+            Or(Eq(A("proposal", "status"), L("awaiting_native_qualification")),
+               Eq(A("proposal", "status"), L("qualified_for_candidate_specific_approval"))),
             novel_effect("candidate"),
-            Not(Exists(N("proposal", "has_native_qualification"), "prior_qualification",
-                         L(True)))),
+            Not(has_valid_qualification("proposal"))),
         "effects": [["add_node", "qualification", "IndependentImprovementQualification", {
             "status": "qualified_for_candidate_specific_approval",
+            "qualification_kind": "independent_native_trials",
             "trial_count": 2.0, "split": T(A("policy", "required_split")),
             "expression_digest": T(A("proposal", "expression_digest")),
             "criteria_digest": T(A("proposal", "criteria_digest"))}],
@@ -332,11 +348,11 @@ def build():
             Eq(A("trial_receipt", "effect_digest"),
                A("trial_candidate", "effect_digest")),
             Not(Eq(A("source_task", "goal"), A("task", "goal"))),
-            Eq(A("proposal", "status"), L("awaiting_native_qualification")),
+            Or(Eq(A("proposal", "status"), L("awaiting_native_qualification")),
+               Eq(A("proposal", "status"), L("qualified_for_candidate_specific_approval"))),
             novel_effect("candidate"),
             novel_effect("trial_candidate"),
-            Not(Exists(N("proposal", "has_native_qualification"),
-                       "prior_qualification", L(True)))),
+            Not(has_valid_qualification("proposal"))),
         "effects": [["add_node", "qualification", "IndependentImprovementQualification", {
             "status": "qualified_for_candidate_specific_approval",
             "qualification_kind": "independent_goal_composition",

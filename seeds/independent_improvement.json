@@ -2017,19 +2017,39 @@
             }
           },
           {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "proposal"
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "awaiting_native_qualification"
+                }
               },
-              "key": "status"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "awaiting_native_qualification"
-            }
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "qualified_for_candidate_specific_approval"
+                }
+              }
+            ]
           },
           {
             "type": "And",
@@ -2321,8 +2341,127 @@
               },
               "var_name": "prior_qualification",
               "predicate": {
-                "type": "Lit",
-                "value": true
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "qualified_for_candidate_specific_approval"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "trial_count"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 2.0
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "split"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "training"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "expression_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "expression_digest"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "criteria_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "criteria_digest"
+                    }
+                  },
+                  {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior_qualification"
+                          },
+                          "key": "qualification_kind"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "independent_native_trials"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior_qualification"
+                          },
+                          "key": "qualification_kind"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "independent_goal_composition"
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
@@ -2335,6 +2474,7 @@
           "IndependentImprovementQualification",
           {
             "status": "qualified_for_candidate_specific_approval",
+            "qualification_kind": "independent_native_trials",
             "trial_count": 2.0,
             "split": {
               "__term__": {
@@ -2798,19 +2938,39 @@
             }
           },
           {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "proposal"
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "awaiting_native_qualification"
+                }
               },
-              "key": "status"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "awaiting_native_qualification"
-            }
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "qualified_for_candidate_specific_approval"
+                }
+              }
+            ]
           },
           {
             "type": "And",
@@ -3377,8 +3537,127 @@
               },
               "var_name": "prior_qualification",
               "predicate": {
-                "type": "Lit",
-                "value": true
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "qualified_for_candidate_specific_approval"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "trial_count"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 2.0
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "split"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "training"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "expression_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "expression_digest"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "prior_qualification"
+                      },
+                      "key": "criteria_digest"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "proposal"
+                      },
+                      "key": "criteria_digest"
+                    }
+                  },
+                  {
+                    "type": "Or",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior_qualification"
+                          },
+                          "key": "qualification_kind"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "independent_native_trials"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "prior_qualification"
+                          },
+                          "key": "qualification_kind"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "independent_goal_composition"
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
             }
           }
