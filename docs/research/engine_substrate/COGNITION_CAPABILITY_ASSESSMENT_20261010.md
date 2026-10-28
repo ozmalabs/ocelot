@@ -1216,3 +1216,5 @@ The supplementary isolated panel now also covers the two new Loopover g2 checkpo
 **Loopover full-arm g2 repeat (2026-10-28):** Four further distinct training goals reproduced the same two unqualified candidates and no adoption. This repeated search does not change the capability assessment; evidence and hashes are in the canonical plan.
 
 **Loopover invention-only g2 update (2026-10-28):** A bounded fresh-goal continuation remained stuck on all four tasks and produced no qualified candidate. Resource and artifact evidence is recorded in the canonical plan; capability claims remain unchanged.
+
+**D4 invention-only g2 update (2026-10-28):** A bounded fresh-goal continuation found no new qualifying candidate. The inherited malformed qualification remained excluded; the run stayed below the primitive-work ceiling and did not change capability claims. Full evidence is in the canonical plan.
