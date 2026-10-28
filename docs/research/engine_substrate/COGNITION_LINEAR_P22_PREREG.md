@@ -478,3 +478,5 @@ remain unchanged.
 **Training search log (2026-10-28):** Two further full-arm g2 searches (Loopover 0200–0203; D4 0912–0915) completed without qualifying candidates. Both were training-only and made no validation or held-out allocation; exact resource snapshots and compressed artifact hashes are recorded in the canonical plan. No thresholds or freeze conditions changed.
 
 **Training search log (2026-10-28):** Loopover full-arm draws 0204–0207 reproduced the previous two unqualified candidate effects and produced no checkpoint. No validation or held-out allocation occurred; see the canonical plan for artifact hashes.
+
+**Training search log (2026-10-28):** Loopover invention-only draws 0208–0211 completed within the declared primitive-work ceiling without qualifying a candidate. No validation/held-out access occurred; refer to the canonical plan for raw-output and attempt-export hashes.

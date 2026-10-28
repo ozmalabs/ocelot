@@ -1214,3 +1214,5 @@ The supplementary isolated panel now also covers the two new Loopover g2 checkpo
 **P22 full-arm g2 update (2026-10-28):** A further 10,000 Loopover and 2,400 D4 training attempts produced no qualification or g3 checkpoint. Complete exports, cumulative resource totals and hashes are recorded in the [canonical plan](COGNITION_BUILD_PLAN_20261010.md). No validation/held-out data was allocated. The capability assessment remains unchanged.
 
 **Loopover full-arm g2 repeat (2026-10-28):** Four further distinct training goals reproduced the same two unqualified candidates and no adoption. This repeated search does not change the capability assessment; evidence and hashes are in the canonical plan.
+
+**Loopover invention-only g2 update (2026-10-28):** A bounded fresh-goal continuation remained stuck on all four tasks and produced no qualified candidate. Resource and artifact evidence is recorded in the canonical plan; capability claims remain unchanged.

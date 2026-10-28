@@ -2996,3 +2996,5 @@ Seven fresh distinct-goal continuations were run from the exact approved g2 chec
 **Further full-arm generation-two continuations (2026-10-28):** Loopover draws 0200–0203 and D4 draws 0912–0915 completed from their approved g2 checkpoints. All tasks were stuck; no candidate qualified or was adopted. These training-only exports have empty validation/held-out allocations. Candidate/resource details and compressed artifact hashes are in the [canonical plan](COGNITION_BUILD_PLAN_20261010.md).
 
 **Loopover full-arm repeat (2026-10-28):** Draws 0204–0207 remained stuck and reproduced the same two unqualified candidate digests seen on 0200–0203. No action, receipt, checkpoint, validation or held-out allocation resulted. See the canonical plan for complete hashes and resource snapshot.
+
+**Loopover invention-only g2 continuation (2026-10-28):** Draws 0208–0211 completed with no qualification or adoption, and no validation or held-out allocation. The exact compressed artifact hashes and complete resource measurements are in the canonical plan.
