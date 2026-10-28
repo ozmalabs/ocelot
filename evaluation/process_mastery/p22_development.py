@@ -615,12 +615,18 @@ def run_p22_training_proposal_probe(*, family: str,
                 continue
             proposals = [proposal for proposal in agent.nodes("IndependentImprovementProposal")
                 if agent.native.neighbours(proposal, "proposes_native_candidate") == [candidate]]
-            qualifications = [qualification
+            all_qualifications = [qualification
                 for proposal in proposals
                 for qualification in agent.native.neighbours(proposal, "has_native_qualification")]
+            qualifications = [qualification for qualification in all_qualifications
+                if agent.attrs(qualification).get("status")
+                == "qualified_for_candidate_specific_approval"]
             qualification_rows = []
             for proposal in proposals:
                 for qualification in agent.native.neighbours(proposal, "has_native_qualification"):
+                    if agent.attrs(qualification).get("status") \
+                            != "qualified_for_candidate_specific_approval":
+                        continue
                     trial_attempts = agent.native.neighbours(qualification, "counts_native_trial")
                     trial_tasks = [agent.native.neighbours(attempt, "about_task")
                                    for attempt in trial_attempts]
@@ -696,6 +702,10 @@ def run_p22_training_proposal_probe(*, family: str,
                     for proposal in proposals],
                 "qualification_count": len(qualifications),
                 "qualifications": qualification_rows,
+                "pending_qualification_slot_count": sum(
+                    agent.attrs(qualification).get("status")
+                    == "awaiting_native_qualification"
+                    for qualification in all_qualifications),
                 "independent_goal_trials": independent_trial_rows,
                 "qualification_inputs": {
                     "source_attempt_status": (agent.attrs(source_attempt).get("status")

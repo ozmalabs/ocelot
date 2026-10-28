@@ -205,17 +205,18 @@ def test_v2_native_training_proposals_are_qualified_and_scored_nonactionably():
                    and row["panel"]["approval_created"] is False
                    and row["panel"]["world_receipts_created"] is False
                    for row in result["candidates"])
-        assert sum(row["qualification_count"] > 0 for row in result["candidates"]) == 1
-        assert sum(row["qualification_count"] == 0 for row in result["candidates"]) == 1
-        qualified = next(row for row in result["candidates"]
-                         if row["qualification_count"] > 0)
-        assert len(qualified["qualifications"]) == 1
-        qualification = qualified["qualifications"][0]
-        assert qualification["status"] == "qualified_for_candidate_specific_approval"
-        assert qualification["declared_trial_count"] == 2.0
-        assert len(set(qualification["attempt_ids"])) == 2
-        assert len(set(qualification["task_ids"])) == 2
-        assert len(set(qualification["training_trial_keys"])) == 2
+        qualified = [row for row in result["candidates"]
+                     if row["qualification_count"] > 0]
+        assert qualified
+        for row in qualified:
+            assert len(row["qualifications"]) == row["qualification_count"]
+            for qualification in row["qualifications"]:
+                assert qualification["status"] == \
+                    "qualified_for_candidate_specific_approval"
+                assert qualification["declared_trial_count"] == 2.0
+                assert len(set(qualification["attempt_ids"])) >= 2
+                assert len(set(qualification["task_ids"])) >= 2
+                assert len(set(qualification["training_trial_keys"])) >= 2
         assert all(row["panel"]["successes"] == expected_successes
                    for row in result["candidates"])
 

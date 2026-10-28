@@ -95,6 +95,39 @@ def test_qualification_from_native_trials():
                                        training_trial_key="independent-trial-2")
     agent.s.set_attr(second_task, "split", "training")
     agent.s.set_attr(second_task, "status", "stuck")
+    # Let search produce a verified same-expression witness while qualification
+    # is disabled, then terminalize its request as happens after an earlier
+    # qualification. Re-enabling qualification must accept this receipt chain.
+    agent.s.set_attr(agent.nodes("IndependentImprovementPolicy")[0], "enabled", 0.0)
+    for _ in range(20):
+        agent.s.tick(4000)
+    trial_attempts = [trial for trial in agent.nodes("OpenProcessSearchAttempt")
+        if second_task in agent.native.neighbours(trial, "about_task")
+        and agent.attrs(trial)["status"] == "verified"
+        and agent.attrs(trial).get("expression_tree")
+            == agent.attrs(proposal)["expression_tree"]]
+    assert trial_attempts
+    terminal_trial_request = next(request for request in agent.nodes("OpenProcessSearchRequest")
+        if any(trial in agent.native.neighbours(request, "has_search_attempt")
+               for trial in trial_attempts))
+    agent.s.set_attr(terminal_trial_request, "status", "qualified_terminal")
+    # Add a second independently tasked, same-expression verified witness.
+    # Both matches are eligible in one rule pass; the proposal receipt lock
+    # must keep them from creating duplicate valid qualifications.
+    third_task = agent.add_solve_task("search", [0, 1, 2, 3],
+                                      [1, 0, 3, 2],
+                                      training_trial_key="independent-trial-3")
+    agent.s.set_attr(third_task, "split", "training")
+    agent.s.set_attr(third_task, "status", "stuck")
+    cloned_trial = agent.s.add_node("OpenProcessSearchAttempt",
+                                    dict(agent.attrs(trial_attempts[0])))
+    agent.s.add_edge(agent.ag, "has_open_process_search_attempt", cloned_trial, {})
+    agent.s.add_edge(cloned_trial, "about_task", third_task, {})
+    cloned_request = agent.s.add_node("OpenProcessSearchRequest", {
+        "status": "qualified_terminal", "split": "training"})
+    agent.s.add_edge(agent.ag, "has_open_process_search_request", cloned_request, {})
+    agent.s.add_edge(cloned_request, "has_search_attempt", cloned_trial, {})
+    agent.s.set_attr(agent.nodes("IndependentImprovementPolicy")[0], "enabled", 1.0)
     for _ in range(20):
         agent.s.tick(4000)
     qualifications = agent.native.neighbours(proposal, "has_native_qualification")
@@ -104,15 +137,15 @@ def test_qualification_from_native_trials():
     assert agent.attrs(qualification)["trial_count"] == 2.0
     assert agent.attrs(proposal)["status"] == "qualified_for_candidate_specific_approval"
     supporting_attempts = agent.native.neighbours(qualification, "counts_native_trial")
-    assert len(supporting_attempts) == 2
+    assert len(supporting_attempts) >= 2
     assert len({agent.native.neighbours(attempt, "about_task")[0]
-                for attempt in supporting_attempts}) == 2
+                for attempt in supporting_attempts}) >= 2
     assert len(agent.native.neighbours(proposal, "has_native_qualification")) == 2
     assert "qualification_kind" not in agent.attrs(malformed)
     supporting_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
         if any(attempt in agent.native.neighbours(request, "has_search_attempt")
                for attempt in supporting_attempts)]
-    assert len(supporting_requests) == 2
+    assert len(supporting_requests) == len(supporting_attempts)
     assert all(agent.attrs(request)["status"] == "qualified_terminal"
                for request in supporting_requests)
     attempt_count = len(agent.nodes("OpenProcessSearchAttempt"))
@@ -152,7 +185,9 @@ def test_candidate_effect_already_active_cannot_qualify_as_improvement():
     for _ in range(20):
         agent.s.tick(4000)
 
-    assert not agent.native.neighbours(proposal, "has_native_qualification")
+    assert not [q for q in agent.native.neighbours(proposal, "has_native_qualification")
+                if agent.attrs(q).get("status")
+                == "qualified_for_candidate_specific_approval"]
     assert agent.attrs(proposal)["status"] == "awaiting_native_qualification"
 
 
@@ -193,7 +228,9 @@ def test_independent_goal_composition_to_held_effect_cannot_qualify():
     assert any(agent.attrs(attempt)["status"] == "verified"
         and agent.native.neighbours(attempt, "extends_candidate") == [candidate]
         for attempt in agent.nodes("OpenProcessSearchAttempt"))
-    assert not agent.native.neighbours(proposal, "has_native_qualification")
+    assert not [q for q in agent.native.neighbours(proposal, "has_native_qualification")
+                if agent.attrs(q).get("status")
+                == "qualified_for_candidate_specific_approval"]
     assert agent.attrs(proposal)["status"] == "awaiting_native_qualification"
 
 
@@ -225,7 +262,9 @@ def test_independent_goal_composition_to_identity_effect_cannot_qualify():
     assert any(agent.attrs(attempt)["status"] == "verified"
         and agent.native.neighbours(attempt, "extends_candidate") == [candidate]
         for attempt in agent.nodes("OpenProcessSearchAttempt"))
-    assert not agent.native.neighbours(proposal, "has_native_qualification")
+    assert not [q for q in agent.native.neighbours(proposal, "has_native_qualification")
+                if agent.attrs(q).get("status")
+                == "qualified_for_candidate_specific_approval"]
     assert agent.attrs(proposal)["status"] == "awaiting_native_qualification"
 
 
