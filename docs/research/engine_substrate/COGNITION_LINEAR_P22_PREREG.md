@@ -492,3 +492,6 @@ remain unchanged.
 
 
 **Loopover invention-only g2 training log (2026-10-28; draws 0224–0227):** Following the source-request handoff fix, 6,000 distinct-goal trials were generated across the three inherited candidates; none qualified. Cumulative declared primitive work is 572,478/600,000. No validation or held-out data was used and no transition occurred. Exact artifacts and hashes are recorded in the canonical plan.
+
+
+**Loopover full-arm g2 training log (2026-10-28; draws 0228–0231):** The repaired source-request handoff generated 6,000 independent-goal trials across three candidates; none qualified. The panel remained training-only with empty validation/held-out allocations and no state transition. Exact artifacts and hashes are recorded in the canonical plan.
