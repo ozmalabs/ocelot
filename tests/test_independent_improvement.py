@@ -73,6 +73,11 @@ def test_qualification_from_native_trials():
     assert len(proposals) == 1
     assert agent.attrs(proposals[0])["source_split"] == "training"
     assert agent.native.neighbours(proposals[0], "derived_from_trial") == [attempt]
+    source_request = next(request for request in agent.nodes("OpenProcessSearchRequest")
+        if attempt in agent.native.neighbours(request, "has_search_attempt"))
+    # Candidate proof verification closes the discovery request before its
+    # separate-goal qualification trial is run.
+    agent.s.set_attr(source_request, "status", "qualified_terminal")
     agent.s.set_attr(agent.nodes("OpenProcessSearchPolicy")[0], "max_attempts", 5000.0)
     second_task = agent.add_solve_task("search", [0, 1, 2, 3],
                                        agent.attrs(source_task)["goal"],

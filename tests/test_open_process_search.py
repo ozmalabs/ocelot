@@ -141,6 +141,10 @@ def test_qualification_headroom_reserved():
     candidate = next(node for node in agent.nodes("OpenProcessCandidate")
                      if agent.attrs(node)["params"] == candidate_params)
     attest_open_process_candidate(agent, candidate)
+    source_attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    source_request = next(request for request in agent.nodes("OpenProcessSearchRequest")
+        if source_attempt in agent.native.neighbours(request, "has_search_attempt"))
+    agent.s.set_attr(source_request, "status", "qualified_terminal")
     source_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
                        if agent.native.neighbours(request, "searches_task") == [source]]
     assert len(source_requests) == 1
