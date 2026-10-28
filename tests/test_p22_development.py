@@ -2,6 +2,7 @@ import json
 import os
 
 from evaluation.process_mastery.p22_development import (
+    _qualification_is_valid,
     _process_peak_rss_observations,
     _select_approved_qualification,
     run_p22_training_proposal_probe,
@@ -16,6 +17,51 @@ from evaluation.process_mastery.harness import Agent
 from evaluation.process_mastery.independent_worlds import generate_loopover_world_v2
 from evaluation.process_mastery.native_process_execution import params_digest
 from substrate.seed_loader import manifest_for
+
+
+def test_projection_requires_a_typed_digest_bound_training_qualification():
+    class Native:
+        def __init__(self, links):
+            self.links = links
+
+        def neighbours(self, node, relation):
+            return self.links.get((node, relation), [])
+
+    class ProjectionAgent:
+        def __init__(self, attrs, links):
+            self.attr_rows = attrs
+            self.native = Native(links)
+
+        def attrs(self, node):
+            return self.attr_rows[node]
+
+    proposal = "proposal"
+    malformed = "malformed"
+    valid = "valid"
+    source_attempt, trial_attempt = "source", "trial"
+    source_task, trial_task = "task-1", "task-2"
+    agent = ProjectionAgent({
+        proposal: {"expression_digest": "expr", "criteria_digest": "criteria"},
+        malformed: {"status": "qualified_for_candidate_specific_approval",
+            "trial_count": 2.0, "split": "training", "expression_digest": "expr",
+            "criteria_digest": "criteria"},
+        valid: {"status": "qualified_for_candidate_specific_approval",
+            "qualification_kind": "independent_native_trials", "trial_count": 2.0,
+            "split": "training", "expression_digest": "expr",
+            "criteria_digest": "criteria"},
+        source_attempt: {"status": "verified"},
+        trial_attempt: {"status": "verified"},
+        source_task: {"split": "training", "training_trial_key": "train-1"},
+        trial_task: {"split": "training", "training_trial_key": "train-2"},
+    }, {
+        (malformed, "counts_native_trial"): [source_attempt, trial_attempt],
+        (valid, "counts_native_trial"): [source_attempt, trial_attempt],
+        (source_attempt, "about_task"): [source_task],
+        (trial_attempt, "about_task"): [trial_task],
+    })
+
+    assert not _qualification_is_valid(agent, proposal, malformed)
+    assert _qualification_is_valid(agent, proposal, valid)
 
 
 def test_training_only_probe_binds_native_rule_work_to_resource_snapshot():

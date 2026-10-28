@@ -76,6 +76,42 @@ def _digest(value) -> str:
         separators=(",", ":"), default=list).encode("utf-8")).hexdigest()
 
 
+def _qualification_is_valid(agent, proposal, qualification) -> bool:
+    """Apply the typed, digest-bound training-evidence contract to a receipt."""
+    attrs = agent.attrs(qualification)
+    proposal_attrs = agent.attrs(proposal)
+    if (attrs.get("status") != "qualified_for_candidate_specific_approval"
+            or attrs.get("qualification_kind") not in {
+                "independent_native_trials", "independent_goal_composition"}
+            or attrs.get("trial_count") != 2.0
+            or attrs.get("split") != "training"
+            or attrs.get("expression_digest") != proposal_attrs.get("expression_digest")
+            or attrs.get("criteria_digest") != proposal_attrs.get("criteria_digest")):
+        return False
+    witness_tasks = {}
+    for attempt in agent.native.neighbours(qualification, "counts_native_trial"):
+        if agent.attrs(attempt).get("status") != "verified":
+            continue
+        tasks = agent.native.neighbours(attempt, "about_task")
+        if len(tasks) != 1:
+            continue
+        task = tasks[0]
+        task_attrs = agent.attrs(task)
+        key = task_attrs.get("training_trial_key")
+        if task_attrs.get("split") == "training" and isinstance(key, str) and key:
+            witness_tasks[key] = task_attrs
+    if len(witness_tasks) < 2:
+        return False
+    if attrs.get("qualification_kind") == "independent_goal_composition":
+        if attrs.get("independent_goal_count") != 2.0:
+            return False
+        goals = {json.dumps(task.get("goal"), sort_keys=True, default=list)
+                 for task in witness_tasks.values()}
+        if len(goals) < 2:
+            return False
+    return True
+
+
 def _select_approved_qualification(qualifications: list[dict],
                                   binding: dict) -> dict:
     """Resolve one exact training qualification for a candidate approval.
@@ -478,16 +514,17 @@ def run_p22_training_proposal_probe(*, family: str,
             quals = [q for proposal in agent.nodes("IndependentImprovementProposal")
                 if agent.native.neighbours(proposal, "proposes_native_candidate") == [candidate]
                 for q in agent.native.neighbours(proposal, "has_native_qualification")
-                if agent.attrs(q).get("status") == "qualified_for_candidate_specific_approval"]
+                if _qualification_is_valid(agent, proposal, q)]
             qualification_records = [{
                 "qualification_id": str(q),
                 "kind": agent.attrs(q).get("qualification_kind"),
                 "declared_trial_count": agent.attrs(q).get("trial_count"),
-                "training_trial_keys": sorted(key
+                "training_trial_keys": sorted({key
                     for attempt in agent.native.neighbours(q, "counts_native_trial")
                     for task in agent.native.neighbours(attempt, "about_task")
                     if agent.attrs(task).get("split") == "training"
-                    for key in [agent.attrs(task).get("training_trial_key")]),
+                    for key in [agent.attrs(task).get("training_trial_key")]
+                    if isinstance(key, str) and key}),
             } for q in quals]
             selected_qualification = _select_approved_qualification(
                 qualification_records, approved_candidate_binding)
@@ -618,14 +655,14 @@ def run_p22_training_proposal_probe(*, family: str,
             all_qualifications = [qualification
                 for proposal in proposals
                 for qualification in agent.native.neighbours(proposal, "has_native_qualification")]
-            qualifications = [qualification for qualification in all_qualifications
-                if agent.attrs(qualification).get("status")
-                == "qualified_for_candidate_specific_approval"]
+            qualifications = [qualification for proposal in proposals
+                for qualification in agent.native.neighbours(
+                    proposal, "has_native_qualification")
+                if _qualification_is_valid(agent, proposal, qualification)]
             qualification_rows = []
             for proposal in proposals:
                 for qualification in agent.native.neighbours(proposal, "has_native_qualification"):
-                    if agent.attrs(qualification).get("status") \
-                            != "qualified_for_candidate_specific_approval":
+                    if not _qualification_is_valid(agent, proposal, qualification):
                         continue
                     trial_attempts = agent.native.neighbours(qualification, "counts_native_trial")
                     trial_tasks = [agent.native.neighbours(attempt, "about_task")
@@ -638,8 +675,12 @@ def run_p22_training_proposal_probe(*, family: str,
                         "attempt_ids": [str(attempt) for attempt in trial_attempts],
                         "task_ids": [str(tasks[0]) if len(tasks) == 1 else None
                                      for tasks in trial_tasks],
-                        "training_trial_keys": [agent.attrs(tasks[0]).get("training_trial_key")
-                                      if len(tasks) == 1 else None for tasks in trial_tasks],
+                        "training_trial_keys": sorted({
+                            agent.attrs(tasks[0]).get("training_trial_key")
+                            for tasks in trial_tasks if len(tasks) == 1
+                            and agent.attrs(tasks[0]).get("split") == "training"
+                            and isinstance(agent.attrs(tasks[0]).get("training_trial_key"), str)
+                            and agent.attrs(tasks[0]).get("training_trial_key")}),
                     })
             independent_trial_rows = []
             for trial_attempt in agent.native.neighbours(
@@ -706,6 +747,13 @@ def run_p22_training_proposal_probe(*, family: str,
                     agent.attrs(qualification).get("status")
                     == "awaiting_native_qualification"
                     for qualification in all_qualifications),
+                "invalid_qualification_receipt_count": sum(
+                    agent.attrs(qualification).get("status")
+                        == "qualified_for_candidate_specific_approval"
+                    and not _qualification_is_valid(agent, proposal, qualification)
+                    for proposal in proposals
+                    for qualification in agent.native.neighbours(
+                        proposal, "has_native_qualification")),
                 "independent_goal_trials": independent_trial_rows,
                 "qualification_inputs": {
                     "source_attempt_status": (agent.attrs(source_attempt).get("status")
