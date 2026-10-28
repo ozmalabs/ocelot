@@ -19,10 +19,10 @@ from evaluation.process_mastery.p22_resource_accounting import (
 )
 
 RESULTS = ROOT / "evaluation/process_mastery/results"
-AUDIT = RESULTS / "p22_checkpoint_resource_audit_20261025.json"
+AUDIT = RESULTS / "p22_checkpoint_resource_audit_20261028.json"
 PRIOR_PANEL = RESULTS / "p22_resource_panel_existing_checkpoints_0609_0612_0622_0625.json.gz"
 SUPPLEMENT = RESULTS / "p22_resource_panel_new_approved_checkpoints_0609_0612_0622_0625.json.gz"
-OUTPUT = RESULTS / "p22_current_resource_manifest_20261025.json"
+OUTPUT = RESULTS / "p22_current_resource_manifest_20261028.json"
 
 
 def _read(path: Path, *, compressed: bool = False) -> tuple[dict, str]:
@@ -42,6 +42,9 @@ def build() -> dict[str, Any]:
     issues: list[dict[str, str]] = []
     if audit.get("issues"):
         issues.append({"source": "checkpoint_audit", "issue": "audit_has_issues"})
+    if not audit.get("all_captured_checkpoint_and_snapshot_digests_valid"):
+        issues.append({"source": "checkpoint_audit",
+                       "issue": "checkpoint_or_snapshot_digest_invalid"})
     for label, panel in (("prior_panel", prior), ("supplementary_panel", supplement)):
         if panel.get("heldout_accessed") is not False:
             issues.append({"source": label, "issue": "heldout_access_not_false"})
