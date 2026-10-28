@@ -476,3 +476,5 @@ remain unchanged.
 **P22 development log update (2026-10-28):** Seven generation-two training-only continuation searches across D4 and Loopover arms completed with no new qualification, adoption or checkpoint. No validation or held-out allocation was made. The plan records exact compressed artifact hashes and per-run resource totals; the four-arm development log records the draw sets and outcome. These searches do not amend preregistered thresholds, ceilings or held-out conditions.
 
 **Training search log (2026-10-28):** Two further full-arm g2 searches (Loopover 0200–0203; D4 0912–0915) completed without qualifying candidates. Both were training-only and made no validation or held-out allocation; exact resource snapshots and compressed artifact hashes are recorded in the canonical plan. No thresholds or freeze conditions changed.
+
+**Training search log (2026-10-28):** Loopover full-arm draws 0204–0207 reproduced the previous two unqualified candidate effects and produced no checkpoint. No validation or held-out allocation occurred; see the canonical plan for artifact hashes.
