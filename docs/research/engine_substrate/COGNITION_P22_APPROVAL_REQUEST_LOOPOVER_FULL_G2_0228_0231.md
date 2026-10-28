@@ -12,8 +12,11 @@ The native qualification is `#54104`, kind `independent_goal_composition`,
 with two verified training trials: attempts `#49127` and `#51873`, on distinct
 worlds `p22:loopover-v2:train:0177` and `p22:loopover-v2:train:0228`.
 The second trial produced transfer child `#53098`, which remains unapproved and
-unqualified. Exact replay reproduced candidate digest, qualification, both
-witness attempt/task IDs and training keys. Source and replay attempt exports
+unqualified. A separate training continuation also recorded qualification
+`#61610` on worlds 0177/0221. This request is bound to `#54104` because that
+qualification was replayed exactly; `#61610` is recorded as corroborating
+evidence but was not separately replayed. Exact replay reproduced candidate
+digest, qualification, both witness attempt/task IDs and training keys. Source and replay attempt exports
 are byte-identical across 60,000 IDs, SHA-256
 `9f560b36723c90fdb916ada4757878499ca7948f038aa700b1bc252dab7957a7`.
 
