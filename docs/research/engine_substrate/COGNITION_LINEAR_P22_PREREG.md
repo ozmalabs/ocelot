@@ -494,10 +494,10 @@ remain unchanged.
 **Loopover invention-only g2 training log (2026-10-28; draws 0224–0227):** Following the source-request handoff fix, 6,000 distinct-goal trials were generated across the three inherited candidates; none qualified. Cumulative declared primitive work is 572,478/600,000. No validation or held-out data was used and no transition occurred. Exact artifacts and hashes are recorded in the canonical plan.
 
 
-**Loopover full-arm g2 training log (2026-10-28; draws 0228–0231):** The repaired source-request handoff generated 6,000 independent-goal trials across three candidates; none qualified. The panel remained training-only with empty validation/held-out allocations and no state transition. Exact artifacts and hashes are recorded in the canonical plan.
+**Loopover full-arm g2 training log (2026-10-28; draws 0228–0231):** The repaired source-request handoff generated 6,000 independent-goal trials across three candidates. Candidate `#51583` qualified as `#54104` on two verified distinct training goals, and exact replay reproduced the qualification witnesses. Its candidate-specific approval request is pending; no state transition occurred in this run. Validation and held-out allocations remain empty; artifacts and hashes are recorded in the canonical plan.
 
 
 **D4 full-arm g2 training log (2026-10-28; draws 0921, 0922, 0923, 0930):** The source-request lifecycle repair generated 812 separate-goal trials across three candidates, with no qualification or transition. Validation and held-out allocations remain empty. Exact result and export hashes are recorded in the canonical plan.
 
 
-**D4 invention-only g2 training log (2026-10-28; draws 0940, 0941, 0942, 0944):** The repaired lifecycle generated 918 independent-goal trials across four candidates, with no qualification or transition. The malformed inherited `#9459` qualification remains excluded. No validation or held-out data was used; artifact hashes are in the canonical plan.
+**D4 invention-only g2 training log (2026-10-28; draws 0940, 0941, 0942, 0944):** The repaired lifecycle generated 918 independent-goal trials across four candidates, with no valid new qualification or transition. The malformed inherited `#9459` qualification remains excluded. No validation or held-out data was used; artifact hashes are in the canonical plan.
