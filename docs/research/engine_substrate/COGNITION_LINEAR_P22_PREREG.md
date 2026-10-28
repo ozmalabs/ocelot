@@ -495,3 +495,6 @@ remain unchanged.
 
 
 **Loopover full-arm g2 training log (2026-10-28; draws 0228–0231):** The repaired source-request handoff generated 6,000 independent-goal trials across three candidates; none qualified. The panel remained training-only with empty validation/held-out allocations and no state transition. Exact artifacts and hashes are recorded in the canonical plan.
+
+
+**D4 full-arm g2 training log (2026-10-28; draws 0921, 0922, 0923, 0930):** The source-request lifecycle repair generated 812 separate-goal trials across three candidates, with no qualification or transition. Validation and held-out allocations remain empty. Exact result and export hashes are recorded in the canonical plan.
