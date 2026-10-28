@@ -498,3 +498,6 @@ remain unchanged.
 
 
 **D4 full-arm g2 training log (2026-10-28; draws 0921, 0922, 0923, 0930):** The source-request lifecycle repair generated 812 separate-goal trials across three candidates, with no qualification or transition. Validation and held-out allocations remain empty. Exact result and export hashes are recorded in the canonical plan.
+
+
+**D4 invention-only g2 training log (2026-10-28; draws 0940, 0941, 0942, 0944):** The repaired lifecycle generated 918 independent-goal trials across four candidates, with no qualification or transition. The malformed inherited `#9459` qualification remains excluded. No validation or held-out data was used; artifact hashes are in the canonical plan.
