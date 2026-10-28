@@ -3000,3 +3000,5 @@ Seven fresh distinct-goal continuations were run from the exact approved g2 chec
 **Loopover invention-only g2 continuation (2026-10-28):** Draws 0208–0211 completed with no qualification or adoption, and no validation or held-out allocation. The exact compressed artifact hashes and complete resource measurements are in the canonical plan.
 
 **D4 invention-only g2 continuation (2026-10-28):** Draws 0981–0984 completed without a new qualification, adoption, or checkpoint. The inherited malformed `#9459` qualification was excluded. No validation or held-out allocation occurred; exact hashes and resource totals are in the canonical plan.
+
+**D4 full-arm g2 continuation (2026-10-28):** Draws 0916/0917/0918/0920 completed with no qualification, approval, adoption or checkpoint. Candidate effects repeated previously recorded candidates. Empty validation/held-out allocation and exact resource/artifact hashes are recorded in the canonical plan.

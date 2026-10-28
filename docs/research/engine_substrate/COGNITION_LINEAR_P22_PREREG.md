@@ -482,3 +482,5 @@ remain unchanged.
 **Training search log (2026-10-28):** Loopover invention-only draws 0208–0211 completed within the declared primitive-work ceiling without qualifying a candidate. No validation/held-out access occurred; refer to the canonical plan for raw-output and attempt-export hashes.
 
 **Training search log (2026-10-28):** D4 invention-only draws 0981–0984 completed with no new qualifying candidate. The inherited malformed qualification was excluded, and no validation/held-out data was used. See the canonical plan for hashes and resource totals.
+
+**Training search log (2026-10-28):** D4 full-arm draws 0916/0917/0918/0920 completed without a qualifying candidate or validation allocation. See the canonical plan for compressed output hashes and resource totals.
