@@ -24,6 +24,9 @@ pytest.importorskip("substrate_rs")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_PATH = os.path.join(ROOT, "results", "affect_direction_judgement.json")
 START_COMMIT = "2c753aaae0c038631267403d3cdcd30b598a60bb"
+# §12.3 (VISION_PROTOCOL): G-6's claim is about THIS RUNG's own commits, so it is pinned to the
+# rung's range (prereg commit .. result commit), never to the mutable working tree.
+RESULT_COMMIT = "77ba15a77c36ffa3683a7d2a0e7be29a28a566f6"
 LOW, T_PRESENT = 50, 256
 SURPRISE_R = [150, 200, 400, 800, 1600]
 
@@ -270,8 +273,8 @@ def test_G5_mixed_event():
 
 def test_G6_zero_mechanism_change():
     _run()
-    diff = subprocess.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, "--",
-                           "runners/", "seeds/"], capture_output=True, text=True)
+    diff = subprocess.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, RESULT_COMMIT,
+                           "--", "runners/", "seeds/"], capture_output=True, text=True)
     _record("G-6", {"rc": diff.returncode, "diff_stat": diff.stdout})
     assert diff.returncode == 0
     assert diff.stdout.strip() == ""

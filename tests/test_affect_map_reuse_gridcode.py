@@ -34,6 +34,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SEED_PATH = os.path.join(ROOT, "seeds", "quanta_navigation.json")
 OUT_PATH = os.path.join(ROOT, "results", "affect_map_reuse_gridcode.json")
 START_COMMIT = "79369ffee4ebc7e6c366ae2f93904b384637105a"   # prereg commit (§9)
+# §12.3 (VISION_PROTOCOL): G-B1's claim is about THIS RUNG's own commits, so it is pinned to
+# the rung's range (prereg commit .. result commit), never to the mutable working tree, which
+# later rungs legitimately change (e.g. block 369000 adds seeds/affect_frame.json).
+RESULT_COMMIT = "6ed6d3c5a58c558c6b0349e974f653e329730780"
 FLOOR, WALL = 4, 3
 TOL = 1e-9
 MAX_STEPS = 64
@@ -339,8 +343,8 @@ def test_GB1_reuse_with_zero_mechanism_change():
         fallback_wall_s = None
     arrived = sum(d[2] for d in done)
     match = sum(d[2] and d[3] == abs(d[0][0] - d[1][0]) + abs(d[0][1] - d[1][1]) for d in done)
-    diff = subprocess.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, "--",
-                           "runners/", "seeds/"], capture_output=True, text=True)
+    diff = subprocess.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, RESULT_COMMIT,
+                           "--", "runners/", "seeds/"], capture_output=True, text=True)
     _record("G-B1", {"n_pairs": len(pairs), "arrived": arrived, "steps_eq_manhattan": match,
                      "fallback_used": fallback, "full_run_wall_s": full_wall_s,
                      "fallback_wall_s": fallback_wall_s,
