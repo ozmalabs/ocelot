@@ -49,10 +49,16 @@ on a fresh `EmotionHub`, and the direction judgements are offline.
 
 ## Reading (prereg §6)
 
-1. **Within-category valence direction is not represented.** Every distinct-level gain or
-   loss pair is published with the same valence. The substrate already computes the
-   graded quantity (`value_progress`, 32 to 512 in this sample) and then discards it at
-   `em_readoff`, which keeps only its sign.
+1. **Within-category valence direction is not represented in the affect channels.** Every
+   distinct-level gain or loss pair is published with the same valence. The substrate
+   already computes the graded quantity (`value_progress`, 32 to 512 in this sample), and
+   `em_readoff` keeps only its sign when it writes `valence`. **Clarification (added
+   after the run, no result changed):** `value_progress` itself stays on the `Appraisal`
+   node as an attribute, so the graded information is not lost from the graph. It is
+   missing from the `valence`/`arousal` contract, which is what downstream consumers read
+   (for example the bigville adapter copies only `valence` and `arousal` into
+   `ModulatorState`, and from there into `AffectiveState`). The observer in this rung was
+   restricted to that contract by design (prereg §3).
 2. **Gains and losses are asymmetric.** Joy routes `value_progress` into `arousal`, so an
    observer reading both channels can order gains. Sadness falls through to
    `low_arousal` (50) at every loss size. Under the bound in G-3, a loss of 32 and a loss
