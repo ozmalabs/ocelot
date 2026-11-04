@@ -1,0 +1,572 @@
+"""P19 bounded generic expression search over graph-held process evidence."""
+from evaluation.process_mastery.harness import Agent
+from evaluation.process_mastery.native_process_execution import (
+    attest_open_process_candidate, open_process_candidate_digest,
+)
+from substrate.seed_loader import manifest_for
+
+
+def _agent(*, attempts=64, held=None):
+    agent = Agent(track_i=False, extra_seeds=("open_process_search",),
+        policy_overrides={"OpenProcessSearchPolicy": {
+            "enabled": 1.0, "max_attempts": float(attempts), "max_candidates": 16.0},
+            "ProcessSchemaPolicy": {"enabled": 1.0}},
+        budget={"enabled": 1.0, "remaining": 100.0, "capacity": 100.0,
+                "last_refill_epoch": 0.0, "refill_per_epoch": 0.0})
+    for policy in agent.nodes("ProcessSchemaPolicy"):
+        agent.s.set_attr(policy, "enabled", 1.0)
+    held = held or {"source-a": [1, 0, 2, 3], "source-b": [0, 2, 1, 3]}
+    domain = agent.add_domain("search", "permutation", [[0, 1, 2, 3]], held)
+    return agent, domain
+
+
+def _apply(agent, process, state):
+    return agent.native.evaluate({"type": "ProcessApply",
+        "p": {"type": "Var", "name": "p"},
+        "state": {"type": "Var", "name": "state"}},
+        {"p": process, "state": state})
+
+
+def _compose(agent, a, b):
+    return agent.native.evaluate({"type": "ProcessCompose",
+        "a": {"type": "Var", "name": "a"},
+        "b": {"type": "Var", "name": "b"}}, {"a": a, "b": b})
+
+
+def _inverse(agent, process):
+    return agent.native.evaluate({"type": "ProcessInverse",
+        "a": {"type": "Var", "name": "p"}}, {"p": process})
+
+
+def _power(agent, process, exponent):
+    result = process
+    for _ in range(exponent - 1):
+        result = _compose(agent, result, process)
+    return result
+
+
+def _tick(agent):
+    for _ in range(12):
+        agent.s.tick(4000)
+
+
+def _verify_new_effect_drives_search():
+    agent, _ = _agent()
+    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
+    goal = _apply(agent, _compose(agent, left, right), [0, 1, 2, 3])
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = agent.nodes("OpenProcessCandidate")
+    assert candidates
+    candidate = agent.attrs(candidates[0])
+    assert candidate["status"] == "unapproved_candidate"
+    assert candidate["approval_required"] == 1.0
+    assert candidate["expression_tree"][0] == "guard"
+    assert candidate["expression_tree"][2][0] == "subgoal"
+    assert candidate["expression_tree"][2][2][0] == "compose"
+    assert candidate["guard_state"] == [0, 1, 2, 3]
+    assert candidate["subgoal_state"] == _apply(agent, left, [0, 1, 2, 3])
+    assert candidate["params"] == _compose(agent, left, right)
+    assert _apply(agent, candidate["params"], [0, 1, 2, 3]) == goal
+    # The full expression is retained on the graph candidate; the host only
+    # reads and verifies the graph-authored term, never rebuilds it by name.
+    attempt = agent.native.neighbours(candidates[0], "derived_from_attempt")[0]
+    assert agent.attrs(attempt)["predicted_state"] == goal
+    assert agent.attrs(attempt)["status"] == "verified"
+    assert agent.attrs(attempt)["rank_score"] == agent.attrs(attempt)["work_cost"]
+
+
+def test_new_candidate_executed_not_host_rebuilt():
+    _verify_new_effect_drives_search()
+
+
+def test_new_effect_drives_search():
+    _verify_new_effect_drives_search()
+
+
+def test_search_does_not_mint_an_already_held_effect():
+    held_params = [1, 0, 2, 3]
+    agent, _ = _agent(held={"held": held_params})
+    goal = _apply(agent, held_params, [0, 1, 2, 3])
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    assert not any(agent.attrs(candidate)["params"] == held_params
+                   for candidate in agent.nodes("OpenProcessCandidate"))
+
+
+def test_duplicate_syntax_no_budget_explosion():
+    agent, _ = _agent()
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(policy, "effect_dedup_enabled", 1.0)
+    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
+    params = _compose(agent, left, right)
+    goal = _apply(agent, params, [0, 1, 2, 3])
+    existing = agent.s.add_node("OpenProcessCandidate", {
+        "expression_key": "independent-syntax-for-same-effect",
+        "domain": "search", "kind": "permutation",
+        "effect_digest": [goal], "params": params,
+        "status": "unapproved_candidate"})
+    agent.s.add_edge(agent.ag, "has_open_process_candidate", existing, {})
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    same_effect = [candidate for candidate in agent.nodes("OpenProcessCandidate")
+                   if agent.attrs(candidate).get("effect_digest") == [goal]]
+    assert same_effect == [existing]
+    assert any(agent.attrs(attempt)["status"] == "verified"
+               and agent.attrs(attempt)["effect_digest"] == [goal]
+               for attempt in agent.nodes("OpenProcessSearchAttempt"))
+
+
+def test_qualification_headroom_reserved():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+            "r": [0, 1, 3, 2], "s": [3, 1, 2, 0]}
+    agent, _ = _agent(attempts=100, held=held)
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(policy, "candidate_transfer_depth", 2.0)
+    agent.s.set_attr(policy, "max_attempts_per_request", 5.0)
+    agent.s.set_attr(policy, "discovery_attempt_limit_per_request", 3.0)
+    agent.s.set_attr(policy, "transfer_reserve_per_request", 2.0)
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    initial = [0, 1, 2, 3]
+    candidate_params = _compose(agent, held["p"], held["q"])
+    source = agent.add_solve_task("search", initial,
+        _apply(agent, candidate_params, initial),
+        training_trial_key="p26-reserve-source")
+    agent.s.set_attr(source, "split", "training")
+    agent.s.set_attr(source, "status", "stuck")
+    _tick(agent)
+    candidate = next(node for node in agent.nodes("OpenProcessCandidate")
+                     if agent.attrs(node)["params"] == candidate_params)
+    attest_open_process_candidate(agent, candidate)
+    source_attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    source_request = next(request for request in agent.nodes("OpenProcessSearchRequest")
+        if source_attempt in agent.native.neighbours(request, "has_search_attempt"))
+    agent.s.set_attr(source_request, "status", "qualified_terminal")
+    source_requests = [request for request in agent.nodes("OpenProcessSearchRequest")
+                       if agent.native.neighbours(request, "searches_task") == [source]]
+    assert len(source_requests) == 1
+    assert len(agent.native.neighbours(source_requests[0], "has_search_attempt")) <= 3
+
+    target_params = _compose(agent, _compose(agent, candidate_params, held["r"]), held["s"])
+    target = agent.add_solve_task("search", initial, _apply(agent, target_params, initial),
+        training_trial_key="p26-reserve-target")
+    agent.s.set_attr(target, "split", "training")
+    agent.s.set_attr(target, "status", "stuck")
+    _tick(agent)
+
+    requests = [request for request in agent.nodes("OpenProcessSearchRequest")
+                if agent.native.neighbours(request, "searches_task") == [target]]
+    assert len(requests) == 1
+    request = requests[0]
+    assert agent.attrs(request)["request_kind"] == \
+        "discovery_with_independent_transfer_reserve"
+    assert agent.attrs(request)["discovery_attempt_limit"] == 3.0
+    assert agent.attrs(request)["transfer_attempt_reserve"] == 2.0
+    assert agent.native.neighbours(request, "qualifies_candidate") == [candidate]
+    transfer = [attempt for attempt in agent.native.neighbours(request, "has_search_attempt")
+                if agent.native.neighbours(attempt, "extends_candidate") == [candidate]]
+    assert len(transfer) <= 2
+    assert agent.attrs(request)["transfer_attempts_reserved"] == float(len(transfer))
+    assert all(agent.native.neighbours(attempt, "about_task") == [target]
+               for attempt in transfer)
+    assert all(agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+               for attempt in transfer)
+    assert len(agent.native.neighbours(request, "has_search_attempt")) <= 5
+
+
+def test_renaming_parents_does_not_change_expression_choice():
+    results = []
+    for held in ({"source-a": [1, 0, 2, 3], "source-b": [0, 2, 1, 3]},
+                 {"renamed-x": [1, 0, 2, 3], "renamed-y": [0, 2, 1, 3]}):
+        agent, _ = _agent(held=held)
+        goal = _apply(agent, _compose(agent, *held.values()), [0, 1, 2, 3])
+        task = agent.add_solve_task("search", [0, 1, 2, 3], goal)
+        agent.s.set_attr(task, "status", "stuck")
+        _tick(agent)
+        results.append([agent.attrs(n)["params"] for n in agent.nodes("OpenProcessCandidate")])
+    assert results[0] == results[1]
+
+
+def test_candidate_name_does_not_choose_recipe():
+    agent, _ = _agent()
+    left, right = [1, 0, 2, 3], [0, 2, 1, 3]
+    goal = _apply(agent, _compose(agent, left, right), [0, 1, 2, 3])
+    task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
+                                candidate_name="power3_candidate")
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = agent.nodes("OpenProcessCandidate")
+    assert any(agent.attrs(candidate)["expression_tree"][2][2][0] == "compose"
+               and agent.attrs(candidate)["params"] == _compose(agent, left, right)
+               for candidate in candidates)
+
+
+def test_unseen_operator_expression_generated():
+    agent, _ = _agent(held={"turn": [1, 2, 3, 0]})
+    initial = [0, 1, 2, 3]
+    inverse = agent.native.evaluate(
+        {"type": "ProcessInverse", "a": {"type": "Var", "name": "p"}},
+        {"p": [1, 2, 3, 0]})
+    goal = _apply(agent, inverse, initial)
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = [agent.attrs(node) for node in agent.nodes("OpenProcessCandidate")]
+    assert any(attrs["expression_tree"][2][0] == "inverse"
+               and attrs["params"] == inverse for attrs in candidates)
+
+
+def test_both_subgoal_orders_are_evaluated_within_budget():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
+    agent, _ = _agent(held=held)
+    initial = [0, 1, 2, 3]
+    reverse = _compose(agent, held["q"], held["p"])
+    goal = _apply(agent, reverse, initial)
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    attempts = [agent.attrs(n) for n in agent.nodes("OpenProcessSearchAttempt")]
+    assert any(attempt["expression_key"] == "compose:q:p"
+               and attempt["status"] == "verified" for attempt in attempts)
+    candidates = [agent.attrs(n) for n in agent.nodes("OpenProcessCandidate")]
+    assert any(candidate["params"] == reverse for candidate in candidates)
+
+
+def test_residual_expression_expands_recursively_with_depth_bound():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]}
+    agent, _ = _agent(held=held)
+    initial = [0, 1, 2, 3]
+    expected = _compose(agent, _compose(agent, held["p"], held["q"]), held["r"])
+    goal = _apply(agent, expected, initial)
+    task = agent.add_solve_task("search", initial, goal)
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    attempts = [agent.attrs(node) for node in agent.nodes("OpenProcessSearchAttempt")]
+    expanded = [attrs for attrs in attempts if attrs.get("depth", 0) == 2]
+    assert expanded
+    assert any(attrs["status"] == "verified" and attrs["params"] == expected
+               for attrs in expanded)
+    assert all(attrs["depth"] <= 4 for attrs in attempts)
+    assert any(agent.native.neighbours(node, "extends_search_attempt")
+               for node in agent.nodes("OpenProcessSearchAttempt"))
+    candidates = [node for node in agent.nodes("OpenProcessCandidate")
+                  if agent.attrs(node)["params"] == expected]
+    assert candidates
+    candidate = candidates[0]
+    before = open_process_candidate_digest(agent, candidate)
+    attempt = agent.native.neighbours(candidate, "derived_from_attempt")[0]
+    ancestors = agent.native.neighbours(attempt, "extends_search_attempt")
+    assert ancestors
+    ancestor_parent = agent.native.neighbours(ancestors[0], "uses_parent_process")[0]
+    agent.s.set_attr(ancestor_parent, "source_digest", "mutated-parent-source")
+    assert open_process_candidate_digest(agent, candidate) != before
+
+
+def test_recursive_inverse_and_power_transform_residual_expressions():
+    held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
+    for operator, exponent in (("inverse", None), ("power", 2), ("power", 3)):
+        agent, _ = _agent(held=held, attempts=256)
+        initial = [0, 1, 2, 3]
+        residual = _compose(agent, held["p"], held["q"])
+        expected = (_inverse(agent, residual) if operator == "inverse"
+                    else _power(agent, residual, exponent))
+        goal = _apply(agent, expected, initial)
+        task = agent.add_solve_task("search", initial, goal)
+        agent.s.set_attr(task, "status", "stuck")
+        _tick(agent)
+        attempts = [agent.attrs(node) for node in agent.nodes("OpenProcessSearchAttempt")]
+        assert any(attrs["operator_kind"] == "recursive_unary"
+                   and attrs["status"] == "verified" and attrs["params"] == expected
+                   for attrs in attempts)
+        candidates = [agent.attrs(node) for node in agent.nodes("OpenProcessCandidate")]
+        assert any(attrs["params"] == expected for attrs in candidates)
+
+
+def test_changed_goal_changes_proposal():
+    agent, _ = _agent()
+    task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    candidates = agent.nodes("OpenProcessCandidate")
+    assert not any(agent.attrs(n)["params"] == [3, 2, 1, 0] for n in candidates)
+    attempts = agent.nodes("OpenProcessSearchAttempt")
+    assert attempts
+    assert all(agent.attrs(n)["goal_state"] == [3, 2, 1, 0] for n in attempts)
+
+
+def test_invalid_composition_unknown():
+    agent, _ = _agent(held={"short": [1, 0, 2], "long": [1, 0, 2, 3]})
+    task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    attempts = agent.nodes("OpenProcessSearchAttempt")
+    assert attempts
+    assert any(agent.attrs(n)["status"] == "unknown" for n in attempts)
+    assert all(agent.attrs(n)["rank_score"] >= 2_000_000 for n in attempts
+               if agent.attrs(n)["status"] == "unknown")
+    assert not [n for n in agent.nodes("OpenProcessCandidate")
+                if agent.attrs(n)["status"] == "promoted"]
+
+
+def test_proposal_budget_includes_failures():
+    agent, _ = _agent(attempts=1)
+    task = agent.add_solve_task("search", [0, 1, 2, 3], [3, 2, 1, 0])
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    requests = agent.nodes("OpenProcessSearchRequest")
+    assert len(requests) == 1
+    assert len(agent.native.neighbours(requests[0], "has_search_attempt")) == 1
+    budget_requests = [n for n in agent.nodes("ThinkingBudgetRequest")
+        if agent.attrs(n).get("requester_kind") == "open_process_search"]
+    assert len(budget_requests) == 1
+    assert agent.attrs(budget_requests[0])["status"] == "approved"
+
+
+def test_training_candidate_composes_with_two_held_processes_on_new_goal():
+    held = {
+        "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+        "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
+    }
+    agent, _ = _agent(attempts=500, held=held)
+    agent.s.set_attr(agent.nodes("OpenProcessSearchPolicy")[0],
+                     "candidate_transfer_depth", 2.0)
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    initial = [0, 1, 2, 3]
+    source_goal = _apply(agent, _compose(agent, held["p"], held["q"]), initial)
+    source = agent.add_solve_task("search", initial, source_goal,
+        training_trial_key="p22-search-source-training")
+    agent.s.set_attr(source, "split", "training")
+    agent.s.set_attr(source, "status", "stuck")
+    _tick(agent)
+    candidate = next(candidate for candidate in agent.nodes("OpenProcessCandidate")
+        if agent.attrs(candidate)["params"] == _compose(agent, held["p"], held["q"]))
+    attest_open_process_candidate(agent, candidate)
+
+    candidate_params = agent.attrs(candidate)["params"]
+    second_params = _compose(agent, _compose(agent, candidate_params, held["r"]),
+                             held["s"])
+    second_goal = _apply(agent, second_params, initial)
+    assert second_goal != source_goal
+    second = agent.add_solve_task("search", initial, second_goal,
+        training_trial_key="p22-search-independent-training")
+    agent.s.set_attr(second, "split", "training")
+    agent.s.set_attr(second, "status", "stuck")
+    _tick(agent)
+
+    extended = [attempt for attempt in agent.nodes("OpenProcessSearchAttempt")
+        if agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+        and agent.attrs(attempt).get("expression_key", "").startswith(
+            "independent-compose-2:")]
+    assert extended
+    assert any(agent.attrs(attempt)["status"] == "verified"
+               and agent.attrs(attempt)["predicted_state"] == second_goal
+               for attempt in extended)
+
+
+def test_training_candidate_can_appear_between_two_held_processes():
+    held = {
+        "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+        "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
+    }
+    agent, _ = _agent(attempts=500, held=held)
+    agent.s.set_attr(agent.nodes("OpenProcessSearchPolicy")[0],
+                     "candidate_transfer_depth", 2.0)
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    initial = [0, 1, 2, 3]
+    candidate_params = _compose(agent, held["p"], held["q"])
+    source_goal = _apply(agent, candidate_params, initial)
+    source = agent.add_solve_task("search", initial, source_goal,
+        training_trial_key="p22-search-middle-source-training")
+    agent.s.set_attr(source, "split", "training")
+    agent.s.set_attr(source, "status", "stuck")
+    _tick(agent)
+    candidate = next(candidate for candidate in agent.nodes("OpenProcessCandidate")
+        if agent.attrs(candidate)["params"] == candidate_params)
+    attest_open_process_candidate(agent, candidate)
+
+    target_params = _compose(agent, _compose(agent, held["r"], candidate_params),
+                             held["s"])
+    target_goal = _apply(agent, target_params, initial)
+    assert target_goal != source_goal
+    task = agent.add_solve_task("search", initial, target_goal,
+        training_trial_key="p22-search-middle-independent-training")
+    agent.s.set_attr(task, "split", "training")
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+
+    matching = [attempt for attempt in agent.nodes("OpenProcessSearchAttempt")
+        if agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+        and agent.attrs(attempt).get("expression_key", "").endswith(
+            ":held_then_candidate_then_held")]
+    assert matching
+    assert any(agent.attrs(attempt)["status"] == "verified"
+        and agent.attrs(attempt)["params"] == target_params
+        and agent.attrs(attempt)["predicted_state"] == target_goal
+        for attempt in matching)
+
+
+def test_training_candidate_can_follow_two_held_processes():
+    held = {
+        "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+        "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
+    }
+    agent, _ = _agent(attempts=500, held=held)
+    agent.s.set_attr(agent.nodes("OpenProcessSearchPolicy")[0],
+                     "candidate_transfer_depth", 2.0)
+    agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+    initial = [0, 1, 2, 3]
+    candidate_params = _compose(agent, held["p"], held["q"])
+    source = agent.add_solve_task("search", initial,
+        _apply(agent, candidate_params, initial),
+        training_trial_key="p22-search-final-source-training")
+    agent.s.set_attr(source, "split", "training")
+    agent.s.set_attr(source, "status", "stuck")
+    _tick(agent)
+    candidate = next(candidate for candidate in agent.nodes("OpenProcessCandidate")
+        if agent.attrs(candidate)["params"] == candidate_params)
+    attest_open_process_candidate(agent, candidate)
+
+    target_params = _compose(agent, _compose(agent, held["r"], held["s"]),
+                             candidate_params)
+    target_goal = _apply(agent, target_params, initial)
+    task = agent.add_solve_task("search", initial, target_goal,
+        training_trial_key="p22-search-final-independent-training")
+    agent.s.set_attr(task, "split", "training")
+    agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+
+    matching = [attempt for attempt in agent.nodes("OpenProcessSearchAttempt")
+        if agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+        and agent.attrs(attempt).get("expression_key", "").endswith(
+            ":held_then_held_then_candidate")]
+    assert matching
+    assert any(agent.attrs(attempt)["status"] == "verified"
+        and agent.attrs(attempt)["params"] == target_params
+        and agent.attrs(attempt)["predicted_state"] == target_goal
+        for attempt in matching)
+
+
+def test_three_held_process_transfer_checks_all_candidate_positions():
+    held = {
+        "p": [1, 0, 2, 3], "q": [0, 2, 1, 3],
+        "r": [0, 1, 3, 2], "s": [3, 1, 2, 0],
+        "t": [3, 2, 1, 0],
+    }
+    initial = [0, 1, 2, 3]
+    for candidate_position in range(4):
+        agent, _ = _agent(attempts=6000, held=held)
+        policy = agent.nodes("OpenProcessSearchPolicy")[0]
+        agent.s.set_attr(policy, "candidate_transfer_depth", 3.0)
+        agent.s.set_attr(policy, "max_attempts_per_request", 3000.0)
+        agent.native.load_seed_manifest(manifest_for("open_process_adoption"), agent.ag)
+
+        candidate_params = _compose(agent, held["p"], held["q"])
+        source_goal = _apply(agent, candidate_params, initial)
+        source = agent.add_solve_task("search", initial, source_goal,
+            training_trial_key=f"p22-search-three-held-source-{candidate_position}")
+        agent.s.set_attr(source, "split", "training")
+        agent.s.set_attr(source, "status", "stuck")
+        _tick(agent)
+        candidate = next(candidate for candidate in agent.nodes("OpenProcessCandidate")
+            if agent.attrs(candidate)["params"] == candidate_params)
+        attest_open_process_candidate(agent, candidate)
+
+        held_order = ["r", "s", "t"]
+        order = held_order[:]
+        order.insert(candidate_position, "candidate")
+        target_params = [0, 1, 2, 3]
+        for token in order:
+            operand = candidate_params if token == "candidate" else held[token]
+            target_params = _compose(agent, target_params, operand)
+        target_goal = _apply(agent, target_params, initial)
+        assert target_goal != source_goal
+        task = agent.add_solve_task("search", initial, target_goal,
+            training_trial_key=f"p22-search-three-held-target-{candidate_position}")
+        agent.s.set_attr(task, "split", "training")
+        agent.s.set_attr(task, "status", "stuck")
+        _tick(agent)
+
+        matching = [attempt for attempt in agent.nodes("OpenProcessSearchAttempt")
+            if agent.native.neighbours(attempt, "extends_candidate") == [candidate]
+            and agent.attrs(attempt).get("depth") == 3.0]
+        assert any(agent.attrs(attempt)["status"] == "verified"
+            and agent.attrs(attempt)["params"] == target_params
+            and agent.attrs(attempt)["predicted_state"] == target_goal
+            for attempt in matching), f"candidate position {candidate_position} not covered"
+
+
+def test_each_search_request_obeys_its_own_attempt_ceiling():
+    agent, _ = _agent(attempts=1000,
+        held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    agent.s.set_attr(policy, "max_attempts_per_request", 3.0)
+    for key, goal in (("trial-a", [2, 0, 1, 3]), ("trial-b", [0, 2, 1, 3])):
+        task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
+                                    training_trial_key=key)
+        agent.s.set_attr(task, "split", "training")
+        agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    requests = agent.nodes("OpenProcessSearchRequest")
+    assert len(requests) == 2
+    assert all(agent.attrs(request)["max_attempts"] == 3.0 for request in requests)
+    assert all(len(agent.native.neighbours(request, "has_search_attempt")) <= 3
+               for request in requests)
+    assert all(agent.attrs(request)["attempts_reserved"] ==
+               float(len(agent.native.neighbours(request, "has_search_attempt")))
+               for request in requests)
+    assert all(len(agent.native.neighbours(request, "has_candidate")) <= 1
+               for request in requests)
+
+
+def test_global_attempt_ceiling_terminalizes_funded_requests():
+    agent, _ = _agent(attempts=1,
+        held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    compose_rule = next(rule for rule in agent.native.export_rules()
+                        if rule["name"] == "ops_record_compose_attempt")
+    assert compose_rule["effects"][0][0] == "add_node_with_counters"
+    assert compose_rule["effects"][0][4:6] == ["pol", "attempts_reserved"]
+    assert compose_rule["effects"][0][7:9] == ["request", "attempts_reserved"]
+    for key, goal in (("global-a", [2, 0, 1, 3]),
+                      ("global-b", [3, 2, 1, 0])):
+        task = agent.add_solve_task("search", [0, 1, 2, 3], goal,
+                                    training_trial_key=key)
+        agent.s.set_attr(task, "split", "training")
+        agent.s.set_attr(task, "status", "stuck")
+    _tick(agent)
+    requests = agent.nodes("OpenProcessSearchRequest")
+    assert len(requests) == 2
+    attempts = agent.nodes("OpenProcessSearchAttempt")
+    policy = agent.nodes("OpenProcessSearchPolicy")[0]
+    assert len(attempts) == 1
+    assert agent.attrs(policy)["attempts_reserved"] == float(len(attempts))
+    assert sum(agent.attrs(request)["attempts_reserved"] for request in requests) == 1.0
+    assert all(agent.attrs(request)["attempts_reserved"] ==
+               float(len(agent.native.neighbours(request, "has_search_attempt")))
+               for request in requests)
+    assert all(agent.attrs(request)["status"] == "global_attempt_ceiling"
+               for request in requests)
+    assert all(agent.attrs(request)["global_ceiling_recorded"] is True
+               for request in requests)
+    before = {request: len(agent.native.neighbours(request, "has_search_attempt"))
+              for request in requests}
+    _tick(agent)
+    assert {request: len(agent.native.neighbours(request, "has_search_attempt"))
+            for request in requests} == before
+    checkpoint = agent.native.graph_to_dict()
+    restored, _ = _agent(attempts=1,
+        held={"p": [1, 0, 2, 3], "q": [0, 2, 1, 3], "r": [0, 1, 3, 2]})
+    restored.native.graph_from_dict(checkpoint)
+    restored_policy = restored.nodes("OpenProcessSearchPolicy")[0]
+    assert restored.attrs(restored_policy)["attempts_reserved"] == 1.0
+    assert len(restored.nodes("OpenProcessSearchAttempt")) == 1
+    restored_requests = restored.nodes("OpenProcessSearchRequest")
+    assert sum(restored.attrs(request)["attempts_reserved"]
+               for request in restored_requests) == 1.0
+    assert all(restored.attrs(request)["attempts_reserved"] ==
+               float(len(restored.native.neighbours(request, "has_search_attempt")))
+               for request in restored_requests)
+    _tick(restored)
+    assert len(restored.nodes("OpenProcessSearchAttempt")) == 1

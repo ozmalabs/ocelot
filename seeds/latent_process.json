@@ -1,0 +1,2136 @@
+{
+  "id": "latent_process",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_induction",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "latent_process",
+  "description": "P8.03: fund and validate persistent residual hypotheses only on regular source-bound observed windows.",
+  "microtheory": {
+    "name": "latent_process",
+    "description": "Search bounded latent feature relations for persistent verified prediction residuals."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "LatentProcessPolicy",
+      "attrs": {
+        "name": "latent_process_policy",
+        "enabled": 0.0,
+        "max_candidates": 16.0,
+        "max_event_refs": 200.0,
+        "minimum_windows": 3.0,
+        "inference_cost": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_latent_process_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:latent_process:has_transition_observation:Agent:TransitionObservation",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_transition_observation",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:has_latent_process_policy:Agent:LatentProcessPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_latent_process_policy",
+      "tgt": {
+        "type": "LatentProcessPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:has_prediction_residual:Agent:ObservedPredictionResidual",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_prediction_residual",
+      "tgt": {
+        "type": "ObservedPredictionResidual",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:residual_from_transition:ObservedPredictionResidual:TransitionObservation",
+      "src": {
+        "type": "ObservedPredictionResidual",
+        "var": "src"
+      },
+      "edge_type": "residual_from_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:has_thinking_budget_request:Agent:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:funds_latent_residual:ThinkingBudgetRequest:ObservedPredictionResidual",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "funds_latent_residual",
+      "tgt": {
+        "type": "ObservedPredictionResidual",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:has_latent_inference_request:Agent:LatentInferenceRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_latent_inference_request",
+      "tgt": {
+        "type": "LatentInferenceRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:infers_from_residual:LatentInferenceRequest:ObservedPredictionResidual",
+      "src": {
+        "type": "LatentInferenceRequest",
+        "var": "src"
+      },
+      "edge_type": "infers_from_residual",
+      "tgt": {
+        "type": "ObservedPredictionResidual",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:has_latent_process_candidate:Agent:LatentProcessCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_latent_process_candidate",
+      "tgt": {
+        "type": "LatentProcessCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:supported_by_residual:LatentProcessCandidate:ObservedPredictionResidual",
+      "src": {
+        "type": "LatentProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "supported_by_residual",
+      "tgt": {
+        "type": "ObservedPredictionResidual",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:has_latent_validation:LatentProcessCandidate:LatentProcessValidation",
+      "src": {
+        "type": "LatentProcessCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_latent_validation",
+      "tgt": {
+        "type": "LatentProcessValidation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:latent_process:validates_residual:LatentProcessValidation:ObservedPredictionResidual",
+      "src": {
+        "type": "LatentProcessValidation",
+        "var": "src"
+      },
+      "edge_type": "validates_residual",
+      "tgt": {
+        "type": "ObservedPredictionResidual",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "lp_fund_residual_induction",
+      "area": "latent_process",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_latent_process_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_prediction_residual",
+          "r"
+        ],
+        [
+          "r",
+          "residual_from_transition",
+          "obs"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_thinking_budget_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_event_refs"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_thinking_budget_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "source_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r"
+                  },
+                  "key": "event_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "latent_process_induction",
+            "requester_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "latent:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r"
+                    },
+                    "key": "event_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r"
+                    },
+                    "key": "model_epoch"
+                  }
+                ]
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "inference_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_thinking_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "funds_latent_residual",
+          "r",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "lp_register_funded_residual",
+      "area": "latent_process",
+      "order": 2,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_latent_process_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_prediction_residual",
+          "r"
+        ],
+        [
+          "req",
+          "funds_latent_residual",
+          "r"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_latent_inference_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "event_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r"
+                  },
+                  "key": "event_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "ir",
+          "LatentInferenceRequest",
+          {
+            "request_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "latent-request:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r"
+                    },
+                    "key": "event_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "owner_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "approved"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_latent_inference_request",
+          "ir",
+          {}
+        ],
+        [
+          "add_edge",
+          "ir",
+          "infers_from_residual",
+          "r",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "lp_propose_latent_after_recurrent_residual",
+      "area": "latent_process",
+      "order": 10,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_latent_process_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_latent_inference_request",
+          "ir1"
+        ],
+        [
+          "ag",
+          "has_latent_inference_request",
+          "ir2"
+        ],
+        [
+          "ag",
+          "has_latent_inference_request",
+          "ir3"
+        ],
+        [
+          "ir1",
+          "infers_from_residual",
+          "r1"
+        ],
+        [
+          "ir2",
+          "infers_from_residual",
+          "r2"
+        ],
+        [
+          "ir3",
+          "infers_from_residual",
+          "r3"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ir1"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ir2"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ir3"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "owner_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "owner_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "owner_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "owner_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "residual_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "residual_key"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "residual_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "residual_key"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "feature_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "feature_key"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "feature_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "feature_key"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "model_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "model_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "model_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "model_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "frame_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "frame_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "frame_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "frame_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "sampling_interval"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "sampling_interval"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "sampling_interval"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "sampling_interval"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "regular_sampling"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "regular_sampling"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "regular_sampling"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "complete_window"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "complete_window"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "complete_window"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": true
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "observed_feature_value"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "observed_feature_value"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "residual_outcome"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "residual_outcome"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "observed_feature_value"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r2"
+                    },
+                    "key": "observed_feature_value"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "residual_outcome"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r2"
+                    },
+                    "key": "residual_outcome"
+                  }
+                }
+              },
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r1"
+                  },
+                  "key": "event_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "event_id"
+                }
+              },
+              {
+                "type": "Lt",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r2"
+                  },
+                  "key": "event_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r3"
+                  },
+                  "key": "event_id"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "window_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r2"
+                    },
+                    "key": "window_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "window_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r3"
+                    },
+                    "key": "window_id"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r2"
+                    },
+                    "key": "window_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r3"
+                    },
+                    "key": "window_id"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_latent_process_candidate",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_candidates"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_latent_process_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "candidate_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r1"
+                      },
+                      "key": "owner_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r1"
+                      },
+                      "key": "residual_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r1"
+                      },
+                      "key": "feature_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r1"
+                      },
+                      "key": "model_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r1"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "c",
+          "LatentProcessCandidate",
+          {
+            "candidate_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "residual_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "feature_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "model_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "r1"
+                    },
+                    "key": "frame_epoch"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "owner_id"
+              }
+            },
+            "residual_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "residual_key"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_value_a": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "observed_feature_value"
+              }
+            },
+            "outcome_a": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "residual_outcome"
+              }
+            },
+            "feature_value_b": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r2"
+                },
+                "key": "observed_feature_value"
+              }
+            },
+            "outcome_b": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r2"
+                },
+                "key": "residual_outcome"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r1"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "support_count": 3.0,
+            "status": "proposed"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_latent_process_candidate",
+          "c",
+          {}
+        ],
+        [
+          "add_edge",
+          "c",
+          "supported_by_residual",
+          "r1",
+          {}
+        ],
+        [
+          "add_edge",
+          "c",
+          "supported_by_residual",
+          "r2",
+          {}
+        ],
+        [
+          "add_edge",
+          "c",
+          "supported_by_residual",
+          "r3",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "lp_validate_on_fresh_continuation",
+      "area": "latent_process",
+      "order": 20,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_latent_process_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_latent_process_candidate",
+          "c"
+        ],
+        [
+          "ag",
+          "has_latent_inference_request",
+          "ir"
+        ],
+        [
+          "ir",
+          "infers_from_residual",
+          "r"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "residual_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "residual_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "regular_sampling"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "r"
+              },
+              "key": "complete_window"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "feature_value_a"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "observed_feature_value"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "outcome_a"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "residual_outcome"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "feature_value_b"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "observed_feature_value"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c"
+                      },
+                      "key": "outcome_b"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "r"
+                      },
+                      "key": "residual_outcome"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "edge_type": "supported_by_residual",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "event_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "r"
+                  },
+                  "key": "event_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "v",
+          "LatentProcessValidation",
+          {
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "event_id"
+              }
+            },
+            "window_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "r"
+                },
+                "key": "window_id"
+              }
+            },
+            "result": "predictive_match",
+            "status": "observed"
+          }
+        ],
+        [
+          "add_edge",
+          "c",
+          "has_latent_validation",
+          "v",
+          {}
+        ],
+        [
+          "add_edge",
+          "v",
+          "validates_residual",
+          "r",
+          {}
+        ],
+        [
+          "add_edge",
+          "c",
+          "supported_by_residual",
+          "r",
+          {}
+        ],
+        [
+          "set_attr",
+          "c",
+          "status",
+          "validated"
+        ],
+        [
+          "set_attr",
+          "c",
+          "validation_count",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "validation_count"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    }
+  ]
+}

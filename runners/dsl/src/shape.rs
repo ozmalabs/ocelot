@@ -783,6 +783,11 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
         ProcessCompose { a, b } => vec![*a, *b],
         ProcessInverse { a } => vec![*a],
         ProcessApply { p, state } => vec![*p, *state],
+        ProcessRepairVerify { p, fresh_states, goals } => vec![*p, *fresh_states, *goals],
+        ProcessDistribution { outcomes } => vec![*outcomes],
+        ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            vec![*witness, *source_sizes, *target_size]
+        }
         EffectSupport { p } | PermParity { p } => vec![*p],
         EffectFingerprint { p, probes } => vec![*p, *probes],
         MatDet { m } => vec![*m],

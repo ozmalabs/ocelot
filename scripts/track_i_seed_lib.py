@@ -227,6 +227,24 @@ def PApply(p, state):
     return {"type": "ProcessApply", "p": p, "state": state}
 
 
+def PRepairVerify(p, fresh_states, goals):
+    return {"type": "ProcessRepairVerify", "p": p,
+            "fresh_states": fresh_states, "goals": goals}
+
+
+def PAntiUnifyWitness(values, wild="·?·"):
+    return {"type": "AntiUnifyWitness", "values": values, "wild": wild}
+
+
+def PLiftInstantiate(witness, source_sizes, target_size):
+    return {"type": "ProcessLiftInstantiate", "witness": witness,
+            "source_sizes": source_sizes, "target_size": target_size}
+
+
+def PDistribution(outcomes):
+    return {"type": "ProcessDistribution", "outcomes": outcomes}
+
+
 def PSupport(p):
     return {"type": "EffectSupport", "p": p}
 

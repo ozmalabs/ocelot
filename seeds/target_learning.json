@@ -1,0 +1,1876 @@
+{
+  "id": "target_learning",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_induction"
+  ],
+  "self_load_only": true,
+  "area": "target_learning",
+  "description": "P20 exact mapped source priors require independent target-transition receipt before native prediction.",
+  "microtheory": {
+    "name": "target_learning",
+    "description": "Source priors are proposals; only exact maps plus current target receipts create a usable hypothesis."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "TargetLearningPolicy",
+      "attrs": {
+        "name": "target_learning_policy",
+        "enabled": 0.0,
+        "max_source_priors": 32.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_target_learning_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:target_learning:has_target_learning_policy:Agent:TargetLearningPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_target_learning_policy",
+      "tgt": {
+        "type": "TargetLearningPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:has_target_map_observation:Agent:TargetMapObservation",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_target_map_observation",
+      "tgt": {
+        "type": "TargetMapObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:funded_by:TargetMapObservation:ThinkingBudgetRequest",
+      "src": {
+        "type": "TargetMapObservation",
+        "var": "src"
+      },
+      "edge_type": "funded_by",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:has_target_map_candidate:Agent:RepresentationMap",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_target_map_candidate",
+      "tgt": {
+        "type": "RepresentationMap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:derived_from_source_pair:RepresentationMap:TargetMapObservation",
+      "src": {
+        "type": "RepresentationMap",
+        "var": "src"
+      },
+      "edge_type": "derived_from_source_pair",
+      "tgt": {
+        "type": "TargetMapObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:derived_from_target_pair:RepresentationMap:TargetMapObservation",
+      "src": {
+        "type": "RepresentationMap",
+        "var": "src"
+      },
+      "edge_type": "derived_from_target_pair",
+      "tgt": {
+        "type": "TargetMapObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:has_target_source_prior:Agent:TargetProcessPrior",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_target_source_prior",
+      "tgt": {
+        "type": "TargetProcessPrior",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:has_source_target_map:TargetProcessPrior:RepresentationMap",
+      "src": {
+        "type": "TargetProcessPrior",
+        "var": "src"
+      },
+      "edge_type": "has_source_target_map",
+      "tgt": {
+        "type": "RepresentationMap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:has_source_prior_receipt:TargetProcessPrior:TargetSourcePriorReceipt",
+      "src": {
+        "type": "TargetProcessPrior",
+        "var": "src"
+      },
+      "edge_type": "has_source_prior_receipt",
+      "tgt": {
+        "type": "TargetSourcePriorReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:supported_by_target_transition:TargetProcessPrior:TransitionObservation",
+      "src": {
+        "type": "TargetProcessPrior",
+        "var": "src"
+      },
+      "edge_type": "supported_by_target_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:verified_by_target_receipt:TargetProcessPrior:TargetSourcePriorReceipt",
+      "src": {
+        "type": "TargetProcessPrior",
+        "var": "src"
+      },
+      "edge_type": "verified_by_target_receipt",
+      "tgt": {
+        "type": "TargetSourcePriorReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:verifies_source_prior:TargetSourcePriorReceipt:TargetProcessPrior",
+      "src": {
+        "type": "TargetSourcePriorReceipt",
+        "var": "src"
+      },
+      "edge_type": "verifies_source_prior",
+      "tgt": {
+        "type": "TargetProcessPrior",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:verifies_target_transition:TargetSourcePriorReceipt:TransitionObservation",
+      "src": {
+        "type": "TargetSourcePriorReceipt",
+        "var": "src"
+      },
+      "edge_type": "verifies_target_transition",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:target_learning:supported_by_source_prior:ProcessInductionHypothesis:TargetProcessPrior",
+      "src": {
+        "type": "ProcessInductionHypothesis",
+        "var": "src"
+      },
+      "edge_type": "supported_by_source_prior",
+      "tgt": {
+        "type": "TargetProcessPrior",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "tl_induce_categorical_map_from_two_paired_receipt_pairs",
+      "area": "target_learning",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_target_learning_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_target_map_observation",
+          "first"
+        ],
+        [
+          "ag",
+          "has_target_map_observation",
+          "second"
+        ],
+        [
+          "first",
+          "funded_by",
+          "first_funding"
+        ],
+        [
+          "first_funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ],
+        [
+          "second",
+          "funded_by",
+          "second_funding"
+        ],
+        [
+          "second_funding",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed_pair"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed_pair"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first_funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "target_map_observation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second_funding"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "target_map_observation"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first_funding"
+              },
+              "key": "source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "pair_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second_funding"
+              },
+              "key": "source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "pair_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first_funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second_funding"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first_funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "second_funding"
+                },
+                "key": "debited_epoch"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "source_action"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "source_action"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "target_action"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "target_action"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "source_object_type"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "source_object_type"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "target_object_type"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "target_object_type"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "source_feature"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "source_feature"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "target_feature"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "target_feature"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "source_before"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "source_before"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "target_before"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "target_before"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "source_after"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "source_after"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "target_after"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "target_after"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "target_frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "target_frame_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_object_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "second"
+                },
+                "key": "source_object_id"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_object_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "second"
+                },
+                "key": "target_object_id"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "pair_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "second"
+                },
+                "key": "pair_id"
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "pair_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "pair_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_target_map_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "map_id"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "induced-map:"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "first"
+                      },
+                      "key": "source_action"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "->"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "first"
+                      },
+                      "key": "target_action"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "first"
+                      },
+                      "key": "source_feature"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": "->"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "first"
+                      },
+                      "key": "target_feature"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "first"
+                      },
+                      "key": "source_epoch"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "first"
+                      },
+                      "key": "target_frame_epoch"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "map",
+          "RepresentationMap",
+          {
+            "map_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "induced-map:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "first"
+                    },
+                    "key": "source_action"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "->"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "first"
+                    },
+                    "key": "target_action"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "first"
+                    },
+                    "key": "source_feature"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": "->"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "first"
+                    },
+                    "key": "target_feature"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "first"
+                    },
+                    "key": "source_epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "first"
+                    },
+                    "key": "target_frame_epoch"
+                  }
+                ]
+              }
+            },
+            "mapping_kind": "induced_categorical_effect",
+            "status": "candidate",
+            "witness_count": 2.0,
+            "source_action": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_action"
+              }
+            },
+            "target_action": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_action"
+              }
+            },
+            "source_object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_object_type"
+              }
+            },
+            "target_object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_object_type"
+              }
+            },
+            "source_feature": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_feature"
+              }
+            },
+            "target_feature": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_feature"
+              }
+            },
+            "source_before": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_before"
+              }
+            },
+            "target_before": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_before"
+              }
+            },
+            "source_after": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_after"
+              }
+            },
+            "target_after": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_after"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "target_frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "first"
+                },
+                "key": "target_frame_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_target_map_candidate",
+          "map",
+          {}
+        ],
+        [
+          "add_edge",
+          "map",
+          "derived_from_source_pair",
+          "first",
+          {}
+        ],
+        [
+          "add_edge",
+          "map",
+          "derived_from_target_pair",
+          "second",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "tl_confirm_mapped_source_prior_with_target_receipt",
+      "area": "target_learning",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_target_learning_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_target_source_prior",
+          "prior"
+        ],
+        [
+          "prior",
+          "has_source_target_map",
+          "map"
+        ],
+        [
+          "prior",
+          "has_source_prior_receipt",
+          "receipt"
+        ],
+        [
+          "prior",
+          "has_source_prior_receipt",
+          "map_receipt"
+        ],
+        [
+          "ag",
+          "has_transition_observation",
+          "obs"
+        ],
+        [
+          "obs",
+          "has_action_receipt",
+          "action_receipt"
+        ],
+        [
+          "obs",
+          "has_outcome_receipt",
+          "outcome_receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "object_type"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "object_type"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "before_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "before_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "after_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "after_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "mapping_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "exact_categorical_effect"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "target_frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "exact_effect_match"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_prior_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "prior_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "target_event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map_receipt"
+              },
+              "key": "receipt_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "source_target_map"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map_receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map_receipt"
+              },
+              "key": "map_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "map"
+              },
+              "key": "map_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome_receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_receipt"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome_receipt"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_receipt"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome_receipt"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "action_receipt"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "obs"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "outcome_receipt"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_process_induction_hypothesis",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "source_prior_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "prior"
+                  },
+                  "key": "prior_id"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "hyp",
+          "ProcessInductionHypothesis",
+          {
+            "hypothesis_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "source-confirmed:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "prior"
+                    },
+                    "key": "prior_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "owner_id"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "action_kind"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "object_type"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "before_value"
+              }
+            },
+            "after_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "after_value"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "candidate",
+            "law_kind": "mapped_source_prior_confirmed",
+            "support_count": 1.0,
+            "target_support_count": 1.0,
+            "evidence_count": 2.0,
+            "counterexample_count": 0.0,
+            "source_prior_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "prior"
+                },
+                "key": "prior_id"
+              }
+            },
+            "target_confirmation_event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "obs"
+                },
+                "key": "event_id"
+              }
+            },
+            "effect_evaluation": "exact_source_map_and_target_receipt"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_process_induction_hypothesis",
+          "hyp",
+          {}
+        ],
+        [
+          "add_edge",
+          "hyp",
+          "supported_by_transition",
+          "obs",
+          {}
+        ],
+        [
+          "add_edge",
+          "hyp",
+          "supported_by_source_prior",
+          "prior",
+          {}
+        ],
+        [
+          "add_edge",
+          "prior",
+          "supported_by_target_transition",
+          "obs",
+          {}
+        ],
+        [
+          "add_edge",
+          "prior",
+          "verified_by_target_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "verifies_source_prior",
+          "prior",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "verifies_target_transition",
+          "obs",
+          {}
+        ]
+      ]
+    }
+  ]
+}

@@ -267,6 +267,18 @@
       }
     },
     {
+      "provenance": "seed:invention_round:has_repair_candidate:Agent:ProcessRepairCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_repair_candidate",
+      "tgt": {
+        "type": "ProcessRepairCandidate",
+        "var": "tgt"
+      }
+    },
+    {
       "provenance": "seed:invention_round:has_tolerance:Agent:Tolerance",
       "src": {
         "type": "Agent",
@@ -830,537 +842,6 @@
           "req",
           "draws_on_thinking_budget",
           "budget",
-          {}
-        ],
-        [
-          "add_edge",
-          "t",
-          "triggered_invention_round",
-          "r",
-          {}
-        ]
-      ],
-      "batch": false
-    },
-    {
-      "name": "ir_open_round_on_impasse_unbudgeted",
-      "area": "memory_consolidation",
-      "order": 20,
-      "latency_class": "background",
-      "comment": "Open an InventionRound for the domain (impasse) directly when the agent holds no ThinkingBudget at all.",
-      "match": [
-        [
-          "agent",
-          "has_invention_policy",
-          "pol"
-        ],
-        [
-          "agent",
-          "has_solve_task",
-          "t"
-        ],
-        [
-          "t",
-          "about_domain",
-          "d"
-        ]
-      ],
-      "where": {
-        "type": "And",
-        "items": [
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "pol"
-              },
-              "key": "enabled"
-            },
-            "b": {
-              "type": "Lit",
-              "value": 1.0
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "t"
-              },
-              "key": "status"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "stuck"
-            }
-          },
-          {
-            "type": "Not",
-            "arg": {
-              "type": "Exists",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "agent"
-                },
-                "edge_type": "has_invention_round",
-                "any_type": false
-              },
-              "var_name": "rr",
-              "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "rr"
-                  },
-                  "key": "domain"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "d"
-                  },
-                  "key": "name"
-                }
-              }
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "agent"
-                },
-                "edge_type": "has_thinking_budget",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Lit",
-              "value": 0
-            }
-          }
-        ]
-      },
-      "effects": [
-        [
-          "add_node",
-          "r",
-          "InventionRound",
-          {
-            "status": "active",
-            "trigger": "impasse",
-            "domain": {
-              "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "d"
-                },
-                "key": "name"
-              }
-            },
-            "domain_kind": {
-              "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "d"
-                },
-                "key": "kind"
-              }
-            },
-            "n_held": {
-              "__term__": {
-                "type": "Count",
-                "source": {
-                  "type": "Neighbours",
-                  "node": {
-                    "type": "Var",
-                    "name": "d"
-                  },
-                  "edge_type": "has_held_process",
-                  "any_type": false
-                }
-              }
-            },
-            "enabled_ops": {
-              "__term__": {
-                "type": "IfThenElse",
-                "cond": {
-                  "type": "And",
-                  "items": [
-                    {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "pol"
-                        },
-                        "key": "strategy_enabled"
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": 1.0
-                      }
-                    },
-                    {
-                      "type": "Gt",
-                      "a": {
-                        "type": "Count",
-                        "source": {
-                          "type": "Filter",
-                          "source": {
-                            "type": "Neighbours",
-                            "node": {
-                              "type": "Var",
-                              "name": "agent"
-                            },
-                            "edge_type": "has_strategy_record",
-                            "any_type": false
-                          },
-                          "var_name": "sr",
-                          "predicate": {
-                            "type": "Eq",
-                            "a": {
-                              "type": "Attr",
-                              "node": {
-                                "type": "Var",
-                                "name": "sr"
-                              },
-                              "key": "kind"
-                            },
-                            "b": {
-                              "type": "Attr",
-                              "node": {
-                                "type": "Var",
-                                "name": "d"
-                              },
-                              "key": "kind"
-                            }
-                          }
-                        }
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": 0
-                      }
-                    }
-                  ]
-                },
-                "then": {
-                  "type": "MapList",
-                  "source": {
-                    "type": "FilterList",
-                    "source": {
-                      "type": "SoftWeights",
-                      "source": {
-                        "type": "Filter",
-                        "source": {
-                          "type": "Neighbours",
-                          "node": {
-                            "type": "Var",
-                            "name": "agent"
-                          },
-                          "edge_type": "has_invention_operator",
-                          "any_type": false
-                        },
-                        "var_name": "o",
-                        "predicate": {
-                          "type": "Eq",
-                          "a": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "o"
-                            },
-                            "key": "enabled"
-                          },
-                          "b": {
-                            "type": "Lit",
-                            "value": 1.0
-                          }
-                        }
-                      },
-                      "var_name": "o",
-                      "value": {
-                        "type": "IfThenElse",
-                        "cond": {
-                          "type": "Gt",
-                          "a": {
-                            "type": "Count",
-                            "source": {
-                              "type": "Filter",
-                              "source": {
-                                "type": "Neighbours",
-                                "node": {
-                                  "type": "Var",
-                                  "name": "agent"
-                                },
-                                "edge_type": "has_strategy_record",
-                                "any_type": false
-                              },
-                              "var_name": "sr",
-                              "predicate": {
-                                "type": "And",
-                                "items": [
-                                  {
-                                    "type": "Eq",
-                                    "a": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "sr"
-                                      },
-                                      "key": "kind"
-                                    },
-                                    "b": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "d"
-                                      },
-                                      "key": "kind"
-                                    }
-                                  },
-                                  {
-                                    "type": "Eq",
-                                    "a": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "sr"
-                                      },
-                                      "key": "operator"
-                                    },
-                                    "b": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "o"
-                                      },
-                                      "key": "name"
-                                    }
-                                  }
-                                ]
-                              }
-                            }
-                          },
-                          "b": {
-                            "type": "Lit",
-                            "value": 0
-                          }
-                        },
-                        "then": {
-                          "type": "Sum",
-                          "source": {
-                            "type": "Filter",
-                            "source": {
-                              "type": "Neighbours",
-                              "node": {
-                                "type": "Var",
-                                "name": "agent"
-                              },
-                              "edge_type": "has_strategy_record",
-                              "any_type": false
-                            },
-                            "var_name": "sr",
-                            "predicate": {
-                              "type": "And",
-                              "items": [
-                                {
-                                  "type": "Eq",
-                                  "a": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "sr"
-                                    },
-                                    "key": "kind"
-                                  },
-                                  "b": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "d"
-                                    },
-                                    "key": "kind"
-                                  }
-                                },
-                                {
-                                  "type": "Eq",
-                                  "a": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "sr"
-                                    },
-                                    "key": "operator"
-                                  },
-                                  "b": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "o"
-                                    },
-                                    "key": "name"
-                                  }
-                                }
-                              ]
-                            }
-                          },
-                          "var_name": "sr2",
-                          "value": {
-                            "type": "Div",
-                            "a": {
-                              "type": "Attr",
-                              "node": {
-                                "type": "Var",
-                                "name": "sr2"
-                              },
-                              "key": "yields"
-                            },
-                            "b": {
-                              "type": "Max",
-                              "items": [
-                                {
-                                  "type": "Lit",
-                                  "value": 1.0
-                                },
-                                {
-                                  "type": "Attr",
-                                  "node": {
-                                    "type": "Var",
-                                    "name": "sr2"
-                                  },
-                                  "key": "trials"
-                                }
-                              ]
-                            }
-                          }
-                        },
-                        "other": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "pol"
-                          },
-                          "key": "strategy_prior"
-                        }
-                      },
-                      "temperature": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "pol"
-                        },
-                        "key": "strategy_temperature"
-                      }
-                    },
-                    "var_name": "w",
-                    "predicate": {
-                      "type": "Gte",
-                      "a": {
-                        "type": "Nth",
-                        "items": {
-                          "type": "Var",
-                          "name": "w"
-                        },
-                        "index": 1
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "pol"
-                        },
-                        "key": "strategy_min_weight"
-                      }
-                    }
-                  },
-                  "var_name": "w",
-                  "value": {
-                    "type": "Attr",
-                    "node": {
-                      "type": "Nth",
-                      "items": {
-                        "type": "Var",
-                        "name": "w"
-                      },
-                      "index": 0
-                    },
-                    "key": "name"
-                  }
-                },
-                "other": {
-                  "type": "MapList",
-                  "source": {
-                    "type": "Filter",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_invention_operator",
-                      "any_type": false
-                    },
-                    "var_name": "o",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "o"
-                        },
-                        "key": "enabled"
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": 1.0
-                      }
-                    }
-                  },
-                  "var_name": "o",
-                  "value": {
-                    "type": "Attr",
-                    "node": {
-                      "type": "Var",
-                      "name": "o"
-                    },
-                    "key": "name"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        [
-          "add_edge",
-          "agent",
-          "has_invention_round",
-          "r",
-          {}
-        ],
-        [
-          "add_edge",
-          "r",
-          "about_domain",
-          "d",
           {}
         ],
         [
@@ -1945,571 +1426,6 @@
           "req",
           "draws_on_thinking_budget",
           "budget",
-          {}
-        ],
-        [
-          "add_edge",
-          "cycle",
-          "has_invention_round",
-          "r",
-          {}
-        ]
-      ],
-      "batch": false
-    },
-    {
-      "name": "ir_open_round_on_offline_unbudgeted",
-      "area": "memory_consolidation",
-      "order": 20,
-      "latency_class": "background",
-      "comment": "Open an InventionRound for the domain (offline) directly when the agent holds no ThinkingBudget at all.",
-      "match": [
-        [
-          "agent",
-          "has_invention_policy",
-          "pol"
-        ],
-        [
-          "agent",
-          "has_memory_cycle",
-          "cycle"
-        ],
-        [
-          "agent",
-          "has_process_domain",
-          "d"
-        ]
-      ],
-      "where": {
-        "type": "And",
-        "items": [
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "pol"
-              },
-              "key": "enabled"
-            },
-            "b": {
-              "type": "Lit",
-              "value": 1.0
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "pol"
-              },
-              "key": "offline_enabled"
-            },
-            "b": {
-              "type": "Lit",
-              "value": 1.0
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Attr",
-              "node": {
-                "type": "Var",
-                "name": "cycle"
-              },
-              "key": "mode"
-            },
-            "b": {
-              "type": "Lit",
-              "value": "offline"
-            }
-          },
-          {
-            "type": "Gt",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "d"
-                },
-                "edge_type": "has_held_process",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Lit",
-              "value": 0
-            }
-          },
-          {
-            "type": "Not",
-            "arg": {
-              "type": "Exists",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "agent"
-                },
-                "edge_type": "has_invention_round",
-                "any_type": false
-              },
-              "var_name": "rr",
-              "predicate": {
-                "type": "Eq",
-                "a": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "rr"
-                  },
-                  "key": "domain"
-                },
-                "b": {
-                  "type": "Attr",
-                  "node": {
-                    "type": "Var",
-                    "name": "d"
-                  },
-                  "key": "name"
-                }
-              }
-            }
-          },
-          {
-            "type": "Eq",
-            "a": {
-              "type": "Count",
-              "source": {
-                "type": "Neighbours",
-                "node": {
-                  "type": "Var",
-                  "name": "agent"
-                },
-                "edge_type": "has_thinking_budget",
-                "any_type": false
-              }
-            },
-            "b": {
-              "type": "Lit",
-              "value": 0
-            }
-          }
-        ]
-      },
-      "effects": [
-        [
-          "add_node",
-          "r",
-          "InventionRound",
-          {
-            "status": "active",
-            "trigger": "offline",
-            "domain": {
-              "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "d"
-                },
-                "key": "name"
-              }
-            },
-            "domain_kind": {
-              "__term__": {
-                "type": "Attr",
-                "node": {
-                  "type": "Var",
-                  "name": "d"
-                },
-                "key": "kind"
-              }
-            },
-            "n_held": {
-              "__term__": {
-                "type": "Count",
-                "source": {
-                  "type": "Neighbours",
-                  "node": {
-                    "type": "Var",
-                    "name": "d"
-                  },
-                  "edge_type": "has_held_process",
-                  "any_type": false
-                }
-              }
-            },
-            "enabled_ops": {
-              "__term__": {
-                "type": "IfThenElse",
-                "cond": {
-                  "type": "And",
-                  "items": [
-                    {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "pol"
-                        },
-                        "key": "strategy_enabled"
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": 1.0
-                      }
-                    },
-                    {
-                      "type": "Gt",
-                      "a": {
-                        "type": "Count",
-                        "source": {
-                          "type": "Filter",
-                          "source": {
-                            "type": "Neighbours",
-                            "node": {
-                              "type": "Var",
-                              "name": "agent"
-                            },
-                            "edge_type": "has_strategy_record",
-                            "any_type": false
-                          },
-                          "var_name": "sr",
-                          "predicate": {
-                            "type": "Eq",
-                            "a": {
-                              "type": "Attr",
-                              "node": {
-                                "type": "Var",
-                                "name": "sr"
-                              },
-                              "key": "kind"
-                            },
-                            "b": {
-                              "type": "Attr",
-                              "node": {
-                                "type": "Var",
-                                "name": "d"
-                              },
-                              "key": "kind"
-                            }
-                          }
-                        }
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": 0
-                      }
-                    }
-                  ]
-                },
-                "then": {
-                  "type": "MapList",
-                  "source": {
-                    "type": "FilterList",
-                    "source": {
-                      "type": "SoftWeights",
-                      "source": {
-                        "type": "Filter",
-                        "source": {
-                          "type": "Neighbours",
-                          "node": {
-                            "type": "Var",
-                            "name": "agent"
-                          },
-                          "edge_type": "has_invention_operator",
-                          "any_type": false
-                        },
-                        "var_name": "o",
-                        "predicate": {
-                          "type": "Eq",
-                          "a": {
-                            "type": "Attr",
-                            "node": {
-                              "type": "Var",
-                              "name": "o"
-                            },
-                            "key": "enabled"
-                          },
-                          "b": {
-                            "type": "Lit",
-                            "value": 1.0
-                          }
-                        }
-                      },
-                      "var_name": "o",
-                      "value": {
-                        "type": "IfThenElse",
-                        "cond": {
-                          "type": "Gt",
-                          "a": {
-                            "type": "Count",
-                            "source": {
-                              "type": "Filter",
-                              "source": {
-                                "type": "Neighbours",
-                                "node": {
-                                  "type": "Var",
-                                  "name": "agent"
-                                },
-                                "edge_type": "has_strategy_record",
-                                "any_type": false
-                              },
-                              "var_name": "sr",
-                              "predicate": {
-                                "type": "And",
-                                "items": [
-                                  {
-                                    "type": "Eq",
-                                    "a": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "sr"
-                                      },
-                                      "key": "kind"
-                                    },
-                                    "b": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "d"
-                                      },
-                                      "key": "kind"
-                                    }
-                                  },
-                                  {
-                                    "type": "Eq",
-                                    "a": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "sr"
-                                      },
-                                      "key": "operator"
-                                    },
-                                    "b": {
-                                      "type": "Attr",
-                                      "node": {
-                                        "type": "Var",
-                                        "name": "o"
-                                      },
-                                      "key": "name"
-                                    }
-                                  }
-                                ]
-                              }
-                            }
-                          },
-                          "b": {
-                            "type": "Lit",
-                            "value": 0
-                          }
-                        },
-                        "then": {
-                          "type": "Sum",
-                          "source": {
-                            "type": "Filter",
-                            "source": {
-                              "type": "Neighbours",
-                              "node": {
-                                "type": "Var",
-                                "name": "agent"
-                              },
-                              "edge_type": "has_strategy_record",
-                              "any_type": false
-                            },
-                            "var_name": "sr",
-                            "predicate": {
-                              "type": "And",
-                              "items": [
-                                {
-                                  "type": "Eq",
-                                  "a": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "sr"
-                                    },
-                                    "key": "kind"
-                                  },
-                                  "b": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "d"
-                                    },
-                                    "key": "kind"
-                                  }
-                                },
-                                {
-                                  "type": "Eq",
-                                  "a": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "sr"
-                                    },
-                                    "key": "operator"
-                                  },
-                                  "b": {
-                                    "type": "Attr",
-                                    "node": {
-                                      "type": "Var",
-                                      "name": "o"
-                                    },
-                                    "key": "name"
-                                  }
-                                }
-                              ]
-                            }
-                          },
-                          "var_name": "sr2",
-                          "value": {
-                            "type": "Div",
-                            "a": {
-                              "type": "Attr",
-                              "node": {
-                                "type": "Var",
-                                "name": "sr2"
-                              },
-                              "key": "yields"
-                            },
-                            "b": {
-                              "type": "Max",
-                              "items": [
-                                {
-                                  "type": "Lit",
-                                  "value": 1.0
-                                },
-                                {
-                                  "type": "Attr",
-                                  "node": {
-                                    "type": "Var",
-                                    "name": "sr2"
-                                  },
-                                  "key": "trials"
-                                }
-                              ]
-                            }
-                          }
-                        },
-                        "other": {
-                          "type": "Attr",
-                          "node": {
-                            "type": "Var",
-                            "name": "pol"
-                          },
-                          "key": "strategy_prior"
-                        }
-                      },
-                      "temperature": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "pol"
-                        },
-                        "key": "strategy_temperature"
-                      }
-                    },
-                    "var_name": "w",
-                    "predicate": {
-                      "type": "Gte",
-                      "a": {
-                        "type": "Nth",
-                        "items": {
-                          "type": "Var",
-                          "name": "w"
-                        },
-                        "index": 1
-                      },
-                      "b": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "pol"
-                        },
-                        "key": "strategy_min_weight"
-                      }
-                    }
-                  },
-                  "var_name": "w",
-                  "value": {
-                    "type": "Attr",
-                    "node": {
-                      "type": "Nth",
-                      "items": {
-                        "type": "Var",
-                        "name": "w"
-                      },
-                      "index": 0
-                    },
-                    "key": "name"
-                  }
-                },
-                "other": {
-                  "type": "MapList",
-                  "source": {
-                    "type": "Filter",
-                    "source": {
-                      "type": "Neighbours",
-                      "node": {
-                        "type": "Var",
-                        "name": "agent"
-                      },
-                      "edge_type": "has_invention_operator",
-                      "any_type": false
-                    },
-                    "var_name": "o",
-                    "predicate": {
-                      "type": "Eq",
-                      "a": {
-                        "type": "Attr",
-                        "node": {
-                          "type": "Var",
-                          "name": "o"
-                        },
-                        "key": "enabled"
-                      },
-                      "b": {
-                        "type": "Lit",
-                        "value": 1.0
-                      }
-                    }
-                  },
-                  "var_name": "o",
-                  "value": {
-                    "type": "Attr",
-                    "node": {
-                      "type": "Var",
-                      "name": "o"
-                    },
-                    "key": "name"
-                  }
-                }
-              }
-            }
-          }
-        ],
-        [
-          "add_edge",
-          "agent",
-          "has_invention_round",
-          "r",
-          {}
-        ],
-        [
-          "add_edge",
-          "r",
-          "about_domain",
-          "d",
           {}
         ],
         [
@@ -10396,6 +9312,226 @@
         ]
       ],
       "batch": true
+    },
+    {
+      "name": "ir_repair_candidate_verify",
+      "area": "memory_consolidation",
+      "order": 60,
+      "latency_class": "background",
+      "comment": "Verify a declared goal-equivalent repair on its fresh states; it remains separate from exact inverse.",
+      "match": [
+        [
+          "agent",
+          "has_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_repair_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "source_model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "ProcessRepairVerify",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "params"
+              },
+              "fresh_states": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "fresh_states"
+              },
+              "goals": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "goals"
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "status",
+          "verified"
+        ],
+        [
+          "set_attr",
+          "c",
+          "verified_model_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "model_epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "c",
+          "verification_receipt",
+          "fresh_goal_states_exact"
+        ]
+      ]
+    },
+    {
+      "name": "ir_repair_epoch_stale",
+      "area": "memory_consolidation",
+      "order": 61,
+      "latency_class": "background",
+      "comment": "Invalidate a verified repair when its source model epoch changes.",
+      "match": [
+        [
+          "agent",
+          "has_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_repair_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "model_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "verified_model_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "status",
+          "stale"
+        ]
+      ]
     }
   ]
 }

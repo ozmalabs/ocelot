@@ -1,0 +1,4300 @@
+{
+  "id": "strategy_library",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_solving",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "process_solving",
+  "description": "Recall structurally compatible graph strategies using observed yield and native per-step application receipts; stale contexts invalidate and failed candidates fall back to bounded search.",
+  "microtheory": {
+    "name": "strategy_library",
+    "description": "Retain observed strategy yields and recall compatible candidates without treating expected yield as proof."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "StrategyLibraryPolicy",
+      "attrs": {
+        "name": "core_strategy_library_policy",
+        "enabled": 0.0,
+        "max_entries": 128.0,
+        "max_steps": 32.0,
+        "temperature": 0.5,
+        "recall_cost": 1.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_strategy_library_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:strategy_library:has_strategy_library_policy:Agent:StrategyLibraryPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_library_policy",
+      "tgt": {
+        "type": "StrategyLibraryPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_network_mode_state:Agent:NetworkModeState",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_network_mode_state",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_thinking_budget_request:Agent:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_library_entry:Agent:StrategyLibraryEntry",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_library_entry",
+      "tgt": {
+        "type": "StrategyLibraryEntry",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:about_domain:StrategyLibraryEntry:ProcessDomain",
+      "src": {
+        "type": "StrategyLibraryEntry",
+        "var": "src"
+      },
+      "edge_type": "about_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:source_task:StrategyLibraryEntry:SolveTask",
+      "src": {
+        "type": "StrategyLibraryEntry",
+        "var": "src"
+      },
+      "edge_type": "source_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_recall_attempt:Agent:StrategyRecallAttempt",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_recall_attempt",
+      "tgt": {
+        "type": "StrategyRecallAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_recall_attempt:SolveTask:StrategyRecallAttempt",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_recall_attempt",
+      "tgt": {
+        "type": "StrategyRecallAttempt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_recall_request:SolveTask:ThinkingBudgetRequest",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_recall_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:recalls_strategy_entry:SolveTask:StrategyLibraryEntry",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "recalls_strategy_entry",
+      "tgt": {
+        "type": "StrategyLibraryEntry",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:uses_strategy_entry:StrategyRecallAttempt:StrategyLibraryEntry",
+      "src": {
+        "type": "StrategyRecallAttempt",
+        "var": "src"
+      },
+      "edge_type": "uses_strategy_entry",
+      "tgt": {
+        "type": "StrategyLibraryEntry",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_application_receipt:SolveTask:StrategyApplicationReceipt",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_application_receipt",
+      "tgt": {
+        "type": "StrategyApplicationReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:used_process:StrategyApplicationReceipt:ProcessSchema",
+      "src": {
+        "type": "StrategyApplicationReceipt",
+        "var": "src"
+      },
+      "edge_type": "used_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_yield_observation:StrategyRecallAttempt:StrategyYieldObservation",
+      "src": {
+        "type": "StrategyRecallAttempt",
+        "var": "src"
+      },
+      "edge_type": "has_yield_observation",
+      "tgt": {
+        "type": "StrategyYieldObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_yield_observation:StrategyLibraryEntry:StrategyYieldObservation",
+      "src": {
+        "type": "StrategyLibraryEntry",
+        "var": "src"
+      },
+      "edge_type": "has_yield_observation",
+      "tgt": {
+        "type": "StrategyYieldObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:rejected_strategy_recall:SolveTask:StrategyLibraryEntry",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "rejected_strategy_recall",
+      "tgt": {
+        "type": "StrategyLibraryEntry",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_recall_fallback:Agent:StrategyRecallFallback",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_recall_fallback",
+      "tgt": {
+        "type": "StrategyRecallFallback",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:strategy_library:has_strategy_recall_fallback:SolveTask:StrategyRecallFallback",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_strategy_recall_fallback",
+      "tgt": {
+        "type": "StrategyRecallFallback",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "sl_invalidate_strategy_distribution_change",
+      "area": "process_solving",
+      "order": 4,
+      "latency_class": "background",
+      "comment": "Retire a strategy yield record when its owning process distribution/model epoch changes.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_strategy_library_entry",
+          "entry"
+        ],
+        [
+          "entry",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "entry"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "source_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "model_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "frame_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "frame_epoch"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "probe_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "probe_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "entry",
+          "status",
+          "stale"
+        ],
+        [
+          "set_attr",
+          "entry",
+          "stale_reason",
+          "distribution_epoch_changed"
+        ]
+      ]
+    },
+    {
+      "name": "sl_record_observed_solved_strategy",
+      "area": "process_solving",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "Create a reusable strategy entry only from a genuinely solved graph task and its actual process trace; the initial yield prior is one observed success, never an expected outcome.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "solved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "trace"
+              },
+              "b": {
+                "type": "Lit",
+                "value": []
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_strategy_library_entry",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_entries"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_strategy_library_entry",
+                "any_type": false
+              },
+              "var_name": "entry",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "source_task"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "t"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "entry",
+          "StrategyLibraryEntry",
+          {
+            "status": "active",
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "state_size": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "initial_state"
+                }
+              }
+            },
+            "goal_size": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                }
+              }
+            },
+            "initial_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "initial_state"
+              }
+            },
+            "goal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "goal"
+              }
+            },
+            "trace": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "trace"
+              }
+            },
+            "source_task": {
+              "__term__": {
+                "type": "Var",
+                "name": "t"
+              }
+            },
+            "step_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "trace"
+                }
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probe_epoch"
+              }
+            },
+            "observed_attempts": 1,
+            "observed_successes": 1,
+            "observed_yield": 1.0,
+            "yield_source": "observed_solved_task",
+            "provenance": "observed_graph_process_trace"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_strategy_library_entry",
+          "entry",
+          {}
+        ],
+        [
+          "add_edge",
+          "entry",
+          "about_domain",
+          "d",
+          {}
+        ],
+        [
+          "add_edge",
+          "entry",
+          "source_task",
+          "t",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_library_recorded",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "sl_request_funded_strategy_recall",
+      "area": "process_solving",
+      "order": 5,
+      "latency_class": "background",
+      "comment": "Request one shared ThinkingBudget debit before weighting or applying any compatible strategy; bind it to this task and its source/model epoch.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_funding_requested"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "edge_type": "has_strategy_library_entry",
+              "any_type": false
+            },
+            "var_name": "candidate",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "kind"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "kind"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "state_size"
+                  },
+                  "b": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "initial_state"
+                    }
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "goal_size"
+                  },
+                  "b": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    }
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "source_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "model_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "frame_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "frame_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "probe_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "probe_epoch"
+                  }
+                },
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "trace"
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "max_steps"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "edge_type": "has_strategy_recall_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "requester_key"
+                },
+                "b": {
+                  "type": "Var",
+                  "name": "t"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "strategy_library_recall",
+            "requester_key": {
+              "__term__": {
+                "type": "Var",
+                "name": "t"
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Var",
+                "name": "t"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "recall_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_thinking_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "has_strategy_recall_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_funding_requested",
+          1
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "sl_start_soft_weighted_compatible_recall",
+      "area": "process_solving",
+      "order": 6,
+      "latency_class": "background",
+      "comment": "Recall among structurally compatible strategies using native SoftWeights over observed yield, gated by context and all source/model/frame/probe epochs; leave cold-start tasks to the bounded solver.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_strategy_library_entry",
+          "entry"
+        ],
+        [
+          "agent",
+          "has_thinking_budget_request",
+          "req"
+        ],
+        [
+          "t",
+          "has_strategy_recall_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_recall_attempted"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "strategy_library_recall"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requested_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "entry"
+            },
+            "b": {
+              "type": "Nth",
+              "items": {
+                "type": "Argmax",
+                "source": {
+                  "type": "SoftWeights",
+                  "source": {
+                    "type": "Filter",
+                    "source": {
+                      "type": "Neighbours",
+                      "node": {
+                        "type": "Var",
+                        "name": "agent"
+                      },
+                      "edge_type": "has_strategy_library_entry",
+                      "any_type": false
+                    },
+                    "var_name": "candidate",
+                    "predicate": {
+                      "type": "And",
+                      "items": [
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "status"
+                          },
+                          "b": {
+                            "type": "Lit",
+                            "value": "active"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "kind"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "kind"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "state_size"
+                          },
+                          "b": {
+                            "type": "Count",
+                            "source": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "t"
+                              },
+                              "key": "initial_state"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "goal_size"
+                          },
+                          "b": {
+                            "type": "Count",
+                            "source": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "t"
+                              },
+                              "key": "goal"
+                            }
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "source_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "source_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "model_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "model_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "frame_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "frame_epoch"
+                          }
+                        },
+                        {
+                          "type": "Eq",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "candidate"
+                            },
+                            "key": "probe_epoch"
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "probe_epoch"
+                          }
+                        },
+                        {
+                          "type": "Lte",
+                          "a": {
+                            "type": "Count",
+                            "source": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "candidate"
+                              },
+                              "key": "trace"
+                            }
+                          },
+                          "b": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "pol"
+                            },
+                            "key": "max_steps"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "var_name": "candidate",
+                  "value": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "observed_yield"
+                  },
+                  "temperature": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "temperature"
+                  }
+                },
+                "var_name": "weighted",
+                "value": {
+                  "type": "Nth",
+                  "items": {
+                    "type": "Var",
+                    "name": "weighted"
+                  },
+                  "index": 1
+                }
+              },
+              "index": 0
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "kind"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "kind"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "state_size"
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "initial_state"
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "goal_size"
+                },
+                "b": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "goal"
+                  }
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "source_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "source_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "model_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "model_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "frame_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "frame_epoch"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "probe_epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probe_epoch"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Count",
+                  "source": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "trace"
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "max_steps"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "attempt",
+          "StrategyRecallAttempt",
+          {
+            "status": "running",
+            "signature_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "state_size": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "initial_state"
+                }
+              }
+            },
+            "goal_size": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                }
+              }
+            },
+            "observed_yield_at_selection": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "observed_yield"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "candidate_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_strategy_library_entry",
+                    "any_type": false
+                  },
+                  "var_name": "c",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "kind"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "kind"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "state_size"
+                        },
+                        "b": {
+                          "type": "Count",
+                          "source": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "t"
+                            },
+                            "key": "initial_state"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "goal_size"
+                        },
+                        "b": {
+                          "type": "Count",
+                          "source": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "t"
+                            },
+                            "key": "goal"
+                          }
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "source_epoch"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "source_epoch"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "model_epoch"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "model_epoch"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "frame_epoch"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "frame_epoch"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "c"
+                          },
+                          "key": "probe_epoch"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "probe_epoch"
+                        }
+                      },
+                      {
+                        "type": "Lte",
+                        "a": {
+                          "type": "Count",
+                          "source": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "c"
+                            },
+                            "key": "trace"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "max_steps"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "cold_start_process_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_process_schema",
+                    "any_type": false
+                  },
+                  "var_name": "p",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "p"
+                          },
+                          "key": "domain"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "p"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "source": "observed_yield_softweights"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_strategy_recall_attempt",
+          "attempt",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "has_strategy_recall_attempt",
+          "attempt",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "recalls_strategy_entry",
+          "entry",
+          {}
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "uses_strategy_entry",
+          "entry",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_recall_attempted",
+          1
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_index",
+          0
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          "strategy_replaying"
+        ]
+      ]
+    },
+    {
+      "name": "sl_apply_and_reverify_strategy_step",
+      "area": "process_solving",
+      "order": 7,
+      "latency_class": "background",
+      "comment": "Apply one stored process through native ProcessApply, write an application receipt, and check progress against the current task; strategy recall never substitutes expected yield for verification.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "t",
+          "recalls_strategy_entry",
+          "entry"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "p"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "strategy_replaying"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "strategy_index"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "trace"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "p"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "trace"
+              },
+              "index": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_index"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "p"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "entry"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "d"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "StrategyApplicationReceipt",
+          {
+            "status": "native_applied",
+            "input_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              }
+            },
+            "output_state": {
+              "__term__": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "p"
+                  },
+                  "key": "params"
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              }
+            },
+            "step_index": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_index"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "verification": "native_process_apply_progress_checked"
+          }
+        ],
+        [
+          "add_edge",
+          "t",
+          "has_strategy_application_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "used_process",
+          "p",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_next_state",
+          {
+            "__term__": {
+              "type": "ProcessApply",
+              "p": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "p"
+                },
+                "key": "params"
+              },
+              "state": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "state",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "strategy_next_state"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "trace",
+          {
+            "__term__": {
+              "type": "Append",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "trace"
+              },
+              "item": {
+                "type": "Var",
+                "name": "p"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "steps",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "steps"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_index",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "strategy_index"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "strategy_next_state"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "goal"
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": "solved"
+              },
+              "other": {
+                "type": "IfThenElse",
+                "cond": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "strategy_index"
+                  },
+                  "b": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "entry"
+                      },
+                      "key": "trace"
+                    }
+                  }
+                },
+                "then": {
+                  "type": "Lit",
+                  "value": "strategy_failed"
+                },
+                "other": {
+                  "type": "Lit",
+                  "value": "strategy_replaying"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_next_state",
+          null
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "sl_fail_nonapplicable_recall_step",
+      "area": "process_solving",
+      "order": 7,
+      "latency_class": "background",
+      "comment": "Reject a recalled step when native application is unknown or makes no state change, so the bounded solver can resume instead of stalling.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ],
+        [
+          "t",
+          "recalls_strategy_entry",
+          "entry"
+        ],
+        [
+          "agent",
+          "has_process_schema",
+          "p"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "strategy_replaying"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "strategy_index"
+            },
+            "b": {
+              "type": "Count",
+              "source": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "trace"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "p"
+            },
+            "b": {
+              "type": "IndexAt",
+              "seq": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "entry"
+                },
+                "key": "trace"
+              },
+              "index": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_index"
+              }
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "ProcessApply",
+                  "p": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "p"
+                    },
+                    "key": "params"
+                  },
+                  "state": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "state"
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "ProcessApply",
+                  "p": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "p"
+                    },
+                    "key": "params"
+                  },
+                  "state": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "t"
+                    },
+                    "key": "state"
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "status",
+          "strategy_failed"
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_failure_reason",
+          "native_process_not_applicable_or_no_progress"
+        ]
+      ]
+    },
+    {
+      "name": "sl_record_observed_success",
+      "area": "process_solving",
+      "order": 8,
+      "latency_class": "background",
+      "comment": "Update yield only from a terminal observed strategy-recall outcome.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "recalls_strategy_entry",
+          "entry"
+        ],
+        [
+          "t",
+          "has_strategy_recall_attempt",
+          "attempt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "solved"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_yield_recorded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "obs",
+          "StrategyYieldObservation",
+          {
+            "result": "observed_success",
+            "steps": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "steps"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "attempt"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "source": "observed_task_terminal_outcome"
+          }
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "has_yield_observation",
+          "obs",
+          {}
+        ],
+        [
+          "add_edge",
+          "entry",
+          "has_yield_observation",
+          "obs",
+          {}
+        ],
+        [
+          "set_attr",
+          "entry",
+          "observed_yield",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "observed_successes"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "observed_attempts"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "entry",
+          "observed_attempts",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "observed_attempts"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "entry",
+          "observed_successes",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "observed_successes"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "attempt",
+          "status",
+          "observed_success"
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_yield_recorded",
+          1
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "sl_record_observed_failure",
+      "area": "process_solving",
+      "order": 9,
+      "latency_class": "background",
+      "comment": "Update yield only from a terminal observed strategy-recall outcome.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "recalls_strategy_entry",
+          "entry"
+        ],
+        [
+          "t",
+          "has_strategy_recall_attempt",
+          "attempt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "strategy_failed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_yield_recorded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "obs",
+          "StrategyYieldObservation",
+          {
+            "result": "observed_failure",
+            "steps": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "steps"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "attempt"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "source": "observed_task_terminal_outcome"
+          }
+        ],
+        [
+          "add_edge",
+          "attempt",
+          "has_yield_observation",
+          "obs",
+          {}
+        ],
+        [
+          "add_edge",
+          "entry",
+          "has_yield_observation",
+          "obs",
+          {}
+        ],
+        [
+          "set_attr",
+          "entry",
+          "observed_yield",
+          {
+            "__term__": {
+              "type": "Div",
+              "a": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "observed_successes"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                ]
+              },
+              "b": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "entry"
+                    },
+                    "key": "observed_attempts"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "entry",
+          "observed_attempts",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "observed_attempts"
+                },
+                {
+                  "type": "Lit",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "entry",
+          "observed_successes",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "entry"
+                  },
+                  "key": "observed_successes"
+                },
+                {
+                  "type": "Lit",
+                  "value": 0
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "attempt",
+          "status",
+          "observed_failure"
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_yield_recorded",
+          1
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "sl_fallback_to_bounded_solver_after_bad_recall",
+      "area": "process_solving",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "A failed or inapplicable recalled sequence is recorded as a rejected candidate, then yields the task to the existing bounded solver.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solver_policy",
+          "solver_pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "recalls_strategy_entry",
+          "entry"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "strategy_failed"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_fallback_started"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "t",
+          "rejected_strategy_recall",
+          "entry",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_fallback_started",
+          1
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "solver_pol",
+          "enabled",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "sl_record_cold_start_fallback",
+      "area": "process_solving",
+      "order": 11,
+      "latency_class": "background",
+      "comment": "When no current structurally compatible observed strategy exists, preserve cold start and let the bounded existing solver proceed.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solver_policy",
+          "solver_pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_fallback_recorded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_strategy_library_entry",
+                "any_type": false
+              },
+              "var_name": "candidate",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "kind"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "state_size"
+                    },
+                    "b": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "t"
+                        },
+                        "key": "initial_state"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "goal_size"
+                    },
+                    "b": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "t"
+                        },
+                        "key": "goal"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "model_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "model_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "frame_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "probe_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "probe_epoch"
+                    }
+                  },
+                  {
+                    "type": "Lte",
+                    "a": {
+                      "type": "Count",
+                      "source": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "candidate"
+                        },
+                        "key": "trace"
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "max_steps"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "fallback",
+          "StrategyRecallFallback",
+          {
+            "status": "cold_start",
+            "reason": "no_compatible_observed_strategy",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "candidate_work": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Filter",
+                  "source": {
+                    "type": "Neighbours",
+                    "node": {
+                      "type": "Var",
+                      "name": "agent"
+                    },
+                    "edge_type": "has_process_schema",
+                    "any_type": false
+                  },
+                  "var_name": "p",
+                  "predicate": {
+                    "type": "And",
+                    "items": [
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "p"
+                          },
+                          "key": "domain"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "name"
+                        }
+                      },
+                      {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "p"
+                          },
+                          "key": "status"
+                        },
+                        "b": {
+                          "type": "Lit",
+                          "value": "active"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_strategy_recall_fallback",
+          "fallback",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "has_strategy_recall_fallback",
+          "fallback",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_fallback_recorded",
+          1
+        ],
+        [
+          "set_attr",
+          "solver_pol",
+          "enabled",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "sl_fallback_after_recall_funding_denial",
+      "area": "process_solving",
+      "order": 12,
+      "latency_class": "background",
+      "comment": "If the shared budget denies or expires the recall request, record the denial and continue through the bounded solver without retrying or bypassing the budget.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solver_policy",
+          "solver_pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "has_strategy_recall_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "denied"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "req"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "canceled"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_funding_fallback"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "t",
+          "strategy_funding_fallback",
+          1
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "solver_pol",
+          "enabled",
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "sl_fallback_when_shared_budget_disabled",
+      "area": "process_solving",
+      "order": 12,
+      "latency_class": "background",
+      "comment": "Do not perform strategy weighting without an enabled shared budget; record the reason and yield to the bounded solver.",
+      "match": [
+        [
+          "agent",
+          "has_strategy_library_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "agent",
+          "has_solver_policy",
+          "solver_pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Exists",
+            "source": {
+              "type": "Neighbours",
+              "node": {
+                "type": "Var",
+                "name": "agent"
+              },
+              "edge_type": "has_strategy_library_entry",
+              "any_type": false
+            },
+            "var_name": "candidate",
+            "predicate": {
+              "type": "And",
+              "items": [
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "status"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "active"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "kind"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "kind"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "state_size"
+                  },
+                  "b": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "initial_state"
+                    }
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "goal_size"
+                  },
+                  "b": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    }
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "source_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "model_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "model_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "frame_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "frame_epoch"
+                  }
+                },
+                {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "candidate"
+                    },
+                    "key": "probe_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "d"
+                    },
+                    "key": "probe_epoch"
+                  }
+                },
+                {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Count",
+                    "source": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "candidate"
+                      },
+                      "key": "trace"
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "max_steps"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_thinking_budget",
+                "any_type": false
+              },
+              "var_name": "active_budget",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "active_budget"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "strategy_fallback_recorded"
+              },
+              "b": {
+                "type": "Lit",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "fallback",
+          "StrategyRecallFallback",
+          {
+            "status": "cold_start",
+            "reason": "shared_budget_disabled",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "candidate_work": 0
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_strategy_recall_fallback",
+          "fallback",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "has_strategy_recall_fallback",
+          "fallback",
+          {}
+        ],
+        [
+          "set_attr",
+          "t",
+          "strategy_fallback_recorded",
+          1
+        ],
+        [
+          "set_attr",
+          "solver_pol",
+          "enabled",
+          1.0
+        ]
+      ]
+    }
+  ]
+}

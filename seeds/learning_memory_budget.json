@@ -1,0 +1,892 @@
+{
+  "id": "learning_memory_budget",
+  "version": "1.0.0",
+  "depends_on": [],
+  "self_load_only": true,
+  "area": "learning_memory_budget",
+  "description": "Opt-in native admission/eviction accounting for dynamically learned content; storage adapters perform mechanical I/O only.",
+  "microtheory": {
+    "name": "learning_memory_budget",
+    "description": "Equal capacity and eviction semantics for all learned content."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "LearningMemoryBudgetPolicy",
+      "attrs": {
+        "name": "learning_memory_budget_policy",
+        "enabled": 0.0,
+        "capacity_bytes": 8192.0,
+        "resident_bytes": 0.0,
+        "durable_read_bytes": 0.0,
+        "fixed_runtime_bytes_reported_separately": true,
+        "verified_summary_priority": 1000000.0,
+        "protection_policy": "uniform_content_no_target_exemption"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_learning_memory_budget_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:learning_memory_budget:has_learning_memory_budget_policy:Agent:LearningMemoryBudgetPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_learning_memory_budget_policy",
+      "tgt": {
+        "type": "LearningMemoryBudgetPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:learning_memory_budget:has_learning_memory_item:Agent:LearningMemoryItem",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_learning_memory_item",
+      "tgt": {
+        "type": "LearningMemoryItem",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:learning_memory_budget:has_learning_memory_cache:LearningMemoryItem:LearningMemoryCache",
+      "src": {
+        "type": "LearningMemoryItem",
+        "var": "src"
+      },
+      "edge_type": "has_learning_memory_cache",
+      "tgt": {
+        "type": "LearningMemoryCache",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:learning_memory_budget:has_learning_memory_graph_node:LearningMemoryItem:LearningMemoryGraphNode",
+      "src": {
+        "type": "LearningMemoryItem",
+        "var": "src"
+      },
+      "edge_type": "has_learning_memory_graph_node",
+      "tgt": {
+        "type": "LearningMemoryGraphNode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:learning_memory_budget:has_eviction_receipt:LearningMemoryItem:LearningMemoryEvictionReceipt",
+      "src": {
+        "type": "LearningMemoryItem",
+        "var": "src"
+      },
+      "edge_type": "has_eviction_receipt",
+      "tgt": {
+        "type": "LearningMemoryEvictionReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:learning_memory_budget:has_durable_learning_read:Agent:DurableLearningRead",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_durable_learning_read",
+      "tgt": {
+        "type": "DurableLearningRead",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:learning_memory_budget:has_learning_memory_read_receipt:Agent:LearningMemoryReadReceipt",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_learning_memory_read_receipt",
+      "tgt": {
+        "type": "LearningMemoryReadReceipt",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "lmb_admit_charged_learning_content",
+      "area": "learning_memory_budget",
+      "order": 0,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Charge every incoming dynamic item before making it learner-visible.",
+      "match": [
+        [
+          "ag",
+          "has_learning_memory_budget_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_learning_memory_item",
+          "item"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "availability"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending_admission"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "charged_bytes"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "charged_bytes"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "capacity_bytes"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "item",
+          "availability",
+          "resident"
+        ],
+        [
+          "set_attr",
+          "item",
+          "retention_priority",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "content_class"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "persistent_summary"
+                }
+              },
+              "then": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "verified_summary_priority"
+              },
+              "other": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "admission_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "pol",
+          "resident_bytes",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "resident_bytes"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "item"
+                  },
+                  "key": "charged_bytes"
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "lmb_reject_content_larger_than_shared_capacity",
+      "area": "learning_memory_budget",
+      "order": 0,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Reject an item that cannot fit by itself; never expose its payload for free.",
+      "match": [
+        [
+          "ag",
+          "has_learning_memory_budget_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_learning_memory_item",
+          "item"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "availability"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending_admission"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "charged_bytes"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "capacity_bytes"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "item",
+          "availability",
+          "rejected_capacity"
+        ],
+        [
+          "set_attr",
+          "item",
+          "payload",
+          null
+        ]
+      ]
+    },
+    {
+      "name": "lmb_evict_lowest_priority_resident_content",
+      "area": "learning_memory_budget",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Select the lowest-priority resident learned item under shared byte pressure; target/source identity is not an eviction input.",
+      "match": [
+        [
+          "ag",
+          "has_learning_memory_budget_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_learning_memory_item",
+          "item"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "resident_bytes"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "capacity_bytes"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "availability"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "resident"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "charged_bytes"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_learning_memory_item",
+                "any_type": false
+              },
+              "var_name": "other",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "availability"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "resident"
+                    }
+                  },
+                  {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "charged_bytes"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0.0
+                    }
+                  },
+                  {
+                    "type": "Lt",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "other"
+                      },
+                      "key": "retention_priority"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "item"
+                      },
+                      "key": "retention_priority"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "item",
+          "availability",
+          "evicted"
+        ],
+        [
+          "set_attr",
+          "item",
+          "payload",
+          null
+        ],
+        [
+          "set_attr",
+          "pol",
+          "resident_bytes",
+          {
+            "__term__": {
+              "type": "Minus",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "resident_bytes"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "charged_bytes"
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "receipt",
+          "LearningMemoryEvictionReceipt",
+          {
+            "item_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "item_id"
+              }
+            },
+            "content_class": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "content_class"
+              }
+            },
+            "charged_bytes": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "charged_bytes"
+              }
+            },
+            "protection_class": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "item"
+                },
+                "key": "protection_class"
+              }
+            },
+            "status": "evicted",
+            "answer_payload_retained": false
+          }
+        ],
+        [
+          "add_edge",
+          "item",
+          "has_eviction_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_learning_memory_read_receipt",
+          "receipt",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "lmb_invalidate_views_of_evicted_content",
+      "area": "learning_memory_budget",
+      "order": 2,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Make derived cache views unavailable when their source item is evicted.",
+      "match": [
+        [
+          "ag",
+          "has_learning_memory_budget_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_learning_memory_item",
+          "item"
+        ],
+        [
+          "item",
+          "has_learning_memory_cache",
+          "cache"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "item"
+              },
+              "key": "availability"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "evicted"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cache"
+              },
+              "key": "availability"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "resident"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "cache",
+          "availability",
+          "stale"
+        ],
+        [
+          "set_attr",
+          "cache",
+          "prediction",
+          null
+        ],
+        [
+          "set_attr",
+          "cache",
+          "rebuild_from_source",
+          {
+            "__term__": {
+              "type": "Lit",
+              "value": false
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "lmb_charge_durable_rebuild_before_read",
+      "area": "learning_memory_budget",
+      "order": 3,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Charge durable reconstruction work before making a record available again.",
+      "match": [
+        [
+          "ag",
+          "has_learning_memory_budget_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_durable_learning_read",
+          "read"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "read"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "requested"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "read"
+              },
+              "key": "rebuild_bytes"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0.0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "pol",
+          "durable_read_bytes",
+          {
+            "__term__": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "durable_read_bytes"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "read"
+                  },
+                  "key": "rebuild_bytes"
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "read",
+          "status",
+          "charged"
+        ],
+        [
+          "set_attr",
+          "read",
+          "availability",
+          "pending_capacity_admission"
+        ],
+        [
+          "add_node",
+          "receipt",
+          "LearningMemoryReadReceipt",
+          {
+            "read_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "read"
+                },
+                "key": "read_id"
+              }
+            },
+            "rebuild_bytes": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "read"
+                },
+                "key": "rebuild_bytes"
+              }
+            },
+            "status": "charged",
+            "answer_payload": null
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_learning_memory_read_receipt",
+          "receipt",
+          {}
+        ]
+      ]
+    }
+  ]
+}

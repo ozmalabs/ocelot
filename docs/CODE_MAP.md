@@ -196,6 +196,11 @@ non-documentation trees. Untouched by the docs reorg this map accompanies.
 - `README.md`, `CLAUDE.md`, `VISION_PROTOCOL.md` — repo root (see below for
   why `VISION_PROTOCOL.md` stays put).
 - `docs/CODE_MAP.md` — this file.
+- `docs/SEED_DEVELOPMENT.md` — guide to authoring, emitting, registering, and
+  testing new graph-data seeds (`seeds/<id>.json`).
+- `docs/SCIENCE_RESEARCH.md` — guide to conducting scientific research on the
+  substrate (`PREREG → Measure → RESULTS`, instrument calibration, engine
+  provenance, RNG seed accounting, and baseline discipline).
 - `docs/features/` — synthesized current-state summaries, one per major
   subsystem.
 - `docs/meta/` — `SPEC.md`, `SCREENCAST.md`, `NOTICES.md`, `JABBERWOCKY.md`.

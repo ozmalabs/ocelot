@@ -11,8 +11,7 @@ An `InventionRound` is a budgeted episode of invention over one
 
 Funding goes through the generic ThinkingBudget pending-request contract
 (`ThinkingBudgetRequest{status: pending, cost, requester_kind}` +
-`draws_on_thinking_budget`); with no ThinkingBudget node at all the round
-opens directly.
+`draws_on_thinking_budget`). Without a budget node, invention does not run.
 
 While a round is `active`, one rule per operator applies that operator over
 the domain's held processes, computes the candidate's fingerprint on the
@@ -48,7 +47,7 @@ if str(ROOT / "scripts") not in sys.path:
 from track_i_seed_lib import (  # noqa: E402
     A, And, Count, Div, Eq, Exists, Filter, FilterList, Gt, Gte, IfThenElse, In, L,
     Let, Lt, Lte, MapList, Max, N, NodesWhere, Not, Nth, OFFLINE_AREA, Or, PCommutator,
-    PCompose, PConjugate, PFingerprint, PInverse, PPower, PSupport, Plus, SoftWeights,
+    PCompose, PConjugate, PFingerprint, PInverse, PPower, PRepairVerify, PSupport, Plus, SoftWeights,
     StringConcat, Sum, T, Times, V, Vec, ZERO, is_none, not_none, policy_on, productions,
     rule,
 )
@@ -371,19 +370,6 @@ def open_round_rules():
             ] + link,
             batch=False,
         ))
-        out.append(rule(
-            f"ir_open_round_on_{trigger}_unbudgeted", OFFLINE_AREA, 20,
-            f"Open an InventionRound for the domain ({trigger}) directly when the agent holds no "
-            "ThinkingBudget at all.",
-            match,
-            And(*base, Eq(Count(N("agent", "has_thinking_budget")), ZERO)),
-            [
-                ["add_node", "r", "InventionRound", round_attrs(trigger, "active")],
-                ["add_edge", "agent", "has_invention_round", "r", {}],
-                ["add_edge", "r", "about_domain", "d", {}],
-            ] + link,
-            batch=False,
-        ))
     return out
 
 
@@ -436,6 +422,27 @@ def strategy_rules():
     ]
 
 
+def repair_rules():
+    verify = PRepairVerify(A("c", "params"), A("c", "fresh_states"), A("c", "goals"))
+    return [
+        rule("ir_repair_candidate_verify", OFFLINE_AREA, 60,
+             "Verify a declared goal-equivalent repair on its fresh states; it remains separate from exact inverse.",
+             [["agent", "has_invention_policy", "pol"], ["agent", "has_repair_candidate", "c"]],
+             And(policy_on(), Eq(A("c", "status"), L("candidate")),
+                 Eq(A("c", "model_epoch"), A("c", "source_model_epoch")),
+                 Eq(verify, L(True))),
+             [["set_attr", "c", "status", "verified"],
+              ["set_attr", "c", "verified_model_epoch", T(A("c", "model_epoch"))],
+              ["set_attr", "c", "verification_receipt", "fresh_goal_states_exact"]]),
+        rule("ir_repair_epoch_stale", OFFLINE_AREA, 61,
+             "Invalidate a verified repair when its source model epoch changes.",
+             [["agent", "has_invention_policy", "pol"], ["agent", "has_repair_candidate", "c"]],
+             And(policy_on(), Eq(A("c", "status"), L("verified")),
+                 Not(Eq(A("c", "model_epoch"), A("c", "verified_model_epoch")))),
+             [["set_attr", "c", "status", "stale"]]),
+    ]
+
+
 def build():
     rules = open_round_rules() + funding_rules()
     order = 0
@@ -450,6 +457,7 @@ def build():
     rules += [order_law_rule(k) for k in range(2, 7)]
     rules += [commute_law_rule(), conjugation_inverts_law_rule()]
     rules += strategy_rules()
+    rules += repair_rules()
     specs = [
         ("Agent", "has_invention_policy", "InventionPolicy"),
         ("Agent", "has_invention_round", "InventionRound"),
@@ -464,6 +472,7 @@ def build():
         ("Agent", "has_process_law", "ProcessLaw"),
         ("ProcessLaw", "about_process", "ProcessSchema"),
         ("Agent", "has_strategy_record", "StrategyRecord"),
+        ("Agent", "has_repair_candidate", "ProcessRepairCandidate"),
         ("Agent", "has_tolerance", "Tolerance"),
         ("Tolerance", "governs_policy", "InventionPolicy"),
     ]

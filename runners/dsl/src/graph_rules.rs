@@ -257,6 +257,36 @@ fn parse_effect_op(v: &Value, arena: &mut TermArena, interner: &mut Interner) ->
                 attrs,
             })
         }
+        "add_node_with_counter" => {
+            if parts.len() < 7 {
+                return None;
+            }
+            let counter_var = intern_str(&parts[4], interner)?;
+            let counter_key = intern_str(&parts[5], interner)?;
+            let limit = parse_effect_arg(&parts[6], arena, interner)?;
+            Some(Effect::AddNodeWithinCounter {
+                new_var: intern_str(&parts[1], interner)?,
+                type_: intern_str(&parts[2], interner)?,
+                attrs: parse_attrs_dict(&parts[3], arena, interner)?,
+                counter_var,
+                counter_key,
+                limit,
+            })
+        }
+        "add_node_with_counters" => {
+            if parts.len() < 10 || (parts.len() - 4) % 3 != 0 { return None; }
+            let mut counters = Vec::new();
+            for chunk in parts[4..].chunks_exact(3) {
+                counters.push((intern_str(&chunk[0], interner)?,
+                    intern_str(&chunk[1], interner)?,
+                    parse_effect_arg(&chunk[2], arena, interner)?));
+            }
+            Some(Effect::AddNodeWithinCounters {
+                new_var: intern_str(&parts[1], interner)?,
+                type_: intern_str(&parts[2], interner)?,
+                attrs: parse_attrs_dict(&parts[3], arena, interner)?, counters,
+            })
+        }
         "add_node_if_absent" => {
             // Find-or-create by the author's attrs as a dedup key (subset
             // semantics in apply). Lets a per-cell rule mint exactly ONE node

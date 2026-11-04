@@ -232,6 +232,9 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::ProcessCompose { .. } => "ProcessCompose",
         TermNode::ProcessInverse { .. } => "ProcessInverse",
         TermNode::ProcessApply { .. } => "ProcessApply",
+        TermNode::ProcessRepairVerify { .. } => "ProcessRepairVerify",
+        TermNode::ProcessDistribution { .. } => "ProcessDistribution",
+        TermNode::ProcessLiftInstantiate { .. } => "ProcessLiftInstantiate",
         TermNode::EffectSupport { .. } => "EffectSupport",
         TermNode::EffectFingerprint { .. } => "EffectFingerprint",
         TermNode::PermParity { .. } => "PermParity",
@@ -876,6 +879,19 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
         TermNode::ProcessApply { p, state } => {
             m.insert("p".into(), child(*p, arena, interner));
             m.insert("state".into(), child(*state, arena, interner));
+        }
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => {
+            m.insert("p".into(), child(*p, arena, interner));
+            m.insert("fresh_states".into(), child(*fresh_states, arena, interner));
+            m.insert("goals".into(), child(*goals, arena, interner));
+        }
+        TermNode::ProcessDistribution { outcomes } => {
+            m.insert("outcomes".into(), child(*outcomes, arena, interner));
+        }
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            m.insert("witness".into(), child(*witness, arena, interner));
+            m.insert("source_sizes".into(), child(*source_sizes, arena, interner));
+            m.insert("target_size".into(), child(*target_size, arena, interner));
         }
         TermNode::EffectSupport { p } | TermNode::PermParity { p } => {
             m.insert("p".into(), child(*p, arena, interner));
@@ -2262,6 +2278,19 @@ fn read_term(
         "ProcessApply" => TermNode::ProcessApply {
             p: child_of("p", obj, arena, interner, variant)?,
             state: child_of("state", obj, arena, interner, variant)?,
+        },
+        "ProcessRepairVerify" => TermNode::ProcessRepairVerify {
+            p: child_of("p", obj, arena, interner, variant)?,
+            fresh_states: child_of("fresh_states", obj, arena, interner, variant)?,
+            goals: child_of("goals", obj, arena, interner, variant)?,
+        },
+        "ProcessDistribution" => TermNode::ProcessDistribution {
+            outcomes: child_of("outcomes", obj, arena, interner, variant)?,
+        },
+        "ProcessLiftInstantiate" => TermNode::ProcessLiftInstantiate {
+            witness: child_of("witness", obj, arena, interner, variant)?,
+            source_sizes: child_of("source_sizes", obj, arena, interner, variant)?,
+            target_size: child_of("target_size", obj, arena, interner, variant)?,
         },
         "EffectSupport" => TermNode::EffectSupport {
             p: child_of("p", obj, arena, interner, variant)?,

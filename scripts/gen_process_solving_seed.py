@@ -71,18 +71,39 @@ MATCH = [
 def step_rule():
     with_best = lambda term: T(Let("bp", best(), term))  # noqa: E731
     return rule(
-        "sv_greedy_step", ONLINE_AREA, 10,
-        "Apply the domain process that most reduces Hamming distance to the goal "
-        "(cheapest on ties), only if it strictly reduces it. One step per pass per task.",
+        "sv_select_greedy_process", ONLINE_AREA, 10,
+        "Select and persist one graph process before changing task state, so every receipt "
+        "attribute refers to the same choice.",
         MATCH,
         And(policy_on(), Eq(A("t", "status"), L("active")), Gt(current_dist(), ZERO),
             Lt(A("t", "steps"), A("pol", "max_steps")), Lt(best_dist(), current_dist())),
         [
-            ["set_attr", "t", "state", with_best(PApply(A("bp", "params"), A("t", "state")))],
-            ["set_attr", "t", "steps", T(Plus(A("t", "steps"), L(1)))],
-            ["set_attr", "t", "moves", with_best(Plus(A("t", "moves"), A("bp", "cost")))],
-            ["set_attr", "t", "trace", with_best(Append(A("t", "trace"), V("bp")))],
+            ["set_attr", "t", "selected_process", with_best(V("bp"))],
+            ["set_attr", "t", "selected_params", with_best(A("bp", "params"))],
+            ["set_attr", "t", "selected_cost", with_best(A("bp", "cost"))],
+            ["set_attr", "t", "status", "selected"],
         ],
+        batch=False,
+    )
+
+
+def apply_selected_rule():
+    selected_effect = PApply(A("t", "selected_params"), A("t", "state"))
+    return rule(
+        "sv_apply_selected_process", ONLINE_AREA, 10,
+        "Apply the persisted process choice and record that exact process in the task trace.",
+        MATCH,
+        And(policy_on(), Eq(A("t", "status"), L("selected")),
+            Gt(current_dist(), ZERO), Gt(current_dist(), hamming(selected_effect, A("t", "goal")))),
+        [["set_attr", "t", "state", T(selected_effect)],
+         ["set_attr", "t", "steps", T(Plus(A("t", "steps"), L(1)))],
+         ["set_attr", "t", "moves", T(Plus(A("t", "moves"), A("t", "selected_cost")))],
+         ["set_attr", "t", "trace", T(Append(A("t", "trace"), A("t", "selected_process")))],
+         ["set_attr", "t", "selected_process", None],
+         ["set_attr", "t", "selected_params", None],
+         ["set_attr", "t", "selected_cost", None],
+         ["set_attr", "t", "status", "active"]],
+        batch=False,
     )
 
 
@@ -150,7 +171,7 @@ def build():
             {"src": {"role": "agent_root"}, "type": "has_solver_policy", "tgt": {"local": 0}, "attrs": {}},
         ],
         "productions": productions(SEED_ID, specs),
-        "rules": [step_rule(), solved_rule(), stuck_rule(), retry_rule()],
+        "rules": [step_rule(), apply_selected_rule(), solved_rule(), stuck_rule(), retry_rule()],
     }
 
 

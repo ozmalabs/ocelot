@@ -3365,6 +3365,12 @@ pub enum TermNode {
     ProcessCompose { a: TermIdx, b: TermIdx },
     ProcessInverse { a: TermIdx },
     ProcessApply { p: TermIdx, state: TermIdx },
+    /// Verify a process as a goal-equivalent repair across fresh states.
+    ProcessRepairVerify { p: TermIdx, fresh_states: TermIdx, goals: TermIdx },
+    /// Validate finite `(outcome, probability)` pairs and return `(support, unknown_mass)`.
+    ProcessDistribution { outcomes: TermIdx },
+    /// Instantiate a witnessed process template when all varying captures are source sizes.
+    ProcessLiftInstantiate { witness: TermIdx, source_sizes: TermIdx, target_size: TermIdx },
     EffectSupport { p: TermIdx },
     EffectFingerprint { p: TermIdx, probes: TermIdx },
     PermParity { p: TermIdx },
@@ -5160,6 +5166,19 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         TermNode::ProcessInverse { a } => TermNode::ProcessInverse { a: copy_subtree(src, dst, a) },
         TermNode::ProcessApply { p, state } => TermNode::ProcessApply {
             p: copy_subtree(src, dst, p), state: copy_subtree(src, dst, state),
+        },
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => TermNode::ProcessRepairVerify {
+            p: copy_subtree(src, dst, p),
+            fresh_states: copy_subtree(src, dst, fresh_states),
+            goals: copy_subtree(src, dst, goals),
+        },
+        TermNode::ProcessDistribution { outcomes } => TermNode::ProcessDistribution {
+            outcomes: copy_subtree(src, dst, outcomes),
+        },
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => TermNode::ProcessLiftInstantiate {
+            witness: copy_subtree(src, dst, witness),
+            source_sizes: copy_subtree(src, dst, source_sizes),
+            target_size: copy_subtree(src, dst, target_size),
         },
         TermNode::EffectSupport { p } => TermNode::EffectSupport { p: copy_subtree(src, dst, p) },
         TermNode::EffectFingerprint { p, probes } => TermNode::EffectFingerprint {
@@ -9220,7 +9239,78 @@ fn evaluate_inner(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut Eval
         TermNode::ProcessApply { p, state } => {
             let pv = evaluate(arena, *p, env, ctx);
             let sv = evaluate(arena, *state, env, ctx);
+            // Program-backed schema views delegate to the one native bounded
+            // interpreter. Resolve only a real reflected IR root; text,
+            // capability, transition, motor, and family records stay opaque.
+            let program = match &pv {
+                Value::Node(schema) if ctx.graph.has_node(*schema) => {
+                    let node = ctx.graph.node(*schema);
+                    let type_name = ctx.interner.resolve(node.type_);
+                    if type_name == "ProcessSchema" {
+                        let source_key = ctx.interner.lookup("realised_by");
+                        source_key
+                            .and_then(|key| node.attrs.get(&key))
+                            .and_then(|v| match v {
+                                Value::Node(source)
+                                    if ctx.graph.has_node(*source)
+                                        && ctx.interner.resolve(ctx.graph.node(*source).type_)
+                                            == "Program" =>
+                                {
+                                    let epoch_key = ctx.interner.lookup("source_epoch")?;
+                                    let source_epoch = ctx.graph.node(*source).attrs.get(&epoch_key)?;
+                                    let versioned = matches!(source_epoch, Value::Int(_) | Value::Float(_));
+                                    (versioned && node.attrs.get(&epoch_key) == Some(source_epoch))
+                                        .then_some(*source)
+                                }
+                                _ => None,
+                            })
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            };
+            if let Some(source) = program {
+                let edge_type = ctx.interner.lookup("ir_subgraph");
+                let roots = edge_type
+                    .map(|et| ctx.graph.out_edges_idx(source, Some(et)))
+                    .unwrap_or_default();
+                let root = if roots.len() == 1 {
+                    Some(ctx.graph.edge(roots[0]).tgt)
+                } else {
+                    None
+                };
+                if let (Some(root), Some(field)) = (root, ctx.interner.lookup("result")) {
+                    let mut program_arena = TermArena::new();
+                    let program_root = program_arena.add(TermNode::Lit { value: Value::Node(root) });
+                    let env_root = program_arena.add(TermNode::Lit { value: sv });
+                    let eval = program_arena.add(TermNode::ProgEval {
+                        prog: program_root,
+                        env: Some(env_root),
+                        oracles: None,
+                        fuel: 10_000,
+                        field,
+                    });
+                    return evaluate(&program_arena, eval, env, ctx);
+                }
+            }
             crate::process_algebra::apply(&pv, &sv, ctx.interner)
+        }
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => {
+            let pv = evaluate(arena, *p, env, ctx);
+            let states = evaluate(arena, *fresh_states, env, ctx);
+            let goals = evaluate(arena, *goals, env, ctx);
+            Value::Bool(crate::process_algebra::verify_repair_values(&pv, &states, &goals, ctx.interner))
+        }
+        TermNode::ProcessDistribution { outcomes } => {
+            let value = evaluate(arena, *outcomes, env, ctx);
+            crate::process_algebra::finite_distribution_value(&value)
+        }
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            let w = evaluate(arena, *witness, env, ctx);
+            let ss = evaluate(arena, *source_sizes, env, ctx);
+            let ts = evaluate(arena, *target_size, env, ctx);
+            crate::process_algebra::instantiate_lifted_process(&w, &ss, &ts, ctx.interner)
         }
         TermNode::EffectSupport { p } => {
             let pv = evaluate(arena, *p, env, ctx);
@@ -15234,6 +15324,13 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::ProcessInverse { a } | TermNode::EffectSupport { p: a }
         | TermNode::PermParity { p: a } | TermNode::MatDet { m: a } => out.push(*a),
         TermNode::ProcessApply { p, state } => out.extend([*p, *state]),
+        TermNode::ProcessRepairVerify { p, fresh_states, goals } => {
+            out.extend([*p, *fresh_states, *goals]);
+        }
+        TermNode::ProcessDistribution { outcomes } => out.push(*outcomes),
+        TermNode::ProcessLiftInstantiate { witness, source_sizes, target_size } => {
+            out.extend([*witness, *source_sizes, *target_size]);
+        }
         TermNode::EffectFingerprint { p, probes } => out.extend([*p, *probes]),
         TermNode::LogQuantum { population, .. } => {
             out.push(*population);

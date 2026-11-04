@@ -12246,6 +12246,33 @@ pub(crate) fn effect_to_json(
             J::String(s(*type_)),
             attrs_to_json(attrs, terms, interner),
         ]),
+        E::AddNodeWithinCounter {
+            new_var,
+            type_,
+            attrs,
+            counter_var,
+            counter_key,
+            limit,
+        } => J::Array(vec![
+            J::String("add_node_with_counter".into()),
+            J::String(s(*new_var)),
+            J::String(s(*type_)),
+            attrs_to_json(attrs, terms, interner),
+            J::String(s(*counter_var)),
+            J::String(s(*counter_key)),
+            effect_arg_to_json(limit, terms, interner),
+        ]),
+        E::AddNodeWithinCounters { new_var, type_, attrs, counters } => {
+            let mut out = vec![J::String("add_node_with_counters".into()),
+                J::String(s(*new_var)), J::String(s(*type_)),
+                attrs_to_json(attrs, terms, interner)];
+            for (counter_var, counter_key, limit) in counters {
+                out.push(J::String(s(*counter_var)));
+                out.push(J::String(s(*counter_key)));
+                out.push(effect_arg_to_json(limit, terms, interner));
+            }
+            J::Array(out)
+        }
         E::AddNodeIfAbsent {
             new_var,
             type_,
@@ -12413,6 +12440,33 @@ fn parse_effect_json(
             type_: interner.intern(&s(2)?),
             attrs: attrs_dict(3, terms, interner)?,
         }),
+        "add_node_with_counter" => {
+            let raw_limit = arr
+                .get(6)
+                .ok_or_else(|| "add_node_with_counter missing limit".to_string())?;
+            Ok(crate::rewrite::Effect::AddNodeWithinCounter {
+                new_var: interner.intern(&s(1)?),
+                type_: interner.intern(&s(2)?),
+                attrs: attrs_dict(3, terms, interner)?,
+                counter_var: interner.intern(&s(4)?),
+                counter_key: interner.intern(&s(5)?),
+                limit: arg_to_effect(raw_limit, terms, interner)?,
+            })
+        }
+        "add_node_with_counters" => {
+            if arr.len() < 10 || (arr.len() - 4) % 3 != 0 {
+                return Err("add_node_with_counters requires counter triples".into());
+            }
+            let mut counters = Vec::new();
+            for i in (4..arr.len()).step_by(3) {
+                counters.push((interner.intern(&s(i)?), interner.intern(&s(i + 1)?),
+                    arg_to_effect(arr.get(i + 2).ok_or("missing counter limit")?, terms, interner)?));
+            }
+            Ok(crate::rewrite::Effect::AddNodeWithinCounters {
+                new_var: interner.intern(&s(1)?), type_: interner.intern(&s(2)?),
+                attrs: attrs_dict(3, terms, interner)?, counters,
+            })
+        }
         // Mirror `add_node` wire shape — same args, AddNodeIfAbsent
         // dedup semantics. Wire form:
         //   ["add_node_if_absent", "<new_var>", "<NodeType>", {attrs}]

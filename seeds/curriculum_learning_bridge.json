@@ -1,0 +1,792 @@
+{
+  "id": "curriculum_learning_bridge",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_curriculum",
+    "target_learning",
+    "process_induction"
+  ],
+  "self_load_only": true,
+  "area": "curriculum_learning_bridge",
+  "description": "P21 bridge from answer-free native training tasks to actual world receipts and P20 target learning.",
+  "microtheory": {
+    "name": "curriculum_learning_bridge",
+    "description": "Authorize training tasks and record outcomes only after native learning from observed receipts."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "CurriculumLearningBridgePolicy",
+      "attrs": {
+        "name": "curriculum_learning_bridge_policy",
+        "enabled": 0.0,
+        "request_deadline_epoch": 32.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_curriculum_learning_bridge_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_curriculum_learning_bridge_policy:Agent:CurriculumLearningBridgePolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_curriculum_learning_bridge_policy",
+      "tgt": {
+        "type": "CurriculumLearningBridgePolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_process_curriculum_task:Agent:ProcessCurriculumTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_curriculum_task",
+      "tgt": {
+        "type": "ProcessCurriculumTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_curriculum_training_request:Agent:CurriculumTrainingRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_curriculum_training_request",
+      "tgt": {
+        "type": "CurriculumTrainingRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_training_request:ProcessCurriculumTask:CurriculumTrainingRequest",
+      "src": {
+        "type": "ProcessCurriculumTask",
+        "var": "src"
+      },
+      "edge_type": "has_training_request",
+      "tgt": {
+        "type": "CurriculumTrainingRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:for_curriculum_task:CurriculumTrainingRequest:ProcessCurriculumTask",
+      "src": {
+        "type": "CurriculumTrainingRequest",
+        "var": "src"
+      },
+      "edge_type": "for_curriculum_task",
+      "tgt": {
+        "type": "ProcessCurriculumTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_training_receipt:CurriculumTrainingRequest:TransitionObservation",
+      "src": {
+        "type": "CurriculumTrainingRequest",
+        "var": "src"
+      },
+      "edge_type": "has_training_receipt",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_transition_observation:Agent:TransitionObservation",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_transition_observation",
+      "tgt": {
+        "type": "TransitionObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_process_induction_hypothesis:Agent:ProcessInductionHypothesis",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_induction_hypothesis",
+      "tgt": {
+        "type": "ProcessInductionHypothesis",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_process_curriculum_task:Agent:ProcessCurriculumTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_curriculum_task",
+      "tgt": {
+        "type": "ProcessCurriculumTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:has_outcome:ProcessCurriculumTask:ProcessCurriculumOutcome",
+      "src": {
+        "type": "ProcessCurriculumTask",
+        "var": "src"
+      },
+      "edge_type": "has_outcome",
+      "tgt": {
+        "type": "ProcessCurriculumOutcome",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:curriculum_learning_bridge:outcome_for:ProcessCurriculumOutcome:ProcessCurriculumTask",
+      "src": {
+        "type": "ProcessCurriculumOutcome",
+        "var": "src"
+      },
+      "edge_type": "outcome_for",
+      "tgt": {
+        "type": "ProcessCurriculumTask",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "clb_issue_training_world_request_from_native_task",
+      "area": "curriculum_learning_bridge",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Deliver an answer-free native training task to the mechanical world adapter.",
+      "match": [
+        [
+          "agent",
+          "has_curriculum_learning_bridge_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "task"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_experience"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "expected_outcome"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unknown"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "answer_fields_absent"
+            },
+            "b": {
+              "type": "Lit",
+              "value": true
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "edge_type": "has_training_request",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "request",
+          "CurriculumTrainingRequest",
+          {
+            "task_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "task_key"
+              }
+            },
+            "task_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "task_kind"
+              }
+            },
+            "action_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "action_kind"
+              }
+            },
+            "object_type": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "object_type"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "feature_key"
+              }
+            },
+            "before_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "before_value"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "split": "training",
+            "expected_outcome": "unknown",
+            "status": "authorized"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_curriculum_training_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "task",
+          "has_training_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "for_curriculum_task",
+          "task",
+          {}
+        ],
+        [
+          "set_attr",
+          "task",
+          "deadline_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "request_deadline_epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "clb_record_observed_training_outcome_after_native_learning",
+      "area": "curriculum_learning_bridge",
+      "order": 2,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Close a curriculum task only from actual receipts and a native learned hypothesis.",
+      "match": [
+        [
+          "agent",
+          "has_curriculum_learning_bridge_policy",
+          "policy"
+        ],
+        [
+          "agent",
+          "has_process_curriculum_task",
+          "task"
+        ],
+        [
+          "task",
+          "has_training_request",
+          "request"
+        ],
+        [
+          "request",
+          "has_training_receipt",
+          "first"
+        ],
+        [
+          "request",
+          "has_training_receipt",
+          "second"
+        ],
+        [
+          "agent",
+          "has_process_induction_hypothesis",
+          "hyp"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "policy"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_experience"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "edge_type": "has_outcome",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "executed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "split"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "training"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "first"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "second"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "action_kind"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "action_kind"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "object_type"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "object_type"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "task"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "hyp"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "candidate"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "outcome",
+          "ProcessCurriculumOutcome",
+          {
+            "status": "observed",
+            "evidence_status": "observed",
+            "assessment": "tractable_progress",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "task"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "receipt_count": {
+              "type": "Lit",
+              "value": 2
+            },
+            "native_hypothesis_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "hyp"
+                },
+                "key": "hypothesis_key"
+              }
+            },
+            "split": "training"
+          }
+        ],
+        [
+          "add_edge",
+          "task",
+          "has_outcome",
+          "outcome",
+          {}
+        ],
+        [
+          "add_edge",
+          "outcome",
+          "outcome_for",
+          "task",
+          {}
+        ],
+        [
+          "set_attr",
+          "request",
+          "status",
+          "completed"
+        ]
+      ]
+    }
+  ]
+}

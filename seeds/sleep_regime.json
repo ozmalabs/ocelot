@@ -1,0 +1,3071 @@
+{
+  "id": "sleep_regime",
+  "version": "1.0.0",
+  "depends_on": [
+    "consolidation_scheduler",
+    "episodic_working_memory_core",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "sleep_regime",
+  "description": "Opt-in staged offline lifecycle over the existing replay scheduler, with resumable graph cursor, shared-budget stage debits and advisory recombination.",
+  "microtheory": {
+    "name": "sleep_regime",
+    "description": "Advance one receipt-gated sleep stage per quiet epoch."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "SleepRegimePolicy",
+      "attrs": {
+        "name": "sleep_regime_policy",
+        "enabled": 0.0,
+        "entry_weight": 0.6,
+        "maximum_task_demand": 0.2,
+        "maximum_external_load": 0.2,
+        "maximum_urgency": 0.2,
+        "stage_cost": 1.0,
+        "cycle_retention_epochs": 12.0,
+        "receipt_retention_epochs": 8.0,
+        "model_epoch": 0.0,
+        "decay_half_life": 4.0,
+        "freshness_ceiling": 1024.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_sleep_regime_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:sleep_regime:has_sleep_regime_policy:Agent:SleepRegimePolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_sleep_regime_policy",
+      "tgt": {
+        "type": "SleepRegimePolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_memory_cycle:Agent:MemoryCycle",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_cycle",
+      "tgt": {
+        "type": "MemoryCycle",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:selected_replay:MemoryCycle:ReplayTrace",
+      "src": {
+        "type": "MemoryCycle",
+        "var": "src"
+      },
+      "edge_type": "selected_replay",
+      "tgt": {
+        "type": "ReplayTrace",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_sleep_stage_receipt:MemoryCycle:SleepStageReceipt",
+      "src": {
+        "type": "MemoryCycle",
+        "var": "src"
+      },
+      "edge_type": "has_sleep_stage_receipt",
+      "tgt": {
+        "type": "SleepStageReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:delegates_to_replay:SleepStageReceipt:ReplayTrace",
+      "src": {
+        "type": "SleepStageReceipt",
+        "var": "src"
+      },
+      "edge_type": "delegates_to_replay",
+      "tgt": {
+        "type": "ReplayTrace",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:follows_stage_receipt:SleepStageReceipt:SleepStageReceipt",
+      "src": {
+        "type": "SleepStageReceipt",
+        "var": "src"
+      },
+      "edge_type": "follows_stage_receipt",
+      "tgt": {
+        "type": "SleepStageReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_sleep_stage_receipt:Agent:SleepStageReceipt",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_sleep_stage_receipt",
+      "tgt": {
+        "type": "SleepStageReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_sleep_recombination_proposal:Agent:SleepRecombinationProposal",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_sleep_recombination_proposal",
+      "tgt": {
+        "type": "SleepRecombinationProposal",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:based_on_sleep_stage:SleepRecombinationProposal:SleepStageReceipt",
+      "src": {
+        "type": "SleepRecombinationProposal",
+        "var": "src"
+      },
+      "edge_type": "based_on_sleep_stage",
+      "tgt": {
+        "type": "SleepStageReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:references_semantic_support:SleepStageReceipt:SemanticSupport",
+      "src": {
+        "type": "SleepStageReceipt",
+        "var": "src"
+      },
+      "edge_type": "references_semantic_support",
+      "tgt": {
+        "type": "SemanticSupport",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:funded_by_request:SleepStageReceipt:SystemTwoEscalation",
+      "src": {
+        "type": "SleepStageReceipt",
+        "var": "src"
+      },
+      "edge_type": "funded_by_request",
+      "tgt": {
+        "type": "SystemTwoEscalation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_memory_clock:Agent:NetworkModeState",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_memory_clock",
+      "tgt": {
+        "type": "NetworkModeState",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_consolidation_scheduler_policy:Agent:ConsolidationSchedulerPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_consolidation_scheduler_policy",
+      "tgt": {
+        "type": "ConsolidationSchedulerPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_consolidation_task_request:MemoryCycle:SystemTwoEscalation",
+      "src": {
+        "type": "MemoryCycle",
+        "var": "src"
+      },
+      "edge_type": "has_consolidation_task_request",
+      "tgt": {
+        "type": "SystemTwoEscalation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:replays_episode:ReplayTrace:Episode",
+      "src": {
+        "type": "ReplayTrace",
+        "var": "src"
+      },
+      "edge_type": "replays_episode",
+      "tgt": {
+        "type": "Episode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:instantiates_schema:Episode:MemorySchema",
+      "src": {
+        "type": "Episode",
+        "var": "src"
+      },
+      "edge_type": "instantiates_schema",
+      "tgt": {
+        "type": "MemorySchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:has_semantic_support:Agent:SemanticSupport",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_semantic_support",
+      "tgt": {
+        "type": "SemanticSupport",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:sleep_regime:supports_schema:SemanticSupport:MemorySchema",
+      "src": {
+        "type": "SemanticSupport",
+        "var": "src"
+      },
+      "edge_type": "supports_schema",
+      "tgt": {
+        "type": "MemorySchema",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "sr_extend_scheduler_retention_for_stages",
+      "area": "sleep_regime",
+      "order": 5,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_consolidation_scheduler_policy",
+          "scheduler"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "scheduler"
+              },
+              "key": "retention_epochs"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "cycle_retention_epochs"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "scheduler",
+          "retention_epochs",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "cycle_retention_epochs"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sr_cancel_pending_cycle_on_model_epoch_change",
+      "area": "intrinsic_state",
+      "order": 19,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Cancel a resumable sleep cursor when its provenance model epoch no longer matches the policy epoch.",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "cycle",
+          "has_sleep_stage_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "sleep_stage_cursor"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "complete"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "sleep_stage_cursor"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "canceled"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "model_epoch"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "model_epoch"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_cursor",
+          "canceled"
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_cancel_reason",
+          "stale_model_epoch"
+        ]
+      ]
+    },
+    {
+      "name": "sr_begin_after_existing_replay",
+      "area": "intrinsic_state",
+      "order": 20,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Claim a completed offline scheduler cycle after EWM has emitted its single replay receipt.",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "cycle",
+          "selected_replay",
+          "replay"
+        ],
+        [
+          "cycle",
+          "has_consolidation_task_request",
+          "request"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "default_mode_weight"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "entry_weight"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "task_demand"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_task_demand"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "exteroceptive_load"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_external_load"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "interoceptive_urgency"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_urgency"
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "source"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consolidation_scheduler"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "offline"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_cursor"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "unclaimed"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "serviced"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "SleepStageReceipt",
+          {
+            "stage": "replay",
+            "status": "completed",
+            "cycle_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "epoch"
+              }
+            },
+            "stage_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "expires_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cycle"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "receipt_retention_epochs"
+                  }
+                ]
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "receipt_kind": "delegated_existing_ewm_replay",
+            "observation_status": "not_observed",
+            "provenance_kind": "offline_sleep_stage",
+            "shared_budget_debit": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "cost"
+              }
+            },
+            "replay_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "replay"
+                },
+                "key": "epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "delegates_to_replay",
+          "replay",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "funded_by_request",
+          "request",
+          {}
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_cursor",
+          "consolidate"
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sr_consolidate_after_semantic_receipt",
+      "area": "intrinsic_state",
+      "order": 30,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Advance one funded, quiet-epoch sleep stage: consolidate -> decay.",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "cycle",
+          "has_sleep_stage_receipt",
+          "prior"
+        ],
+        [
+          "cycle",
+          "selected_replay",
+          "replay"
+        ],
+        [
+          "replay",
+          "replays_episode",
+          "episode"
+        ],
+        [
+          "episode",
+          "instantiates_schema",
+          "schema"
+        ],
+        [
+          "agent",
+          "has_semantic_support",
+          "support"
+        ],
+        [
+          "support",
+          "supports_schema",
+          "schema"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "default_mode_weight"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "entry_weight"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "task_demand"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_task_demand"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "exteroceptive_load"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_external_load"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "interoceptive_urgency"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_urgency"
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "stage_cost"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "offline"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_cursor"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consolidate"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "stage"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "replay"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "SleepStageReceipt",
+          {
+            "stage": "consolidate",
+            "status": "completed",
+            "cycle_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "epoch"
+              }
+            },
+            "stage_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "expires_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cycle"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "receipt_retention_epochs"
+                  }
+                ]
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "receipt_kind": "sleep_stage_consolidate",
+            "observation_status": "not_observed",
+            "provenance_kind": "offline_sleep_stage",
+            "shared_budget_debit": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "stage_cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "follows_stage_receipt",
+          "prior",
+          {}
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_cursor",
+          "decay"
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "stage_cost"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "references_semantic_support",
+          "support",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "sr_decay_episodic_semantic_accessibility",
+      "area": "intrinsic_state",
+      "order": 31,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Advance one funded, quiet-epoch sleep stage: decay -> library.",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "cycle",
+          "has_sleep_stage_receipt",
+          "prior"
+        ],
+        [
+          "cycle",
+          "selected_replay",
+          "replay"
+        ],
+        [
+          "replay",
+          "replays_episode",
+          "episode"
+        ],
+        [
+          "episode",
+          "instantiates_schema",
+          "schema"
+        ],
+        [
+          "agent",
+          "has_semantic_support",
+          "support"
+        ],
+        [
+          "support",
+          "supports_schema",
+          "schema"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "default_mode_weight"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "entry_weight"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "task_demand"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_task_demand"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "exteroceptive_load"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_external_load"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "interoceptive_urgency"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_urgency"
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "stage_cost"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "offline"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_cursor"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "decay"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "stage"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "consolidate"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "support",
+          "sleep_freshness",
+          {
+            "__term__": {
+              "type": "Ashr",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "freshness_ceiling"
+              },
+              "b": {
+                "type": "IDiv",
+                "a": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "mode"
+                        },
+                        "key": "epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "support"
+                        },
+                        "key": "last_updated_epoch"
+                      }
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "decay_half_life"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "support",
+          "sleep_freshness_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "support",
+          "sleep_accessibility",
+          {
+            "__term__": {
+              "type": "Ashr",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "freshness_ceiling"
+              },
+              "b": {
+                "type": "IDiv",
+                "a": {
+                  "type": "Max",
+                  "items": [
+                    {
+                      "type": "Lit",
+                      "value": 0
+                    },
+                    {
+                      "type": "Minus",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "mode"
+                        },
+                        "key": "epoch"
+                      },
+                      "b": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "support"
+                        },
+                        "key": "last_updated_epoch"
+                      }
+                    }
+                  ]
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "decay_half_life"
+                }
+              }
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "support",
+          "sleep_derived_uncertainty",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "support"
+                  },
+                  "key": "uncertainty"
+                },
+                {
+                  "type": "Div",
+                  "a": {
+                    "type": "Minus",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "freshness_ceiling"
+                    },
+                    "b": {
+                      "type": "Ashr",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pol"
+                        },
+                        "key": "freshness_ceiling"
+                      },
+                      "b": {
+                        "type": "IDiv",
+                        "a": {
+                          "type": "Max",
+                          "items": [
+                            {
+                              "type": "Lit",
+                              "value": 0
+                            },
+                            {
+                              "type": "Minus",
+                              "a": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "mode"
+                                },
+                                "key": "epoch"
+                              },
+                              "b": {
+                                "type": "Attr",
+                                "node": {
+                                  "type": "Var",
+                                  "name": "support"
+                                },
+                                "key": "last_updated_epoch"
+                              }
+                            }
+                          ]
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "pol"
+                          },
+                          "key": "decay_half_life"
+                        }
+                      }
+                    }
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "freshness_ceiling"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "support",
+          "sleep_decay_count",
+          {
+            "__term__": {
+              "type": "IfThenElse",
+              "cond": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "support"
+                  },
+                  "key": "sleep_decay_count"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": null
+                }
+              },
+              "then": {
+                "type": "Lit",
+                "value": 1.0
+              },
+              "other": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "support"
+                    },
+                    "key": "sleep_decay_count"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        [
+          "add_node",
+          "receipt",
+          "SleepStageReceipt",
+          {
+            "stage": "decay",
+            "status": "completed",
+            "cycle_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "epoch"
+              }
+            },
+            "stage_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "expires_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cycle"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "receipt_retention_epochs"
+                  }
+                ]
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "receipt_kind": "episodic_freshness_decay",
+            "observation_status": "not_observed",
+            "provenance_kind": "offline_sleep_stage",
+            "shared_budget_debit": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "stage_cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "follows_stage_receipt",
+          "prior",
+          {}
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_cursor",
+          "library"
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "stage_cost"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "references_semantic_support",
+          "support",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "sr_yield_to_library_learning_stage",
+      "area": "intrinsic_state",
+      "order": 32,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Advance one funded, quiet-epoch sleep stage: library -> recombine.",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "cycle",
+          "has_sleep_stage_receipt",
+          "prior"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "default_mode_weight"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "entry_weight"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "task_demand"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_task_demand"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "exteroceptive_load"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_external_load"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "interoceptive_urgency"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_urgency"
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "stage_cost"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "offline"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_cursor"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "library"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "stage"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "decay"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "receipt",
+          "SleepStageReceipt",
+          {
+            "stage": "library",
+            "status": "deferred",
+            "cycle_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "epoch"
+              }
+            },
+            "stage_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "expires_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cycle"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "receipt_retention_epochs"
+                  }
+                ]
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "receipt_kind": "awaits_library_learning",
+            "observation_status": "not_observed",
+            "provenance_kind": "offline_sleep_stage",
+            "shared_budget_debit": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "stage_cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "follows_stage_receipt",
+          "prior",
+          {}
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_cursor",
+          "recombine"
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "stage_cost"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sr_recombine_as_advisory_only",
+      "area": "intrinsic_state",
+      "order": 33,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Advance one funded, quiet-epoch sleep stage: recombine -> complete.",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_memory_cycle",
+          "cycle"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "cycle",
+          "has_sleep_stage_receipt",
+          "prior"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "enabled"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 1.0
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "default_mode_weight"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "entry_weight"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "task_demand"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_task_demand"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "exteroceptive_load"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_external_load"
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "interoceptive_urgency"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "maximum_urgency"
+                }
+              },
+              {
+                "type": "Gte",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "mode"
+                  },
+                  "key": "epoch"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cycle"
+                  },
+                  "key": "epoch"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "remaining"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "stage_cost"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "completed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "mode"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "offline"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_cursor"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "recombine"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cycle"
+              },
+              "key": "sleep_stage_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "prior"
+              },
+              "key": "stage"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "library"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "proposal",
+          "SleepRecombinationProposal",
+          {
+            "status": "advisory",
+            "source": "sleep_recombination",
+            "cycle_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "epoch"
+              }
+            },
+            "proposal_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "basis_stage": "library",
+            "observation_status": "not_observed",
+            "provenance_kind": "advisory_recombination"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_sleep_recombination_proposal",
+          "proposal",
+          {}
+        ],
+        [
+          "add_edge",
+          "proposal",
+          "based_on_sleep_stage",
+          "prior",
+          {}
+        ],
+        [
+          "add_node",
+          "receipt",
+          "SleepStageReceipt",
+          {
+            "stage": "recombine",
+            "status": "completed",
+            "cycle_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cycle"
+                },
+                "key": "epoch"
+              }
+            },
+            "stage_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "expires_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cycle"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "receipt_retention_epochs"
+                  }
+                ]
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "receipt_kind": "advisory_recombination",
+            "observation_status": "not_observed",
+            "provenance_kind": "offline_sleep_stage",
+            "shared_budget_debit": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "stage_cost"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "cycle",
+          "has_sleep_stage_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "receipt",
+          "follows_stage_receipt",
+          "prior",
+          {}
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_cursor",
+          "complete"
+        ],
+        [
+          "set_attr",
+          "cycle",
+          "sleep_stage_epoch",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            }
+          }
+        ],
+        [
+          "set_attr",
+          "budget",
+          "remaining",
+          {
+            "__term__": {
+              "type": "Max",
+              "items": [
+                {
+                  "type": "Lit",
+                  "value": 0
+                },
+                {
+                  "type": "Minus",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "budget"
+                    },
+                    "key": "remaining"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "stage_cost"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "sr_prune_expired_receipts_and_advisories",
+      "area": "sleep_regime",
+      "order": 80,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_sleep_stage_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "expires_epoch"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_node",
+          "receipt"
+        ]
+      ]
+    },
+    {
+      "name": "sr_prune_expired_recombination_advisories",
+      "area": "sleep_regime",
+      "order": 81,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "agent",
+          "has_sleep_regime_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_memory_clock",
+          "mode"
+        ],
+        [
+          "agent",
+          "has_sleep_recombination_proposal",
+          "proposal"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "mode"
+              },
+              "key": "epoch"
+            },
+            "b": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "proposal"
+                  },
+                  "key": "cycle_epoch"
+                },
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "cycle_retention_epochs"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "del_node",
+          "proposal"
+        ]
+      ]
+    }
+  ]
+}

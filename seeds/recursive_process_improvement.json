@@ -1,0 +1,2851 @@
+{
+  "id": "recursive_process_improvement",
+  "version": "1.0.0",
+  "depends_on": [
+    "invention_operator_authorship"
+  ],
+  "self_load_only": true,
+  "area": "memory_consolidation",
+  "description": "P15.04: graph-owned recursive operator generations with immutable ancestry, scoped approval, shared generation work ceilings and recorded rollback.",
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "RecursiveProcessImprovementPolicy",
+      "attrs": {
+        "name": "recursive_process_improvement_policy",
+        "enabled": 0.0,
+        "max_generations": 3.0,
+        "generation_work_cap": 100000.0,
+        "frozen_criteria_digest": "pmb-v1-frozen-criteria",
+        "human_gate": 1.0
+      }
+    },
+    {
+      "local_id": 1,
+      "type": "RecursiveProcessGeneration",
+      "attrs": {
+        "generation_id": "generation-0",
+        "generation_index": 0.0,
+        "operator_digest": "held:commutator",
+        "status": "frozen_ancestor",
+        "active_operator": "commutator",
+        "arm": "frozen_ancestor",
+        "human_authored_operator_count": 0.0,
+        "budget_initial": 100000.0,
+        "budget_remaining": 100000.0,
+        "cumulative_work": 0.0,
+        "autonomy_claim": "valid"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_recursive_improvement_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_generation",
+      "tgt": {
+        "local": 1
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:invention_operator_authorship:has_invention_operator_authorship_policy:Agent:InventionOperatorAuthorshipPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invention_operator_authorship_policy",
+      "tgt": {
+        "type": "InventionOperatorAuthorshipPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:has_operator_composition_request:Agent:OperatorCompositionRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_operator_composition_request",
+      "tgt": {
+        "type": "OperatorCompositionRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:has_candidate_operator:Agent:CandidateOperator",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_candidate_operator",
+      "tgt": {
+        "type": "CandidateOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:has_expression_root:CandidateOperator:OperatorExpression",
+      "src": {
+        "type": "CandidateOperator",
+        "var": "src"
+      },
+      "edge_type": "has_expression_root",
+      "tgt": {
+        "type": "OperatorExpression",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:expr_child:OperatorExpression:OperatorExpression",
+      "src": {
+        "type": "OperatorExpression",
+        "var": "src"
+      },
+      "edge_type": "expr_child",
+      "tgt": {
+        "type": "OperatorExpression",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:has_promotion_approval:Agent:OperatorPromotionApproval",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_promotion_approval",
+      "tgt": {
+        "type": "OperatorPromotionApproval",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:has_invention_operator:Agent:InventionOperator",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invention_operator",
+      "tgt": {
+        "type": "InventionOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:derived_from_candidate:InventionOperator:CandidateOperator",
+      "src": {
+        "type": "InventionOperator",
+        "var": "src"
+      },
+      "edge_type": "derived_from_candidate",
+      "tgt": {
+        "type": "CandidateOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:invention_operator_authorship:parent_operator:InventionOperator:InventionOperator",
+      "src": {
+        "type": "InventionOperator",
+        "var": "src"
+      },
+      "edge_type": "parent_operator",
+      "tgt": {
+        "type": "InventionOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:has_recursive_improvement_policy:Agent:RecursiveProcessImprovementPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_recursive_improvement_policy",
+      "tgt": {
+        "type": "RecursiveProcessImprovementPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:has_process_generation:Agent:RecursiveProcessGeneration",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_generation",
+      "tgt": {
+        "type": "RecursiveProcessGeneration",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:has_recursive_generation_request:Agent:ThinkingBudgetRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_recursive_generation_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:funded_by_generation_request:RecursiveProcessGeneration:ThinkingBudgetRequest",
+      "src": {
+        "type": "RecursiveProcessGeneration",
+        "var": "src"
+      },
+      "edge_type": "funded_by_generation_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:parent_generation:RecursiveProcessGeneration:RecursiveProcessGeneration",
+      "src": {
+        "type": "RecursiveProcessGeneration",
+        "var": "src"
+      },
+      "edge_type": "parent_generation",
+      "tgt": {
+        "type": "RecursiveProcessGeneration",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:generation_candidate:RecursiveProcessGeneration:CandidateOperator",
+      "src": {
+        "type": "RecursiveProcessGeneration",
+        "var": "src"
+      },
+      "edge_type": "generation_candidate",
+      "tgt": {
+        "type": "CandidateOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:generation_operator:RecursiveProcessGeneration:InventionOperator",
+      "src": {
+        "type": "RecursiveProcessGeneration",
+        "var": "src"
+      },
+      "edge_type": "generation_operator",
+      "tgt": {
+        "type": "InventionOperator",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:has_generation_audit:RecursiveProcessGeneration:GenerationInvariantAudit",
+      "src": {
+        "type": "RecursiveProcessGeneration",
+        "var": "src"
+      },
+      "edge_type": "has_generation_audit",
+      "tgt": {
+        "type": "GenerationInvariantAudit",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:rpi:rollback_to_generation:RecursiveProcessGeneration:RecursiveProcessGeneration",
+      "src": {
+        "type": "RecursiveProcessGeneration",
+        "var": "src"
+      },
+      "edge_type": "rollback_to_generation",
+      "tgt": {
+        "type": "RecursiveProcessGeneration",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "ioa_build_graph_authored_operator_candidate",
+      "area": "memory_consolidation",
+      "order": 10,
+      "latency_class": "background",
+      "comment": "Build a bounded candidate expression graph from an explicit composition request over the held algebra.",
+      "match": [
+        [
+          "agent",
+          "has_invention_operator_authorship_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_operator_composition_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "draft"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "recipe"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_square"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "left_operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "right_operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "candidate_name"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_square_v1"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "candidate",
+          "CandidateOperator",
+          {
+            "name": "commutator_square_v1",
+            "status": "draft",
+            "grammar": "held_algebra_v1",
+            "operator": "compose",
+            "authoring": "native_graph_rule",
+            "parent_operator_name": "commutator",
+            "expression_node_cap": 7,
+            "resource_cap": 32,
+            "criteria_digest": "pmb-v1-frozen-criteria",
+            "lineage": "commutator -> compose(commutator,commutator)"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_candidate_operator",
+          "candidate",
+          {}
+        ],
+        [
+          "add_node",
+          "root",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "compose"
+          }
+        ],
+        [
+          "add_node",
+          "left",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "commutator"
+          }
+        ],
+        [
+          "add_node",
+          "right",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "commutator"
+          }
+        ],
+        [
+          "add_node",
+          "arg_a0",
+          "OperatorExpression",
+          {
+            "kind": "input",
+            "name": "a"
+          }
+        ],
+        [
+          "add_node",
+          "arg_b0",
+          "OperatorExpression",
+          {
+            "kind": "input",
+            "name": "b"
+          }
+        ],
+        [
+          "add_node",
+          "arg_a1",
+          "OperatorExpression",
+          {
+            "kind": "input",
+            "name": "a"
+          }
+        ],
+        [
+          "add_node",
+          "arg_b1",
+          "OperatorExpression",
+          {
+            "kind": "input",
+            "name": "b"
+          }
+        ],
+        [
+          "add_edge",
+          "candidate",
+          "has_expression_root",
+          "root",
+          {}
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "left",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "right",
+          {
+            "slot": 1
+          }
+        ],
+        [
+          "add_edge",
+          "left",
+          "expr_child",
+          "arg_a0",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "left",
+          "expr_child",
+          "arg_b0",
+          {
+            "slot": 1
+          }
+        ],
+        [
+          "add_edge",
+          "right",
+          "expr_child",
+          "arg_a1",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "right",
+          "expr_child",
+          "arg_b1",
+          {
+            "slot": 1
+          }
+        ],
+        [
+          "set_attr",
+          "req",
+          "status",
+          "built"
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "ioa_reject_unsafe_composition_request",
+      "area": "memory_consolidation",
+      "order": 11,
+      "latency_class": "background",
+      "comment": "Reject requests outside the small held-algebra graph grammar; no source code or verifier edits are admitted.",
+      "match": [
+        [
+          "agent",
+          "has_invention_operator_authorship_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_operator_composition_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "draft"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "req"
+                    },
+                    "key": "recipe"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "commutator_square"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "req"
+                    },
+                    "key": "left_operator"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "commutator"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "req"
+                    },
+                    "key": "right_operator"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": "commutator"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "req",
+          "status",
+          "rejected"
+        ],
+        [
+          "set_attr",
+          "req",
+          "rejection_reason",
+          "operator_outside_held_algebra_template"
+        ]
+      ]
+    },
+    {
+      "name": "ioa_qualify_development_measurement",
+      "area": "memory_consolidation",
+      "order": 20,
+      "latency_class": "background",
+      "comment": "Development-only positive yield may qualify a candidate when invariant checks are preserved and actual work is within the cap.",
+      "match": [
+        [
+          "agent",
+          "has_invention_operator_authorship_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_candidate_operator",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "measured"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "grammar"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "held_algebra_v1"
+            }
+          },
+          {
+            "type": "Gt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "development_yield"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "parent_development_yield"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "invariant_checks"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "parent_invariant_checks"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "proof_failures"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "candidate_work"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "candidate_work"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_resource_work"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "status",
+          "awaiting_human"
+        ],
+        [
+          "set_attr",
+          "c",
+          "verdict",
+          "development_qualified"
+        ],
+        [
+          "set_attr",
+          "c",
+          "criteria_digest",
+          "pmb-v1-frozen-criteria"
+        ]
+      ]
+    },
+    {
+      "name": "ioa_reject_unqualified_development_measurement",
+      "area": "memory_consolidation",
+      "order": 21,
+      "latency_class": "background",
+      "comment": "Reject candidates with nonpositive development gain, proof failures or a changed invariant-check count.",
+      "match": [
+        [
+          "agent",
+          "has_invention_operator_authorship_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_candidate_operator",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "measured"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Gt",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "development_yield"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "parent_development_yield"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "invariant_checks"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "parent_invariant_checks"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "proof_failures"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Gte",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "candidate_work"
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Lte",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "candidate_work"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "max_resource_work"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "c",
+          "status",
+          "rejected"
+        ],
+        [
+          "set_attr",
+          "c",
+          "verdict",
+          "development_or_invariant_gate_failed"
+        ]
+      ]
+    },
+    {
+      "name": "ioa_promote_only_with_existing_human_gate",
+      "area": "memory_consolidation",
+      "order": 30,
+      "latency_class": "background",
+      "comment": "Promotion requires the existing explicit human approval event and the frozen criteria digest; it retains the held parent for rollback.",
+      "match": [
+        [
+          "agent",
+          "has_invention_operator_authorship_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_candidate_operator",
+          "c"
+        ],
+        [
+          "agent",
+          "has_promotion_approval",
+          "approval"
+        ],
+        [
+          "agent",
+          "has_invention_operator",
+          "parent"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_human"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "approval"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "approval"
+              },
+              "key": "approval_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "human"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "approval"
+              },
+              "key": "candidate_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "approval"
+              },
+              "key": "criteria_digest"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pmb-v1-frozen-criteria"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "criteria_digest"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pmb-v1-frozen-criteria"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "parent"
+              },
+              "key": "name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "parent_operator_name"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "op",
+          "InventionOperator",
+          {
+            "name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "name"
+              }
+            },
+            "status": "active",
+            "provenance": "agent_authored_graph_data",
+            "candidate_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "name"
+              }
+            },
+            "parent_operator": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "parent_operator_name"
+              }
+            },
+            "rollback_target": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "parent_operator_name"
+              }
+            },
+            "lineage": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "lineage"
+              }
+            },
+            "approval_kind": "human"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_invention_operator",
+          "op",
+          {}
+        ],
+        [
+          "add_edge",
+          "op",
+          "parent_operator",
+          "parent",
+          {}
+        ],
+        [
+          "add_edge",
+          "op",
+          "derived_from_candidate",
+          "c",
+          {}
+        ],
+        [
+          "set_attr",
+          "c",
+          "status",
+          "promoted"
+        ]
+      ],
+      "batch": true
+    },
+    {
+      "name": "rpi_reserve_one_shared_generation_budget",
+      "area": "memory_consolidation",
+      "order": 23,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Reserve one complete generation ceiling from the single shared ThinkingBudget before creating generation state.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_candidate_operator",
+          "c"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_human"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "authoring"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "native_graph_rule"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_recursive_generation_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "source_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "name"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "request",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "recursive_process_generation",
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "name"
+              }
+            },
+            "operation_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "name"
+              }
+            },
+            "source_epoch": 0.0,
+            "requested_epoch": 0.0,
+            "deadline_epoch": 1.0,
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "generation_work_cap"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_thinking_budget_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_recursive_generation_request",
+          "request",
+          {}
+        ],
+        [
+          "add_edge",
+          "request",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "rpi_record_candidate_generation_before_approval",
+      "area": "memory_consolidation",
+      "order": 24,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Bind a graph-authored, development-qualified candidate to one immutable child generation before the human gate.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_candidate_operator",
+          "c"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ],
+        [
+          "agent",
+          "has_recursive_generation_request",
+          "request"
+        ],
+        [
+          "request",
+          "draws_on_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_human"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "authoring"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "native_graph_rule"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "criteria_digest"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "frozen_criteria_digest"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "request"
+              },
+              "key": "source_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "frozen_ancestor"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "parent_operator_name"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "active_operator"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "generation_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_generations"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_generation",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "candidate_name"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "name"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "child",
+          "RecursiveProcessGeneration",
+          {
+            "generation_id": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "generation:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "generation_index": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "g"
+                    },
+                    "key": "generation_index"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "candidate_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "name"
+              }
+            },
+            "operator_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "name"
+              }
+            },
+            "status": "pending_approval",
+            "arm": "full_system",
+            "human_authored_operator_count": 0.0,
+            "budget_initial": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "request"
+                },
+                "key": "cost"
+              }
+            },
+            "budget_remaining": {
+              "__term__": {
+                "type": "Minus",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "request"
+                  },
+                  "key": "cost"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "candidate_work"
+                }
+              }
+            },
+            "cumulative_work": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "candidate_work"
+              }
+            },
+            "autonomy_claim": "valid",
+            "criteria_digest": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "criteria_digest"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_generation",
+          "child",
+          {}
+        ],
+        [
+          "add_edge",
+          "child",
+          "parent_generation",
+          "g",
+          {}
+        ],
+        [
+          "add_edge",
+          "child",
+          "generation_candidate",
+          "c",
+          {}
+        ],
+        [
+          "add_edge",
+          "child",
+          "funded_by_generation_request",
+          "request",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "rpi_activate_only_approved_generation",
+      "area": "memory_consolidation",
+      "order": 35,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "An approved P14 operator promotion activates its matching child generation while retaining frozen ancestry.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_invention_operator",
+          "op"
+        ],
+        [
+          "op",
+          "derived_from_candidate",
+          "c"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ],
+        [
+          "g",
+          "generation_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "pending_approval"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "approval_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "human"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "provenance"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "agent_authored_graph_data"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "authoring"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "native_graph_rule"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "promoted"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_edge",
+          "g",
+          "generation_operator",
+          "op",
+          {}
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "g",
+          "active_operator",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "name"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "rpi_propose_commutator_cube_v2",
+      "area": "memory_consolidation",
+      "order": 26,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Propose a graph-authored successor operator from the active generation; it cannot activate without its own explicit approval.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "active_operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_square_v1"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "generation_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_generations"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_candidate_operator",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "name"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "commutator_cube_v2"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "c",
+          "CandidateOperator",
+          {
+            "name": "commutator_cube_v2",
+            "status": "draft",
+            "grammar": "held_algebra_v1",
+            "operator": "compose",
+            "authoring": "native_graph_rule",
+            "parent_operator_name": "commutator_square_v1",
+            "expression_node_cap": 7,
+            "resource_cap": 32,
+            "criteria_digest": "pmb-v1-frozen-criteria",
+            "lineage": "commutator_square_v1 -> compose(commutator_square_v1,commutator)"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_candidate_operator",
+          "c",
+          {}
+        ],
+        [
+          "add_node",
+          "root",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "compose"
+          }
+        ],
+        [
+          "add_node",
+          "left",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator_square_v1"
+          }
+        ],
+        [
+          "add_node",
+          "right",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator"
+          }
+        ],
+        [
+          "add_edge",
+          "c",
+          "has_expression_root",
+          "root",
+          {}
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "left",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "right",
+          {
+            "slot": 1
+          }
+        ]
+      ]
+    },
+    {
+      "name": "rpi_propose_commutator_fourth_v3",
+      "area": "memory_consolidation",
+      "order": 27,
+      "latency_class": "background",
+      "batch": false,
+      "comment": "Propose a graph-authored successor operator from the active generation; it cannot activate without its own explicit approval.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "active_operator"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "commutator_cube_v2"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "generation_index"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_generations"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_candidate_operator",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "name"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "commutator_fourth_v3"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "c",
+          "CandidateOperator",
+          {
+            "name": "commutator_fourth_v3",
+            "status": "draft",
+            "grammar": "held_algebra_v1",
+            "operator": "compose",
+            "authoring": "native_graph_rule",
+            "parent_operator_name": "commutator_cube_v2",
+            "expression_node_cap": 7,
+            "resource_cap": 32,
+            "criteria_digest": "pmb-v1-frozen-criteria",
+            "lineage": "commutator_cube_v2 -> compose(commutator_cube_v2,commutator)"
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_candidate_operator",
+          "c",
+          {}
+        ],
+        [
+          "add_node",
+          "root",
+          "OperatorExpression",
+          {
+            "kind": "operator",
+            "operator": "compose"
+          }
+        ],
+        [
+          "add_node",
+          "left",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator_cube_v2"
+          }
+        ],
+        [
+          "add_node",
+          "right",
+          "OperatorExpression",
+          {
+            "kind": "operator_reference",
+            "name": "commutator"
+          }
+        ],
+        [
+          "add_edge",
+          "c",
+          "has_expression_root",
+          "root",
+          {}
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "left",
+          {
+            "slot": 0
+          }
+        ],
+        [
+          "add_edge",
+          "root",
+          "expr_child",
+          "right",
+          {
+            "slot": 1
+          }
+        ]
+      ]
+    },
+    {
+      "name": "rpi_suspend_operator_without_funded_generation",
+      "area": "memory_consolidation",
+      "order": 36,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "An operator cannot remain active if its generation could not reserve the shared work ceiling.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_invention_operator",
+          "op"
+        ],
+        [
+          "op",
+          "derived_from_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "op"
+              },
+              "key": "approval_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "human"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_generation",
+                "any_type": false
+              },
+              "var_name": "g",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "candidate_name"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c"
+                  },
+                  "key": "name"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "op",
+          "status",
+          "suspended"
+        ],
+        [
+          "set_attr",
+          "c",
+          "status",
+          "rejected"
+        ],
+        [
+          "set_attr",
+          "c",
+          "verdict",
+          "generation_budget_not_reserved"
+        ]
+      ]
+    },
+    {
+      "name": "rpi_rollback_failed_generation_to_verified_ancestor",
+      "area": "memory_consolidation",
+      "order": 40,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "comment": "Record invariant failure, suspend the child operator and reactivate its direct frozen ancestor.",
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ],
+        [
+          "g",
+          "has_generation_audit",
+          "audit"
+        ],
+        [
+          "g",
+          "parent_generation",
+          "parent"
+        ],
+        [
+          "g",
+          "generation_operator",
+          "op"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "audit"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "failed"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "audit"
+                  },
+                  "key": "proof_binding"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": false
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "audit"
+                  },
+                  "key": "adoption_valid"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": false
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "audit"
+                  },
+                  "key": "grounding_valid"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": false
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "audit"
+                  },
+                  "key": "action_safe"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "status",
+          "rolled_back"
+        ],
+        [
+          "set_attr",
+          "g",
+          "terminal_reason",
+          "zero_tolerance_invariant_failure"
+        ],
+        [
+          "set_attr",
+          "g",
+          "autonomy_claim",
+          "invalid"
+        ],
+        [
+          "set_attr",
+          "op",
+          "status",
+          "suspended"
+        ],
+        [
+          "add_edge",
+          "g",
+          "rollback_to_generation",
+          "parent",
+          {}
+        ],
+        [
+          "set_attr",
+          "parent",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "parent",
+          "active_operator",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "parent"
+              },
+              "key": "operator_digest"
+            }
+          }
+        ]
+      ]
+    },
+    {
+      "name": "rpi_invalidate_human_edited_generation_claim",
+      "area": "memory_consolidation",
+      "order": 41,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "agent",
+          "has_recursive_improvement_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_generation",
+          "g"
+        ],
+        [
+          "g",
+          "generation_candidate",
+          "c"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "autonomy_claim"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "valid"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c"
+                },
+                "key": "authoring"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "native_graph_rule"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "g",
+          "autonomy_claim",
+          "invalid"
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "rejected_human_edit"
+        ]
+      ]
+    }
+  ]
+}

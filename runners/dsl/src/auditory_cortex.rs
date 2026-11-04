@@ -4,7 +4,9 @@
 //! evaluation is a weighted sum over cochlear bands smoothed in
 //! time:
 //!
-//!     R(t) = Σ_band  w_freq(band, t) · env_band(t)  ⊛  G_time
+//! ```text
+//! R(t) = Σ_band w_freq(band, t) · env_band(t) ⊛ G_time
+//! ```
 //!
 //! For sustained / burst patches `w_freq` is a stationary Gaussian
 //! in frequency. For FM patches `w_freq` shifts linearly with time

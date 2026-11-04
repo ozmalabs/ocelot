@@ -12,7 +12,7 @@
 
 use crate::term::TermNode;
 
-pub const NUM_TERM_VARIANTS: usize = 251;
+pub const NUM_TERM_VARIANTS: usize = 254;
 
 /// Variant names in DECLARATION ORDER. Index == `variant_index()`.
 pub static TERM_VARIANT_NAMES: [&str; NUM_TERM_VARIANTS] = [
@@ -263,6 +263,9 @@ pub static TERM_VARIANT_NAMES: [&str; NUM_TERM_VARIANTS] = [
     "ProcessCompose",
     "ProcessInverse",
     "ProcessApply",
+    "ProcessRepairVerify",
+    "ProcessDistribution",
+    "ProcessLiftInstantiate",
     "EffectSupport",
     "EffectFingerprint",
     "PermParity",
@@ -522,10 +525,13 @@ impl TermNode {
             TermNode::ProcessCompose { .. } => 244,
             TermNode::ProcessInverse { .. } => 245,
             TermNode::ProcessApply { .. } => 246,
-            TermNode::EffectSupport { .. } => 247,
-            TermNode::EffectFingerprint { .. } => 248,
-            TermNode::PermParity { .. } => 249,
-            TermNode::MatDet { .. } => 250,
+            TermNode::ProcessRepairVerify { .. } => 247,
+            TermNode::ProcessDistribution { .. } => 248,
+            TermNode::ProcessLiftInstantiate { .. } => 249,
+            TermNode::EffectSupport { .. } => 250,
+            TermNode::EffectFingerprint { .. } => 251,
+            TermNode::PermParity { .. } => 252,
+            TermNode::MatDet { .. } => 253,
         }
     }
 }

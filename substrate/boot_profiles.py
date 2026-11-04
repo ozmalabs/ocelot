@@ -778,6 +778,8 @@ COGNITION_ON_SEEDS = (
     "decomposition_consumer",
     "impasse_simulation_bridge",
     "consolidation_scheduler",
+    # P13 staged offline learning and observed-yield strategy recall.
+    "sleep_regime",
     "tolerance_registry",
     "thinking_budget",
     "extended_thinking",
@@ -787,6 +789,20 @@ COGNITION_ON_SEEDS = (
     # until an explicit task enables them; installing them here tests closure.
     "qualia_shape_mint",
     "cognition_signature",
+    "experience_signature",
+    "qualia_acquisition",
+    # P17 behavioral consumers and verified significance/revision remain off.
+    "qualia_behavior",
+    "experiential_significance",
+    "qualia_revision",
+    "numerosity",
+    # P8 learned episode models and funded experiment design remain disabled.
+    "process_induction",
+    # P20 source priors remain proposals until an exact mapped effect and
+    # independently receipted target transition agree.
+    "target_learning",
+    "latent_process",
+    "experiment_design",
     "similarity_recall",
     "cognition_aperture",
     "temporal_escalation",
@@ -798,6 +814,61 @@ COGNITION_ON_SEEDS = (
     "imagined_candidate_arbitration",
     "decomposition_completion",
     "analog_imagery",
+    # P6 measured process-view closure. Process and solver policies remain
+    # disabled in this profile until an explicit evaluation enables them.
+    "process_schema",
+    "invention_operators",
+    "invention_round",
+    "invariant_miner",
+    "process_solving",
+    "library_learning",
+    "strategy_library",
+    # P14 bounded law proofs, registered-domain proof adoption, and
+    # graph-authored operator proposals. Their domain/action gates stay explicit.
+    "process_laws",
+    "process_proof_adoption",
+    "invention_operator_authorship",
+    # P15 deterministic portfolio scheduling, verified self-curriculum and
+    # the approval/budget-gated recursive operator generation lifecycle.
+    "process_portfolio",
+    "process_curriculum",
+    "curriculum_learning_bridge",
+    "recursive_process_improvement",
+    # P16 graph-selected expression requests; policy and emission stay gated.
+    "native_process_execution",
+    # P10 goal-directed invention and exact-context strategy replay remain
+    # policy-disabled until an explicit cognition-on evaluation enables them.
+    "process_lifting",
+    "goal_invention",
+    "strategy_discovery",
+    # P19 bounded expression and opt-in lifted strategy search; both policies
+    # remain disabled until a phase-specific evaluation enables them.
+    "open_process_search",
+    "open_process_adoption",
+    # P22 generic proposals remain non-actionable until native qualification
+    # and candidate-specific approval complete.
+    "independent_improvement",
+    # P11 frame search and exact process transfer remain opt-in at policy level.
+    "representation_search",
+    "process_transfer",
+    # P12 witnessed/instructed acquisition and isolated explanation/rebuild.
+    # All three policies remain disabled until a phase-specific evaluation
+    # explicitly enables them.
+    "imitation",
+    "social_process",
+    "process_explanation",
+    # P20 incidental sequence candidates are evidence-only and policy-off.
+    "observed_sequence_learning",
+    # P24 common target receipt fan-out and candidate-only source transfer.
+    # Both policies remain disabled until a phase-specific evaluator opts in.
+    "common_target_evidence",
+    "additive_transfer",
+    # P25 persistent learner capacity accounting and same-learner consolidation.
+    "learning_memory_budget",
+    "persistent_consolidation",
+    # P26 native evidence selection. The seed's policy remains disabled until
+    # a phase-specific evaluator enables it; search policy remains separately gated.
+    "useful_evidence_selection",
 )
 
 
@@ -805,7 +876,38 @@ def boot_cognition_on():
     """Boot a WorldAdapter with CORE_SEEDS + COGNITION_ON_SEEDS enabled."""
     from substrate.world_adapter import WorldAdapter
 
-    return WorldAdapter(seeds=CORE_SEEDS + COGNITION_ON_SEEDS)
+    world = WorldAdapter(seeds=CORE_SEEDS + COGNITION_ON_SEEDS)
+    budgets = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+    if len(budgets) != 1:
+        world.close()
+        raise RuntimeError(f"cognition-on profile requires one shared ThinkingBudget, found {len(budgets)}")
+    world.inner.set_attr(budgets[0], "enabled", 1.0)
+    retention_params = list(world.inner.neighbours(
+        world.agent, "has_persistent_retention_profile_params"))
+    if len(retention_params) != 1:
+        world.close()
+        raise RuntimeError("cognition-on profile requires one persistent retention parameter node")
+    params = world.s.node(retention_params[0])["attrs"]
+    memory_policies = world.s.nodes("LearningMemoryBudgetPolicy")
+    consolidation_policies = world.s.nodes("PersistentConsolidationPolicy")
+    scheduled_checkpoint_policies = world.s.nodes(
+        "ScheduledLearningCheckpointPolicy")
+    if len(memory_policies) != 1 or len(consolidation_policies) != 1:
+        world.close()
+        raise RuntimeError("cognition-on profile requires one P25 memory and consolidation policy")
+    if (len(scheduled_checkpoint_policies) != 1
+            or world.s.node(scheduled_checkpoint_policies[0])["attrs"].get(
+                "enabled") != 0.0):
+        world.close()
+        raise RuntimeError(
+            "cognition-on profile requires one disabled P27 checkpoint policy")
+    world.inner.set_attr(memory_policies[0], "enabled",
+                         float(params.get("learning_memory_enabled", 0.0)))
+    world.inner.set_attr(memory_policies[0], "capacity_bytes",
+                         float(params.get("capacity_bytes", 8192.0)))
+    world.inner.set_attr(consolidation_policies[0], "enabled",
+                         float(params.get("persistent_consolidation_enabled", 0.0)))
+    return world
 
 
 __all__ = ["COGNITION_ON_SEEDS", "CONVERSATION_RUNTIME_MODULES",

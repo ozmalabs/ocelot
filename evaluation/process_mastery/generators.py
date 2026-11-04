@@ -175,3 +175,10 @@ def blicket_task(seed: int, n_objects: int = 4):
 
 def blicket_outcome(truth, objects) -> int:
     return int(len(set(truth["blickets"]) & set(objects)) >= truth["threshold"])
+
+
+# Family-a puzzle mechanics live in their own module; re-export here beside
+# Loopover so world selection can use one deterministic generator namespace.
+from evaluation.process_mastery.puzzle_worlds import (  # noqa: E402,F401
+    cube_task, sliding_task, tool_goal_task,
+)

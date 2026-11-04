@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "self_load_only": true,
   "depends_on": [],
-  "description": "Data-only parameter and policy bundle for the opt-in cognition-on profile. Attaches enabled policy nodes for the profile's opt-in seeds, including the extended-thinking executor and its funded request budget.",
+  "description": "Data-only cognition-on parameters. P15 and P24 policies plus P25 persistent-memory and consolidation policies remain disabled unless a phase explicitly enables them; all funded work uses the single shared ThinkingBudget.",
   "microtheory": {
     "name": "cognition_on_params",
     "description": "Opt-in policy and parameter nodes for the cognition-on profile."
@@ -123,20 +123,6 @@
       }
     },
     {
-      "local_id": 10,
-      "type": "ThinkingBudget",
-      "attrs": {
-        "name": "cognition_on_thinking_budget",
-        "enabled": 1.0,
-        "capacity": 16.0,
-        "capacity_ceiling": 64.0,
-        "funding_gain": 2.0,
-        "remaining": 16.0,
-        "refill_per_epoch": 2.0,
-        "last_refill_epoch": -1.0
-      }
-    },
-    {
       "local_id": 11,
       "type": "ExtendedThinkingPolicy",
       "attrs": {
@@ -149,138 +135,483 @@
     {
       "local_id": 12,
       "type": "CognitionPlannerPolicy",
-      "attrs": {"enabled": 1.0, "maximum_depth": 8.0,
-        "maximum_expansions": 256.0, "maximum_path_arrivals": 4096.0,
-        "expansion_cost": 1.0, "maximum_branching": 8.0,
-        "current_model_epoch": -1.0, "current_goal_epoch": -1.0,
-        "current_manifold_epoch": -1.0, "current_model_id": "",
-        "current_goal_id": "", "current_manifold_id": ""}
+      "attrs": {
+        "enabled": 1.0,
+        "maximum_depth": 8.0,
+        "maximum_expansions": 256.0,
+        "maximum_path_arrivals": 4096.0,
+        "expansion_cost": 1.0,
+        "maximum_branching": 8.0,
+        "current_model_epoch": -1.0,
+        "current_goal_epoch": -1.0,
+        "current_manifold_epoch": -1.0,
+        "current_model_id": "",
+        "current_goal_id": "",
+        "current_manifold_id": ""
+      }
     },
     {
       "local_id": 13,
       "type": "ImaginedArbitrationPolicy",
-      "attrs": {"enabled": 1.0, "current_source_epoch": -1.0,
-        "current_model_id": "", "current_model_epoch": -1.0,
-        "current_goal_id": "", "current_goal_epoch": -1.0,
-        "current_manifold_id": "", "current_manifold_epoch": -1.0}
+      "attrs": {
+        "enabled": 1.0,
+        "current_source_epoch": -1.0,
+        "current_model_id": "",
+        "current_model_epoch": -1.0,
+        "current_goal_id": "",
+        "current_goal_epoch": -1.0,
+        "current_manifold_id": "",
+        "current_manifold_epoch": -1.0
+      }
     },
     {
       "local_id": 14,
       "type": "DecompositionCompletionPolicy",
-      "attrs": {"enabled": 1.0}
+      "attrs": {
+        "enabled": 1.0
+      }
     },
     {
       "local_id": 15,
       "type": "AnalogImageryPolicy",
-      "attrs": {"enabled": 1.0, "max_steps": 3.0, "max_buffer_size": 4.0}
+      "attrs": {
+        "enabled": 1.0,
+        "max_steps": 3.0,
+        "max_buffer_size": 4.0
+      }
+    },
+    {
+      "local_id": 16,
+      "type": "SleepRegimePolicy",
+      "attrs": {
+        "name": "cognition_on_sleep_regime",
+        "enabled": 1.0,
+        "entry_weight": 0.6,
+        "maximum_task_demand": 0.2,
+        "maximum_external_load": 0.2,
+        "maximum_urgency": 0.2,
+        "stage_cost": 1.0,
+        "cycle_retention_epochs": 12.0,
+        "receipt_retention_epochs": 8.0,
+        "model_epoch": 0.0,
+        "decay_half_life": 4.0,
+        "freshness_ceiling": 1024.0
+      }
+    },
+    {
+      "local_id": 17,
+      "type": "LibraryLearningPolicy",
+      "attrs": {
+        "name": "cognition_on_library_learning",
+        "enabled": 1.0,
+        "max_sources": 2.0,
+        "max_tasks": 8.0,
+        "max_trace_steps": 32.0
+      }
+    },
+    {
+      "local_id": 18,
+      "type": "StrategyLibraryPolicy",
+      "attrs": {
+        "name": "cognition_on_strategy_library",
+        "enabled": 1.0,
+        "max_entries": 128.0,
+        "max_steps": 32.0,
+        "temperature": 0.5,
+        "recall_cost": 1.0
+      }
+    },
+    {
+      "local_id": 19,
+      "type": "ProcessLawsPolicy",
+      "attrs": {
+        "name": "cognition_on_process_laws",
+        "enabled": 1.0,
+        "supported_fragment": "permutation_commutator_parity_v1"
+      }
+    },
+    {
+      "local_id": 20,
+      "type": "ProcessProofAdoptionPolicy",
+      "attrs": {
+        "name": "cognition_on_process_proof_adoption",
+        "enabled": 1.0
+      }
+    },
+    {
+      "local_id": 21,
+      "type": "InventionOperatorAuthorshipPolicy",
+      "attrs": {
+        "name": "cognition_on_invention_operator_authorship",
+        "enabled": 1.0,
+        "max_expression_nodes": 7,
+        "max_resource_work": 32,
+        "frozen_criteria_digest": "pmb-v1-frozen-criteria",
+        "human_gate": 1
+      }
+    },
+    {
+      "local_id": 22,
+      "type": "PersistentRetentionProfileParams",
+      "attrs": {
+        "enabled": 0.0,
+        "learning_memory_enabled": 0.0,
+        "persistent_consolidation_enabled": 0.0,
+        "capacity_bytes": 8192.0,
+        "capacity_ratios": [
+          0.5,
+          1.0,
+          2.0
+        ],
+        "protection_policy": "uniform_content_no_target_exemption"
+      }
+    },
+    {
+      "local_id": 23,
+      "type": "ScheduledLearningCheckpointPolicy",
+      "attrs": {
+        "name": "scheduled_learning_checkpoint_policy",
+        "enabled": 0.0,
+        "checkpoints": [
+          "g0",
+          "g1",
+          "g2",
+          "g3"
+        ],
+        "cumulative_primitive_work_thresholds": [
+          0,
+          1000,
+          2000,
+          4000
+        ],
+        "cumulative_task_world_access_thresholds": [0, 1, 2, 4],
+        "scheduled_capture_authorizes_actions": false,
+        "heldout_feedback": false
+      }
     }
   ],
   "edges": [
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_held_decay_params",
-      "tgt": { "local": 1 }
+      "tgt": {
+        "local": 1
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_hier_tier_params",
-      "tgt": { "local": 2 }
+      "tgt": {
+        "local": 2
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_emotion_hub",
-      "tgt": { "local": 3 }
+      "tgt": {
+        "local": 3
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_emotion_params",
-      "tgt": { "local": 4 }
+      "tgt": {
+        "local": 4
+      }
     },
     {
-      "src": { "local": 3 },
+      "src": {
+        "local": 3
+      },
       "type": "has_emotion_params",
-      "tgt": { "local": 4 }
+      "tgt": {
+        "local": 4
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_window",
-      "tgt": { "local": 5 }
+      "tgt": {
+        "local": 5
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_capability_synthesis_bridge_policy",
-      "tgt": { "local": 6 }
+      "tgt": {
+        "local": 6
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_decomposition_consumer_policy",
-      "tgt": { "local": 7 }
+      "tgt": {
+        "local": 7
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_impasse_simulation_policy",
-      "tgt": { "local": 8 }
+      "tgt": {
+        "local": 8
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_consolidation_scheduler_policy",
-      "tgt": { "local": 9 }
+      "tgt": {
+        "local": 9
+      }
     },
     {
-      "src": { "role": "agent_root" },
-      "type": "has_thinking_budget",
-      "tgt": { "local": 10 }
-    },
-    {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_extended_thinking_policy",
-      "tgt": { "local": 11 }
+      "tgt": {
+        "local": 11
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_cognition_planner_policy",
-      "tgt": { "local": 12 }
+      "tgt": {
+        "local": 12
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_imagined_arbitration_policy",
-      "tgt": { "local": 13 }
+      "tgt": {
+        "local": 13
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_decomposition_completion_policy",
-      "tgt": { "local": 14 }
+      "tgt": {
+        "local": 14
+      }
     },
     {
-      "src": { "role": "agent_root" },
+      "src": {
+        "role": "agent_root"
+      },
       "type": "has_analog_imagery_policy",
-      "tgt": { "local": 15 }
+      "tgt": {
+        "local": 15
+      }
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_sleep_regime_policy",
+      "tgt": {
+        "local": 16
+      }
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_library_learning_policy",
+      "tgt": {
+        "local": 17
+      }
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_strategy_library_policy",
+      "tgt": {
+        "local": 18
+      }
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_laws_policy",
+      "tgt": {
+        "local": 19
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_process_proof_adoption_policy",
+      "tgt": {
+        "local": 20
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_invention_operator_authorship_policy",
+      "tgt": {
+        "local": 21
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_persistent_retention_profile_params",
+      "tgt": {
+        "local": 22
+      },
+      "attrs": {}
+    },
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_scheduled_learning_checkpoint_policy",
+      "tgt": {
+        "local": 23
+      },
+      "attrs": {}
     }
   ],
   "productions": [
     {
       "provenance": "seed:cognition_on_params:agent-decay-params",
-      "src": { "type": "Agent", "var": "agent" },
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
       "edge_type": "has_held_decay_params",
-      "tgt": { "type": "HeldDecayParams", "var": "dp" }
+      "tgt": {
+        "type": "HeldDecayParams",
+        "var": "dp"
+      }
     },
     {
       "provenance": "seed:cognition_on_params:agent-tier-params",
-      "src": { "type": "Agent", "var": "agent" },
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
       "edge_type": "has_hier_tier_params",
-      "tgt": { "type": "HeldTierParams", "var": "tp" }
+      "tgt": {
+        "type": "HeldTierParams",
+        "var": "tp"
+      }
     },
     {
       "provenance": "seed:cognition_on_params:agent-emotion-hub",
-      "src": { "type": "Agent", "var": "agent" },
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
       "edge_type": "has_emotion_hub",
-      "tgt": { "type": "EmotionHub", "var": "hub" }
+      "tgt": {
+        "type": "EmotionHub",
+        "var": "hub"
+      }
     },
     {
       "provenance": "seed:cognition_on_params:agent-emotion-params",
-      "src": { "type": "Agent", "var": "agent" },
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
       "edge_type": "has_emotion_params",
-      "tgt": { "type": "HeldEmotionParams", "var": "ep" }
+      "tgt": {
+        "type": "HeldEmotionParams",
+        "var": "ep"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-laws",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_process_laws_policy",
+      "tgt": {
+        "type": "ProcessLawsPolicy",
+        "var": "policy"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-proof-adoption",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_process_proof_adoption_policy",
+      "tgt": {
+        "type": "ProcessProofAdoptionPolicy",
+        "var": "policy"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-operator-authorship",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_invention_operator_authorship_policy",
+      "tgt": {
+        "type": "InventionOperatorAuthorshipPolicy",
+        "var": "policy"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:agent-persistent-retention-params",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_persistent_retention_profile_params",
+      "tgt": {
+        "type": "PersistentRetentionProfileParams",
+        "var": "params"
+      }
+    },
+    {
+      "provenance": "seed:cognition_on_params:scheduled-learning-checkpoint-policy",
+      "src": {
+        "type": "Agent",
+        "var": "agent"
+      },
+      "edge_type": "has_scheduled_learning_checkpoint_policy",
+      "tgt": {
+        "type": "ScheduledLearningCheckpointPolicy",
+        "var": "policy"
+      }
     }
   ],
   "rules": []

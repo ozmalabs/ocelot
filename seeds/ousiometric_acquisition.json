@@ -1,0 +1,1100 @@
+{
+  "id": "ousiometric_acquisition",
+  "version": "1.0.0",
+  "depends_on": [
+    "ousiometric_frames",
+    "qualia_acquisition",
+    "thinking_budget"
+  ],
+  "self_load_only": true,
+  "area": "ousiometric_acquisition",
+  "description": "P28 bridge from already verified, episode-grounded native axes to costed learned-flex frame proposals; no lexical labels or implicit adoption.",
+  "microtheory": {
+    "name": "ousiometric_acquisition",
+    "description": "A coordinate becomes a flex-frame proposal only after P17 observed recurrence and two fresh validations, plus a separately funded proposal."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "OusiometricAcquisitionPolicy",
+      "attrs": {
+        "name": "p28_ousiometric_acquisition_policy",
+        "enabled": 0.0,
+        "recurrence_episodes": 3.0,
+        "fresh_validation_episodes": 2.0,
+        "max_candidates": 8.0,
+        "proposal_work_cost": 1.0,
+        "schema_overhead_bits": 128.0,
+        "stable_id_count": 8.0,
+        "stable_id_bits": 64.0,
+        "max_package_bits": 4096.0,
+        "lexical_labels_available": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_ousiometric_acquisition_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:ousiometric_acquisition:has_ousiometric_acquisition_policy:Agent:OusiometricAcquisitionPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_ousiometric_acquisition_policy",
+      "tgt": {
+        "type": "OusiometricAcquisitionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:has_qualia_axis_candidate:Agent:QualiaAxisCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_axis_candidate",
+      "tgt": {
+        "type": "QualiaAxisCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:has_ousiometric_frame_candidate:Agent:OusiometricFrameCandidate",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_ousiometric_frame_candidate",
+      "tgt": {
+        "type": "OusiometricFrameCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:has_acquisition_witness:QualiaAxisCandidate:QualiaAcquisitionWitness",
+      "src": {
+        "type": "QualiaAxisCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_acquisition_witness",
+      "tgt": {
+        "type": "QualiaAcquisitionWitness",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:has_acquisition_validation:QualiaAxisCandidate:QualiaAcquisitionValidation",
+      "src": {
+        "type": "QualiaAxisCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_acquisition_validation",
+      "tgt": {
+        "type": "QualiaAcquisitionValidation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:funds_ousiometric_candidate:ThinkingBudgetRequest:QualiaAxisCandidate",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "funds_ousiometric_candidate",
+      "tgt": {
+        "type": "QualiaAxisCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:derived_from_axis_candidate:OusiometricFrameCandidate:QualiaAxisCandidate",
+      "src": {
+        "type": "OusiometricFrameCandidate",
+        "var": "src"
+      },
+      "edge_type": "derived_from_axis_candidate",
+      "tgt": {
+        "type": "QualiaAxisCandidate",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:has_support_witness:OusiometricFrameCandidate:QualiaAcquisitionWitness",
+      "src": {
+        "type": "OusiometricFrameCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_support_witness",
+      "tgt": {
+        "type": "QualiaAcquisitionWitness",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:has_fresh_validation:OusiometricFrameCandidate:QualiaAcquisitionValidation",
+      "src": {
+        "type": "OusiometricFrameCandidate",
+        "var": "src"
+      },
+      "edge_type": "has_fresh_validation",
+      "tgt": {
+        "type": "QualiaAcquisitionValidation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:ousiometric_acquisition:funded_by_request:OusiometricFrameCandidate:ThinkingBudgetRequest",
+      "src": {
+        "type": "OusiometricFrameCandidate",
+        "var": "src"
+      },
+      "edge_type": "funded_by_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "oua_request_funded_flex_frame_proposal",
+      "area": "ousiometric_acquisition",
+      "order": 1,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_ousiometric_acquisition_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_thinking_budget",
+          "budget"
+        ],
+        [
+          "ag",
+          "has_network_mode_state",
+          "mode"
+        ],
+        [
+          "ag",
+          "has_qualia_axis_candidate",
+          "cand"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cand"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "validated"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "edge_type": "has_acquisition_witness",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "recurrence_episodes"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "edge_type": "has_acquisition_validation",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "fresh_validation_episodes"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_ousiometric_frame_candidate",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_candidates"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "heldout_used_for_selection"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_thinking_budget_request",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "requester_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Lit",
+                      "value": "ousiometric-flex-frame:"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "cand"
+                        },
+                        "key": "candidate_key"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "requester_kind": "ousiometric_frame_proposal",
+            "requester_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "ousiometric-flex-frame:"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "cand"
+                      },
+                      "key": "candidate_key"
+                    }
+                  }
+                ]
+              }
+            },
+            "source_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "candidate_key"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "requested_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "mode"
+                },
+                "key": "epoch"
+              }
+            },
+            "deadline_epoch": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "mode"
+                    },
+                    "key": "epoch"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": 1.0
+                  }
+                ]
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "proposal_work_cost"
+              }
+            },
+            "status": "pending"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_thinking_budget_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "funds_ousiometric_candidate",
+          "cand",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "oua_propose_flex_coordinate_from_validated_observed_axis",
+      "area": "ousiometric_acquisition",
+      "order": 2,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_ousiometric_acquisition_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_axis_candidate",
+          "cand"
+        ],
+        [
+          "req",
+          "funds_ousiometric_candidate",
+          "cand"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cand"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "validated"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "requester_kind"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "ousiometric_frame_proposal"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "cand"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "edge_type": "has_acquisition_witness",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "recurrence_episodes"
+            }
+          },
+          {
+            "type": "Gte",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "edge_type": "has_acquisition_validation",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "fresh_validation_episodes"
+            }
+          },
+          {
+            "type": "Lte",
+            "a": {
+              "type": "Plus",
+              "items": [
+                {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "schema_overhead_bits"
+                },
+                {
+                  "type": "Times",
+                  "items": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "stable_id_count"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "stable_id_bits"
+                    }
+                  ]
+                }
+              ]
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_package_bits"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "heldout_used_for_selection"
+              },
+              "b": {
+                "type": "Lit",
+                "value": true
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_ousiometric_frame_candidate",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "source_candidate_key"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cand"
+                  },
+                  "key": "candidate_key"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "frame_candidate",
+          "OusiometricFrameCandidate",
+          {
+            "candidate_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "candidate_key"
+              }
+            },
+            "source_candidate_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "candidate_key"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_family": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "feature_family"
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "owner_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "cand"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "frame_class": "learned_flex",
+            "status": "proposed",
+            "adds_observed_coordinate": true,
+            "rotation_only": false,
+            "source_coordinate_count": 3.0,
+            "target_coordinate_count": 4.0,
+            "observed_witness_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "cand"
+                  },
+                  "edge_type": "has_acquisition_witness",
+                  "any_type": false
+                }
+              }
+            },
+            "fresh_validation_count": {
+              "__term__": {
+                "type": "Count",
+                "source": {
+                  "type": "Neighbours",
+                  "node": {
+                    "type": "Var",
+                    "name": "cand"
+                  },
+                  "edge_type": "has_acquisition_validation",
+                  "any_type": false
+                }
+              }
+            },
+            "heldout_used_for_selection": false,
+            "lexical_labels_available": false,
+            "description_cost_schema": "p28_flex_coordinate_v1",
+            "schema_overhead_bits": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "schema_overhead_bits"
+              }
+            },
+            "stable_id_count": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "stable_id_count"
+              }
+            },
+            "stable_id_bits": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "stable_id_bits"
+              }
+            },
+            "exception_bits": 0.0,
+            "total_description_bits": {
+              "__term__": {
+                "type": "Plus",
+                "items": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pol"
+                    },
+                    "key": "schema_overhead_bits"
+                  },
+                  {
+                    "type": "Times",
+                    "items": [
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pol"
+                        },
+                        "key": "stable_id_count"
+                      },
+                      {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "pol"
+                        },
+                        "key": "stable_id_bits"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "package_cost_complete": true,
+            "proposal_work_cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "req"
+                },
+                "key": "cost"
+              }
+            },
+            "proposal_work_funded": true
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_ousiometric_frame_candidate",
+          "frame_candidate",
+          {}
+        ],
+        [
+          "add_edge",
+          "frame_candidate",
+          "derived_from_axis_candidate",
+          "cand",
+          {}
+        ],
+        [
+          "add_edge",
+          "frame_candidate",
+          "funded_by_request",
+          "req",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "oua_retire_frame_candidate_when_source_is_contested_or_stale",
+      "area": "ousiometric_acquisition",
+      "order": 3,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_ousiometric_acquisition_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_ousiometric_frame_candidate",
+          "fc"
+        ],
+        [
+          "fc",
+          "derived_from_axis_candidate",
+          "cand"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "fc"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "proposed"
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "cand"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "contested"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "fc"
+                    },
+                    "key": "source_epoch"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "cand"
+                    },
+                    "key": "source_epoch"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "fc",
+          "status",
+          "retired"
+        ],
+        [
+          "set_attr",
+          "fc",
+          "retirement_reason",
+          "source_contested_or_stale"
+        ]
+      ]
+    }
+  ]
+}

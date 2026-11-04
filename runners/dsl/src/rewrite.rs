@@ -153,6 +153,29 @@ pub enum Effect {
         type_: Sym,
         attrs: Vec<(Sym, EffectArg)>,
     },
+    /// Atomically reserve one unit from a graph-resident numeric counter and
+    /// create a node only when the current counter is below `limit`. On
+    /// success, increment the counter and bind `new_var` to the new node;
+    /// when the limit is reached or either numeric value is invalid, perform
+    /// no mutation and leave `new_var` unbound so later effects naturally
+    /// skip. This is for hard shared limits whose where-clause may have been
+    /// matched against a pre-fire snapshot.
+    AddNodeWithinCounter {
+        new_var: Sym,
+        type_: Sym,
+        attrs: Vec<(Sym, EffectArg)>,
+        counter_var: Sym,
+        counter_key: Sym,
+        limit: EffectArg,
+    },
+    /// Atomically reserve a node insertion against multiple graph counters.
+    /// Every counter is validated before any counter is changed.
+    AddNodeWithinCounters {
+        new_var: Sym,
+        type_: Sym,
+        attrs: Vec<(Sym, EffectArg)>,
+        counters: Vec<(Sym, Sym, EffectArg)>,
+    },
     /// Like `AddNode`, but skip insertion when an existing node already
     /// has the same TYPE and the same (key, value) attrs for every key
     /// in `attrs`. Closes the surveyed "AddNode re-fires forever"
@@ -1521,6 +1544,30 @@ fn collect_effect_access(
             for (k, a) in attrs {
                 writes.insert(RuleKey::Attr(*k));
                 read_arg(a, reads, reads_any);
+            }
+        }
+        Effect::AddNodeWithinCounter {
+            type_, attrs, counter_key, limit, ..
+        } => {
+            reads.insert(RuleKey::Attr(*counter_key));
+            writes.insert(RuleKey::Attr(*counter_key));
+            writes.insert(RuleKey::Type(*type_));
+            read_arg(limit, reads, reads_any);
+            for (key, arg) in attrs {
+                writes.insert(RuleKey::Attr(*key));
+                read_arg(arg, reads, reads_any);
+            }
+        }
+        Effect::AddNodeWithinCounters { type_, attrs, counters, .. } => {
+            writes.insert(RuleKey::Type(*type_));
+            for (_, key, limit) in counters {
+                reads.insert(RuleKey::Attr(*key));
+                writes.insert(RuleKey::Attr(*key));
+                read_arg(limit, reads, reads_any);
+            }
+            for (key, arg) in attrs {
+                writes.insert(RuleKey::Attr(*key));
+                read_arg(arg, reads, reads_any);
             }
         }
         Effect::AddNodeIfAbsent { type_, attrs, .. } => {
@@ -2933,6 +2980,113 @@ pub fn apply_rule_full(
                 if record_undo {
                     undo.push(UndoStep::AddedNode(nid));
                 }
+            }
+            Effect::AddNodeWithinCounter {
+                new_var,
+                type_,
+                attrs,
+                counter_var,
+                counter_key,
+                limit,
+            } => {
+                let Some(&counter_node) = b.get(counter_var) else {
+                    continue;
+                };
+                let counter_value = graph.node(counter_node).attrs.get(counter_key);
+                let current = match counter_value {
+                    Some(Value::Float(value)) if value.is_finite() && *value >= 0.0 => *value,
+                    Some(Value::Int(value)) if *value >= 0 => *value as f64,
+                    _ => continue,
+                };
+                let limit_value = resolve_effect_arg(
+                    limit,
+                    &b,
+                    arena,
+                    graph,
+                    interner,
+                    concepts.as_deref(),
+                    framebuffers,
+                    cache.as_deref_mut(),
+                );
+                let limit = match limit_value {
+                    Value::Float(value) if value.is_finite() && value >= 0.0 => value,
+                    Value::Int(value) if value >= 0 => value as f64,
+                    _ => continue,
+                };
+                if current >= limit {
+                    continue;
+                }
+                let mut attr_map: FxHashMap<Sym, Value> = FxHashMap::default();
+                for (key, arg) in attrs {
+                    let value = resolve_effect_arg(
+                        arg,
+                        &b,
+                        arena,
+                        graph,
+                        interner,
+                        concepts.as_deref(),
+                        framebuffers,
+                        cache.as_deref_mut(),
+                    );
+                    attr_map.insert(*key, value);
+                }
+                let old = counter_value.cloned();
+                graph.set_node_attr(counter_node, *counter_key, Value::Float(current + 1.0));
+                if record_undo {
+                    undo.push(UndoStep::AttrSet {
+                        nid: counter_node,
+                        key: *counter_key,
+                        old,
+                    });
+                }
+                crate::scale_audit::rule_effect_node_insert();
+                let nid = graph.insert_node(*type_, attr_map);
+                crate::access_trace::note(7, nid.0, type_.0, crate::access_trace::NO_ID);
+                b.insert(*new_var, nid);
+                progressed = true;
+                if record_undo {
+                    undo.push(UndoStep::AddedNode(nid));
+                }
+            }
+            Effect::AddNodeWithinCounters { new_var, type_, attrs, counters } => {
+                let mut reservations = Vec::with_capacity(counters.len());
+                let mut valid = !counters.is_empty();
+                for (counter_var, counter_key, limit_arg) in counters {
+                    let Some(&counter_node) = b.get(counter_var) else { valid = false; break; };
+                    let old = graph.node(counter_node).attrs.get(counter_key).cloned();
+                    let current = match old.as_ref() {
+                        Some(Value::Float(value)) if value.is_finite() && *value >= 0.0 => *value,
+                        Some(Value::Int(value)) if *value >= 0 => *value as f64,
+                        _ => { valid = false; break; }
+                    };
+                    let limit_value = resolve_effect_arg(limit_arg, &b, arena, graph, interner,
+                        concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    let limit = match limit_value {
+                        Value::Float(value) if value.is_finite() && value >= 0.0 => value,
+                        Value::Int(value) if value >= 0 => value as f64,
+                        _ => { valid = false; break; }
+                    };
+                    if current >= limit { valid = false; break; }
+                    reservations.push((counter_node, *counter_key, old, current + 1.0));
+                }
+                if !valid { continue; }
+                let mut attr_map: FxHashMap<Sym, Value> = FxHashMap::default();
+                for (key, arg) in attrs {
+                    let value = resolve_effect_arg(arg, &b, arena, graph, interner,
+                        concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    attr_map.insert(*key, value);
+                }
+                for (counter_node, counter_key, old, next) in reservations {
+                    graph.set_node_attr(counter_node, counter_key, Value::Float(next));
+                    if record_undo { undo.push(UndoStep::AttrSet { nid: counter_node,
+                        key: counter_key, old }); }
+                }
+                crate::scale_audit::rule_effect_node_insert();
+                let nid = graph.insert_node(*type_, attr_map);
+                crate::access_trace::note(7, nid.0, type_.0, crate::access_trace::NO_ID);
+                b.insert(*new_var, nid);
+                progressed = true;
+                if record_undo { undo.push(UndoStep::AddedNode(nid)); }
             }
             Effect::AddNodeIfAbsent {
                 new_var,

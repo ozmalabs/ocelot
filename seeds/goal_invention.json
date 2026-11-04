@@ -1,0 +1,2230 @@
+{
+  "id": "goal_invention",
+  "version": "1.0.0",
+  "depends_on": [
+    "process_schema",
+    "invention_round",
+    "process_solving"
+  ],
+  "self_load_only": true,
+  "area": "process_solving",
+  "description": "Bounded graph-native goal gaps, funded target-inverse search and explicit unsupported-effect interfaces.",
+  "microtheory": {
+    "name": "goal_invention",
+    "description": "Regress stuck goals into typed, funded process gaps."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "GoalInventionPolicy",
+      "attrs": {
+        "name": "core_goal_invention_policy",
+        "enabled": 0.0,
+        "targeted_enabled": 0.0,
+        "max_gaps": 4.0,
+        "candidate_cap": 20.0,
+        "max_support": 4.0,
+        "rung_cost": 2.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_goal_invention_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:goal_invention:has_goal_invention_policy:Agent:GoalInventionPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_goal_invention_policy",
+      "tgt": {
+        "type": "GoalInventionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_process_gap:Agent:ProcessGap",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_gap",
+      "tgt": {
+        "type": "ProcessGap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_process_gap:SolveTask:ProcessGap",
+      "src": {
+        "type": "SolveTask",
+        "var": "src"
+      },
+      "edge_type": "has_process_gap",
+      "tgt": {
+        "type": "ProcessGap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:about_domain:ProcessGap:ProcessDomain",
+      "src": {
+        "type": "ProcessGap",
+        "var": "src"
+      },
+      "edge_type": "about_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_goal_invention_episode:Agent:GoalInventionEpisode",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_goal_invention_episode",
+      "tgt": {
+        "type": "GoalInventionEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:about_gap:GoalInventionEpisode:ProcessGap",
+      "src": {
+        "type": "GoalInventionEpisode",
+        "var": "src"
+      },
+      "edge_type": "about_gap",
+      "tgt": {
+        "type": "ProcessGap",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_step_request:GoalInventionEpisode:ThinkingBudgetRequest",
+      "src": {
+        "type": "GoalInventionEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_step_request",
+      "tgt": {
+        "type": "ThinkingBudgetRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:draws_on_thinking_budget:ThinkingBudgetRequest:ThinkingBudget",
+      "src": {
+        "type": "ThinkingBudgetRequest",
+        "var": "src"
+      },
+      "edge_type": "draws_on_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_thinking_budget:Agent:ThinkingBudget",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_thinking_budget",
+      "tgt": {
+        "type": "ThinkingBudget",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_invention_policy:Agent:InventionPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_invention_policy",
+      "tgt": {
+        "type": "InventionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_solve_task:Agent:SolveTask",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_solve_task",
+      "tgt": {
+        "type": "SolveTask",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_process_domain:Agent:ProcessDomain",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_domain",
+      "tgt": {
+        "type": "ProcessDomain",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_held_process:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "has_held_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_invented_process:ProcessDomain:ProcessSchema",
+      "src": {
+        "type": "ProcessDomain",
+        "var": "src"
+      },
+      "edge_type": "has_invented_process",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_process_schema:Agent:ProcessSchema",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_process_schema",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_arg0:ProcessSchema:ProcessSchema",
+      "src": {
+        "type": "ProcessSchema",
+        "var": "src"
+      },
+      "edge_type": "has_arg0",
+      "tgt": {
+        "type": "ProcessSchema",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_synthesis_interface_request:Agent:SynthesisInterfaceRequest",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_synthesis_interface_request",
+      "tgt": {
+        "type": "SynthesisInterfaceRequest",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:goal_invention:has_synthesis_interface_request:ProcessGap:SynthesisInterfaceRequest",
+      "src": {
+        "type": "ProcessGap",
+        "var": "src"
+      },
+      "edge_type": "has_synthesis_interface_request",
+      "tgt": {
+        "type": "SynthesisInterfaceRequest",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "gi_mint_process_gap",
+      "area": "process_solving",
+      "order": 18,
+      "latency_class": "background",
+      "comment": "Record a typed state-transition gap when a task is stuck and no gap for that task exists.",
+      "match": [
+        [
+          "agent",
+          "has_goal_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "about_domain",
+          "d"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "edge_type": "has_process_gap",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "status"
+                }
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_process_gap",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "max_gaps"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "g",
+          "ProcessGap",
+          {
+            "source_task": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "name"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "domain_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "source_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "state"
+              }
+            },
+            "goal_state": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "t"
+                },
+                "key": "goal"
+              }
+            },
+            "required_effect_kind": "state_transition",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "open",
+            "frontier_depth": 0,
+            "expansions": 0
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_gap",
+          "g",
+          {}
+        ],
+        [
+          "add_edge",
+          "t",
+          "has_process_gap",
+          "g",
+          {}
+        ],
+        [
+          "add_edge",
+          "g",
+          "about_domain",
+          "d",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "gi_request_targeted_rung",
+      "area": "memory_consolidation",
+      "order": 20,
+      "latency_class": "background",
+      "comment": "Fund one bounded target-inverse probe for an open process gap.",
+      "match": [
+        [
+          "agent",
+          "has_goal_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_process_gap",
+          "g"
+        ],
+        [
+          "agent",
+          "has_invention_policy",
+          "ip"
+        ],
+        [
+          "agent",
+          "has_thinking_budget",
+          "budget"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "targeted_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "budget"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "agent"
+                },
+                "edge_type": "has_goal_invention_episode",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "gap_name"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "g"
+                  },
+                  "key": "name"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "ThinkingBudgetRequest",
+          {
+            "status": "pending",
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "rung_cost"
+              }
+            },
+            "requester_kind": "goal_invention"
+          }
+        ],
+        [
+          "add_node",
+          "ep",
+          "GoalInventionEpisode",
+          {
+            "status": "awaiting_budget",
+            "gap_name": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "name"
+              }
+            },
+            "prior_invention_enabled": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ip"
+                },
+                "key": "enabled"
+              }
+            },
+            "request_cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "rung_cost"
+              }
+            },
+            "operator": "inverse",
+            "candidate_cap": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pol"
+                },
+                "key": "candidate_cap"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_goal_invention_episode",
+          "ep",
+          {}
+        ],
+        [
+          "add_edge",
+          "ep",
+          "about_gap",
+          "g",
+          {}
+        ],
+        [
+          "add_edge",
+          "ep",
+          "has_step_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "req",
+          "draws_on_thinking_budget",
+          "budget",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "gi_rung_approved",
+      "area": "memory_consolidation",
+      "order": 21,
+      "latency_class": "background",
+      "comment": "Begin the bounded inverse probe only after the shared budget approves it.",
+      "match": [
+        [
+          "agent",
+          "has_goal_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_goal_invention_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "about_gap",
+          "g"
+        ],
+        [
+          "ep",
+          "has_step_request",
+          "req"
+        ],
+        [
+          "agent",
+          "has_invention_policy",
+          "ip"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_budget"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "approved"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "g"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "open"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "ip",
+          "enabled",
+          1.0
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "targeted_probe"
+        ]
+      ]
+    },
+    {
+      "name": "gi_rung_denied",
+      "area": "memory_consolidation",
+      "order": 21,
+      "latency_class": "background",
+      "comment": "A denied targeted rung leaves the prior invention policy untouched and the gap unresolved.",
+      "match": [
+        [
+          "agent",
+          "has_goal_invention_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "about_gap",
+          "g"
+        ],
+        [
+          "ep",
+          "has_step_request",
+          "req"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "awaiting_budget"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "req"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "denied"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "denied"
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "open"
+        ]
+      ]
+    },
+    {
+      "name": "gi_mint_goal_targeted_inverse",
+      "area": "process_solving",
+      "order": 20,
+      "latency_class": "background",
+      "comment": "Mint a bounded exact inverse only when its native effect strictly closes the current state-goal gap.",
+      "match": [
+        [
+          "agent",
+          "has_goal_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_goal_invention_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "about_gap",
+          "g"
+        ],
+        [
+          "g",
+          "about_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "has_process_gap",
+          "g"
+        ],
+        [
+          "d",
+          "has_held_process",
+          "h"
+        ],
+        [
+          "agent",
+          "has_invention_policy",
+          "ip"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "targeted_enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "t"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "stuck"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "active"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "kind"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "kind"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "ProcessInverse",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "h"
+                      },
+                      "key": "params"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "EffectFingerprint",
+                    "p": {
+                      "type": "ProcessInverse",
+                      "a": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "h"
+                        },
+                        "key": "params"
+                      }
+                    },
+                    "probes": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "probes"
+                    }
+                  },
+                  "b": {
+                    "type": "Lit",
+                    "value": null
+                  }
+                }
+              },
+              {
+                "type": "Lte",
+                "a": {
+                  "type": "EffectSupport",
+                  "p": {
+                    "type": "ProcessInverse",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "h"
+                      },
+                      "key": "params"
+                    }
+                  }
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pol"
+                  },
+                  "key": "max_support"
+                }
+              },
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "ZipWith",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    },
+                    "a_name": "hx",
+                    "b_name": "hy",
+                    "value": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "hx"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "hy"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 0
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  },
+                  "var_name": "hd",
+                  "value": {
+                    "type": "Var",
+                    "name": "hd"
+                  }
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": 0
+                }
+              },
+              {
+                "type": "Gt",
+                "a": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "ZipWith",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "state"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    },
+                    "a_name": "hx",
+                    "b_name": "hy",
+                    "value": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "hx"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "hy"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 0
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  },
+                  "var_name": "hd",
+                  "value": {
+                    "type": "Var",
+                    "name": "hd"
+                  }
+                },
+                "b": {
+                  "type": "Sum",
+                  "source": {
+                    "type": "ZipWith",
+                    "a": {
+                      "type": "ProcessApply",
+                      "p": {
+                        "type": "ProcessInverse",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "state": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "t"
+                        },
+                        "key": "state"
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "t"
+                      },
+                      "key": "goal"
+                    },
+                    "a_name": "hx",
+                    "b_name": "hy",
+                    "value": {
+                      "type": "IfThenElse",
+                      "cond": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Var",
+                          "name": "hx"
+                        },
+                        "b": {
+                          "type": "Var",
+                          "name": "hy"
+                        }
+                      },
+                      "then": {
+                        "type": "Lit",
+                        "value": 0
+                      },
+                      "other": {
+                        "type": "Lit",
+                        "value": 1
+                      }
+                    }
+                  },
+                  "var_name": "hd",
+                  "value": {
+                    "type": "Var",
+                    "name": "hd"
+                  }
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Exists",
+                  "source": {
+                    "type": "NodesWhere",
+                    "node_type": "ProcessSchema",
+                    "attr_key": "fingerprint",
+                    "value": {
+                      "type": "EffectFingerprint",
+                      "p": {
+                        "type": "ProcessInverse",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "probes": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "d"
+                        },
+                        "key": "probes"
+                      }
+                    }
+                  },
+                  "var_name": "old_schema",
+                  "predicate": {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old_schema"
+                      },
+                      "key": "domain"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "name"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessInverse",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "h"
+                    },
+                    "key": "params"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "ProcessApply",
+                "p": {
+                  "type": "ProcessInverse",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "h"
+                    },
+                    "key": "params"
+                  }
+                },
+                "state": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "t"
+                  },
+                  "key": "state"
+                }
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Count",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "edge_type": "has_invented_process",
+                "any_type": false
+              }
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "candidate_cap"
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "s",
+          "ProcessSchema",
+          {
+            "kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "h"
+                },
+                "key": "kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "domain_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "kind"
+              }
+            },
+            "name": {
+              "__term__": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": "goal_inverse"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "h"
+                    },
+                    "key": "name"
+                  }
+                ]
+              }
+            },
+            "params": {
+              "__term__": {
+                "type": "ProcessInverse",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "h"
+                  },
+                  "key": "params"
+                }
+              }
+            },
+            "fingerprint": {
+              "__term__": {
+                "type": "EffectFingerprint",
+                "p": {
+                  "type": "ProcessInverse",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "h"
+                    },
+                    "key": "params"
+                  }
+                },
+                "probes": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "d"
+                  },
+                  "key": "probes"
+                }
+              }
+            },
+            "support": {
+              "__term__": {
+                "type": "EffectSupport",
+                "p": {
+                  "type": "ProcessInverse",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "h"
+                    },
+                    "key": "params"
+                  }
+                }
+              }
+            },
+            "cost": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "h"
+                },
+                "key": "cost"
+              }
+            },
+            "provenance": "goal_targeted_inverse",
+            "operator": "inverse",
+            "expr_tree": {
+              "__term__": {
+                "type": "Vec",
+                "items": [
+                  {
+                    "type": "Lit",
+                    "value": "inverse"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "h"
+                    },
+                    "key": "expr_tree"
+                  }
+                ]
+              }
+            },
+            "status": "active",
+            "invented": 1,
+            "fingerprint_checked": 1,
+            "dedup_checked": 1,
+            "indexed": 1,
+            "effect_evaluation": "exact:native_goal_gap_reduction",
+            "verification_receipt": "native_apply_reduces_current_goal_distance",
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "probe_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "probe_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_process_schema",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "d",
+          "has_invented_process",
+          "s",
+          {}
+        ],
+        [
+          "add_edge",
+          "s",
+          "has_arg0",
+          "h",
+          {}
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "candidate_found"
+        ],
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "found"
+        ],
+        [
+          "set_attr",
+          "t",
+          "status",
+          "active"
+        ],
+        [
+          "set_attr",
+          "ip",
+          "enabled",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "prior_invention_enabled"
+            }
+          }
+        ]
+      ],
+      "batch": false
+    },
+    {
+      "name": "gi_gap_needs_tool",
+      "area": "process_solving",
+      "order": 22,
+      "latency_class": "background",
+      "comment": "A funded gap with no supported candidate closes as needs_tool and emits an explicit synthesis interface.",
+      "match": [
+        [
+          "agent",
+          "has_goal_invention_policy",
+          "pol"
+        ],
+        [
+          "agent",
+          "has_goal_invention_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "about_gap",
+          "g"
+        ],
+        [
+          "g",
+          "about_domain",
+          "d"
+        ],
+        [
+          "agent",
+          "has_solve_task",
+          "t"
+        ],
+        [
+          "t",
+          "has_process_gap",
+          "g"
+        ],
+        [
+          "agent",
+          "has_invention_policy",
+          "ip"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "active"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "edge_type": "has_held_process",
+                "any_type": false
+              },
+              "var_name": "h",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "h"
+                      },
+                      "key": "status"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": "active"
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "h"
+                      },
+                      "key": "kind"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "d"
+                      },
+                      "key": "kind"
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "ProcessInverse",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "params"
+                        }
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Eq",
+                      "a": {
+                        "type": "EffectFingerprint",
+                        "p": {
+                          "type": "ProcessInverse",
+                          "a": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "h"
+                            },
+                            "key": "params"
+                          }
+                        },
+                        "probes": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "probes"
+                        }
+                      },
+                      "b": {
+                        "type": "Lit",
+                        "value": null
+                      }
+                    }
+                  },
+                  {
+                    "type": "Lte",
+                    "a": {
+                      "type": "EffectSupport",
+                      "p": {
+                        "type": "ProcessInverse",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "h"
+                          },
+                          "key": "params"
+                        }
+                      }
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pol"
+                      },
+                      "key": "max_support"
+                    }
+                  },
+                  {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "ZipWith",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "state"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "goal"
+                        },
+                        "a_name": "hx",
+                        "b_name": "hy",
+                        "value": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Var",
+                              "name": "hx"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "hy"
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      "var_name": "hd",
+                      "value": {
+                        "type": "Var",
+                        "name": "hd"
+                      }
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "type": "Gt",
+                    "a": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "ZipWith",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "state"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "goal"
+                        },
+                        "a_name": "hx",
+                        "b_name": "hy",
+                        "value": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Var",
+                              "name": "hx"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "hy"
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      "var_name": "hd",
+                      "value": {
+                        "type": "Var",
+                        "name": "hd"
+                      }
+                    },
+                    "b": {
+                      "type": "Sum",
+                      "source": {
+                        "type": "ZipWith",
+                        "a": {
+                          "type": "ProcessApply",
+                          "p": {
+                            "type": "ProcessInverse",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "h"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "state": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "t"
+                            },
+                            "key": "state"
+                          }
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "t"
+                          },
+                          "key": "goal"
+                        },
+                        "a_name": "hx",
+                        "b_name": "hy",
+                        "value": {
+                          "type": "IfThenElse",
+                          "cond": {
+                            "type": "Eq",
+                            "a": {
+                              "type": "Var",
+                              "name": "hx"
+                            },
+                            "b": {
+                              "type": "Var",
+                              "name": "hy"
+                            }
+                          },
+                          "then": {
+                            "type": "Lit",
+                            "value": 0
+                          },
+                          "other": {
+                            "type": "Lit",
+                            "value": 1
+                          }
+                        }
+                      },
+                      "var_name": "hd",
+                      "value": {
+                        "type": "Var",
+                        "name": "hd"
+                      }
+                    }
+                  },
+                  {
+                    "type": "Not",
+                    "arg": {
+                      "type": "Exists",
+                      "source": {
+                        "type": "NodesWhere",
+                        "node_type": "ProcessSchema",
+                        "attr_key": "fingerprint",
+                        "value": {
+                          "type": "EffectFingerprint",
+                          "p": {
+                            "type": "ProcessInverse",
+                            "a": {
+                              "type": "Attr",
+                              "node": {
+                                "type": "Var",
+                                "name": "h"
+                              },
+                              "key": "params"
+                            }
+                          },
+                          "probes": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "d"
+                            },
+                            "key": "probes"
+                          }
+                        }
+                      },
+                      "var_name": "old_schema",
+                      "predicate": {
+                        "type": "Eq",
+                        "a": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "old_schema"
+                          },
+                          "key": "domain"
+                        },
+                        "b": {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "d"
+                          },
+                          "key": "name"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "req",
+          "SynthesisInterfaceRequest",
+          {
+            "status": "needs_tool",
+            "missing_effect_kind": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "required_effect_kind"
+              }
+            },
+            "domain": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "d"
+                },
+                "key": "name"
+              }
+            },
+            "reason": "no_supported_covering_inverse",
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "g"
+                },
+                "key": "model_epoch"
+              }
+            }
+          }
+        ],
+        [
+          "add_edge",
+          "agent",
+          "has_synthesis_interface_request",
+          "req",
+          {}
+        ],
+        [
+          "add_edge",
+          "g",
+          "has_synthesis_interface_request",
+          "req",
+          {}
+        ],
+        [
+          "set_attr",
+          "g",
+          "status",
+          "needs_tool"
+        ],
+        [
+          "set_attr",
+          "ep",
+          "status",
+          "needs_tool"
+        ],
+        [
+          "set_attr",
+          "ip",
+          "enabled",
+          {
+            "__term__": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "prior_invention_enabled"
+            }
+          }
+        ]
+      ],
+      "batch": false
+    }
+  ]
+}

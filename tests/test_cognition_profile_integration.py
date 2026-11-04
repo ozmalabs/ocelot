@@ -20,6 +20,16 @@ from substrate.boot_profiles import (COGNITION_ON_SEEDS, boot_cognition_on,
                                      load_conversation_seed_profile)
 from substrate.seed_loader import manifest_for
 from substrate.world_adapter import WorldAdapter
+from evaluation.process_mastery.native_process_execution import (
+    attest_open_process_candidate, execute_open_process_candidate, params_digest,
+)
+from evaluation.process_mastery.observed_sequence_execution import (
+    execute_verified_observed_sequence, verify_observed_sequence_candidate,
+)
+from evaluation.process_mastery.explanation_rebuild import verify_rebuilt_composition
+from evaluation.process_mastery.target_learning_worlds import (
+    HeatSourceWorld, RequestRepairWorld, ThermalWorld, verify_induced_map_candidate,
+)
 from tests.test_geninfer_grain_migrated import BLOCK, DT3, JIT, _rot
 
 
@@ -42,6 +52,13 @@ def _p4_tick(agent):
         if not agent.inner.run_rules(10000):
             return
     raise AssertionError("P4 cognition-on graph did not reach a fixpoint")
+
+
+def _p19_tick(agent):
+    for _ in range(64):
+        if not agent.inner.run_rules(10000):
+            return
+    raise AssertionError("P19 cognition-on graph did not reach a fixpoint")
 
 
 def _p4_regular_window(agent, window_id="profile-denial", epoch=4.0):
@@ -97,6 +114,152 @@ def test_default_world_adapter_loads_none_of_cognition_on_seeds():
                 )
 
 
+def test_p19_default_isolation():
+    world = WorldAdapter()
+    try:
+        loaded = set(installed_seeds(world.s).keys())
+        assert "open_process_search" not in loaded
+        assert "open_process_adoption" not in loaded
+    finally:
+        world.close()
+
+
+def test_p19_shared_budget():
+    world = boot_cognition_on()
+    try:
+        budgets = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+        assert len(budgets) == 1
+        assert world.s.node(budgets[0])["attrs"].get("enabled") == 1.0
+        for requester_kind in ("open_process_search",):
+            policies = [n for n in _nodes(world, "ThinkingBudgetRequest")
+                        if world.s.node(n)["attrs"].get("requester_kind") == requester_kind]
+            assert not policies
+    finally:
+        world.close()
+
+
+def _run_p19_native_causal_chain():
+    """Cognition-on graph proposal crosses approval and the world receipt boundary."""
+    agent = boot_cognition_on()
+    try:
+        native, root, store = agent.inner, agent.agent, agent.s
+        for policy_type in ("OpenProcessSearchPolicy", "OpenProcessAdoptionPolicy",
+                            "StrategyDiscoveryPolicy"):
+            for node in _nodes(agent, policy_type):
+                native.set_attr(node, "enabled", 1.0)
+        for node in _nodes(agent, "ProcessSchemaPolicy"):
+            native.set_attr(node, "enabled", 0.0)
+        budgets = list(native.neighbours(root, "has_thinking_budget"))
+        assert len(budgets) == 1
+        native.set_attr(budgets[0], "enabled", 1.0)
+        native.set_attr(budgets[0], "remaining", 100.0)
+        native.set_attr(budgets[0], "capacity", 100.0)
+
+        domain = store.add_node("ProcessDomain", {
+            "name": "p19-profile", "kind": "permutation",
+            "probes": [[0, 1, 2, 3]], "source_epoch": 0.0,
+            "model_epoch": 0.0, "frame_epoch": 0.0, "probe_epoch": 0.0,
+        })
+        _edge(agent, root, "has_process_domain", domain)
+        held = {"p": [1, 0, 2, 3], "q": [0, 2, 1, 3]}
+        schemas = []
+        for name, params in held.items():
+            schema = store.add_node("ProcessSchema", {
+                "name": name, "kind": "permutation", "domain_kind": "permutation",
+                "domain": "p19-profile", "params": params, "cost": 1.0,
+                "source_digest": params_digest(params), "source_epoch": 0.0,
+                "model_epoch": 0.0, "frame_epoch": 0.0, "status": "active",
+            })
+            _edge(agent, root, "has_process_schema", schema)
+            _edge(agent, domain, "has_held_process", schema)
+            schemas.append(schema)
+        goal = native.evaluate(
+            {"type": "ProcessApply",
+             "p": {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+                   "b": {"type": "Var", "name": "b"}},
+             "state": {"type": "Var", "name": "state"}},
+            {"a": held["p"], "b": held["q"], "state": [0, 1, 2, 3]})
+        task = store.add_node("SolveTask", {
+            "domain": "p19-profile", "initial_state": [0, 1, 2, 3],
+            "state": [0, 1, 2, 3], "object_count": 4.0,
+            "goal": goal, "status": "stuck", "trace": [], "steps": 0,
+            "moves": 0.0, "stuck_count": 1,
+        })
+        _edge(agent, root, "has_solve_task", task)
+        _edge(agent, task, "about_domain", domain)
+        _p19_tick(agent)
+        search_budget_requests = [n for n in _nodes(agent, "ThinkingBudgetRequest")
+            if store.node(n)["attrs"].get("requester_kind") == "open_process_search"]
+        assert len(search_budget_requests) == 1
+        search_budget_request = search_budget_requests[0]
+        assert store.node(search_budget_request)["attrs"].get("status") == "approved"
+        assert list(native.neighbours(search_budget_request, "draws_on_thinking_budget")) == budgets
+        assert store.node(search_budget_request)["attrs"].get("cost") == 2.0
+        candidates = _nodes(agent, "OpenProcessCandidate")
+        assert candidates
+        candidate = next(c for c in candidates if store.node(c)["attrs"].get("params") ==
+                         native.evaluate({"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+                                          "b": {"type": "Var", "name": "b"}},
+                                         {"a": held["p"], "b": held["q"]}))
+        digest = attest_open_process_candidate(agent, candidate)
+        attrs = store.node(candidate)["attrs"]
+        approval = store.add_node("OpenProcessAdoptionApproval", {
+            "status": "approved", "approval_kind": "human",
+            "expression_digest": digest, "expression_key": attrs["expression_key"],
+            "expression_tree": attrs["expression_tree"], "effect_digest": attrs["effect_digest"],
+            "params": attrs["params"], "guard_state": attrs["guard_state"],
+            "domain": attrs["domain"], "source_epoch": attrs["source_epoch"],
+            "model_epoch": attrs["model_epoch"], "frame_epoch": attrs["frame_epoch"],
+        })
+        _edge(agent, root, "has_open_process_adoption_approval", approval)
+        _edge(agent, approval, "approves_open_process_candidate", candidate)
+        _p19_tick(agent)
+        assert store.node(candidate)["attrs"]["status"] == "adopted_candidate"
+
+        world_state = [0, 1, 2, 3]
+        calls = []
+
+        def world_transition(action):
+            observed = [None] * len(world_state)
+            for source, destination in enumerate(action):
+                observed[destination] = world_state[source]
+            world_state[:] = observed
+            calls.append(action)
+            return {"observed_state": list(world_state)}
+
+        result = execute_open_process_candidate(agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: proposal["expression_digest"] == digest,
+            world_transition=world_transition)
+        assert result["status"] == "COMPLETED"
+        assert result["receipt"]["observed_state"] == goal
+        receipts = list(native.neighbours(candidate, "has_world_execution_receipt"))
+        assert len(receipts) == 1
+        assert store.node(receipts[0])["attrs"]["status"] == "verified"
+        assert len(calls) == 1
+        _p19_tick(agent)
+        strategies = [n for n in _nodes(agent, "DiscoveredStrategy")
+                      if store.node(n)["attrs"].get("source") == "native_world_receipt"]
+        assert len(strategies) == 1
+        assert list(native.neighbours(strategies[0], "witnessed_by_world_receipt")) == receipts
+
+        # A changed binding cannot trigger another world transition.
+        native.set_attr(domain, "model_epoch", 1.0)
+        blocked = execute_open_process_candidate(agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: True, world_transition=world_transition)
+        assert blocked["status"] == "ABSTAIN"
+        assert len(calls) == 1
+    finally:
+        agent.close()
+
+
+def test_p19_native_causal_chain():
+    _run_p19_native_causal_chain()
+
+
+def test_p19_state_perturbation_changes_execution():
+    _run_p19_native_causal_chain()
+
+
 def test_cognition_on_profile_boots_and_attaches_enabled_params():
     """P1.H8.2 & P1.H8.3: boot_cognition_on() installs all COGNITION_ON_SEEDS rules
     and attaches every opt-in params/policy node with enabled == 1 from agent_root.
@@ -146,14 +309,27 @@ def test_cognition_on_profile_boots_and_attaches_enabled_params():
     # P4 experimental adapters are cognition-on-only and remain inert by default.
     for node_type in ("QualiaShapeMintPolicy", "CognitionSignaturePolicy",
                       "SimilarityRecallPolicy", "CognitionAperturePolicy",
-                      "TemporalEscalationPolicy", "ThoughtManifoldPolicy"):
+                      "TemporalEscalationPolicy", "ThoughtManifoldPolicy",
+                      "QualiaBehaviorPolicy", "ExperientialSignificancePolicy",
+                      "QualiaRevisionPolicy"):
         nodes = _nodes(agent, node_type)
         assert len(nodes) == 1
         assert agent.s.node(nodes[0])["attrs"].get("enabled") == 0.0
     manifold_policy = _nodes(agent, "CognitionManifoldPolicy")
     assert len(manifold_policy) == 1
     assert agent.s.node(manifold_policy[0])["attrs"].get("enabled") == 0.0
-    assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 5
+    search_policy = _nodes(agent, "OpenProcessSearchPolicy")
+    assert len(search_policy) == 1
+    assert agent.s.node(search_policy[0])["attrs"].get("enabled") == 0.0
+    adoption_policy = _nodes(agent, "OpenProcessAdoptionPolicy")
+    assert len(adoption_policy) == 1
+    assert agent.s.node(adoption_policy[0])["attrs"].get("enabled") == 0.0
+    strategy_policy = _nodes(agent, "StrategyDiscoveryPolicy")
+    assert len(strategy_policy) == 1
+    assert agent.s.node(strategy_policy[0])["attrs"].get("allow_lift") == 0.0
+    # Track I's opt-in invention operator manifest contributes two additional
+    # disabled-policy tolerances to the cognition-on graph.
+    assert len(list(agent.inner.neighbours(agent.agent, "has_tolerance"))) == 7
 
 
 def test_p4_default_and_conversation_isolation():
@@ -219,8 +395,1695 @@ def test_p5_planner_arbitration_receipt_chain():
     assert adapter.s.node(candidate)["attrs"]["grounding_status"] == "grounded"
     assert adapter.s.node(context)["attrs"]["status"] == "committed"
     adapter.close()
+
+
+def test_p6_profile_chain():
+    p6 = {"process_schema", "invention_operators", "invention_round",
+          "invariant_miner", "process_solving"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p6:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    for node_type in ("ProcessSchemaPolicy", "SolverPolicy",
+                      "InventionPolicy", "InvariantMinerPolicy"):
+        for node in _nodes(agent, node_type):
+            assert agent.s.node(node)["attrs"].get("enabled") == 0.0
+
+
+def test_p6_default_isolation():
+    p6 = {"process_schema", "invention_operators", "invention_round",
+          "invariant_miner", "process_solving"}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    p6_rule_names = {r["name"] for sid in p6
+                     for r in manifest_for(sid).get("rules", ())
+                     if isinstance(r, dict) and r.get("name")}
+    default_rules = {r["name"] for r in default.inner.export_rules()}
+    conversation_rules = {r["name"] for r in conversation.inner.export_rules()}
+    assert p6_rule_names.isdisjoint(default_rules)
+    assert p6_rule_names.isdisjoint(conversation_rules)
+    default.close()
+    conversation.close()
+
+
+def test_p6_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
     agent.close()
 
+
+def test_p10_profile_chain():
+    p10 = {"process_lifting", "goal_invention", "strategy_discovery"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p10:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("ProcessLiftingPolicy", "GoalInventionPolicy", "StrategyDiscoveryPolicy"):
+        for node in _nodes(agent, node_type):
+            assert agent.s.node(node)["attrs"].get("enabled") == 0.0
+    agent.close()
+
+
+def test_p10_default_isolation():
+    p10 = {"process_lifting", "goal_invention", "strategy_discovery"}
+    p10_rule_names = {item["name"] for sid in p10
+                      for item in manifest_for(sid).get("rules", ())
+                      if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    default_rules = {r["name"] for r in default.inner.export_rules()}
+    conversation_rules = {r["name"] for r in conversation.inner.export_rules()}
+    assert p10_rule_names.isdisjoint(default_rules)
+    assert p10_rule_names.isdisjoint(conversation_rules)
+    default.close()
+    conversation.close()
+
+
+def test_p10_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
+def test_p11_profile_chain():
+    p11 = {"representation_search", "process_transfer"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p11:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("RepresentationSearchPolicy", "ProcessTransferPolicy"):
+        nodes = _nodes(agent, node_type)
+        assert nodes and all(agent.s.node(n)["attrs"].get("enabled") == 0.0 for n in nodes)
+    agent.close()
+
+
+def test_p11_default_isolation():
+    p11_rules = {item["name"] for sid in {"representation_search", "process_transfer"}
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p11_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p11_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p11_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
+def test_p13_profile_chain():
+    p13 = {"sleep_regime", "library_learning", "strategy_library"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p13:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for edge_type, node_type in (
+        ("has_sleep_regime_policy", "SleepRegimePolicy"),
+        ("has_library_learning_policy", "LibraryLearningPolicy"),
+        ("has_strategy_library_policy", "StrategyLibraryPolicy"),
+    ):
+        attached = [n for n in agent.inner.neighbours(agent.agent, edge_type)
+                    if agent.s.node(n)["type"] == node_type
+                    and agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(attached) == 1
+
+    # WorldAdapter.tick services the consolidation request before the sleep
+    # receipt rule; raw rule fixpoint execution alone does not run that adapter.
+    budget = next(n for n in _nodes(agent, "ThinkingBudget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    agent.inner.set_attr(budget, "remaining", 16.0)
+    agent.inner.set_attr(budget, "capacity", 16.0)
+    context = agent.s.add_node("MemoryContext", {"context_key": "p13-profile"})
+    schema = agent.s.add_node("MemorySchema", {"name": "p13-observed-route"})
+    episode = agent.s.add_node("EpisodicEvent", {
+        "event_key": "p13-observed-event", "cue_key": "p13-cue", "epoch": 0.0,
+        "salience": 0.8, "surprise": 0.5, "value": 0.5,
+        "observation_status": "observed", "provenance_kind": "perceived",
+        "state_kind": "world_state", "state_summary": "observed state",
+    })
+    _edge(agent, agent.agent, "experienced_event", episode)
+    _edge(agent, episode, "in_context", context)
+    _edge(agent, episode, "instantiates_schema", schema)
+    for _ in range(8):
+        agent.tick()
+    sample = agent.s.add_node("NetworkModeSample", {
+        "epoch": 1.0, "default_mode_weight": 1.0,
+        "exteroceptive_load": 0.0, "task_demand": 0.0,
+        "interoceptive_urgency": 0.0, "uncertainty": 0.0,
+        "idle_duration": 8.0, "status": "raw",
+    })
+    _edge(agent, agent.agent, "has_network_mode_sample", sample)
+    for _ in range(8):
+        agent.tick()
+    receipts = _nodes(agent, "SleepStageReceipt")
+    assert receipts, "profile tick did not produce the funded P13 replay receipt"
+    replay = next(r for r in receipts if agent.s.node(r)["attrs"].get("stage") == "replay")
+    replay_attrs = agent.s.node(replay)["attrs"]
+    assert replay_attrs["observation_status"] == "not_observed"
+    assert replay_attrs["provenance_kind"] == "offline_sleep_stage"
+    request = list(agent.inner.neighbours(replay, "funded_by_request"))[0]
+    assert agent.s.node(request)["attrs"]["status"] == "serviced"
+    agent.close()
+
+
+def test_p13_default_isolation():
+    p13 = {"sleep_regime", "library_learning", "strategy_library"}
+    p13_rules = {item["name"] for sid in p13
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p13.isdisjoint(installed_seeds(default.s))
+    assert p13.isdisjoint(installed_seeds(conversation.s))
+    assert p13_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p13_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p13_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
+def test_p14_profile_chain():
+    p14 = {"process_laws", "process_proof_adoption", "invention_operator_authorship"}
+    boot_started = time.perf_counter()
+    agent = boot_cognition_on()
+    boot_seconds = time.perf_counter() - boot_started
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p14:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("ProcessLawsPolicy", "ProcessProofAdoptionPolicy",
+                      "InventionOperatorAuthorshipPolicy"):
+        active = [n for n in _nodes(agent, node_type)
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(active) == 1
+
+    # Exercise actual graph rules: a composition request mints its expression graph,
+    # while a registered proof-required domain blocks a process without proof.
+    request = agent.s.add_node("OperatorCompositionRequest", {
+        "name": "p14-profile-request", "status": "draft",
+        "recipe": "commutator_square", "left_operator": "commutator",
+        "right_operator": "commutator", "candidate_name": "commutator_square_v1",
+    })
+    _edge(agent, agent.agent, "has_operator_composition_request", request)
+    domain = agent.s.add_node("ProcessDomain", {
+        "name": "p14-proof-domain", "kind": "permutation", "source_epoch": 0,
+        "model_epoch": 0, "frame_epoch": 0, "family_digest": "p14-family",
+        "model_digest": "p14-model", "probes": [[0, 1, 2]],
+    })
+    _edge(agent, agent.agent, "has_process_domain", domain)
+    held_a = agent.s.add_node("ProcessSchema", {
+        "name": "held-a", "kind": "permutation", "domain": "p14-proof-domain",
+        "status": "active", "provenance": "held", "params": [1, 2, 0],
+    })
+    held_b = agent.s.add_node("ProcessSchema", {
+        "name": "held-b", "kind": "permutation", "domain": "p14-proof-domain",
+        "status": "active", "provenance": "held", "params": [0, 2, 1],
+    })
+    _edge(agent, agent.agent, "has_process_schema", held_a)
+    _edge(agent, agent.agent, "has_process_schema", held_b)
+    from scripts.track_i_seed_lib import A as _A, PCommutator as _PCommutator
+    exact_params = agent.inner.evaluate(_PCommutator(_A("a", "params"), _A("b", "params")),
+                                        {"a": held_a, "b": held_b})
+    proved_process = agent.s.add_node("ProcessSchema", {
+        "name": "p14-commutator", "kind": "permutation", "domain": "p14-proof-domain",
+        "status": "active", "invented": 1, "operator": "commutator",
+        "params": exact_params, "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+    })
+    _edge(agent, agent.agent, "has_process_schema", proved_process)
+    _edge(agent, domain, "has_invented_process", proved_process)
+    _edge(agent, proved_process, "has_arg0", held_a)
+    _edge(agent, proved_process, "has_arg1", held_b)
+    law = agent.s.add_node("ProcessLaw", {
+        "claim": "commutator_even", "status": "conjecture", "proven": 0,
+        "family": "p14-proof-domain", "family_digest": "p14-family",
+        "family_epoch": 0, "process_epoch": 0, "model_digest": "p14-model",
+        "model_epoch": 0, "frame_epoch": 0,
+        "statement_digest": "4e3f9f19059a7254dbc8b885e464eccf69cec770eec50cb43a4d89e01415adb2",
+        "assumptions_digest": "d055b01ab1e76e1190f7b04e01fe250ab42f5ce6ccc24eaf4dfd84263ec96077",
+        "assumptions": "permutation_group;parity_homomorphism_Z2;operator_semantics_v1",
+        "evidence_kind": "structural_derivation", "counterexample_count": 0,
+    })
+    _edge(agent, agent.agent, "has_process_law_candidate", law)
+    _edge(agent, law, "about_process", proved_process)
+    process = agent.s.add_node("ProcessSchema", {
+        "name": "p14-unproved-process", "kind": "permutation",
+        "domain": "p14-proof-domain", "status": "active", "invented": 1,
+        "params": [1, 0, 2],
+    })
+    _edge(agent, agent.agent, "has_process_schema", process)
+    policy = next(n for n in _nodes(agent, "ProcessProofAdoptionPolicy")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    requirement = agent.s.add_node("ProcessProofRequirement", {
+        "name": "p14-proof-requirement", "required": 1,
+        "required_law": "commutator_even",
+    })
+    _edge(agent, policy, "requires_proof_for", requirement)
+    _edge(agent, requirement, "applies_to", domain)
+    _p4_tick(agent)
+    candidates = [n for n in _nodes(agent, "CandidateOperator")
+                  if agent.s.node(n)["attrs"].get("name") == "commutator_square_v1"]
+    assert len(candidates) == 1
+    assert agent.s.node(request)["attrs"]["status"] == "built"
+    assert agent.s.node(process)["attrs"]["status"] == "proof_blocked"
+    assert agent.s.node(law)["attrs"]["status"] == "checked"
+    proof = agent.inner.neighbours(law, "has_proof_reference")[0]
+    assert agent.s.node(proof)["attrs"]["checker"] == "process_laws_seed_v1"
+    assert agent.s.node(proof)["attrs"]["process_params"] == agent.s.node(proved_process)["attrs"]["params"]
+    assert agent.s.node(proved_process)["attrs"]["proof_adoption_status"] == "approved"
+
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    graph = agent.inner.graph_to_dict()
+    serialized_bytes = len(json.dumps(graph, sort_keys=True).encode("utf-8"))
+    assert boot_seconds > 0 and serialized_bytes > 0 and graph["nodes"]
+    agent.close()
+
+
+def test_p14_default_isolation():
+    p14 = {"process_laws", "process_proof_adoption", "invention_operator_authorship"}
+    p14_rules = {item["name"] for sid in p14 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p14.isdisjoint(installed_seeds(default.s))
+    assert p14.isdisjoint(installed_seeds(conversation.s))
+    assert p14_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p14_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p14_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    agent.close()
+
+
+def test_p15_profile_chain():
+    p15 = {"process_portfolio", "process_curriculum", "recursive_process_improvement"}
+    p21 = {"curriculum_learning_bridge"}
+    boot_started = time.perf_counter()
+    agent = boot_cognition_on()
+    boot_seconds = time.perf_counter() - boot_started
+    graph_before = agent.inner.graph_to_dict()
+    nodes_before = len(graph_before["nodes"])
+    bytes_before = len(json.dumps(graph_before, sort_keys=True).encode("utf-8"))
+    exported = {rule["name"] for rule in agent.inner.export_rules()}
+    for sid in p15:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for item in manifest_for("curriculum_learning_bridge").get("rules", ()):
+        if isinstance(item, dict) and item.get("name"):
+            assert item["name"] in exported, item["name"]
+    for ptype in ("ProcessPortfolioPolicy", "ProcessCurriculumPolicy",
+                  "RecursiveProcessImprovementPolicy"):
+        policy = _nodes(agent, ptype)
+        assert len(policy) == 1
+        assert agent.s.node(policy[0])["attrs"].get("enabled") == 0.0
+    bridge_policy = _nodes(agent, "CurriculumLearningBridgePolicy")
+    assert len(bridge_policy) == 1
+    assert agent.s.node(bridge_policy[0])["attrs"].get("enabled") == 0.0
+    assert p21.issubset(set(COGNITION_ON_SEEDS))
+
+    # Turn on only curriculum for this profile-native event. Its task must be
+    # created from the observed training transition through native rules.
+    policy = _nodes(agent, "ProcessCurriculumPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    hyp = agent.s.add_node("ProcessInductionHypothesis", {
+        "owner_id": "agent-root", "action_kind": "press", "object_type": "switch",
+        "feature_key": "light", "before_value": "off", "after_value": "on",
+        "source_epoch": 3, "model_epoch": 2, "frame_epoch": 5,
+        "status": "disputed", "counterexample_count": 1,
+    })
+    ce = agent.s.add_node("ProcessCounterexample", {
+        "event_id": "p15-profile-event", "status": "observed",
+    })
+    obs = agent.s.add_node("TransitionObservation", {
+        "owner_id": "agent-root", "event_id": "p15-profile-event",
+        "action_kind": "press", "object_type": "switch", "feature_key": "light",
+        "before_value": "off", "after_value": "on", "split": "training",
+        "source_epoch": 3, "model_epoch": 2, "frame_epoch": 5,
+    })
+    _edge(agent, agent.agent, "has_process_induction_hypothesis", hyp)
+    _edge(agent, hyp, "has_counterexample", ce)
+    _edge(agent, ce, "counterexample_transition", obs)
+    budget = next(n for n in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    before = agent.s.node(budget)["attrs"]["remaining"]
+    _p4_tick(agent)
+    evidence = _nodes(agent, "ProcessCurriculumEvidence")
+    tasks = _nodes(agent, "ProcessCurriculumTask")
+    assert len(evidence) == len(tasks) == 1
+    assert agent.s.node(tasks[0])["attrs"]["split"] == "training"
+    assert agent.s.node(tasks[0])["attrs"]["answer_fields_absent"] is True
+    assert agent.s.node(budget)["attrs"]["remaining"] == before - 1.0
+    fund = agent.inner.neighbours(evidence[0], "funded_by")[0]
+    assert agent.s.node(fund)["attrs"]["requester_kind"] == "process_curriculum"
+    assert agent.s.node(fund)["attrs"]["status"] == "approved"
+    assert agent.inner.neighbours(tasks[0], "from_evidence") == evidence
+    graph_after = agent.inner.graph_to_dict()
+    nodes_after = len(graph_after["nodes"])
+    bytes_after = len(json.dumps(graph_after, sort_keys=True).encode("utf-8"))
+    assert 0 < boot_seconds < 10
+    assert nodes_after > nodes_before and bytes_after > bytes_before
+    agent.close()
+
+
+def test_p15_default_isolation():
+    p15 = {"process_portfolio", "process_curriculum", "recursive_process_improvement"}
+    p21 = {"curriculum_learning_bridge"}
+    p15_rules = {item["name"] for sid in p15 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    p15_rules |= {item["name"] for item in manifest_for("curriculum_learning_bridge").get("rules", ())
+                  if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert (p15 | p21).isdisjoint(installed_seeds(default.s))
+    assert (p15 | p21).isdisjoint(installed_seeds(conversation.s))
+    assert p15_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p15_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p15_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    assert all(agent.s.node(n)["type"] == "ThinkingBudget" for n in attached)
+    for ptype, edge in (("ProcessPortfolioPolicy", "has_process_portfolio_policy"),
+                        ("ProcessCurriculumPolicy", "has_process_curriculum_policy"),
+                        ("RecursiveProcessImprovementPolicy", "has_recursive_improvement_policy")):
+        policy = _nodes(agent, ptype)[0]
+        assert agent.s.node(policy)["attrs"]["enabled"] == 0.0
+        assert policy in agent.inner.neighbours(agent.agent, edge)
+    bridge = _nodes(agent, "CurriculumLearningBridgePolicy")[0]
+    assert agent.s.node(bridge)["attrs"]["enabled"] == 0.0
+    assert bridge in agent.inner.neighbours(agent.agent, "has_curriculum_learning_bridge_policy")
+    agent.close()
+
+
+def test_p16_native_execution_profile_is_opt_in_and_budgeted():
+    p16 = {"native_process_execution"}
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "NativeProcessExecutionPolicy")
+    assert len(policy) == 1
+    assert agent.s.node(policy[0])["attrs"].get("enabled") == 0.0
+    exported = {rule["name"] for rule in agent.inner.export_rules()}
+    for item in manifest_for("native_process_execution").get("rules", ()):
+        if isinstance(item, dict) and item.get("name"):
+            assert item["name"] in exported
+    assert p16.issubset(set(COGNITION_ON_SEEDS))
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p16.isdisjoint(installed_seeds(default.s))
+    assert p16.isdisjoint(installed_seeds(conversation.s))
+    assert not _nodes(default, "NativeProcessExecutionPolicy")
+    assert not _nodes(conversation, "NativeProcessExecutionPolicy")
+    agent.close()
+    default.close()
+    conversation.close()
+
+
+def test_p24_native_learning_chain(tmp_path):
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        target = ThermalWorld(object_ids=("p24-a", "p24-b", "p24-c"))
+        for key in ("p24-a", "p24-b"):
+            learner.observe_world_receipt(target.apply(key, "warm"))
+        learner.settle()
+        assert len(learner.hypotheses()) == 1
+        checkpoint = tmp_path / "p24-cognition-on.json"
+        world.save(checkpoint)
+    finally:
+        world.close()
+
+    resumed = WorldAdapter.load(checkpoint)
+    try:
+        learner = CommonTargetLearner(agent=resumed, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        prediction = learner.predict(query_id="p24-profile-next",
+                                     action_kind="warm", object_type="ThermalSample",
+                                     feature_key="temperature", before_value="cold",
+                                     object_id="p24-c")
+        assert prediction and prediction["expected_after_value"] == "warm"
+        receipt = target.apply("p24-c", "warm")
+        learner.observe_world_receipt(receipt)
+        learner.settle()
+        observations = [resumed.s.node(n)["attrs"]
+                        for n in resumed.s.nodes("TransitionObservation")
+                        if resumed.s.node(n)["attrs"].get("event_id") == receipt.event_id]
+        assert len(observations) == 1
+        assert len(resumed.s.nodes("ProcessInductionHypothesis")) == 1
+    finally:
+        resumed.close()
+
+
+def _p26_profile_opportunity(learner, *, pool_id="p26-profile-training"):
+    opportunity = learner.s.add_node("UsefulEvidenceOpportunity", {
+        "opportunity_key": "p26-profile-opportunity", "pool_id": pool_id,
+        "status": "eligible", "split": "training", "expected_outcome": "unknown",
+        "answer_fields_absent": True, "sealed_labels_present": False,
+        "source_epoch": 3, "model_epoch": 2, "frame_epoch": 5,
+        "object_id": "p26-selected-target", "object_type": "ThermalSample",
+        "action_kind": "warm", "feature_key": "temperature",
+        "before_value": "cold", "fixed_rank": 0.0, "random_rank": 0.0,
+    })
+    learner.s.add_edge(learner.ag, "has_useful_evidence_opportunity", opportunity, {})
+    return opportunity
+
+
+def test_p27_native_learning_chain_restores_scheduled_snapshot(tmp_path):
+    from evaluation.process_mastery.cumulative_checkpoint_panel import (
+        make_native_common_target_predictor, run_component_knockouts,
+        score_common_world_panel, world_allocation_digest,
+    )
+    from evaluation.process_mastery.scheduled_learning_checkpoints import (
+        capture_scheduled_checkpoint, snapshot_native_graph,
+    )
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert default.s.nodes("ScheduledLearningCheckpointPolicy") == []
+    assert conversation.s.nodes("ScheduledLearningCheckpointPolicy") == []
+    default.close()
+    conversation.close()
+
+    world = boot_cognition_on()
+    owner_id = "p27-scheduled-owner"
+    try:
+        policy, = world.s.nodes("ScheduledLearningCheckpointPolicy")
+        assert world.s.node(policy)["attrs"]["enabled"] == 0.0
+        budgets = [node for node in world.s.nodes("ThinkingBudget")
+                   if world.s.node(node)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        budget_before = world.s.node(budgets[0])["attrs"]["remaining"]
+        learner = CommonTargetLearner(agent=world, owner_id=owner_id,
+            enabled=True, policy_enabled=True)
+        thermal = ThermalWorld(object_ids=("p27-train-a", "p27-train-b"))
+        for object_id in ("p27-train-a", "p27-train-b"):
+            learner.observe_world_receipt(thermal.apply(object_id, "warm"),
+                                          split="training")
+        learner.settle()
+        assert world.s.node(budgets[0])["attrs"]["remaining"] <= budget_before
+        snapshot = snapshot_native_graph(world)
+    finally:
+        world.close()
+
+    predictor = make_native_common_target_predictor(owner_id=owner_id,
+                                                     agent_factory=boot_cognition_on)
+    result = predictor(snapshot, {"world_id": "p27-fresh", "split": "validation",
+        "action_kind": "warm", "object_type": "ThermalSample",
+        "feature_key": "temperature", "before_value": "cold",
+        "object_id": "p27-fresh-object", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5})
+    assert result and result["status"] == "predicted"
+    assert result["expected_after_value"] == "warm"
+    controls = run_component_knockouts(graph=snapshot,
+        world={"world_id": "p27-control", "split": "development",
+            "action_kind": "warm", "object_type": "ThermalSample",
+            "feature_key": "temperature", "before_value": "cold",
+            "object_id": "p27-control-fresh", "source_epoch": 3,
+            "model_epoch": 2, "frame_epoch": 5},
+        native_predictor=predictor)
+    assert controls["source_graph_unchanged"]
+    assert controls["outcomes"]["learned_distinctions"]["prediction_changed"]
+    assert all(not row["prediction_changed"] for name, row in controls["outcomes"].items()
+               if name != "learned_distinctions")
+
+    scored_world = {"world_id": "p27-sealed-fresh", "split": "validation",
+        "action_kind": "warm", "object_type": "ThermalSample",
+        "feature_key": "temperature", "before_value": "cold",
+        "object_id": "p27-sealed-object", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5, "expected_after_value": "warm"}
+    allocation_sha = world_allocation_digest([scored_world])
+    sequence, parent = [], None
+    import hashlib
+    graph_bytes = len(json.dumps(snapshot, sort_keys=True,
+        separators=(",", ":"), ensure_ascii=False, default=str).encode())
+    for checkpoint, work in zip(("g0", "g1", "g2", "g3"),
+                                (0, 1000, 2000, 4000)):
+        parent = capture_scheduled_checkpoint(arm="combined",
+            checkpoint=checkpoint, native_graph=snapshot,
+            cumulative={"primitive_work": work, "source_exposure": 0,
+                "native_rule_steps": work, "graph_bytes": graph_bytes,
+                "budget_debits": work, "task_world_accesses": work},
+            interval_status="initial" if checkpoint == "g0" else "no_change",
+            parent=parent, world_allocation_sha256=allocation_sha)
+        sequence.append(parent)
+    panel = score_common_world_panel(checkpoints={"combined": tuple(sequence)},
+        worlds=[scored_world], native_predictor=predictor)
+    assert len(panel["rows"]) == 4
+    assert [row["score"] for row in panel["rows"]] == [1, 1, 1, 1]
+    assert panel["score_feedback_to_training"] is False
+
+
+def _run_p26_profile_chain(*, enabled, tmp_path):
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        world_model = ThermalWorld(object_ids=("p26-baseline", "p26-selected-target", "p26-fresh"))
+        baseline = world_model.apply("p26-baseline", "warm")
+        learner.observe_world_receipt(baseline, source_epoch=3, model_epoch=2,
+                                      frame_epoch=5, split="training")
+        learner.settle()
+        baseline_prediction = learner.predict(query_id="p26-before-selection",
+            action_kind="warm", object_type="ThermalSample",
+            feature_key="temperature", before_value="cold", object_id="p26-fresh",
+            source_epoch=3, model_epoch=2, frame_epoch=5, split="training")
+        policies = world.s.nodes("UsefulEvidenceSelectionPolicy")
+        assert len(policies) == 1
+        policy = policies[0]
+        world.inner.set_attr(policy, "enabled", float(enabled))
+        world.inner.set_attr(policy, "selector_mode", "fixed")
+        world.inner.set_attr(policy, "pool_id", "p26-profile-training")
+        _p26_profile_opportunity(learner)
+        budget, = [node for node in world.s.nodes("ThinkingBudget")
+                   if world.s.node(node)["attrs"].get("enabled") == 1.0]
+        budget_before = world.s.node(budget)["attrs"]["remaining"]
+        learner.settle()
+        selections = world.s.nodes("UsefulEvidenceSelection")
+        if not enabled:
+            assert selections == []
+            assert baseline_prediction is None
+            return None, {"budget_before": budget_before,
+                          "budget_after": world.s.node(budget)["attrs"]["remaining"]}
+        selection_node, = selections
+        selection = world.s.node(selection_node)["attrs"]
+        request, = world.inner.neighbours(selection_node, "has_budget_request")
+        assert world.s.node(request)["attrs"]["status"] == "approved"
+        assert world.s.node(budget)["attrs"]["remaining"] == budget_before - 1.0
+
+        # Persist the selected but answer-free opportunity, restore it, then
+        # let only the external training world produce the authorized receipt.
+        checkpoint = tmp_path / "p26-cognition-on.json"
+        world.save(checkpoint)
+        memory_before = len(world.s.nodes())
+    finally:
+        world.close()
+
+    resumed = WorldAdapter.load(checkpoint)
+    try:
+        learner = CommonTargetLearner(agent=resumed, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        receipt = world_model.apply(selection["object_id"], selection["action_kind"])
+        assert receipt.action_authorized and receipt.status == "observed"
+        learner.observe_world_receipt(receipt, source_epoch=3, model_epoch=2,
+                                      frame_epoch=5, split="training")
+        learner.settle()
+        learned_state_count = len(learner.hypotheses())
+        prediction = learner.predict(query_id="p26-after-restart",
+            action_kind="warm", object_type="ThermalSample",
+            feature_key="temperature", before_value="cold",
+            object_id="p26-fresh", source_epoch=3, model_epoch=2,
+            frame_epoch=5, split="training")
+        assert prediction and prediction["expected_after_value"] == "warm"
+        common_receipt = [resumed.s.node(node)["attrs"]
+            for node in resumed.s.nodes("CommonTargetEvidence")
+            if resumed.s.node(node)["attrs"].get("event_id") == receipt.event_id]
+        assert len(common_receipt) == 1 and common_receipt[0]["split"] == "training"
+        budget = next(node for node in resumed.s.nodes("ThinkingBudget")
+                      if resumed.s.node(node)["attrs"].get("enabled") == 1.0)
+        report = {"receipt_event_id": receipt.event_id,
+            "learned_state_count": learned_state_count,
+            "prediction": prediction["expected_after_value"],
+            "budget_after": resumed.s.node(budget)["attrs"]["remaining"],
+            "dynamic_graph_nodes_before_restart": memory_before,
+            "dynamic_graph_nodes_after_learning": len(resumed.s.nodes()),
+            "checkpoint_bytes": checkpoint.stat().st_size,
+            "source_exposures": len(resumed.s.nodes("TargetSourceExposure")),
+            "native_rule_steps": learner.accounting.native_rule_steps,
+        }
+        return report, report
+    finally:
+        resumed.close()
+
+
+def test_p26_native_learning_chain(tmp_path):
+    report, _ = _run_p26_profile_chain(enabled=True, tmp_path=tmp_path)
+    assert report["learned_state_count"] == 1
+    assert report["prediction"] == "warm"
+    assert report["source_exposures"] == 0
+    assert report["checkpoint_bytes"] > 0
+    assert report["native_rule_steps"] > 0
+    assert report["dynamic_graph_nodes_after_learning"] > report["dynamic_graph_nodes_before_restart"]
+    import substrate_rs
+    from evaluation.process_mastery.runtime_attestation import attest
+    identity = attest(package=substrate_rs)
+    assert identity["loaded_extension_sha256"]
+    assert identity["native_symbols_bound"] is True
+
+
+def test_p26_causal_perturbation(tmp_path):
+    treatment, _ = _run_p26_profile_chain(enabled=True, tmp_path=tmp_path)
+    control, control_budget = _run_p26_profile_chain(enabled=False, tmp_path=tmp_path)
+    assert treatment["prediction"] == "warm"
+    assert control is None
+    assert control_budget["budget_before"] == control_budget["budget_after"]
+
+
+def test_p26_default_isolation():
+    from substrate.seed_loader import manifest_for
+
+    seed_id = "useful_evidence_selection"
+    assert seed_id in COGNITION_ON_SEEDS
+    default, conversation, cognition = WorldAdapter(), WorldAdapter(seeds=()), boot_cognition_on()
+    try:
+        load_conversation_seed_profile(conversation)
+        policies = _nodes(cognition, "UsefulEvidenceSelectionPolicy")
+        assert len(policies) == 1
+        assert cognition.s.node(policies[0])["attrs"].get("enabled") == 0.0
+        assert seed_id not in installed_seeds(default.s)
+        assert seed_id not in installed_seeds(conversation.s)
+        names = {rule.get("name") for rule in manifest_for(seed_id).get("rules", ())
+                 if isinstance(rule, dict) and rule.get("name")}
+        for isolated in (default, conversation):
+            exported = {rule.get("name") for rule in isolated.inner.export_rules()}
+            assert names.isdisjoint(exported)
+    finally:
+        default.close()
+        conversation.close()
+        cognition.close()
+
+
+def test_p26_shared_budget(tmp_path):
+    report, _ = _run_p26_profile_chain(enabled=True, tmp_path=tmp_path)
+    assert report["budget_after"] < 64.0
+    world = boot_cognition_on()
+    try:
+        budgets = [node for node in world.s.nodes("ThinkingBudget")
+                   if world.s.node(node)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        search_policies = _nodes(world, "OpenProcessSearchPolicy")
+        selection_policies = _nodes(world, "UsefulEvidenceSelectionPolicy")
+        assert len(search_policies) == len(selection_policies) == 1
+        assert world.s.node(search_policies[0])["attrs"].get("enabled") == 0.0
+        assert world.s.node(selection_policies[0])["attrs"].get("enabled") == 0.0
+    finally:
+        world.close()
+
+
+def test_p24_causal_perturbation():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    records = []
+    for source_enabled in (False, True):
+        world = boot_cognition_on()
+        try:
+            learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                          enabled=True, policy_enabled=True,
+                                          additive_transfer_enabled=source_enabled)
+            target = ThermalWorld(object_ids=("p24-a", "p24-b", "p24-c"))
+            for key in ("p24-a", "p24-b"):
+                learner.observe_world_receipt(target.apply(key, "warm"))
+            if source_enabled:
+                learner.propose_source_model(
+                    prior_id="p24-rejected-prior", source_id="wrong-source",
+                    action_kind="warm", object_type="ThermalSample",
+                    feature_key="temperature", before_value="cold", after_value="cold",
+                    map_evidence={"map_id": "p24-rejected-map", "status": "rejected",
+                                  "mapping_kind": "exact_categorical_effect",
+                                  "target_frame_epoch": 5},
+                    target_receipt={"receipt_id": "p24-rejected-effect",
+                                    "source_prior_id": "p24-rejected-prior",
+                                    "target_event_id": "thermal:2:p24-b",
+                                    "status": "rejected", "exact_effect_match": False})
+            learner.settle()
+            prediction = learner.predict(query_id=f"p24-perturb-{source_enabled}",
+                                         action_kind="warm", object_type="ThermalSample",
+                                         feature_key="temperature", before_value="cold",
+                                         object_id="p24-c")
+            observations = [world.s.node(n)["attrs"]
+                            for n in world.s.nodes("TransitionObservation")]
+            records.append((prediction["expected_after_value"] if prediction else None,
+                            observations, len(world.s.nodes("TargetProcessPrior"))))
+            if source_enabled:
+                assert len(world.s.nodes("SourceModelProposal")) == 1
+        finally:
+            world.close()
+    assert records[0] == records[1]
+
+
+def test_p24_default_isolation():
+    p24 = {"common_target_evidence", "additive_transfer"}
+    expected_rules = {item["name"] for sid in p24 for item in manifest_for(sid).get("rules", ())
+                      if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    cognition = boot_cognition_on()
+    try:
+        load_conversation_seed_profile(conversation)
+        for ptype in ("CommonTargetEvidencePolicy", "AdditiveTransferPolicy"):
+            policies = _nodes(cognition, ptype)
+            assert len(policies) == 1
+            assert cognition.s.node(policies[0])["attrs"].get("enabled") == 0.0
+        assert p24.isdisjoint(installed_seeds(default.s))
+        assert p24.isdisjoint(installed_seeds(conversation.s))
+        assert expected_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+        assert expected_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    finally:
+        default.close()
+        conversation.close()
+        cognition.close()
+
+
+def test_p24_shared_budget():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import HeatSourceWorld, ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True,
+                                      additive_transfer_enabled=True)
+        budgets = [n for n in world.s.nodes("ThinkingBudget")
+                   if world.s.node(n)["attrs"].get("enabled") == 1.0]
+        attached = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+        assert len(budgets) == len(attached) == 1
+        budget = budgets[0]
+        before = world.s.node(budget)["attrs"]["remaining"]
+        source = HeatSourceWorld(sample_ids=("source-a", "source-b"))
+        target = ThermalWorld(object_ids=("target-a", "target-b"))
+        for i, (source_id, target_id) in enumerate((
+                ("source-a", "target-a"), ("source-b", "target-b")), 1):
+            source_receipt = source.apply_heat(source_id, "apply_heat")
+            learner.observe_world_receipt(target.apply(target_id, "warm"), map_view={
+                "pair_id": f"p24-budget-{i}", "source_receipt": source_receipt})
+        learner.settle()
+        requests = [world.s.node(n)["attrs"] for n in world.s.nodes("ThinkingBudgetRequest")]
+        map_requests = [r for r in requests if r.get("requester_kind") == "target_map_observation"]
+        induction_requests = [r for r in requests if r.get("requester_kind") == "process_induction"]
+        assert len(map_requests) == len(induction_requests) == 2
+        assert all(r.get("status") == "approved" for r in map_requests + induction_requests)
+        assert world.s.node(budget)["attrs"]["remaining"] == before - 4.0
+    finally:
+        world.close()
+
+
+def test_p12_profile_chain():
+    p12 = {"imitation", "social_process", "process_explanation"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p12:
+        for item in manifest_for(sid).get("rules", ()):
+            if isinstance(item, dict) and item.get("name"):
+                assert item["name"] in exported, item["name"]
+    for node_type in ("ImitationPolicy", "SocialProcessPolicy", "ProcessExplanationPolicy"):
+        policies = _nodes(agent, node_type)
+        assert policies and all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+                                for n in policies)
+
+    # Enable only the exercised faculty and expose a real witnessed world row.
+    policy = _nodes(agent, "ImitationPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    episode = agent.s.add_node("SocialEpisode", {
+        "episode_id": "p12-profile-episode", "status": "observed",
+        "observation_status": "complete", "source_kind": "directed_demonstration",
+        "owner_id": "agent-root", "actor_id": "peer",
+        "actor_body_id": "peer-body", "learner_body_id": "learner-body",
+        "source_epoch": 3, "model_epoch": 2, "target_frame_epoch": 4,
+        "binding_id": "object-a", "template_key": "press",
+        "action_sequence": ["seq", ["add", [1]]],
+    })
+    body_map = agent.s.add_node("SocialBodyFrameMap", {
+        "status": "verified", "source_body_id": "peer-body",
+        "target_body_id": "learner-body", "source_epoch": 3,
+        "target_frame_epoch": 4, "map_id": "p12-profile-map"})
+    agent.s.add_edge(agent.agent, "has_social_episode", episode, {})
+    agent.s.add_edge(episode, "uses_body_frame_map", body_map, {})
+    budget = next(n for n in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+                  if agent.s.node(n)["attrs"].get("enabled") == 1.0)
+    request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "imitation", "episode_id": "p12-profile-episode",
+        "source_epoch": 3, "operation_id": "p12-profile-request",
+        "source_key": "p12-profile-request", "status": "pending", "cost": 1.0})
+    agent.s.add_edge(agent.agent, "has_imitation_request", request, {})
+    agent.s.add_edge(request, "draws_on_thinking_budget", budget, {})
+    for _ in range(20):
+        if not agent.inner.run_rules(1000):
+            break
+    candidates = list(agent.s.nodes("DemonstratedProcessCandidate"))
+    assert len(candidates) == 1
+    assert agent.s.node(request)["attrs"]["status"] == "approved"
+    assert agent.s.node(request)["attrs"]["terminal_status"] == "completed"
+    agent.close()
+
+
+def test_p25_native_learning_chain(tmp_path):
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.learning_memory_budget import charge_persistent_summaries
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        memory = _nodes(world, "LearningMemoryBudgetPolicy")[0]
+        consolidation = _nodes(world, "PersistentConsolidationPolicy")[0]
+        world.s.set_attr(memory, "enabled", 1.0)
+        world.s.set_attr(consolidation, "enabled", 1.0)
+        target = ThermalWorld(object_ids=("p25-a", "p25-b", "p25-c"))
+        for key in ("p25-a", "p25-b"):
+            learner.observe_world_receipt(target.apply(key, "warm"))
+        learner.settle()
+        assert len(learner.hypotheses()) == 1
+        work = world.s.add_node("PersistentConsolidationWork", {
+            "work_id": "p25-profile-consolidation", "status": "requested",
+            "interrupted": False, "foreground_demand": False,
+        })
+        _edge(world, world.agent, "has_persistent_consolidation_work", work)
+        learner.settle()
+        measured = charge_persistent_summaries(world)
+        learner.settle()
+        assert measured and len(world.s.nodes("PersistentLearnedSummary")) == 1
+        assert world.s.node(memory)["attrs"]["resident_bytes"] == measured[0]["charged_bytes"]
+
+        prediction = learner.predict(query_id="p25-profile-next", action_kind="warm",
+                                     object_type="ThermalSample", feature_key="temperature",
+                                     before_value="cold", object_id="p25-c")
+        assert prediction and prediction["expected_after_value"] == "warm"
+        receipt = target.apply("p25-c", "warm")
+        assert receipt.action_authorized and receipt.status == "observed"
+        learner.observe_world_receipt(receipt)
+        learner.settle()
+        observed = [world.s.node(n)["attrs"] for n in world.s.nodes("TransitionObservation")
+                    if world.s.node(n)["attrs"].get("event_id") == receipt.event_id]
+        assert len(observed) == 1 and observed[0]["after_value"] == "warm"
+        checkpoint = tmp_path / "p25-cognition-on.json"
+        world.save(checkpoint)
+    finally:
+        world.close()
+
+    resumed = WorldAdapter.load(checkpoint)
+    try:
+        assert len(resumed.s.nodes("PersistentLearnedSummary")) == 1
+        policies = resumed.s.nodes("LearningMemoryBudgetPolicy")
+        assert len(policies) == 1
+        assert resumed.s.node(policies[0])["attrs"]["resident_bytes"] > 0
+    finally:
+        resumed.close()
+
+
+def test_p25_causal_perturbation():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.learning_memory_budget import (
+        apply_native_evictions,
+        charge_persistent_summaries,
+    )
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    outcomes = {}
+    for consolidation_enabled in (False, True):
+        world = boot_cognition_on()
+        try:
+            learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                          enabled=True, policy_enabled=True)
+            memory = _nodes(world, "LearningMemoryBudgetPolicy")[0]
+            consolidation = _nodes(world, "PersistentConsolidationPolicy")[0]
+            world.s.set_attr(memory, "enabled", 1.0)
+            world.s.set_attr(consolidation, "enabled", float(consolidation_enabled))
+            target = ThermalWorld(object_ids=(f"p25-causal-{consolidation_enabled}-{i}"
+                                              for i in range(3)))
+            learned_ids = (f"p25-causal-{consolidation_enabled}-0",
+                           f"p25-causal-{consolidation_enabled}-1")
+            for object_id in learned_ids:
+                learner.observe_world_receipt(target.apply(object_id, "warm"))
+            learner.settle()
+            if consolidation_enabled:
+                work = world.s.add_node("PersistentConsolidationWork", {
+                    "work_id": "p25-causal-work", "status": "requested",
+                    "interrupted": False, "foreground_demand": False,
+                })
+                _edge(world, world.agent, "has_persistent_consolidation_work", work)
+                learner.settle()
+                charge = charge_persistent_summaries(world)[0]["charged_bytes"]
+                learner.settle()
+                world.s.set_attr(memory, "capacity_bytes", float(charge + 119))
+            else:
+                world.s.set_attr(memory, "capacity_bytes", 100.0)
+
+            # In the treatment, the original hypothesis is retired and joins
+            # source evidence in the eviction bundle; the charged summary
+            # projection remains. In the knockout, the ordinary hypothesis is
+            # part of that same bundle and is deleted.
+            if consolidation_enabled:
+                source_hyp = [n for n in world.s.nodes("ProcessInductionHypothesis")
+                              if world.s.node(n)["attrs"].get("status") == "consolidated_source"]
+            else:
+                source_hyp = [n for n in world.s.nodes("ProcessInductionHypothesis")
+                              if world.s.node(n)["attrs"].get("status") == "candidate"]
+            item = world.s.add_node("LearningMemoryItem", {
+                "item_id": f"p25-causal-source-{consolidation_enabled}",
+                "content_class": "acquired_target_evidence",
+                "availability": "pending_admission", "charged_bytes": 80.0,
+                "admission_epoch": 1.0, "retention_priority": 1.0, "payload": "acquired evidence",
+                "protection_class": "ordinary",
+            })
+            _edge(world, world.agent, "has_learning_memory_item", item)
+            source_nodes = (world.s.nodes("TransitionObservation") +
+                            world.s.nodes("CommonTargetEvidence") +
+                            world.s.nodes("TransitionActionReceipt") +
+                            world.s.nodes("TransitionOutcomeReceipt") + source_hyp)
+            for node in source_nodes:
+                wrapper = world.s.add_node("LearningMemoryGraphNode", {
+                    "graph_node_id": int(node.value),
+                    "content_type": world.s.node(node)["type"],
+                })
+                _edge(world, item, "has_learning_memory_graph_node", wrapper)
+            filler = world.s.add_node("LearningMemoryItem", {
+                "item_id": f"p25-causal-filler-{consolidation_enabled}",
+                "content_class": "interference", "availability": "pending_admission",
+                "charged_bytes": 40.0, "admission_epoch": 2.0, "retention_priority": 2.0,
+                "payload": "unrelated", "protection_class": "ordinary",
+            })
+            _edge(world, world.agent, "has_learning_memory_item", filler)
+            learner.settle()
+            assert world.s.node(item)["attrs"]["availability"] == "evicted"
+            apply_native_evictions(world)
+            prediction = learner.predict(query_id=f"p25-causal-{consolidation_enabled}",
+                                         action_kind="warm", object_type="ThermalSample",
+                                         feature_key="temperature", before_value="cold",
+                                         object_id="p25-causal-held")
+            outcomes[consolidation_enabled] = bool(
+                prediction and prediction.get("expected_after_value") == "warm")
+            assert outcomes[consolidation_enabled] is consolidation_enabled
+        finally:
+            world.close()
+    assert outcomes == {False: False, True: True}
+
+
+def test_p25_default_isolation():
+    p25 = {"learning_memory_budget", "persistent_consolidation"}
+    expected_rules = {item["name"] for sid in p25
+                      for item in manifest_for(sid).get("rules", ())
+                      if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    cognition = boot_cognition_on()
+    try:
+        load_conversation_seed_profile(conversation)
+        assert p25.isdisjoint(installed_seeds(default.s))
+        assert p25.isdisjoint(installed_seeds(conversation.s))
+        for node_type in ("LearningMemoryBudgetPolicy", "PersistentConsolidationPolicy"):
+            nodes = cognition.s.nodes(node_type)
+            assert len(nodes) == 1
+            assert cognition.s.node(nodes[0])["attrs"]["enabled"] == 0.0
+        assert cognition.s.node(cognition.s.nodes("LearningMemoryBudgetPolicy")[0])["attrs"]["capacity_bytes"] == 8192.0
+        assert expected_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+        assert expected_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    finally:
+        default.close()
+        conversation.close()
+        cognition.close()
+
+
+def test_p25_shared_budget():
+    from evaluation.process_mastery.common_target_learner import CommonTargetLearner
+    from evaluation.process_mastery.target_learning_worlds import ThermalWorld
+
+    world = boot_cognition_on()
+    try:
+        learner = CommonTargetLearner(agent=world, owner_id="agent-root",
+                                      enabled=True, policy_enabled=True)
+        memory = _nodes(world, "LearningMemoryBudgetPolicy")[0]
+        consolidation = _nodes(world, "PersistentConsolidationPolicy")[0]
+        world.s.set_attr(memory, "enabled", 1.0)
+        world.s.set_attr(consolidation, "enabled", 1.0)
+        budgets = list(world.inner.neighbours(world.agent, "has_thinking_budget"))
+        assert len(budgets) == 1
+        budget = budgets[0]
+        target = ThermalWorld(object_ids=("p25-budget-a", "p25-budget-b"))
+        for object_id in ("p25-budget-a", "p25-budget-b"):
+            learner.observe_world_receipt(target.apply(object_id, "warm"))
+        learner.settle()
+        before_consolidation = world.s.node(budget)["attrs"]["remaining"]
+        work = world.s.add_node("PersistentConsolidationWork", {
+            "work_id": "p25-budget-work", "status": "requested",
+            "interrupted": False, "foreground_demand": False,
+        })
+        _edge(world, world.agent, "has_persistent_consolidation_work", work)
+        learner.settle()
+        assert world.s.node(budget)["attrs"]["remaining"] == before_consolidation - 1.0
+        assert len(list(world.inner.neighbours(world.agent, "has_thinking_budget"))) == 1
+        assert world.s.node(memory)["attrs"]["enabled"] == 1.0
+    finally:
+        world.close()
+
+
+def test_p12_default_isolation():
+    p12_rules = {item["name"] for sid in {"imitation", "social_process", "process_explanation"}
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p12_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p12_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p12_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    attached = list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(budgets) == 1 and budgets[0] in attached
+    budget = budgets[0]
+    before = agent.s.node(budget)["attrs"]["remaining"]
+    requests = []
+    for ix, requester in enumerate(("imitation", "social_process", "process_explanation")):
+        request = agent.s.add_node("ThinkingBudgetRequest", {
+            "requester_kind": requester, "source_key": f"p12-shared:{requester}",
+            "source_epoch": 0, "operation_id": f"p12-shared:{ix}",
+            "status": "pending", "cost": 0.5})
+        agent.s.add_edge(request, "draws_on_thinking_budget", budgets[0], {})
+        requests.append(request)
+    for _ in range(8):
+        agent.s.tick(1000)
+    assert all(agent.s.node(r)["attrs"]["status"] == "approved" for r in requests)
+    assert all(agent.s.node(r)["attrs"].get("debited_epoch") is not None for r in requests)
+    assert agent.s.node(budget)["attrs"]["remaining"] == before - 1.5
+    agent.close()
+
+
+def test_p9_profile_chain():
+    p9 = {"invention_round", "invariant_miner"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p9:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    assert "ir_repair_candidate_verify" in exported
+    assert "ir_repair_epoch_stale" in exported
+    agent.close()
+
+
+def test_p9_default_isolation():
+    p9_rules = {r["name"] for sid in {"invention_round", "invariant_miner"}
+                for r in manifest_for(sid).get("rules", ())
+                if isinstance(r, dict) and r.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p9_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p9_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p9_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    assert set(budgets).issubset(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    agent.close()
+
+
+
+def test_p7_profile_chain():
+    p7 = {"experience_signature", "qualia_acquisition", "numerosity"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p7:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    for node_type in ("ExperienceSignaturePolicy", "QualiaAcquisitionPolicy", "NumerosityPolicy"):
+        policy_nodes = _nodes(agent, node_type)
+        assert policy_nodes
+        assert all(agent.s.node(node)["attrs"].get("enabled") == 0.0
+                   for node in policy_nodes)
+    agent.close()
+
+
+def test_p7_default_isolation():
+    p7 = {"experience_signature", "qualia_acquisition", "numerosity"}
+    names = {r["name"] for sid in p7 for r in manifest_for(sid).get("rules", ())
+             if isinstance(r, dict) and r.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert names.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert names.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p7_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    assert budgets[0] in list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    assert len(_nodes(agent, "NumerosityPolicy")) == 1
+    assert agent.s.node(_nodes(agent, "NumerosityPolicy")[0])["attrs"]["enabled"] == 0.0
+    agent.close()
+
+
+def test_p8_profile_chain():
+    p8 = {"process_induction", "latent_process", "experiment_design"}
+    agent = boot_cognition_on()
+    exported = {r["name"] for r in agent.inner.export_rules()}
+    for sid in p8:
+        for rule in manifest_for(sid).get("rules", ()):
+            if isinstance(rule, dict) and rule.get("name"):
+                assert rule["name"] in exported, rule["name"]
+    for node_type in ("ModelLearningPolicy", "LatentProcessPolicy", "ExperimentDesignPolicy"):
+        policies = _nodes(agent, node_type)
+        assert policies
+        assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0 for n in policies)
+    agent.close()
+
+
+def test_p8_default_isolation():
+    p8 = {"process_induction", "latent_process", "experiment_design"}
+    names = {r["name"] for sid in p8 for r in manifest_for(sid).get("rules", ())
+             if isinstance(r, dict) and r.get("name")}
+    default = WorldAdapter()
+    conversation = WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert names.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert names.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    default.close()
+    conversation.close()
+
+
+def test_p8_shared_budget():
+    agent = boot_cognition_on()
+    enabled = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(enabled) == 1
+    assert enabled[0] in list(agent.inner.neighbours(agent.agent, "has_thinking_budget"))
+    agent.close()
+
+
+def _p20_add_target_transition(agent, index, after, *, model_epoch=2):
+    s, ag = agent.s, agent.agent
+    common = {"owner_id": "p20-owner", "episode_id": f"p20-episode-{index}",
+              "event_id": f"p20-event-{index}", "source_epoch": 3,
+              "model_epoch": model_epoch, "frame_epoch": 5, "status": "observed"}
+    obs = s.add_node("TransitionObservation", {
+        **common, "object_id": f"widget-{index}", "object_type": "Widget",
+        "action_kind": "warm", "feature_key": "temperature",
+        "before_value": "cold", "after_value": after})
+    action = s.add_node("TransitionActionReceipt", dict(common))
+    outcome = s.add_node("TransitionOutcomeReceipt", dict(common))
+    agent.s.add_edge(ag, "has_transition_observation", obs, {})
+    agent.s.add_edge(obs, "has_action_receipt", action, {})
+    agent.s.add_edge(obs, "has_outcome_receipt", outcome, {})
+
+
+def _p20_learned_profile(after="warm"):
+    agent = boot_cognition_on()
+    for policy in _nodes(agent, "ModelLearningPolicy"):
+        agent.s.set_attr(policy, "enabled", 1.0)
+    _p20_add_target_transition(agent, 1, after)
+    _p20_add_target_transition(agent, 2, after)
+    for _ in range(40):
+        if not agent.inner.run_rules(2000):
+            break
+    query = agent.s.add_node("ProcessPredictionQuery", {
+        "query_id": "p20-unseen-binding", "owner_id": "p20-owner",
+        "object_id": "widget-new", "object_type": "Widget", "action_kind": "warm",
+        "feature_key": "temperature", "before_value": "cold", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5, "status": "pending"})
+    agent.s.add_edge(agent.agent, "has_process_prediction_query", query, {})
+    for _ in range(20):
+        if not agent.inner.run_rules(2000):
+            break
+    predictions = agent.s.nodes("ProcessPrediction")
+    return agent, [agent.s.node(node)["attrs"] for node in predictions]
+
+
+def test_p20_native_causal_chain():
+    agent, predictions = _p20_learned_profile()
+    assert len(agent.s.nodes("ProcessInductionHypothesis")) == 1
+    assert len(predictions) == 1
+    assert predictions[0]["expected_after_value"] == "warm"
+    agent.close()
+
+
+def test_p20_native_map_induction_through_cognition_profile():
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "TargetLearningPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    source = HeatSourceWorld(sample_ids=("profile-source-a", "profile-source-b"))
+    target = ThermalWorld(object_ids=("profile-target-a", "profile-target-b"))
+    source_receipts, target_receipts, observations = [], [], []
+    budget = agent.inner.neighbours(agent.agent, "has_thinking_budget")[0]
+    for ix, (source_id, target_id) in enumerate(
+            (("profile-source-a", "profile-target-a"),
+             ("profile-source-b", "profile-target-b")), 1):
+        src = source.apply_heat(source_id, "apply_heat")
+        tgt = target.apply(target_id, "warm")
+        source_receipts.append(src)
+        target_receipts.append(tgt)
+        pair_id = f"profile-map-pair-{ix}"
+        pair = agent.s.add_node("TargetMapObservation", {
+            "pair_id": pair_id, "source_event_id": src.event_id,
+            "target_event_id": tgt.event_id, "source_object_id": src.object_id,
+            "target_object_id": tgt.object_id, "source_action": src.action_kind,
+            "target_action": tgt.action_kind, "source_object_type": src.object_type,
+            "target_object_type": tgt.object_type, "source_feature": src.feature_key,
+            "target_feature": tgt.feature_key, "source_before": src.before_value,
+            "target_before": tgt.before_value, "source_after": src.after_value,
+            "target_after": tgt.after_value, "source_epoch": 3,
+            "target_frame_epoch": 5, "status": "observed_pair"})
+        agent.s.add_edge(agent.agent, "has_target_map_observation", pair, {})
+        observations.append(pair)
+        funding = agent.s.add_node("ThinkingBudgetRequest", {
+            "requester_kind": "target_map_observation", "source_key": pair_id,
+            "source_epoch": 3, "requested_epoch": 0.0,
+            "operation_id": f"profile-target-map:{ix}", "status": "pending", "cost": 1.0})
+        agent.s.add_edge(agent.agent, "has_thinking_budget_request", funding, {})
+        agent.s.add_edge(funding, "draws_on_thinking_budget", budget, {})
+        agent.s.add_edge(pair, "funded_by", funding, {})
+    for _ in range(30):
+        if not agent.inner.run_rules(2000):
+            break
+    candidates = [n for n in _nodes(agent, "RepresentationMap")
+                  if agent.s.node(n)["attrs"].get("mapping_kind") == "induced_categorical_effect"]
+    assert len(candidates) == 1
+    proposal = verify_induced_map_candidate(
+        candidate=agent.s.node(candidates[0]), source_receipts=source_receipts,
+        target_receipts=target_receipts,
+        object_pairs={source_receipts[0].object_id: target_receipts[0].object_id,
+                      source_receipts[1].object_id: target_receipts[1].object_id})
+    assert proposal["status"] == "verified"
+    assert all(agent.s.node(agent.inner.neighbours(pair, "funded_by")[0])["attrs"]["status"] == "approved"
+               for pair in observations)
+    agent.close()
+
+
+def test_p20_mapped_source_prior_requires_target_receipt():
+    agent = boot_cognition_on()
+    for node_type in ("ModelLearningPolicy", "TargetLearningPolicy"):
+        for policy in _nodes(agent, node_type):
+            agent.s.set_attr(policy, "enabled", 1.0)
+    prior = agent.s.add_node("TargetProcessPrior", {
+        "prior_id": "profile-prior", "source_id": "profile-source", "owner_id": "p20-owner",
+        "action_kind": "warm", "object_type": "Widget", "feature_key": "temperature",
+        "before_value": "cold", "after_value": "warm", "source_epoch": 3,
+        "model_epoch": 2, "frame_epoch": 5, "status": "candidate"})
+    frame_map = agent.s.add_node("RepresentationMap", {
+        "map_id": "profile-map", "status": "verified",
+        "mapping_kind": "exact_categorical_effect", "target_frame_epoch": 5})
+    map_receipt = agent.s.add_node("TargetSourcePriorReceipt", {
+        "receipt_id": "profile-map-receipt", "receipt_kind": "source_target_map",
+        "map_id": "profile-map", "status": "verified"})
+    target_receipt = agent.s.add_node("TargetSourcePriorReceipt", {
+        "receipt_id": "profile-target-receipt", "receipt_kind": "target_prior_effect",
+        "source_prior_id": "profile-prior", "target_event_id": "p20-event-1",
+        "status": "verified", "exact_effect_match": True})
+    for edge, node in (("has_source_target_map", frame_map),
+                       ("has_source_prior_receipt", map_receipt),
+                       ("has_source_prior_receipt", target_receipt)):
+        agent.s.add_edge(prior, edge, node, {})
+    agent.s.add_edge(agent.agent, "has_target_source_prior", prior, {})
+    _p20_add_target_transition(agent, 1, "warm")
+    for _ in range(40):
+        if not agent.inner.run_rules(2000):
+            break
+    hypotheses = [agent.s.node(n)["attrs"] for n in agent.s.nodes("ProcessInductionHypothesis")]
+    assert len(hypotheses) == 1
+    assert hypotheses[0]["law_kind"] == "mapped_source_prior_confirmed"
+    assert hypotheses[0]["target_support_count"] == 1.0
+    agent.close()
+
+
+def test_p20_observed_sequence_candidate_from_incidental_actions():
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "ObservedSequenceLearningPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    episode = agent.s.add_node("SocialEpisode", {
+        "episode_id": "p20-incidental-sequence", "status": "observed",
+        "source_kind": "witnessed_interaction", "observation_status": "complete",
+        "owner_id": "agent-root", "actor_id": "peer", "source_epoch": 4,
+        "model_epoch": 7, "frame_epoch": 9,
+        "action_sequence": ["seq", ["request", "repair"]]})
+    agent.s.add_edge(agent.agent, "has_social_episode", episode, {})
+    first, second = [], []
+    for name in ("request", "repair"):
+        process = agent.s.add_node("ProcessSchema", {
+            "name": f"p20-primitive-{name}", "operator": name,
+            "params": ["seq", ["add", [1]]], "status": "active",
+            "model_epoch": 7, "source_epoch": 4, "frame_epoch": 9})
+        agent.s.add_edge(agent.agent, "has_process_schema", process, {})
+        (first if name == "request" else second).append(process)
+    request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "observed_sequence_learning",
+        "episode_id": "p20-incidental-sequence", "source_epoch": 4,
+        "status": "approved", "debited_epoch": 10.0, "cost": 1.0})
+    agent.s.add_edge(agent.agent, "has_thinking_budget_request", request, {})
+    budget = agent.inner.neighbours(agent.agent, "has_thinking_budget")[0]
+    agent.s.add_edge(request, "draws_on_thinking_budget", budget, {})
+    for _ in range(20):
+        if not agent.inner.run_rules(2000):
+            break
+    candidates = _nodes(agent, "ObservedProcessSequenceCandidate")
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert agent.s.node(candidate)["attrs"]["action_sequence"] == ["seq", ["request", "repair"]]
+    assert agent.s.node(candidate)["attrs"]["status"] == "unverified_candidate"
+    assert agent.inner.neighbours(candidate, "uses_first_primitive") == first
+    assert agent.inner.neighbours(candidate, "uses_second_primitive") == second
+    assert not agent.s.nodes("OwnTrialReceipt")
+
+    validation_request = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "observed_sequence_validation",
+        "candidate_id": agent.s.node(candidate)["attrs"]["candidate_id"],
+        "source_key": "p20-profile-validation", "source_epoch": 4,
+        "operation_id": "p20-profile-validation", "status": "approved",
+        "debited_epoch": 10.0, "cost": 2.0})
+    agent.s.add_edge(agent.agent, "has_thinking_budget_request", validation_request, {})
+    agent.s.add_edge(validation_request, "draws_on_thinking_budget", budget, {})
+    agent.s.add_edge(candidate, "has_verification_request", validation_request, {})
+    verified = verify_observed_sequence_candidate(agent, candidate)
+    assert verified["status"] == "VERIFIED"
+    own_world = RequestRepairWorld(world_id="p20-profile-own-world", case_id="new-case")
+    own_result = execute_verified_observed_sequence(
+        agent, candidate, world=own_world, authorize=lambda _proposal: True)
+    assert own_result["status"] == "COMPLETED"
+    assert own_world.solved
+    assert len(agent.inner.neighbours(candidate, "has_own_trial_receipt")) == 2
+    agent.close()
+
+
+def test_p20_explanation_rebuild_through_cognition_profile():
+    agent = boot_cognition_on()
+    policy = _nodes(agent, "ProcessExplanationPolicy")[0]
+    agent.s.set_attr(policy, "enabled", 1.0)
+    primitives = []
+    for event, precondition, token in (("request", "idle", "ask"),
+                                        ("repair", "requested", "fix")):
+        primitive = agent.s.add_node("ProcessPrimitiveVocabulary", {
+            "primitive_id": f"profile-shared-{event}", "semantic_event": event,
+            "public_token": token, "precondition": precondition,
+            "native_effect": ["finite_action", event], "vocabulary_status": "shared",
+            "model_epoch": 8, "frame_epoch": 3})
+        agent.s.add_edge(agent.agent, "has_process_primitive_vocabulary", primitive, {})
+        primitives.append(primitive)
+    explanation_id = "profile-public-request-repair"
+    explanation = agent.s.add_node("ProcessExplanationInput", {
+        "explanation_id": explanation_id, "text": "Ask, then fix after the request.",
+        "language": "en", "parse_status": "parsed", "explanation_kind": "ordered_two_step",
+        "semantic_sequence": ["seq", ["request", "repair"]],
+        "required_preconditions": ["idle", "requested"],
+        "supported_vocabulary": ["ask", "fix"], "model_epoch": 8, "frame_epoch": 3})
+    agent.s.add_edge(agent.agent, "has_process_explanation_input", explanation, {})
+    request = agent.s.add_node("ProcessExplanationRequest", {
+        "explanation_id": explanation_id, "status": "requested"})
+    agent.s.add_edge(agent.agent, "has_process_explanation_request", request, {})
+    funding = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "process_explanation_rebuild", "explanation_id": explanation_id,
+        "source_key": explanation_id, "source_epoch": 1, "operation_id": "profile:rebuild",
+        "status": "approved", "debited_epoch": 1.0, "cost": 1.0})
+    agent.s.add_edge(request, "funded_by", funding, {})
+    budget = agent.inner.neighbours(agent.agent, "has_thinking_budget")[0]
+    agent.s.add_edge(funding, "draws_on_thinking_budget", budget, {})
+    for _ in range(24):
+        if not agent.inner.run_rules(2000):
+            break
+    candidates = _nodes(agent, "RebuiltProcessCandidate")
+    assert len(candidates) == 1
+    candidate = candidates[0]
+    assert agent.inner.neighbours(candidate, "uses_first_shared_primitive") == [primitives[0]]
+    assert agent.inner.neighbours(candidate, "uses_second_shared_primitive") == [primitives[1]]
+    validation = agent.s.add_node("ThinkingBudgetRequest", {
+        "requester_kind": "process_rebuild_validation",
+        "candidate_id": agent.s.node(candidate)["attrs"]["candidate_id"],
+        "source_key": "profile:fresh-verify", "source_epoch": 1,
+        "operation_id": "profile:verify", "status": "pending", "cost": 2.0})
+    agent.s.add_edge(agent.agent, "has_thinking_budget_request", validation, {})
+    agent.s.add_edge(candidate, "has_verification_request", validation, {})
+    agent.s.add_edge(validation, "draws_on_thinking_budget", budget, {})
+    for _ in range(16):
+        if not agent.inner.run_rules(2000):
+            break
+    assert agent.s.node(validation)["attrs"]["status"] == "approved"
+    assert agent.s.node(validation)["attrs"]["debited_epoch"] is not None
+    verified = verify_rebuilt_composition(agent, candidate)
+    assert verified["status"] == "VERIFIED"
+    assert agent.s.node(candidate)["attrs"]["status"] == "adopted"
+    assert len([n for n in _nodes(agent, "ProcessSchema")
+                if agent.s.node(n)["attrs"].get("provenance") == "rebuilt_from_explanation"]) == 1
+    agent.close()
+
+
+def test_p20_state_perturbation_changes_execution():
+    warm_agent, warm = _p20_learned_profile("warm")
+    hot_agent, hot = _p20_learned_profile("hot")
+    assert warm[0]["expected_after_value"] == "warm"
+    assert hot[0]["expected_after_value"] == "hot"
+    warm_agent.close()
+    hot_agent.close()
+
+
+def test_p20_default_isolation():
+    agent = boot_cognition_on()
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "ModelLearningPolicy"))
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "SocialProcessPolicy"))
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "TargetLearningPolicy"))
+    assert all(agent.s.node(n)["attrs"].get("enabled") == 0.0
+               for n in _nodes(agent, "ObservedSequenceLearningPolicy"))
+    p20_seeds = {"target_learning", "observed_sequence_learning"}
+    p20_rules = {item["name"] for sid in p20_seeds
+                 for item in manifest_for(sid).get("rules", ())
+                 if isinstance(item, dict) and item.get("name")}
+    default, conversation = WorldAdapter(), WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    assert p20_seeds.isdisjoint(installed_seeds(default.s))
+    assert p20_seeds.isdisjoint(installed_seeds(conversation.s))
+    assert p20_rules.isdisjoint({r["name"] for r in default.inner.export_rules()})
+    assert p20_rules.isdisjoint({r["name"] for r in conversation.inner.export_rules()})
+    agent.close()
+    default.close()
+    conversation.close()
+
+
+def test_p20_shared_budget():
+    agent = boot_cognition_on()
+    budgets = [n for n in _nodes(agent, "ThinkingBudget")
+               if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+    assert len(budgets) == 1
+    assert budgets[0] in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+    agent.close()
+
+
+def test_p22_default_isolation():
+    agent = boot_cognition_on()
+    default, conversation = WorldAdapter(), WorldAdapter(seeds=())
+    load_conversation_seed_profile(conversation)
+    try:
+        policies = _nodes(agent, "IndependentImprovementPolicy")
+        assert len(policies) == 1
+        assert agent.s.node(policies[0])["attrs"].get("enabled") == 0.0
+        assert not _nodes(default, "IndependentImprovementPolicy")
+        assert not _nodes(conversation, "IndependentImprovementPolicy")
+        budgets = [n for n in _nodes(agent, "ThinkingBudget")
+                   if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+    finally:
+        agent.close()
+        default.close()
+        conversation.close()
+
+
+def test_p22_native_causal_chain_and_shared_budget():
+    agent = boot_cognition_on()
+    try:
+        for kind, enabled in (("OpenProcessSearchPolicy", 1.0),
+                              ("OpenProcessAdoptionPolicy", 1.0),
+                              ("IndependentImprovementPolicy", 1.0),
+                              ("SolverPolicy", 0.0)):
+            for policy in _nodes(agent, kind):
+                agent.s.set_attr(policy, "enabled", enabled)
+        domain = agent.s.add_node("ProcessDomain", {
+            "name": "p22-causal", "kind": "permutation", "probes": [[0, 1, 2, 3]],
+            "probe_epoch": 0, "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0})
+        agent.s.add_edge(agent.agent, "has_process_domain", domain, {})
+        processes = (("source-a", [1, 0, 2, 3]), ("source-b", [0, 2, 1, 3]))
+        for name, params in processes:
+            schema = agent.s.add_node("ProcessSchema", {
+                "kind": "permutation", "domain": "p22-causal", "domain_kind": "permutation",
+                "name": name, "params": params, "source_digest": name, "cost": 1.0,
+                "provenance": "held", "status": "active", "invariants": [],
+                "source_epoch": 0, "model_epoch": 0, "frame_epoch": 0,
+                "probe_epoch": 0, "source_probe_epoch": 0})
+            agent.s.add_edge(agent.agent, "has_process_schema", schema, {})
+            agent.s.add_edge(domain, "has_held_process", schema, {})
+        params = agent.inner.evaluate(
+            {"type": "ProcessCompose", "a": {"type": "Var", "name": "a"},
+             "b": {"type": "Var", "name": "b"}},
+            {"a": processes[0][1], "b": processes[1][1]})
+        goal = agent.inner.evaluate(
+            {"type": "ProcessApply", "p": {"type": "Var", "name": "p"},
+             "state": {"type": "Var", "name": "state"}},
+            {"p": params, "state": [0, 1, 2, 3]})
+        task = agent.s.add_node("SolveTask", {
+            "domain": "p22-causal", "initial_state": [0, 1, 2, 3],
+            "state": [0, 1, 2, 3], "goal": goal, "object_count": 4.0,
+            "status": "stuck", "split": "training"})
+        agent.s.add_edge(agent.agent, "has_solve_task", task, {})
+        agent.s.add_edge(task, "about_domain", domain, {})
+        for _ in range(20):
+            agent.inner.run_rules(4000)
+        attempts = _nodes(agent, "OpenProcessSearchAttempt")
+        candidates = _nodes(agent, "OpenProcessCandidate")
+        assert attempts and candidates
+        attest_open_process_candidate(agent, candidates[0])
+        for _ in range(4):
+            agent.inner.run_rules(4000)
+        proposals = _nodes(agent, "IndependentImprovementProposal")
+        assert len(proposals) == 1
+        verified = [n for n in attempts
+                    if agent.s.node(n)["attrs"].get("status") == "verified"]
+        assert verified
+        assert agent.s.node(proposals[0])["attrs"]["actionable"] is False
+        # Exercise the real adoption/receipt boundary with an exact approval
+        # fixture. This is a test authorization for this expression only; it
+        # does not authorize any live candidate or later generation.
+        candidate = next(c for c in candidates
+                         if agent.s.node(c)["attrs"].get("params") == params)
+        digest = agent.s.node(candidate)["attrs"].get("expression_digest")
+        assert digest
+        attrs = agent.s.node(candidate)["attrs"]
+        approval = agent.s.add_node("OpenProcessAdoptionApproval", {
+            "status": "approved", "approval_kind": "human",
+            "expression_digest": digest, "expression_key": attrs["expression_key"],
+            "expression_tree": attrs["expression_tree"], "effect_digest": attrs["effect_digest"],
+            "params": attrs["params"], "guard_state": attrs["guard_state"],
+            "domain": attrs["domain"], "source_epoch": attrs["source_epoch"],
+            "model_epoch": attrs["model_epoch"], "frame_epoch": attrs["frame_epoch"],
+        })
+        agent.s.add_edge(agent.agent, "has_open_process_adoption_approval", approval, {})
+        agent.s.add_edge(approval, "approves_open_process_candidate", candidate, {})
+        for _ in range(4):
+            agent.inner.run_rules(4000)
+        assert agent.s.node(candidate)["attrs"].get("status") == "adopted_candidate"
+        world_state = [0, 1, 2, 3]
+
+        def transition(action):
+            observed = [None] * len(world_state)
+            for source, destination in enumerate(action):
+                observed[destination] = world_state[source]
+            world_state[:] = observed
+            return {"observed_state": list(world_state)}
+
+        executed = execute_open_process_candidate(agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: proposal["expression_digest"] == digest,
+            world_transition=transition)
+        assert executed["status"] == "COMPLETED"
+        assert executed["receipt"]["observed_state"] == goal
+        receipts = list(agent.inner.neighbours(candidate, "has_world_execution_receipt"))
+        assert len(receipts) == 1
+        assert agent.s.node(receipts[0])["attrs"]["status"] == "verified"
+        # A different input state must be rejected by the adopted expression's
+        # exact guard, without reaching the world transition again.
+        perturbed = execute_open_process_candidate(agent, candidate, state=[1, 0, 2, 3],
+            authorize=lambda proposal: True,
+            world_transition=lambda action: pytest.fail("guarded action reached world"))
+        assert perturbed["status"] == "ABSTAIN"
+        assert perturbed["reason"] == "candidate_guard_not_satisfied"
+        # A post-approval operator mutation must invalidate the native causal
+        # chain too, even when the original state guard still matches.
+        original_params = list(agent.s.node(candidate)["attrs"]["params"])
+        mutated_params = list(original_params)
+        mutated_params[0], mutated_params[1] = mutated_params[1], mutated_params[0]
+        agent.s.set_attr(candidate, "params", mutated_params)
+        operator_perturbed = execute_open_process_candidate(
+            agent, candidate, state=[0, 1, 2, 3],
+            authorize=lambda proposal: True,
+            world_transition=lambda action: pytest.fail(
+                "operator mutation reached the world transition"))
+        assert operator_perturbed["status"] == "ABSTAIN"
+        assert operator_perturbed["reason"] == "adoption_approval_binding_changed"
+        budgets = [n for n in _nodes(agent, "ThinkingBudget")
+                   if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        assert agent.inner.neighbours(agent.agent, "has_thinking_budget") == budgets
+    finally:
+        agent.close()
+
+
+def test_p22_shared_budget():
+    agent = boot_cognition_on()
+    try:
+        budgets = [n for n in _nodes(agent, "ThinkingBudget")
+                   if agent.s.node(n)["attrs"].get("enabled") == 1.0]
+        assert len(budgets) == 1
+        assert budgets[0] in agent.inner.neighbours(agent.agent, "has_thinking_budget")
+    finally:
+        agent.close()
 
 def test_p5_stop_at_native_sink():
     from tests.test_response_inhibition_migrated import _native_graph, _request, _tick

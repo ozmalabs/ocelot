@@ -29,13 +29,16 @@
 //!   Composition of mismatched kinds yields a sequence. `["seq"]` is the
 //!   identity.
 //!
-//! Anything else evaluates to `Value::None` (absent): programs, transition
-//! tables, capability and motor programs have no exact effect evaluator
-//! here, and the view rules record that honestly.
+//! Anything else evaluates to `Value::None` (absent): transition tables,
+//! capability and motor programs have no exact effect evaluator here, and
+//! the view rules record that honestly. Program-backed ProcessSchema views
+//! are dispatched separately by the Term evaluator to the existing fueled,
+//! pure `ProgEval` interpreter; this algebra module never interprets programs.
 
 use crate::sym::Interner;
 use crate::value::{cmp_value, SurfaceKind, Value};
 use smallvec::SmallVec;
+use smallvec::smallvec;
 use std::sync::Arc;
 
 #[derive(Clone, Debug)]
@@ -113,6 +116,28 @@ fn as_int(v: &Value) -> Option<i64> {
 
 fn parse(v: &Value, interner: &Interner) -> Option<Proc> {
     let items = seq_items(v)?;
+    // Graph rules build an ordered collection of process terms with MapList.
+    // Its result is a list nested inside the explicit `seq` constructor. Accept
+    // that shape only when every member is itself explicitly tagged `seq`;
+    // this keeps matrices and ordinary lists unambiguous.
+    if !items.is_empty() {
+        let tagged_sequences = items.iter().all(|item| {
+            seq_items(item)
+                .and_then(|parts| parts.first().cloned())
+                .and_then(|tag| text_of(&tag, interner))
+                .as_deref() == Some("seq")
+        });
+        if tagged_sequences {
+            let mut steps = Vec::new();
+            for item in items.iter() {
+                match parse(item, interner)? {
+                    Proc::Seq(inner) => steps.extend(inner),
+                    process => steps.push(process),
+                }
+            }
+            return Some(Proc::Seq(steps));
+        }
+    }
     if let Some(first) = items.first() {
         if let Some(tag) = text_of(first, interner) {
             return match tag.as_str() {
@@ -485,6 +510,186 @@ pub fn apply(p: &Value, state: &Value, interner: &Interner) -> Value {
         .unwrap_or(Value::None)
 }
 
+/// Verify a goal-equivalent repair on every supplied fresh state. This is a
+/// separate predicate from `inverse`: many-to-one processes may repair a
+/// declared set of states while having no exact inverse.
+pub fn verify_repair(p: &Value, fresh_states: &[Value], goals: &[Value], interner: &Interner) -> bool {
+    !fresh_states.is_empty()
+        && fresh_states.len() == goals.len()
+        && fresh_states.iter().zip(goals).all(|(state, goal)| {
+            let result = apply(p, state, interner);
+            result != Value::None && cmp_value(&result, goal) == std::cmp::Ordering::Equal
+        })
+}
+
+pub fn verify_repair_values(p: &Value, fresh_states: &Value, goals: &Value, interner: &Interner) -> bool {
+    match (seq_items(fresh_states), seq_items(goals)) {
+        (Some(states), Some(goals)) => verify_repair(p, states.as_ref(), goals.as_ref(), interner),
+        _ => false,
+    }
+}
+
+/// Validate an explicitly finite outcome distribution and preserve its
+/// omitted probability as unknown mass. Duplicate outcomes, invalid weights,
+/// and total mass above one are unsupported rather than normalized away.
+pub fn finite_distribution(outcomes: &[(Value, f64)]) -> Option<(Vec<(Value, f64)>, f64)> {
+    let mut total = 0.0;
+    for (i, (outcome, probability)) in outcomes.iter().enumerate() {
+        if *outcome == Value::None || !probability.is_finite() || *probability < 0.0 || *probability > 1.0 {
+            return None;
+        }
+        if outcomes[..i].iter().any(|(prior, _)| cmp_value(prior, outcome) == std::cmp::Ordering::Equal) {
+            return None;
+        }
+        total += probability;
+    }
+    if total > 1.0 { return None; }
+    Some((outcomes.to_vec(), (1.0 - total).max(0.0)))
+}
+
+/// DSL boundary for finite distributions. Input is a sequence of
+/// `(outcome, probability)` pairs. Output is `(validated_support, unknown_mass)`.
+pub fn finite_distribution_value(value: &Value) -> Value {
+    let Some(items) = seq_items(value) else { return Value::None; };
+    let mut parsed = Vec::with_capacity(items.len());
+    for item in items.iter() {
+        let Some(pair) = seq_items(item) else { return Value::None; };
+        if pair.len() != 2 { return Value::None; }
+        let probability = match &pair[1] {
+            Value::Float(x) => *x,
+            Value::Int(x) => *x as f64,
+            _ => return Value::None,
+        };
+        parsed.push((pair[0].clone(), probability));
+    }
+    let Some((support, unknown_mass)) = finite_distribution(&parsed) else { return Value::None; };
+    let encoded = support.into_iter().map(|(outcome, probability)| {
+        Value::Tuple(Arc::new(smallvec![outcome, Value::Float(probability)]))
+    }).collect::<Vec<_>>();
+    let encoded: SmallVec<[Value; 4]> = encoded.into_iter().collect();
+    Value::Tuple(Arc::new(smallvec![Value::Tuple(Arc::new(encoded)), Value::Float(unknown_mass)]))
+}
+
+/// Instantiate a witnessed parametric process tree only when every captured
+/// hole is exactly the corresponding source size. This deliberately refuses
+/// general anti-unification guesses: callers get a concrete native process or
+/// `None`, never a partially-bound process.
+pub fn instantiate_lifted_process(
+    witness: &Value,
+    source_sizes: &Value,
+    target_size: &Value,
+    interner: &Interner,
+) -> Value {
+    let Some(witness_items) = seq_items(witness) else { return Value::None; };
+    if witness_items.len() != 2 { return Value::None; }
+    let Some(sizes) = seq_items(source_sizes) else { return Value::None; };
+    let Some(size) = as_int(target_size) else { return Value::None; };
+    if sizes.len() != 2 || !(2..=256).contains(&size) { return Value::None; }
+    let sizes: Option<Vec<i64>> = sizes.iter().map(as_int).collect();
+    let Some(sizes) = sizes else { return Value::None; };
+    if sizes[0] == sizes[1] || sizes.iter().any(|x| *x < 2 || *x >= size) { return Value::None; }
+    let sigmas = seq_items(&witness_items[1]);
+    let Some(sigmas) = sigmas else { return Value::None; };
+    if sigmas.len() != sizes.len() { return Value::None; }
+    let mut path = Vec::new();
+    let Some(tree) = replace_size_wildcards(
+        &witness_items[0], &sigmas, &sizes, size, &mut path, interner) else {
+        return Value::None;
+    };
+    eval_lift_tree(&tree, interner).unwrap_or(Value::None)
+}
+
+fn replace_size_wildcards(
+    value: &Value, sigmas: &[Value], source_sizes: &[i64], target_size: i64,
+    path: &mut Vec<Value>, interner: &Interner,
+) -> Option<Value> {
+    let is_wild = seq_items(value).is_some_and(|items| {
+        items.len() == 1 && text_of(&items[0], interner).as_deref() == Some("·?·")
+    });
+    if is_wild {
+        let path_value = Value::Tuple(Arc::new(path.iter().cloned().collect()));
+        let mut captures = Vec::with_capacity(sigmas.len());
+        for sigma in sigmas {
+            let Value::Dict(entries) = sigma else { return None; };
+            let Some((_, captured)) = entries.iter().find(|(key, _)| {
+                cmp_value(key, &path_value) == std::cmp::Ordering::Equal
+            }) else { return None; };
+            captures.push(as_int(captured)?);
+        }
+        if captures.len() != source_sizes.len()
+            || captures.iter().zip(source_sizes).any(|(a,b)| a != b) {
+            return None;
+        }
+        return Some(Value::Int(target_size));
+    }
+    match value {
+        Value::Tuple(items) => {
+            let mut out: SmallVec<[Value; 4]> = SmallVec::new();
+            for (index, child) in items.iter().enumerate() {
+                path.push(Value::Int(index as i64));
+                let result = replace_size_wildcards(child, sigmas, source_sizes, target_size, path, interner)?;
+                path.pop();
+                out.push(result);
+            }
+            Some(Value::Tuple(Arc::new(out)))
+        }
+        Value::List(items) => {
+            let mut out: SmallVec<[Value; 4]> = SmallVec::new();
+            for (index, child) in items.iter().enumerate() {
+                path.push(Value::Int(index as i64));
+                let result = replace_size_wildcards(child, sigmas, source_sizes, target_size, path, interner)?;
+                path.pop();
+                out.push(result);
+            }
+            Some(Value::List(Arc::new(out)))
+        }
+        _ => Some(value.clone()),
+    }
+}
+
+fn eval_lift_tree(tree: &Value, interner: &Interner) -> Option<Value> {
+    let items = seq_items(tree)?;
+    let tag = text_of(items.first()?, interner)?;
+    let int_at = |index: usize| items.get(index).and_then(as_int);
+    match tag.as_str() {
+        "cycle" => {
+            if items.len() != 4 { return None; }
+            let (n, start, len) = (int_at(1)?, int_at(2)?, int_at(3)?);
+            if !(2..=256).contains(&n) || start < 0 || start >= n || len < 2 || len > n { return None; }
+            let mut p: Vec<i64> = (0..n).collect();
+            for offset in 0..len {
+                p[((start + offset) % n) as usize] = (start + offset + 1) % n;
+            }
+            Some(Value::Tuple(Arc::new(p.into_iter().map(Value::Int).collect())))
+        }
+        "swap" => {
+            if items.len() != 4 { return None; }
+            let (n, i, j) = (int_at(1)?, int_at(2)?, int_at(3)?);
+            if !(2..=256).contains(&n) || i < 0 || j < 0 || i >= n || j >= n || i == j { return None; }
+            let mut p: Vec<i64> = (0..n).collect();
+            p.swap(i as usize, j as usize);
+            Some(Value::Tuple(Arc::new(p.into_iter().map(Value::Int).collect())))
+        }
+        "inverse" => {
+            if items.len() != 2 { return None; }
+            let process = eval_lift_tree(&items[1], interner)?;
+            let result = inverse(&process, interner);
+            (result != Value::None).then_some(result)
+        }
+        "compose" | "commutator" => {
+            if items.len() != 3 { return None; }
+            let a = eval_lift_tree(&items[1], interner)?;
+            let b = eval_lift_tree(&items[2], interner)?;
+            if tag == "compose" { return Some(compose(&a, &b, interner)); }
+            let ai = inverse(&a, interner);
+            let bi = inverse(&b, interner);
+            if ai == Value::None || bi == Value::None { return None; }
+            Some(compose(&compose(&compose(&a, &b, interner), &ai, interner), &bi, interner))
+        }
+        _ => None,
+    }
+}
+
 /// `EffectSupport{p}` — how much of the world the process touches: moved
 /// points for a permutation, non-identity entries for a matrix, non-zero
 /// components for a delta. `None` for kinds whose support is only defined
@@ -627,6 +832,26 @@ mod tests {
     }
 
     #[test]
+    fn graph_mapped_nested_sequence_applies_in_order() {
+        let ir = Interner::new();
+        let mut nested = Vec::new();
+        for i in 0..5 {
+            let mut p: Vec<i64> = (0..6).collect();
+            p.swap(i, 5);
+            nested.push(Value::Tuple(Arc::new(smallvec![
+                Value::Surface(SurfaceKind::Text, Arc::from(&b"seq"[..])),
+                ints(&p),
+            ])));
+        }
+        let mapped = Value::List(Arc::new(nested.into_iter().collect()));
+        let sequence = Value::Tuple(Arc::new(smallvec![
+            Value::Surface(SurfaceKind::Text, Arc::from(&b"seq"[..])),
+            mapped,
+        ]));
+        assert_eq!(apply(&sequence, &ints(&[1, 2, 3, 4, 5, 0]), &ir), ints(&[0, 1, 2, 3, 4, 5]));
+    }
+
+    #[test]
     fn matrices_compose_invert_and_have_exact_determinants() {
         let ir = Interner::new();
         let rot = Value::Tuple(Arc::new(smallvec![ints(&[0, -1]), ints(&[1, 0])]));
@@ -655,5 +880,65 @@ mod tests {
         assert_eq!(support(&bad, &ir), Value::None);
         assert_eq!(fingerprint(&bad, &Value::Tuple(Arc::new(smallvec![ints(&[1, 2, 3])])), &ir), Value::None);
         assert_eq!(parity(&bad), Value::None);
+    }
+
+    #[test]
+    fn repair_is_fresh_goal_verification_not_inverse() {
+        let ir = Interner::new();
+        let add = Value::Tuple(Arc::new(smallvec![
+            Value::Surface(SurfaceKind::Text, Arc::from(&b"add"[..])), ints(&[1])
+        ]));
+        let starts = [ints(&[0]), ints(&[4])];
+        let goals = [ints(&[1]), ints(&[5])];
+        assert!(verify_repair(&add, &starts, &goals, &ir));
+        assert!(!verify_repair(&add, &starts, &[ints(&[1]), ints(&[4])], &ir));
+        assert!(!verify_repair(&Value::None, &starts, &goals, &ir));
+    }
+
+    #[test]
+    fn finite_distribution_retains_support_and_unknown_mass() {
+        let support = vec![(ints(&[0]), 0.25), (ints(&[1]), 0.5)];
+        let (kept, unknown) = finite_distribution(&support).unwrap();
+        assert_eq!(kept.len(), 2);
+        assert!((unknown - 0.25).abs() < 1e-12);
+        assert!(finite_distribution(&[(ints(&[0]), 0.7), (ints(&[1]), 0.4)]).is_none());
+        assert!(finite_distribution(&[(ints(&[0]), 1.0), (ints(&[1]), f64::EPSILON)]).is_none());
+        assert!(finite_distribution(&[(ints(&[0]), 0.5), (ints(&[0]), 0.5)]).is_none());
+    }
+
+    #[test]
+    fn lifted_commutator_rebinds_only_consistent_size_witnesses() {
+        let ir = Interner::new();
+        let text = |s: &str| Value::Surface(SurfaceKind::Text, Arc::from(s.as_bytes()));
+        let seq = |xs: Vec<Value>| Value::Tuple(Arc::new(xs.into_iter().collect::<SmallVec<[Value; 4]>>()));
+        let path = |a, b| seq(vec![Value::Int(a), Value::Int(b)]);
+        let wild = seq(vec![text("·?·")]);
+        let template = seq(vec![
+            text("commutator"),
+            seq(vec![text("cycle"), wild.clone(), Value::Int(0), wild.clone()]),
+            seq(vec![text("swap"), wild.clone(), Value::Int(0), Value::Int(1)]),
+        ]);
+        let sigma = |n| Value::Dict(Arc::from([
+            (path(1, 1), Value::Int(n)),
+            (path(1, 3), Value::Int(n)),
+            (path(2, 1), Value::Int(n)),
+        ]));
+        let witness = seq(vec![template, seq(vec![sigma(3), sigma(5)])]);
+        let got = instantiate_lifted_process(&witness, &ints(&[3, 5]), &Value::Int(6), &ir);
+        assert!(matches!(parse(&got, &ir), Some(Proc::Perm(ref p)) if p.len() == 6));
+        // A hole that does not track source size is not guessed into a lift.
+        let bad = seq(vec![
+            Value::Dict(Arc::from([(path(1, 1), Value::Int(3)),
+                                   (path(1, 3), Value::Int(2)),
+                                   (path(2, 1), Value::Int(3))])),
+            Value::Dict(Arc::from([(path(1, 1), Value::Int(5)),
+                                   (path(1, 3), Value::Int(4)),
+                                   (path(2, 1), Value::Int(5))])),
+        ]);
+        let bad_witness = seq(vec![
+            seq(vec![text("commutator"),
+                seq(vec![text("cycle"), wild.clone(), Value::Int(0), wild.clone()]),
+                seq(vec![text("swap"), wild, Value::Int(0), Value::Int(1)])]), bad]);
+        assert_eq!(instantiate_lifted_process(&bad_witness, &ints(&[3, 5]), &Value::Int(6), &ir), Value::None);
     }
 }

@@ -1,0 +1,909 @@
+{
+  "id": "experience_signature",
+  "version": "1.0.0",
+  "depends_on": [
+    "cognition_signature"
+  ],
+  "self_load_only": true,
+  "area": "experience_signature",
+  "description": "P7.02: guarded, owner/epoch-bound signature projection over measured episode events. It preserves raw feature bundles and requires an exact observed outcome receipt; it does not infer or name a target axis.",
+  "microtheory": {
+    "name": "experience_signature",
+    "description": "Project only source-bound observed episode events."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "ExperienceSignaturePolicy",
+      "attrs": {
+        "name": "experience_signature_policy",
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_experience_signature_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:experience_signature:has_experience_signature_policy:Agent:ExperienceSignaturePolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experience_signature_policy",
+      "tgt": {
+        "type": "ExperienceSignaturePolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:has_experience_episode:Agent:ExperienceEpisode",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experience_episode",
+      "tgt": {
+        "type": "ExperienceEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:has_experience_event:ExperienceEpisode:ExperienceEvent",
+      "src": {
+        "type": "ExperienceEpisode",
+        "var": "src"
+      },
+      "edge_type": "has_experience_event",
+      "tgt": {
+        "type": "ExperienceEvent",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:has_experience_outcome_receipt:ExperienceEvent:ExperienceOutcomeReceipt",
+      "src": {
+        "type": "ExperienceEvent",
+        "var": "src"
+      },
+      "edge_type": "has_experience_outcome_receipt",
+      "tgt": {
+        "type": "ExperienceOutcomeReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:has_signature_source:Agent:CognitionSignatureSource",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:has_signature_source:ExperienceEvent:CognitionSignatureSource",
+      "src": {
+        "type": "ExperienceEvent",
+        "var": "src"
+      },
+      "edge_type": "has_signature_source",
+      "tgt": {
+        "type": "CognitionSignatureSource",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:projects_episode:CognitionSignatureSource:ExperienceEpisode",
+      "src": {
+        "type": "CognitionSignatureSource",
+        "var": "src"
+      },
+      "edge_type": "projects_episode",
+      "tgt": {
+        "type": "ExperienceEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:projects_episode_event:CognitionSignatureSource:ExperienceEvent",
+      "src": {
+        "type": "CognitionSignatureSource",
+        "var": "src"
+      },
+      "edge_type": "projects_episode_event",
+      "tgt": {
+        "type": "ExperienceEvent",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:experience_signature:uses_outcome_receipt:CognitionSignatureSource:ExperienceOutcomeReceipt",
+      "src": {
+        "type": "CognitionSignatureSource",
+        "var": "src"
+      },
+      "edge_type": "uses_outcome_receipt",
+      "tgt": {
+        "type": "ExperienceOutcomeReceipt",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "es_project_measured_episode_event",
+      "area": "experience_signature",
+      "order": 10,
+      "latency_class": "hard_realtime",
+      "match": [
+        [
+          "ag",
+          "has_experience_signature_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_experience_episode",
+          "ep"
+        ],
+        [
+          "ep",
+          "has_experience_event",
+          "ev"
+        ],
+        [
+          "ev",
+          "has_experience_outcome_receipt",
+          "receipt"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "In",
+            "member": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "modality"
+            },
+            "container": {
+              "type": "Lit",
+              "value": [
+                "tool_contact",
+                "social_request_repair"
+              ]
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "action_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "action_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ev"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "features"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "features"
+              },
+              "b": {
+                "type": "Lit",
+                "value": []
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_id"
+              },
+              "b": {
+                "type": "Lit",
+                "value": null
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_signature_source",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "And",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "signature_key"
+                    },
+                    "b": {
+                      "type": "StringConcat",
+                      "parts": [
+                        {
+                          "type": "Lit",
+                          "value": "episode:"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "ep"
+                          },
+                          "key": "owner_id"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "ep"
+                          },
+                          "key": "episode_id"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "Attr",
+                          "node": {
+                            "type": "Var",
+                            "name": "ev"
+                          },
+                          "key": "event_id"
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "ToJsonString",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ev"
+                            },
+                            "key": "source_epoch"
+                          }
+                        },
+                        {
+                          "type": "Lit",
+                          "value": ":"
+                        },
+                        {
+                          "type": "ToJsonString",
+                          "value": {
+                            "type": "Attr",
+                            "node": {
+                              "type": "Var",
+                              "name": "ev"
+                            },
+                            "key": "frame_epoch"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "old"
+                      },
+                      "key": "source_epoch"
+                    },
+                    "b": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "source_epoch"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "src",
+          "CognitionSignatureSource",
+          {
+            "schema_version": 1,
+            "signature_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Lit",
+                    "value": "episode:"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ep"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ep"
+                    },
+                    "key": "episode_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "ev"
+                    },
+                    "key": "event_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "source_epoch"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "ev"
+                      },
+                      "key": "frame_epoch"
+                    }
+                  }
+                ]
+              }
+            },
+            "source_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "source_kind": "experience_event",
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "episode_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "event_id"
+              }
+            },
+            "action_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "action_id"
+              }
+            },
+            "outcome_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "outcome_id"
+              }
+            },
+            "receipt_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "receipt_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "frame_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "frame_id"
+              }
+            },
+            "evidence_status": "observed",
+            "dimension_ids": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "Lit",
+                  "value": "experience:event_features"
+                }
+              }
+            },
+            "coordinates": {
+              "__term__": {
+                "type": "Append",
+                "seq": {
+                  "type": "Lit",
+                  "value": []
+                },
+                "item": {
+                  "type": "Append",
+                  "seq": {
+                    "type": "Append",
+                    "seq": {
+                      "type": "Append",
+                      "seq": {
+                        "type": "Append",
+                        "seq": {
+                          "type": "Append",
+                          "seq": {
+                            "type": "Lit",
+                            "value": []
+                          },
+                          "item": {
+                            "type": "Lit",
+                            "value": "experience:event_features"
+                          }
+                        },
+                        "item": {
+                          "type": "Lit",
+                          "value": "sequence_ref"
+                        }
+                      },
+                      "item": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "ev"
+                        },
+                        "key": "features"
+                      }
+                    },
+                    "item": {
+                      "type": "Lit",
+                      "value": false
+                    }
+                  },
+                  "item": {
+                    "type": "Lit",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "standing_coordinates": [],
+            "live_overlay": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ev"
+                },
+                "key": "live_overlay"
+              }
+            },
+            "status": "current"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_signature_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "ev",
+          "has_signature_source",
+          "src",
+          {}
+        ],
+        [
+          "add_edge",
+          "src",
+          "projects_episode",
+          "ep",
+          {}
+        ],
+        [
+          "add_edge",
+          "src",
+          "projects_episode_event",
+          "ev",
+          {}
+        ],
+        [
+          "add_edge",
+          "src",
+          "uses_outcome_receipt",
+          "receipt",
+          {}
+        ]
+      ]
+    }
+  ]
+}

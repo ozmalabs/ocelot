@@ -1,0 +1,1815 @@
+{
+  "id": "qualia_revision",
+  "version": "1.0.0",
+  "depends_on": [
+    "qualia_behavior",
+    "experiential_significance"
+  ],
+  "self_load_only": true,
+  "area": "qualia_revision",
+  "description": "P17.04 preserve counterexamples, retire contradicted influence, and propose verified context splits.",
+  "microtheory": {
+    "name": "qualia_revision",
+    "description": "Revise acquired axes only when source-bound outcomes demand it."
+  },
+  "nodes": [
+    {
+      "local_id": 0,
+      "type": "QualiaRevisionPolicy",
+      "attrs": {
+        "name": "qualia_revision_policy",
+        "enabled": 0.0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "src": {
+        "role": "agent_root"
+      },
+      "type": "has_qualia_revision_policy",
+      "tgt": {
+        "local": 0
+      },
+      "attrs": {}
+    }
+  ],
+  "productions": [
+    {
+      "provenance": "seed:qualia_revision:has_qualia_revision_policy:Agent:QualiaRevisionPolicy",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_revision_policy",
+      "tgt": {
+        "type": "QualiaRevisionPolicy",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:has_qualia_behavior_prediction:Agent:QualiaBehaviorPrediction",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_behavior_prediction",
+      "tgt": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:uses_feature_observation:QualiaBehaviorPrediction:ExperienceFeatureObservation",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_feature_observation",
+      "tgt": {
+        "type": "ExperienceFeatureObservation",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:uses_qualia_dimension:QualiaBehaviorPrediction:QualiaDimension",
+      "src": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "src"
+      },
+      "edge_type": "uses_qualia_dimension",
+      "tgt": {
+        "type": "QualiaDimension",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:has_outcome_receipt:ExperienceFeatureObservation:ExperienceOutcomeReceipt",
+      "src": {
+        "type": "ExperienceFeatureObservation",
+        "var": "src"
+      },
+      "edge_type": "has_outcome_receipt",
+      "tgt": {
+        "type": "ExperienceOutcomeReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:has_experience_episode:Agent:ExperienceEpisode",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_experience_episode",
+      "tgt": {
+        "type": "ExperienceEpisode",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:has_qualia_counterexample:Agent:QualiaCounterexample",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_counterexample",
+      "tgt": {
+        "type": "QualiaCounterexample",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:contradicts_prediction:QualiaCounterexample:QualiaBehaviorPrediction",
+      "src": {
+        "type": "QualiaCounterexample",
+        "var": "src"
+      },
+      "edge_type": "contradicts_prediction",
+      "tgt": {
+        "type": "QualiaBehaviorPrediction",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:uses_outcome_receipt:QualiaCounterexample:ExperienceOutcomeReceipt",
+      "src": {
+        "type": "QualiaCounterexample",
+        "var": "src"
+      },
+      "edge_type": "uses_outcome_receipt",
+      "tgt": {
+        "type": "ExperienceOutcomeReceipt",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:retires_dimension:QualiaCounterexample:QualiaDimension",
+      "src": {
+        "type": "QualiaCounterexample",
+        "var": "src"
+      },
+      "edge_type": "retires_dimension",
+      "tgt": {
+        "type": "QualiaDimension",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:has_qualia_context_split:Agent:QualiaContextSplit",
+      "src": {
+        "type": "Agent",
+        "var": "src"
+      },
+      "edge_type": "has_qualia_context_split",
+      "tgt": {
+        "type": "QualiaContextSplit",
+        "var": "tgt"
+      }
+    },
+    {
+      "provenance": "seed:qualia_revision:supported_by:QualiaContextSplit:QualiaCounterexample",
+      "src": {
+        "type": "QualiaContextSplit",
+        "var": "src"
+      },
+      "edge_type": "supported_by",
+      "tgt": {
+        "type": "QualiaCounterexample",
+        "var": "tgt"
+      }
+    }
+  ],
+  "rules": [
+    {
+      "name": "qr_retire_axis_on_verified_prediction_counterexample",
+      "area": "qualia_revision",
+      "order": 1,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_qualia_revision_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_behavior_prediction",
+          "pred"
+        ],
+        [
+          "pred",
+          "uses_feature_observation",
+          "feature"
+        ],
+        [
+          "pred",
+          "uses_qualia_dimension",
+          "dim"
+        ],
+        [
+          "feature",
+          "has_outcome_receipt",
+          "receipt"
+        ],
+        [
+          "ag",
+          "has_experience_episode",
+          "ep"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Or",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pred"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "proposed"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "pred"
+                  },
+                  "key": "status"
+                },
+                "b": {
+                  "type": "Lit",
+                  "value": "verified"
+                }
+              }
+            ]
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "evidence_status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "observed"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "event_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "event_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "feature_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "feature_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "source_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "source_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "model_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "model_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "receipt"
+              },
+              "key": "frame_epoch"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "frame_epoch"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ep"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pred"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "predicted_consequence"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "consequence_value"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_qualia_counterexample",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "counterexample_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "pred"
+                      },
+                      "key": "prediction_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "receipt"
+                      },
+                      "key": "receipt_id"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "ce",
+          "QualiaCounterexample",
+          {
+            "counterexample_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "pred"
+                    },
+                    "key": "prediction_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "receipt"
+                    },
+                    "key": "receipt_id"
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "owner_id"
+              }
+            },
+            "episode_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "episode_id"
+              }
+            },
+            "event_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "event_id"
+              }
+            },
+            "context_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "ep"
+                },
+                "key": "context_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "feature_value"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "predicted_consequence": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "pred"
+                },
+                "key": "predicted_consequence"
+              }
+            },
+            "observed_consequence": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "consequence_value"
+              }
+            },
+            "receipt_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "receipt_id"
+              }
+            },
+            "source_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "source_epoch"
+              }
+            },
+            "model_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "model_epoch"
+              }
+            },
+            "frame_epoch": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "receipt"
+                },
+                "key": "frame_epoch"
+              }
+            },
+            "status": "verified"
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_qualia_counterexample",
+          "ce",
+          {}
+        ],
+        [
+          "add_edge",
+          "ce",
+          "contradicts_prediction",
+          "pred",
+          {}
+        ],
+        [
+          "add_edge",
+          "ce",
+          "uses_outcome_receipt",
+          "receipt",
+          {}
+        ],
+        [
+          "add_edge",
+          "ce",
+          "retires_dimension",
+          "dim",
+          {}
+        ],
+        [
+          "set_attr",
+          "dim",
+          "acquisition_status",
+          "retired"
+        ],
+        [
+          "set_attr",
+          "pred",
+          "status",
+          "contradicted"
+        ]
+      ]
+    },
+    {
+      "name": "qr_propose_context_split_from_repeated_verified_consequences",
+      "area": "qualia_revision",
+      "order": 10,
+      "latency_class": "background",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_qualia_revision_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_counterexample",
+          "c11"
+        ],
+        [
+          "ag",
+          "has_qualia_counterexample",
+          "c12"
+        ],
+        [
+          "ag",
+          "has_qualia_counterexample",
+          "c21"
+        ],
+        [
+          "ag",
+          "has_qualia_counterexample",
+          "c22"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "observed_consequence"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "observed_consequence"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "observed_consequence"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "observed_consequence"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "owner_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "owner_id"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "feature_key"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "feature_key"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "feature_value"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "feature_value"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "dimension_id"
+            }
+          },
+          {
+            "type": "And",
+            "items": [
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c11"
+                  },
+                  "key": "context_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c12"
+                  },
+                  "key": "context_id"
+                }
+              },
+              {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c21"
+                  },
+                  "key": "context_id"
+                },
+                "b": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "c22"
+                  },
+                  "key": "context_id"
+                }
+              },
+              {
+                "type": "Not",
+                "arg": {
+                  "type": "Eq",
+                  "a": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c11"
+                    },
+                    "key": "context_id"
+                  },
+                  "b": {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c21"
+                    },
+                    "key": "context_id"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "observed_consequence"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c21"
+                },
+                "key": "observed_consequence"
+              }
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "episode_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "episode_id"
+            }
+          },
+          {
+            "type": "Lt",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "context_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "context_id"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "episode_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c12"
+                },
+                "key": "episode_id"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c21"
+                },
+                "key": "episode_id"
+              },
+              "b": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c22"
+                },
+                "key": "episode_id"
+              }
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c11"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c12"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c21"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "c22"
+              },
+              "key": "status"
+            },
+            "b": {
+              "type": "Lit",
+              "value": "verified"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Exists",
+              "source": {
+                "type": "Neighbours",
+                "node": {
+                  "type": "Var",
+                  "name": "ag"
+                },
+                "edge_type": "has_qualia_context_split",
+                "any_type": false
+              },
+              "var_name": "old",
+              "predicate": {
+                "type": "Eq",
+                "a": {
+                  "type": "Attr",
+                  "node": {
+                    "type": "Var",
+                    "name": "old"
+                  },
+                  "key": "split_key"
+                },
+                "b": {
+                  "type": "StringConcat",
+                  "parts": [
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c11"
+                      },
+                      "key": "owner_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c11"
+                      },
+                      "key": "feature_key"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c11"
+                        },
+                        "key": "feature_value"
+                      }
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c11"
+                      },
+                      "key": "context_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c12"
+                      },
+                      "key": "context_id"
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c11"
+                        },
+                        "key": "observed_consequence"
+                      }
+                    },
+                    {
+                      "type": "Lit",
+                      "value": ":"
+                    },
+                    {
+                      "type": "ToJsonString",
+                      "value": {
+                        "type": "Attr",
+                        "node": {
+                          "type": "Var",
+                          "name": "c21"
+                        },
+                        "key": "observed_consequence"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "add_node",
+          "split",
+          "QualiaContextSplit",
+          {
+            "split_key": {
+              "__term__": {
+                "type": "StringConcat",
+                "parts": [
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c11"
+                    },
+                    "key": "owner_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c11"
+                    },
+                    "key": "feature_key"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c11"
+                      },
+                      "key": "feature_value"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c11"
+                    },
+                    "key": "context_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "Attr",
+                    "node": {
+                      "type": "Var",
+                      "name": "c12"
+                    },
+                    "key": "context_id"
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c11"
+                      },
+                      "key": "observed_consequence"
+                    }
+                  },
+                  {
+                    "type": "Lit",
+                    "value": ":"
+                  },
+                  {
+                    "type": "ToJsonString",
+                    "value": {
+                      "type": "Attr",
+                      "node": {
+                        "type": "Var",
+                        "name": "c21"
+                      },
+                      "key": "observed_consequence"
+                    }
+                  }
+                ]
+              }
+            },
+            "owner_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "owner_id"
+              }
+            },
+            "feature_key": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "feature_key"
+              }
+            },
+            "feature_value": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "feature_value"
+              }
+            },
+            "dimension_id": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "dimension_id"
+              }
+            },
+            "context_a": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "context_id"
+              }
+            },
+            "context_b": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c21"
+                },
+                "key": "context_id"
+              }
+            },
+            "consequence_a": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c11"
+                },
+                "key": "observed_consequence"
+              }
+            },
+            "consequence_b": {
+              "__term__": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "c21"
+                },
+                "key": "observed_consequence"
+              }
+            },
+            "evidence_count": 4.0,
+            "status": "proposed",
+            "verified": true
+          }
+        ],
+        [
+          "add_edge",
+          "ag",
+          "has_qualia_context_split",
+          "split",
+          {}
+        ],
+        [
+          "add_edge",
+          "split",
+          "supported_by",
+          "c11",
+          {}
+        ],
+        [
+          "add_edge",
+          "split",
+          "supported_by",
+          "c12",
+          {}
+        ],
+        [
+          "add_edge",
+          "split",
+          "supported_by",
+          "c21",
+          {}
+        ],
+        [
+          "add_edge",
+          "split",
+          "supported_by",
+          "c22",
+          {}
+        ]
+      ]
+    },
+    {
+      "name": "qr_reassert_terminal_retirement_after_acquisition_updates",
+      "area": "qualia_revision",
+      "order": 50,
+      "latency_class": "hard_realtime",
+      "batch": false,
+      "match": [
+        [
+          "ag",
+          "has_qualia_revision_policy",
+          "pol"
+        ],
+        [
+          "ag",
+          "has_qualia_axis_candidate",
+          "candidate"
+        ],
+        [
+          "ag",
+          "has_qualia_dimension",
+          "dim"
+        ],
+        [
+          "ag",
+          "has_qualia_counterexample",
+          "ce"
+        ],
+        [
+          "ce",
+          "retires_dimension",
+          "dim"
+        ]
+      ],
+      "where": {
+        "type": "And",
+        "items": [
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "pol"
+              },
+              "key": "enabled"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 1.0
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "candidate"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Eq",
+            "a": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "ce"
+              },
+              "key": "dimension_id"
+            },
+            "b": {
+              "type": "Attr",
+              "node": {
+                "type": "Var",
+                "name": "dim"
+              },
+              "key": "name"
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "dim"
+                },
+                "key": "acquisition_status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "retired"
+              }
+            }
+          },
+          {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Attr",
+                "node": {
+                  "type": "Var",
+                  "name": "candidate"
+                },
+                "key": "status"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "retired"
+              }
+            }
+          }
+        ]
+      },
+      "effects": [
+        [
+          "set_attr",
+          "candidate",
+          "status",
+          "retired"
+        ],
+        [
+          "set_attr",
+          "dim",
+          "acquisition_status",
+          "retired"
+        ]
+      ]
+    }
+  ]
+}

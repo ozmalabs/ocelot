@@ -5,6 +5,7 @@
 //! through the stages in the order the substrate's design names
 //! (commit 486f65e + 94eaa9e):
 //!
+//! ```text
 //!     [input: H.264 MB descriptors, 16 per CTU]
 //!         │
 //!         ▼
@@ -39,6 +40,7 @@
 //!         │
 //!         ▼
 //!     [output: H.265 RBSP bytes]
+//! ```
 //!
 //! ## Scope
 //!
