@@ -15,7 +15,7 @@
 //! here so existing rule sets work unmodified. A `gated: bool` flag on
 //! `apply_rule` is reserved for future opt-in admissibility checks.
 
-use crate::graph::{EdgeKey, NodeID, TypedGraph};
+use crate::graph::{EdgeKey, NodeID, TemporaryEdgeUndo, TypedGraph};
 use crate::sym::{Interner, Sym};
 use crate::term::{evaluate, ConceptResolver, Env, EvalCtx, TermArena, TermIdx};
 use crate::value::{SurfaceKind, Value};
@@ -23,6 +23,37 @@ use crate::value::{SurfaceKind, Value};
 use rayon::prelude::*;
 use rustc_hash::FxHashMap;
 use smallvec::SmallVec;
+
+/// First matcher or computed-effect resource failure observed by this thread.
+/// Integer-returning runners use this side channel so checked Substrate reports
+/// can expose the failure without changing their legacy return values.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RuleEvalFailure {
+    pub rule_uid: u64,
+    pub rule_name: Sym,
+    pub term: TermIdx,
+    pub error: crate::term::EvalLimitError,
+}
+
+thread_local! {
+    static RULE_EVAL_FAILURE: std::cell::Cell<Option<RuleEvalFailure>> = const { std::cell::Cell::new(None) };
+}
+
+pub(crate) fn clear_rule_eval_failure() {
+    RULE_EVAL_FAILURE.with(|slot| slot.set(None));
+}
+
+pub(crate) fn take_rule_eval_failure() -> Option<RuleEvalFailure> {
+    RULE_EVAL_FAILURE.with(|slot| slot.replace(None))
+}
+
+fn record_rule_eval_failure(failure: RuleEvalFailure) {
+    RULE_EVAL_FAILURE.with(|slot| {
+        if slot.get().is_none() {
+            slot.set(Some(failure));
+        }
+    });
+}
 
 /// One match-edge constraint in a rule's pattern: "there is an edge
 /// of type `edge_type` from the node bound to `src_var` to the node
@@ -1596,6 +1627,9 @@ pub type Binding = FxHashMap<Sym, NodeID>;
 pub enum UndoStep {
     /// `apply_rule` added this edge — undo deletes it.
     AddedEdge(EdgeKey),
+    /// A rule insertion revealed a pre-existing edge hidden by the active
+    /// focus scope. Undo restores its prior hidden state and attributes.
+    ScopedEdge(TemporaryEdgeUndo),
     /// `apply_rule` replaced attrs on an existing edge — undo restores them.
     EdgeAttrsSet {
         key: EdgeKey,
@@ -1885,6 +1919,46 @@ pub fn match_rule_each_with_initial<F>(
     );
 }
 
+/// Evaluate an interpreter-backed rule predicate without collapsing a
+/// resource-limit failure into an ordinary false/true value. This is an
+/// experimental fail-closed boundary: the current matcher API cannot return
+/// an error, so callers skip the exhausted binding after emitting a structured
+/// diagnostic. A future Result-based rule API should propagate this instead.
+fn evaluate_rule_predicate(
+    arena: &TermArena,
+    term: TermIdx,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+    rule: &RewriteRule,
+    interner: &Interner,
+) -> Result<bool, crate::term::EvalLimitError> {
+    let value = evaluate(arena, term, env, ctx);
+    if let Some(error) = ctx.eval_limit_error {
+        RULE_EVAL_FAILURE.with(|slot| {
+            if slot.get().is_none() {
+                slot.set(Some(RuleEvalFailure {
+                    rule_uid: rule.uid.0,
+                    rule_name: rule.name,
+                    term,
+                    error,
+                }));
+            }
+        });
+        eprintln!(
+            "EVAL_RESOURCE_LIMIT: entry=rule_match rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_binding",
+            rule.uid.0,
+            interner.resolve(rule.name),
+            term.0,
+            error.kind,
+            error.depth,
+            error.limit,
+        );
+        Err(error)
+    } else {
+        Ok(value.truthy())
+    }
+}
+
 /// Join-index fast path for a match edge: if this edge's `src_var` or
 /// `tgt_var` is the `for_var` of an index hint and its probe value is
 /// available (literal or bound attribute), probe the declared attr index for
@@ -2024,7 +2098,10 @@ where
                 }
                 if rule.where_conjuncts.is_empty() {
                     // No pushdown plan — evaluate the where whole, as always.
-                    let ok = evaluate(arena, where_idx, &mut env, &mut ctx).truthy();
+                    let ok = match evaluate_rule_predicate(arena, where_idx, &mut env, &mut ctx, rule, interner) {
+                        Ok(ok) => ok,
+                        Err(_) => return true, // fail closed for this binding; continue enumeration
+                    };
                     crate::scale_audit::where_eval(ok);
                     if !ok {
                         return true; // continue
@@ -2038,7 +2115,10 @@ where
                         if pushed & (1u64 << ci.min(63)) != 0 {
                             continue;
                         }
-                        let ok = evaluate(arena, *cidx, &mut env, &mut ctx).truthy();
+                        let ok = match evaluate_rule_predicate(arena, *cidx, &mut env, &mut ctx, rule, interner) {
+                            Ok(ok) => ok,
+                            Err(_) => return true, // fail closed for this binding; continue enumeration
+                        };
                         crate::scale_audit::where_eval(ok);
                         if !ok {
                             return true; // continue
@@ -2087,7 +2167,10 @@ where
             if let Some(c) = cache.as_deref_mut() {
                 ctx = ctx.with_cache(c);
             }
-            let ok = evaluate(arena, *cidx, &mut env, &mut ctx).truthy();
+            let ok = match evaluate_rule_predicate(arena, *cidx, &mut env, &mut ctx, rule, interner) {
+                Ok(ok) => ok,
+                Err(_) => return true, // fail closed for this binding; continue enumeration
+            };
             crate::scale_audit::pushdown_eval(!ok);
             if !ok {
                 return true; // prune: continue enumeration at the caller
@@ -2251,6 +2334,9 @@ pub struct ApplyOutcome {
     /// a conditional `AddNodeIfAbsent` or an unconditional `AddNode`.
     pub undo_src: Vec<u32>,
     pub progressed: bool,
+    /// First evaluator resource failure observed while applying this rule.
+    /// This is experimental and currently populated for computed SetAttr only.
+    pub resource_limit: Option<RuleEvalFailure>,
     /// Concept definitions produced by `Effect::DefineConcept` during
     /// this apply. The applier collects (name, term) pairs here rather
     /// than mutating `ConceptResolver` directly so its `&` borrow
@@ -2359,9 +2445,10 @@ pub fn apply_rule_full(
     let mut undo_src: Vec<u32> = Vec::new();
     let mut cur_effect: u32 = 0;
     let mut progressed = false;
+    let mut resource_limit = None;
     let mut pending_concepts: Vec<(Sym, TermIdx)> = Vec::new();
     let effect_trace_enabled = graph.rule_write_effect_tracking_enabled();
-    for (effect_idx, effect) in rule.effects.iter().enumerate() {
+    'effects: for (effect_idx, effect) in rule.effects.iter().enumerate() {
         if effect_trace_enabled {
             if effect_idx > 0 {
                 graph.finish_rule_write_effect();
@@ -2385,16 +2472,14 @@ pub fn apply_rule_full(
                 };
                 let mut attr_map: FxHashMap<Sym, Value> = FxHashMap::default();
                 for (k, arg) in attrs {
-                    let v = resolve_effect_arg(
-                        arg,
-                        &b,
-                        arena,
-                        graph,
-                        interner,
-                        concepts.as_deref(),
-                        framebuffers,
-                        cache.as_deref_mut(),
-                    );
+                    let (v, eval_error) = resolve_effect_arg_checked(arg, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    if let Some(error) = eval_error {
+                        let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match arg { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                        resource_limit.get_or_insert(failure);
+                        RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                        eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_add_edge_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                        continue 'effects;
+                    }
                     attr_map.insert(*k, v);
                 }
                 let key = EdgeKey {
@@ -2419,7 +2504,20 @@ pub fn apply_rule_full(
                 // Discarding it credited `progressed` and pushed an undo step
                 // for a mutation that never happened — see `effect_audit.rs`.
                 crate::scale_audit::rule_effect_edge_insert_attempt();
-                let inserted = graph.insert_edge(s, *edge_type, t, attr_map);
+                // An edge hidden by an experiment focus scope still exists
+                // in the physical graph. Route absent-from-view writes
+                // through the reversible helper so rollback can re-hide it
+                // and restore its pre-scope attributes.
+                let mut scoped_undo = None;
+                let inserted = if pre_exists {
+                    graph.insert_edge(s, *edge_type, t, attr_map)
+                } else {
+                    graph.insert_temporary_edge_with_attrs(s, *edge_type, t, attr_map)
+                        .map(|token| {
+                            scoped_undo = Some(token);
+                            graph.edge_idx(s, *edge_type, t).expect("inserted rule edge is visible")
+                        })
+                };
                 let failed = inserted.is_err();
                 if failed {
                     crate::effect_audit::record_failed_edge_insert(!pre_exists, || {
@@ -2436,7 +2534,19 @@ pub fn apply_rule_full(
                 if !pre_exists && !suppress {
                     progressed = true;
                     if record_undo {
-                        undo.push(UndoStep::AddedEdge(key));
+                        match scoped_undo {
+                            Some(token @ TemporaryEdgeUndo::Revealed { .. }) => {
+                                undo.push(UndoStep::ScopedEdge(token));
+                            }
+                            Some(TemporaryEdgeUndo::Inserted(_)) => {
+                                undo.push(UndoStep::AddedEdge(key));
+                            }
+                            Some(TemporaryEdgeUndo::Existing) => unreachable!("edge was not visible before insertion"),
+                            // Legacy unchecked failed inserts are still
+                            // counted as progress when correction is disabled.
+                            // Their historical AddedEdge undo is a no-op.
+                            None => undo.push(UndoStep::AddedEdge(key)),
+                        }
                     }
                 } else if pre_exists && attrs_changed {
                     progressed = true;
@@ -2486,36 +2596,36 @@ pub fn apply_rule_full(
                 // INTRINSIC SELF-REPAIR: queue a rule-clause rewrite. We only hold &mut graph here
                 // (not the rule list), so resolve the args and stash the edit on graph.pending_rule_edits;
                 // Substrate::run_rules drains + applies it between passes where &mut self.rules is free.
-                let name_v = resolve_effect_arg(
-                    rule_name,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                let (name_v, eval_error) = resolve_effect_arg_checked(
+                    rule_name, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let field_v = resolve_effect_arg(
-                    field,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match rule_name { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (field_v, eval_error) = resolve_effect_arg_checked(
+                    field, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let term_v = resolve_effect_arg(
-                    term,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match field { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (term_v, eval_error) = resolve_effect_arg_checked(
+                    term, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match term { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
                 // Accept a `Value::Str` literal OR a `Value::Surface(Text)`
                 // (StringConcat / other text Terms) for both the rule name
                 // and the field name -- a dynamically-composed mint id must
@@ -2590,36 +2700,36 @@ pub fn apply_rule_full(
                 let Some(&rn) = b.get(reflex_net) else {
                     continue;
                 };
-                let in_v = resolve_effect_arg(
-                    input,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                let (in_v, eval_error) = resolve_effect_arg_checked(
+                    input, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let tg_v = resolve_effect_arg(
-                    target,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match input { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (tg_v, eval_error) = resolve_effect_arg_checked(
+                    target, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let eta_v = resolve_effect_arg(
-                    eta,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match target { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (eta_v, eval_error) = resolve_effect_arg_checked(
+                    eta, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match eta { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
                 let to_vec = |v: &Value| -> Vec<f64> {
                     match v {
                         Value::Tuple(t) | Value::List(t) => t
@@ -2672,36 +2782,36 @@ pub fn apply_rule_full(
                 let Some(&game) = b.get(game_var) else {
                     continue;
                 };
-                let fb_v = resolve_effect_arg(
-                    fb,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                let (fb_v, eval_error) = resolve_effect_arg_checked(
+                    fb, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let gw_v = resolve_effect_arg(
-                    grid_w,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match fb { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (gw_v, eval_error) = resolve_effect_arg_checked(
+                    grid_w, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let gh_v = resolve_effect_arg(
-                    grid_h,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match grid_w { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (gh_v, eval_error) = resolve_effect_arg_checked(
+                    grid_h, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match grid_h { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
                 let fb_id = match fb_v {
                     Value::Int(i) if i >= 0 => Some(i as u32),
                     Value::Float(f) if f >= 0.0 => Some(f as u32),
@@ -2739,36 +2849,36 @@ pub fn apply_rule_full(
                 // under the binding, queue onto graph.pending_track_identity;
                 // Substrate::run_rules drains it via Substrate::track_identity
                 // (where &mut self is free) between passes.
-                let prev_v = resolve_effect_arg(
-                    prev,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                let (prev_v, eval_error) = resolve_effect_arg_checked(
+                    prev, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let cur_v = resolve_effect_arg(
-                    cur,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match prev { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (cur_v, eval_error) = resolve_effect_arg_checked(
+                    cur, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
-                let radius_v = resolve_effect_arg(
-                    radius,
-                    &b,
-                    arena,
-                    graph,
-                    interner,
-                    concepts.as_deref(),
-                    framebuffers,
-                    cache.as_deref_mut(),
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match cur { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
+                let (radius_v, eval_error) = resolve_effect_arg_checked(
+                    radius, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut(),
                 );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match radius { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_checked_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
                 let prev_ids: Vec<NodeID> = prev_v
                     .iter()
                     .filter_map(|v| match v {
@@ -2805,16 +2915,14 @@ pub fn apply_rule_full(
             } => {
                 let mut attr_map: FxHashMap<Sym, Value> = FxHashMap::default();
                 for (k, arg) in attrs {
-                    let v = resolve_effect_arg(
-                        arg,
-                        &b,
-                        arena,
-                        graph,
-                        interner,
-                        concepts.as_deref(),
-                        framebuffers,
-                        cache.as_deref_mut(),
-                    );
+                    let (v, eval_error) = resolve_effect_arg_checked(arg, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    if let Some(error) = eval_error {
+                        let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match arg { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                        resource_limit.get_or_insert(failure);
+                        RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                        eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_add_node_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                        continue 'effects;
+                    }
                     attr_map.insert(*k, v);
                 }
                 crate::scale_audit::rule_effect_node_insert();
@@ -2835,16 +2943,14 @@ pub fn apply_rule_full(
                 // concrete Values rather than unresolved Terms.
                 let mut attr_pairs: Vec<(Sym, Value)> = Vec::with_capacity(attrs.len());
                 for (k, arg) in attrs {
-                    let v = resolve_effect_arg(
-                        arg,
-                        &b,
-                        arena,
-                        graph,
-                        interner,
-                        concepts.as_deref(),
-                        framebuffers,
-                        cache.as_deref_mut(),
-                    );
+                    let (v, eval_error) = resolve_effect_arg_checked(arg, &b, arena, graph, interner, concepts.as_deref(), framebuffers, cache.as_deref_mut());
+                    if let Some(error) = eval_error {
+                        let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match arg { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                        resource_limit.get_or_insert(failure);
+                        RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                        eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_add_node_if_absent_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                        continue 'effects;
+                    }
                     attr_pairs.push((*k, v));
                 }
                 crate::access_trace::note(
@@ -2951,7 +3057,7 @@ pub fn apply_rule_full(
                 let Some(&nid) = b.get(var) else {
                     continue;
                 };
-                let v = resolve_effect_arg(
+                let (v, eval_error) = resolve_effect_arg_checked(
                     value,
                     &b,
                     arena,
@@ -2961,6 +3067,15 @@ pub fn apply_rule_full(
                     framebuffers,
                     cache.as_deref_mut(),
                 );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match value { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| {
+                        if slot.get().is_none() { slot.set(Some(failure)); }
+                    });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_set_attr_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue;
+                }
                 crate::access_trace::note(17, nid.0, key.0, crate::access_trace::NO_ID);
                 let old = graph.node(nid).attrs.get(key).cloned();
                 let changed = old.as_ref() != Some(&v);
@@ -2982,7 +3097,7 @@ pub fn apply_rule_full(
                 let Some(&nid) = b.get(var) else {
                     continue;
                 };
-                let v = resolve_effect_arg(
+                let (v, eval_error) = resolve_effect_arg_checked(
                     value,
                     &b,
                     arena,
@@ -2992,6 +3107,13 @@ pub fn apply_rule_full(
                     framebuffers,
                     cache.as_deref_mut(),
                 );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match value { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_set_attr_if_different_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue;
+                }
                 let old = graph.node(nid).attrs.get(key).cloned();
                 crate::access_trace::note(17, nid.0, key.0, crate::access_trace::NO_ID);
                 // Difference from SetAttr: when equal we SKIP THE WRITE
@@ -3088,26 +3210,17 @@ pub fn apply_rule_full(
                 // case (rule writes `["define_concept", "name_str", …]`);
                 // Computed path lets the rule synthesise a name from
                 // the match binding (e.g. `Attr(?n, "label")`).
-                let name_val = match name {
-                    EffectArg::Literal(v) => v.clone(),
-                    EffectArg::Computed(idx) => {
-                        let mut env: Env = SmallVec::new();
-                        for (&nm, &nid) in b.iter() {
-                            env.push((nm, Value::Node(nid)));
-                        }
-                        let mut ctx = EvalCtx::new(graph, interner);
-                        if let Some(c) = concepts.as_deref() {
-                            ctx = ctx.with_concepts(c);
-                        }
-                        if let Some(fb) = framebuffers {
-                            ctx = ctx.with_framebuffers(fb);
-                        }
-                        if let Some(c) = cache.as_deref_mut() {
-                            ctx = ctx.with_cache(c);
-                        }
-                        evaluate(arena, *idx, &mut env, &mut ctx)
-                    }
-                };
+                let (name_val, eval_error) = resolve_effect_arg_checked(
+                    name, &b, arena, graph, interner,
+                    concepts.as_deref(), framebuffers, cache.as_deref_mut(),
+                );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match name { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_define_concept_name_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
                 let name_sym = match name_val {
                     Value::Str(s) => s,
                     _ => {
@@ -3126,26 +3239,17 @@ pub fn apply_rule_full(
                 // arbitrary Term — supported but rules need a DSL way
                 // to construct the Dict at fire time, which is the
                 // future work the Computed arm exists for.
-                let term_val = match term {
-                    EffectArg::Literal(v) => v.clone(),
-                    EffectArg::Computed(idx) => {
-                        let mut env: Env = SmallVec::new();
-                        for (&nm, &nid) in b.iter() {
-                            env.push((nm, Value::Node(nid)));
-                        }
-                        let mut ctx = EvalCtx::new(graph, interner);
-                        if let Some(c) = concepts.as_deref() {
-                            ctx = ctx.with_concepts(c);
-                        }
-                        if let Some(fb) = framebuffers {
-                            ctx = ctx.with_framebuffers(fb);
-                        }
-                        if let Some(c) = cache.as_deref_mut() {
-                            ctx = ctx.with_cache(c);
-                        }
-                        evaluate(arena, *idx, &mut env, &mut ctx)
-                    }
-                };
+                let (term_val, eval_error) = resolve_effect_arg_checked(
+                    term, &b, arena, graph, interner,
+                    concepts.as_deref(), framebuffers, cache.as_deref_mut(),
+                );
+                if let Some(error) = eval_error {
+                    let failure = RuleEvalFailure { rule_uid: rule.uid.0, rule_name: rule.name, term: match term { EffectArg::Computed(idx) => *idx, EffectArg::Literal(_) => unreachable!() }, error };
+                    resource_limit.get_or_insert(failure);
+                    RULE_EVAL_FAILURE.with(|slot| { if slot.get().is_none() { slot.set(Some(failure)); } });
+                    eprintln!("EVAL_RESOURCE_LIMIT: entry=rule_effect rule_uid={} rule={} term_idx={} kind={} depth={} limit={} action=skip_define_concept_term_effect", rule.uid.0, interner.resolve(rule.name), failure.term.0, error.kind, error.depth, error.limit);
+                    continue 'effects;
+                }
                 // Skip silently for shapes that can't denote a Term —
                 // empty / None / non-Dict. Matches the applier's
                 // tolerance for ill-typed effect args elsewhere
@@ -3196,6 +3300,7 @@ pub fn apply_rule_full(
         undo,
         undo_src,
         progressed,
+        resource_limit,
         pending_concepts,
     }
 }
@@ -3210,6 +3315,7 @@ pub fn undo_apply(undo: Vec<UndoStep>, graph: &mut TypedGraph) {
                     graph.delete_edge(idx);
                 }
             }
+            UndoStep::ScopedEdge(token) => graph.undo_temporary_edge(token),
             UndoStep::EdgeAttrsSet { key, old } => {
                 let _ = graph.insert_edge(key.src, key.edge_type, key.tgt, old);
             }
@@ -3332,8 +3438,21 @@ fn resolve_effect_arg(
     framebuffers: Option<&crate::framebuffer::FbRegistry>,
     cache: Option<&mut crate::term::EvalCache>,
 ) -> Value {
+    resolve_effect_arg_checked(arg, binding, arena, graph, interner, concepts, framebuffers, cache).0
+}
+
+fn resolve_effect_arg_checked(
+    arg: &EffectArg,
+    binding: &Binding,
+    arena: &TermArena,
+    graph: &TypedGraph,
+    interner: &Interner,
+    concepts: Option<&ConceptResolver>,
+    framebuffers: Option<&crate::framebuffer::FbRegistry>,
+    cache: Option<&mut crate::term::EvalCache>,
+) -> (Value, Option<crate::term::EvalLimitError>) {
     match arg {
-        EffectArg::Literal(v) => v.clone(),
+        EffectArg::Literal(v) => (v.clone(), None),
         EffectArg::Computed(idx) => {
             // Build the env from the binding so the Term sees the
             // matched vars as Value::Node bindings.
@@ -3351,7 +3470,8 @@ fn resolve_effect_arg(
             if let Some(c) = cache {
                 ctx = ctx.with_cache(c);
             }
-            evaluate(arena, *idx, &mut env, &mut ctx)
+            let value = evaluate(arena, *idx, &mut env, &mut ctx);
+            (value, ctx.eval_limit_error)
         }
     }
 }
@@ -4162,6 +4282,9 @@ pub fn run_rules_opts_scoped(
                         None,
                         false,
                     );
+                    if let Some(failure) = outcome.resource_limit {
+                        record_rule_eval_failure(failure);
+                    }
                     if outcome.progressed {
                         progressed_any = true;
                     }
@@ -4225,6 +4348,9 @@ pub fn run_rules_opts_scoped(
                     None,
                     true,
                 );
+                if let Some(failure) = outcome.resource_limit {
+                    record_rule_eval_failure(failure);
+                }
                 if outcome.progressed {
                     progressed_any = true;
                 } else {
@@ -4592,6 +4718,10 @@ mod effect_audit_tests {
             out.progressed,
             "correction off must reproduce the old behaviour"
         );
+        // Legacy failed inserts still produce a no-op undo record; replaying
+        // it must remain safe even though no edge was ever created.
+        undo_apply(out.undo, &mut g);
+        assert_eq!(g.edge_count(), 0);
         crate::effect_audit::reset();
     }
 
@@ -4611,6 +4741,7 @@ mod effect_audit_tests {
             !out.progressed,
             "a failed insert is not progress when the correction is on"
         );
+        assert!(out.undo.is_empty(), "corrected failed insert has no undo");
         crate::effect_audit::set_correct_failed_effects(false);
         crate::effect_audit::reset();
     }
@@ -4659,6 +4790,260 @@ mod tests {
 
     fn setup_graph() -> (TypedGraph, Interner, TermArena) {
         (TypedGraph::new(), Interner::new(), TermArena::new())
+    }
+
+    #[test]
+    fn phase57_rule_where_rejects_limit_failure_and_preserves_neighbor_effects() {
+        let (mut graph, mut interner, mut arena) = setup_graph();
+        let node_type = interner.intern("Node");
+        let edge_type = interner.intern("link");
+        let marker_before = interner.intern("marker_before");
+        let marker_failed = interner.intern("marker_failed");
+        let marker_xor = interner.intern("marker_xor");
+        let marker_after = interner.intern("marker_after");
+        let src = graph.insert_node(node_type, FxHashMap::default());
+        let dst = graph.insert_node(node_type, FxHashMap::default());
+        graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+
+        // Build a chain of separately graph-resident EvalSubgraph terms. The
+        // outermost term requires 258 wrappers and deterministically crosses
+        // the shared depth guard (limit 256).
+        let true_term = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&arena, true_term, &mut graph, &mut interner);
+        for _ in 0..258 {
+            let leaf = arena.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = arena.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&arena, wrapper, &mut graph, &mut interner);
+        }
+
+        let ref_node = arena.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = arena.add(TermNode::EvalSubgraph { node: ref_node });
+        let negated = arena.add(TermNode::Not { arg: exhausted });
+        let mut env = smallvec::SmallVec::new();
+        let mut direct_ctx = EvalCtx::new(&graph, &interner);
+        let direct = evaluate(&arena, negated, &mut env, &mut direct_ctx);
+        eprintln!("PHASE57 direct Not exhausted={direct:?} typed_error={:?}", direct_ctx.eval_limit_error);
+        assert_eq!(direct, Value::Bool(true));
+        assert!(direct_ctx.eval_limit_error.is_some());
+        let one = arena.add(TermNode::Lit { value: Value::Int(1) });
+        let xor = arena.add(TermNode::BitXor { a: exhausted, b: one });
+        let mut xor_ctx = EvalCtx::new(&graph, &interner);
+        let xor_value = evaluate(&arena, xor, &mut env, &mut xor_ctx);
+        eprintln!("PHASE57 direct BitXor exhausted={xor_value:?} typed_error={:?}", xor_ctx.eval_limit_error);
+        assert_eq!(xor_value, Value::Int(0));
+        assert!(xor_ctx.eval_limit_error.is_some());
+
+        let x = interner.intern("x");
+        let y = interner.intern("y");
+        let mk_rule = |name: &'static str, where_: Option<TermIdx>, marker: Sym, value: i64,
+                       interner: &mut Interner| RewriteRule {
+            name: interner.intern(name),
+            match_edges: vec![MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_,
+            effects: vec![Effect::SetAttr {
+                var: x,
+                key: marker,
+                value: EffectArg::Literal(Value::Int(value)),
+            }],
+            ..Default::default()
+        };
+        let before = mk_rule("before_failure", None, marker_before, 1, &mut interner);
+        let failed = mk_rule("exhausted_not_rule", Some(negated), marker_failed, 2, &mut interner);
+        let xor_failed = mk_rule("exhausted_xor_rule", Some(xor), marker_xor, 5, &mut interner);
+        let missing = arena.add(TermNode::Var { name: interner.intern("ordinary_missing") });
+        let ordinary_none = mk_rule("ordinary_none_control", Some(missing), marker_failed, 3, &mut interner);
+        let after = mk_rule("after_failure", None, marker_after, 4, &mut interner);
+
+        let steps = run_rules(
+            &[&before, &failed, &xor_failed, &ordinary_none, &after],
+            &mut arena, &mut graph, &mut interner, None, None, None, &[], 8,
+        );
+        let attrs = &graph.node(src).attrs;
+        let before_value = attrs.get(&marker_before).cloned();
+        let failed_value = attrs.get(&marker_failed).cloned();
+        let xor_value = attrs.get(&marker_xor).cloned();
+        let after_value = attrs.get(&marker_after).cloned();
+        eprintln!("PHASE57 candidate rules steps={steps} before={before_value:?} failed={failed_value:?} xor={xor_value:?} after={after_value:?}");
+        assert_eq!(steps, 2, "ordinary None and both exhaustion predicates should suppress only their own rules");
+        assert_eq!(before_value, Some(Value::Int(1)));
+        assert_eq!(failed_value, None);
+        assert_eq!(xor_value, None);
+        assert_eq!(after_value, Some(Value::Int(4)));
+    }
+
+    #[test]
+    fn phase58_computed_effect_argument_silently_mutates_after_limit() {
+        let (mut graph, mut interner, mut arena) = setup_graph();
+        let node_type = interner.intern("Node");
+        let marker = interner.intern("marker");
+        let before_key = interner.intern("before");
+        let after_key = interner.intern("after");
+        let src = graph.insert_node(node_type, FxHashMap::default());
+        let true_term = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&arena, true_term, &mut graph, &mut interner);
+        for _ in 0..258 {
+            let leaf = arena.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = arena.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&arena, wrapper, &mut graph, &mut interner);
+        }
+        let ref_node = arena.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = arena.add(TermNode::EvalSubgraph { node: ref_node });
+        let negated = arena.add(TermNode::Not { arg: exhausted });
+        let rule = RewriteRule {
+            name: interner.intern("computed_effect_limit"),
+            effects: vec![
+                Effect::SetAttr { var: interner.intern("x"), key: before_key, value: EffectArg::Literal(Value::Int(1)) },
+                Effect::SetAttr { var: interner.intern("x"), key: marker, value: EffectArg::Computed(negated) },
+                Effect::SetAttr { var: interner.intern("x"), key: after_key, value: EffectArg::Literal(Value::Int(3)) },
+            ],
+            ..Default::default()
+        };
+        let mut binding = Binding::default();
+        binding.insert(interner.intern("x"), src);
+        let outcome = apply_rule_full(&rule, &binding, &mut arena, &mut graph, &mut interner, None, None, None, false);
+        let attrs = &graph.node(src).attrs;
+        eprintln!("PHASE58 computed effect outcome_recorded marker={:?} before={:?} after={:?}", attrs.get(&marker), attrs.get(&before_key), attrs.get(&after_key));
+        assert_eq!(attrs.get(&marker), None, "exhausted computed SetAttr must be skipped");
+        assert_eq!(outcome.resource_limit.map(|failure| (failure.error.kind, failure.error.depth, failure.error.limit)), Some(("EvalSubgraph", 257, 256)));
+        assert_eq!(attrs.get(&before_key), Some(&Value::Int(1)), "earlier effects are not rolled back");
+        assert_eq!(attrs.get(&after_key), Some(&Value::Int(3)), "later effects continue after the skipped SetAttr");
+
+        let none_key = interner.intern("ordinary_none");
+        let missing = arena.add(TermNode::Var { name: interner.intern("phase58_missing") });
+        let none_rule = RewriteRule { name: interner.intern("ordinary_none_effect"), effects: vec![Effect::SetAttr { var: interner.intern("x"), key: none_key, value: EffectArg::Computed(missing) }], ..Default::default() };
+        let none_outcome = apply_rule_full(&none_rule, &binding, &mut arena, &mut graph, &mut interner, None, None, None, false);
+        assert_eq!(graph.node(src).attrs.get(&none_key), Some(&Value::None));
+        assert_eq!(none_outcome.resource_limit, None, "ordinary None is not a resource failure");
+    }
+
+    #[test]
+    fn phase59_checked_effects_skip_add_mutations_and_concept_on_limit() {
+        let (mut graph, mut interner, mut arena) = setup_graph();
+        let nt = interner.intern("Node");
+        let x = interner.intern("x");
+        let y = interner.intern("y");
+        let edge_type = interner.intern("limited_edge");
+        let attr = interner.intern("computed");
+        let created = interner.intern("created");
+        let src = graph.insert_node(nt, FxHashMap::default());
+        let dst = graph.insert_node(nt, FxHashMap::default());
+        let true_term = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&arena, true_term, &mut graph, &mut interner);
+        for _ in 0..258 {
+            let leaf = arena.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = arena.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&arena, wrapper, &mut graph, &mut interner);
+        }
+        let ref_node = arena.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = arena.add(TermNode::EvalSubgraph { node: ref_node });
+        let bad = EffectArg::Computed(arena.add(TermNode::Not { arg: exhausted }));
+        let rule = RewriteRule {
+            name: interner.intern("phase59_checked_mutation_effects"),
+            effects: vec![
+                Effect::AddNode { new_var: created, type_: nt, attrs: vec![(attr, bad.clone())] },
+                Effect::AddNodeIfAbsent { new_var: created, type_: nt, attrs: vec![(attr, bad.clone())] },
+                Effect::AddEdge { src_var: x, edge_type, tgt_var: y, attrs: vec![(attr, bad.clone())] },
+                Effect::DefineConcept { name: bad.clone(), term: EffectArg::Literal(Value::None) },
+                Effect::DefineConcept { name: EffectArg::Literal(Value::Str(interner.intern("computed_term"))), term: bad.clone() },
+            ],
+            ..Default::default()
+        };
+        let mut binding = Binding::default();
+        binding.insert(x, src);
+        binding.insert(y, dst);
+        let nodes_before = graph.node_count();
+        let outcome = apply_rule_full(&rule, &binding, &mut arena, &mut graph, &mut interner, None, None, None, false);
+        assert_eq!(outcome.resource_limit.map(|f| (f.error.kind, f.error.depth, f.error.limit)), Some(("EvalSubgraph", 257, 256)));
+        assert_eq!(graph.node_count(), nodes_before, "AddNode variants must not materialize exhausted attrs");
+        assert_eq!(graph.edge_idx(src, edge_type, dst), None, "AddEdge must not store exhausted attrs");
+        assert_eq!(outcome.pending_concepts, Vec::new(), "DefineConcept must not queue exhausted name");
+    }
+
+    #[test]
+    fn phase60_checked_deferred_effects_skip_exhaustion_and_keep_ordinary_queueing() {
+        let (mut graph, mut interner, mut arena) = setup_graph();
+        let nt = interner.intern("Node");
+        let subject = graph.insert_node(nt, FxHashMap::default());
+        let true_term = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&arena, true_term, &mut graph, &mut interner);
+        for _ in 0..258 {
+            let leaf = arena.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = arena.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&arena, wrapper, &mut graph, &mut interner);
+        }
+        let ref_node = arena.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = arena.add(TermNode::EvalSubgraph { node: ref_node });
+        let bad = EffectArg::Computed(arena.add(TermNode::Not { arg: exhausted }));
+        let mut binding = Binding::default();
+        binding.insert(interner.intern("x"), subject);
+        binding.insert(interner.intern("game"), subject);
+        binding.insert(interner.intern("rn"), subject);
+
+        // Each deferred effect checks every computed input before queuing.
+        // Repeat with each argument position exhausted to guard against a
+        // later argument being evaluated after an earlier one succeeds.
+        let lit = |value| EffectArg::Literal(value);
+        let effect_cases = vec![
+            ("SetRuleClause.name", Effect::SetRuleClause {
+                rule_name: bad.clone(), field: lit(Value::Str(interner.intern("where"))), term: lit(Value::Bool(true)),
+            }),
+            ("SetRuleClause.field", Effect::SetRuleClause {
+                rule_name: lit(Value::Str(interner.intern("target"))), field: bad.clone(), term: lit(Value::Bool(true)),
+            }),
+            ("SetRuleClause.term", Effect::SetRuleClause {
+                rule_name: lit(Value::Str(interner.intern("target"))), field: lit(Value::Str(interner.intern("where"))), term: bad.clone(),
+            }),
+            ("NetCollapse.input", Effect::NetCollapse {
+                reflex_net: interner.intern("rn"), input: bad.clone(), target: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Float(1.0)])))), eta: lit(Value::Float(0.1)),
+            }),
+            ("NetCollapse.target", Effect::NetCollapse {
+                reflex_net: interner.intern("rn"), input: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Float(1.0)])))), target: bad.clone(), eta: lit(Value::Float(0.1)),
+            }),
+            ("NetCollapse.eta", Effect::NetCollapse {
+                reflex_net: interner.intern("rn"), input: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Float(1.0)])))), target: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Float(1.0)])))), eta: bad.clone(),
+            }),
+            ("FbSample.fb", Effect::FbSample { fb: bad.clone(), game_var: interner.intern("game"), grid_w: lit(Value::Int(2)), grid_h: lit(Value::Int(2)) }),
+            ("FbSample.grid_w", Effect::FbSample { fb: lit(Value::Int(0)), game_var: interner.intern("game"), grid_w: bad.clone(), grid_h: lit(Value::Int(2)) }),
+            ("FbSample.grid_h", Effect::FbSample { fb: lit(Value::Int(0)), game_var: interner.intern("game"), grid_w: lit(Value::Int(2)), grid_h: bad.clone() }),
+            ("TrackIdentity.prev", Effect::TrackIdentity {
+                prev: bad.clone(), cur: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Node(subject)])))), feature_key: interner.intern("f"), category_key: Some(interner.intern("c")), extent_key: Some(interner.intern("e")), identity_key: interner.intern("i"), radius: lit(Value::Float(1.0)),
+            }),
+            ("TrackIdentity.cur", Effect::TrackIdentity {
+                prev: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Node(subject)])))), cur: bad.clone(), feature_key: interner.intern("f"), category_key: Some(interner.intern("c")), extent_key: Some(interner.intern("e")), identity_key: interner.intern("i"), radius: lit(Value::Float(1.0)),
+            }),
+            ("TrackIdentity.radius", Effect::TrackIdentity {
+                prev: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Node(subject)])))), cur: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Node(subject)])))), feature_key: interner.intern("f"), category_key: Some(interner.intern("c")), extent_key: Some(interner.intern("e")), identity_key: interner.intern("i"), radius: bad.clone(),
+            }),
+        ];
+        for (label, effect) in effect_cases {
+            let rule = RewriteRule { name: interner.intern("phase60_deferred_limit"), effects: vec![effect], ..Default::default() };
+            let outcome = apply_rule_full(&rule, &binding, &mut arena, &mut graph, &mut interner, None, None, None, false);
+            assert_eq!(outcome.resource_limit.map(|f| (f.error.kind, f.error.depth, f.error.limit)), Some(("EvalSubgraph", 257, 256)), "{label}");
+            assert!(!outcome.progressed, "{label} must not report a skipped effect as progress");
+        }
+        assert!(graph.pending_rule_edits.is_empty());
+        assert!(graph.pending_net_collapses.is_empty());
+        assert!(graph.pending_fb_samples.is_empty());
+        assert!(graph.pending_track_identity.is_empty());
+
+        // Ordinary literals retain each effect's established behavior.
+        let ordinary = RewriteRule {
+            name: interner.intern("phase60_deferred_ordinary"),
+            effects: vec![
+                Effect::SetRuleClause { rule_name: lit(Value::Str(interner.intern("target"))), field: lit(Value::Str(interner.intern("where"))), term: lit(Value::Bool(true)) },
+                Effect::NetCollapse { reflex_net: interner.intern("rn"), input: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Float(1.0)])))), target: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Float(2.0)])))), eta: lit(Value::Float(0.1)) },
+                Effect::FbSample { fb: lit(Value::Int(0)), game_var: interner.intern("game"), grid_w: lit(Value::Int(2)), grid_h: lit(Value::Int(2)) },
+                Effect::TrackIdentity { prev: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Node(subject)])))), cur: lit(Value::Tuple(std::sync::Arc::new(SmallVec::from_vec(vec![Value::Node(subject)])))), feature_key: interner.intern("f"), category_key: Some(interner.intern("c")), extent_key: Some(interner.intern("e")), identity_key: interner.intern("i"), radius: lit(Value::Float(1.0)) },
+            ],
+            ..Default::default()
+        };
+        let ordinary_outcome = apply_rule_full(&ordinary, &binding, &mut arena, &mut graph, &mut interner, None, None, None, false);
+        assert_eq!(ordinary_outcome.resource_limit, None);
+        assert!(ordinary_outcome.progressed);
+        assert_eq!(graph.pending_rule_edits.len(), 1);
+        assert_eq!(graph.pending_net_collapses.len(), 1);
+        assert_eq!(graph.pending_fb_samples.len(), 1);
+        assert_eq!(graph.pending_track_identity.len(), 1);
     }
 
     #[test]
@@ -5052,6 +5437,48 @@ mod tests {
         assert_eq!(g.node(bob).attrs.get(&label).cloned(), attr_before);
         assert_eq!(g.node_count(), nodes_before);
         assert_eq!(g.edge_count(), edges_before);
+    }
+
+    #[test]
+    fn add_edge_undo_restores_hidden_scoped_edge_and_original_attrs() {
+        let (mut g, mut interner, mut arena) = setup_graph();
+        let node_type = interner.intern("Node");
+        let edge_type = interner.intern("relation");
+        let attr = interner.intern("weight");
+        let src = g.insert_node(node_type, FxHashMap::default());
+        let tgt = g.insert_node(node_type, FxHashMap::default());
+        let original_idx = g.insert_edge(
+            src, edge_type, tgt,
+            crate::graph::Attrs(vec![(attr, Value::Int(7))]),
+        ).unwrap();
+        g.set_focus_edge_scope(&[src], 0);
+        assert_eq!(g.edge_idx(src, edge_type, tgt), None);
+
+        let src_var = interner.intern("src");
+        let tgt_var = interner.intern("tgt");
+        let rule = RewriteRule {
+            name: interner.intern("rewrite_hidden_edge"),
+            match_edges: vec![],
+            effects: vec![Effect::AddEdge {
+                src_var,
+                edge_type,
+                tgt_var,
+                attrs: vec![(attr, EffectArg::Literal(Value::Int(9)))],
+            }],
+            ..Default::default()
+        };
+        let mut binding = Binding::default();
+        binding.insert(src_var, src);
+        binding.insert(tgt_var, tgt);
+        let undo = apply_rule(&rule, &binding, &mut arena, &mut g, &mut interner, None, None, true);
+        assert_eq!(g.edge_idx(src, edge_type, tgt), Some(original_idx));
+        assert_eq!(g.edge_attrs(original_idx).get(&attr), Some(&Value::Int(9)));
+
+        undo_apply(undo, &mut g);
+        assert_eq!(g.edge_idx(src, edge_type, tgt), None);
+        g.set_focus_edge_scope(&[], 0);
+        assert_eq!(g.edge_idx(src, edge_type, tgt), Some(original_idx));
+        assert_eq!(g.edge_attrs(original_idx).get(&attr), Some(&Value::Int(7)));
     }
 
     #[test]

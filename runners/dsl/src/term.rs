@@ -3817,6 +3817,13 @@ impl DimInferWitness {
 
 /// graph + interner + optional cache + concept resolver + a depth
 /// guard (matches Python's `_holds_depth`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct EvalLimitError {
+    pub kind: &'static str,
+    pub depth: u32,
+    pub limit: u32,
+}
+
 pub struct EvalCtx<'a> {
     pub graph: &'a TypedGraph,
     pub interner: &'a Interner,
@@ -3827,6 +3834,10 @@ pub struct EvalCtx<'a> {
     pub(crate) shape_codebooks: FxHashMap<Sym, Arc<crate::shape_decode::LoadedCodebook>>,
     pub concepts: Option<&'a ConceptResolver>,
     pub holds_depth: u32,
+    /// Sticky resource failure for the current evaluator call tree.
+    /// Python entrypoints can translate it to an exception without using
+    /// Value::None as an error sentinel. Other native callers must opt in.
+    pub eval_limit_error: Option<EvalLimitError>,
     /// Stack of concept Syms currently being evaluated by Holds. Used
     /// for cycle detection: if a Holds(concept, _) call re-enters the
     /// same concept already on the stack, the call returns Value::None
@@ -3905,6 +3916,7 @@ impl<'a> EvalCtx<'a> {
             shape_codebooks: FxHashMap::default(),
             concepts: None,
             holds_depth: 0,
+            eval_limit_error: None,
             holds_stack: Vec::new(),
             counters: None,
             derivations: None,
@@ -7311,6 +7323,27 @@ fn cached_argmax_key(
 }
 
 pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCtx) -> Value {
+    // Once a resource limit has fired, avoid entering further recursive
+    // children. The public Python entrypoint reports the sticky error after
+    // this call tree unwinds; Value::None remains an ordinary language value.
+    if ctx.eval_limit_error.is_some() {
+        return Value::None;
+    }
+    // Keep the recursive interpreter's large frame off the small caller stack.
+    // Every recursive edge in the evaluator calls this wrapper again.
+    #[inline(never)]
+    fn grow_and_evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCtx) -> Value {
+        // The debug evaluator has a large frame; leave room for at least one
+        // evaluator frame plus its nested helper calls before the next check.
+        stacker::maybe_grow(1024 * 1024, 2 * 1024 * 1024, || {
+            evaluate_inner(arena, idx, env, ctx)
+        })
+    }
+    grow_and_evaluate(arena, idx, env, ctx)
+}
+
+#[inline(never)]
+fn evaluate_inner(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCtx) -> Value {
     // Macro to read a SmallVec cache key for Filter. Built once per call.
     macro_rules! cache_key {
         ($env:expr, $vars:expr) => {{
@@ -8898,8 +8931,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 }
             }
             let result = Value::make_frozenset(out);
-            if let (Some(cache), Some(k)) = (ctx.cache.as_deref_mut(), key) {
-                cache.filter.insert((idx, k), result.clone());
+            if ctx.eval_limit_error.is_none() {
+                if let (Some(cache), Some(k)) = (ctx.cache.as_deref_mut(), key) {
+                    cache.filter.insert((idx, k), result.clone());
+                }
             }
             result
         }
@@ -9121,8 +9156,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             let result = argmin_or_argmax_over(
                 arena, *source, *var_name, *value, *default, env, ctx, false, false, None,
             );
-            if let (Some(cache), Some(key)) = (ctx.cache.as_deref_mut(), key) {
-                cache.argmax.insert((idx, key), result.clone());
+            if ctx.eval_limit_error.is_none() {
+                if let (Some(cache), Some(key)) = (ctx.cache.as_deref_mut(), key) {
+                    cache.argmax.insert((idx, key), result.clone());
+                }
             }
             result
         }
@@ -10428,8 +10465,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() {
-                cache.sd_ops.insert(key, full);
+            if ctx.eval_limit_error.is_none() {
+                if let Some(cache) = ctx.cache.as_deref_mut() {
+                    cache.sd_ops.insert(key, full);
+                }
             }
             report
         }
@@ -10614,8 +10653,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() {
-                cache.sd_ops.insert(key, full);
+            if ctx.eval_limit_error.is_none() {
+                if let Some(cache) = ctx.cache.as_deref_mut() {
+                    cache.sd_ops.insert(key, full);
+                }
             }
             report
         }
@@ -10672,8 +10713,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() {
-                cache.sd_ops.insert(key, full);
+            if ctx.eval_limit_error.is_none() {
+                if let Some(cache) = ctx.cache.as_deref_mut() {
+                    cache.sd_ops.insert(key, full);
+                }
             }
             report
         }
@@ -10756,8 +10799,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 ctx,
             );
             let report = crate::shape_decode::select_cached_field(&full, *field, ctx.interner);
-            if let Some(cache) = ctx.cache.as_deref_mut() {
-                cache.sd_ops.insert(key, full);
+            if ctx.eval_limit_error.is_none() {
+                if let Some(cache) = ctx.cache.as_deref_mut() {
+                    cache.sd_ops.insert(key, full);
+                }
             }
             report
         }
@@ -11239,6 +11284,11 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
                 return Value::None;
             }
             if ctx.holds_depth > 256 {
+                ctx.eval_limit_error.get_or_insert(EvalLimitError {
+                    kind: "Holds",
+                    depth: ctx.holds_depth,
+                    limit: 256,
+                });
                 return Value::None;
             }
             let Some(&def) = concepts.get(concept) else {
@@ -11300,8 +11350,10 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             ctx.holds_stack.pop();
             ctx.holds_depth -= 1;
             env.truncate(saved);
-            if let (Some(k), Some(cache)) = (cache_key, ctx.cache.as_deref_mut()) {
-                cache.holds.insert(k, r.clone());
+            if ctx.eval_limit_error.is_none() {
+                if let (Some(k), Some(cache)) = (cache_key, ctx.cache.as_deref_mut()) {
+                    cache.holds.insert(k, r.clone());
+                }
             }
             r
         }
@@ -11321,13 +11373,25 @@ pub fn evaluate(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut EvalCt
             // holds_depth budget so a cycle that bounces through a
             // subgraph reconstruction is bounded too.
             if ctx.holds_depth > 256 {
+                ctx.eval_limit_error.get_or_insert(EvalLimitError {
+                    kind: "EvalSubgraph",
+                    depth: ctx.holds_depth,
+                    limit: 256,
+                });
                 return Value::None;
             }
             let mut tmp_arena = TermArena::new();
-            let Ok(sub_idx) =
-                crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, nid, &mut tmp_arena)
-            else {
-                return Value::None;
+            let sub_idx = match crate::reflect::term_from_subgraph(
+                ctx.graph, ctx.interner, nid, &mut tmp_arena,
+            ) {
+                Ok(idx) => idx,
+                Err(crate::reflect::ReflectError::ResourceLimit { kind, observed, limit }) => {
+                    ctx.eval_limit_error.get_or_insert(EvalLimitError {
+                        kind, depth: observed, limit,
+                    });
+                    return Value::None;
+                }
+                Err(_) => return Value::None,
             };
             ctx.holds_depth += 1;
             let r = evaluate(&tmp_arena, sub_idx, env, ctx);
@@ -12212,6 +12276,11 @@ fn render_source_node(
     ctx: &mut EvalCtx,
 ) -> Value {
     if ctx.holds_depth > 256 {
+        ctx.eval_limit_error.get_or_insert(EvalLimitError {
+            kind: "Render",
+            depth: ctx.holds_depth,
+            limit: 256,
+        });
         return Value::None;
     }
     let _helper_work =
@@ -12324,12 +12393,18 @@ fn render_source_node(
         let tmpls = ctx.graph.neighbours(rule_nid, Some(tmpl_key));
         if let Some(&tmpl_nid) = tmpls.first() {
             let mut tmp = TermArena::new();
-            if let Ok(sub) =
-                crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, tmpl_nid, &mut tmp)
-            {
-                ctx.holds_depth += 1;
-                result = evaluate(&tmp, sub, env, ctx);
-                ctx.holds_depth -= 1;
+            match crate::reflect::term_from_subgraph(ctx.graph, ctx.interner, tmpl_nid, &mut tmp) {
+                Ok(sub) => {
+                    ctx.holds_depth += 1;
+                    result = evaluate(&tmp, sub, env, ctx);
+                    ctx.holds_depth -= 1;
+                }
+                Err(crate::reflect::ReflectError::ResourceLimit { kind, observed, limit }) => {
+                    ctx.eval_limit_error.get_or_insert(EvalLimitError {
+                        kind, depth: observed, limit,
+                    });
+                }
+                Err(_) => {}
             }
         }
     }
@@ -15553,6 +15628,47 @@ mod tests {
         assert_eq!(evaluate(&a, i, &mut env, &mut ctx), Value::Int(7));
     }
 
+    #[test]
+    fn maybe_grown_evaluator_preserves_term_access_trace() {
+        let mut ir = Interner::new();
+        let key = ir.intern("self");
+        let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
+        // The first node in a fresh graph is NodeID(0); a self-reference lets
+        // every Attr layer observe the same node and emit one trace event.
+        attrs.insert(key, Value::Node(crate::graph::NodeID(0)));
+        let mut graph = TypedGraph::new();
+        let ty = ir.intern("StackTraceProbe");
+        let node = graph.insert_node(ty, attrs);
+        assert_eq!(node, crate::graph::NodeID(0));
+
+        let mut arena = TermArena::new();
+        let mut root = arena.add(TermNode::Lit { value: Value::Node(node) });
+        for _ in 0..96 {
+            root = arena.add(TermNode::Attr { node: root, key });
+        }
+        let scope = (&graph as *const TypedGraph) as usize;
+        crate::access_trace::reset();
+        crate::access_trace::set_enabled(true, scope);
+        let _rule = crate::access_trace::enter_rule(55, scope);
+
+        let mut env: Env = SmallVec::new();
+        let mut wrapped_ctx = EvalCtx::new(&graph, &ir);
+        let wrapped = evaluate(&arena, root, &mut env, &mut wrapped_ctx);
+        let wrapped_trace = crate::access_trace::snapshot(scope);
+
+        crate::access_trace::reset();
+        let mut direct_ctx = EvalCtx::new(&graph, &ir);
+        let direct = evaluate_inner(&arena, root, &mut env, &mut direct_ctx);
+        let direct_trace = crate::access_trace::snapshot(scope);
+        crate::access_trace::set_enabled(false, scope);
+
+        assert_eq!(wrapped, Value::Node(node));
+        assert_eq!(direct, wrapped);
+        assert_eq!(direct_trace, wrapped_trace);
+        assert_eq!(wrapped_trace.0.iter().map(|(_, count)| count).sum::<u64>(), 96);
+        assert_eq!(wrapped_trace.1, 0);
+    }
+
     // ------------------------------------------------------------------
     // `CoversOpen` / `covers_open_value` — open-arity relation-SET coverage.
     // Gates META_SHAPE_ARITY_AND_KEY_SEPARATOR_FIXES: a held k-relation
@@ -16823,6 +16939,44 @@ mod tests {
             node2: None,
         });
         assert_eq!(evaluate(&a, outer, &mut env, &mut ctx), Value::Int(1));
+    }
+
+    #[test]
+    fn holds_depth_exhaustion_sets_distinct_resource_error() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let graph = TypedGraph::new();
+        let node = arena.add(TermNode::Lit { value: Value::Int(7) });
+        let terminal = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let concepts: ConceptResolver = (0..258)
+            .map(|i| interner.intern(&format!("phase56_holds_{i}")))
+            .collect::<Vec<_>>()
+            .into_iter()
+            .enumerate()
+            .map(|(i, sym)| {
+                let body = if i == 257 {
+                    terminal
+                } else {
+                    arena.add(TermNode::Holds {
+                        concept: interner.intern(&format!("phase56_holds_{}", i + 1)),
+                        node: Some(node),
+                        node2: None,
+                    })
+                };
+                (sym, body)
+            })
+            .collect();
+        let root = arena.add(TermNode::Holds {
+            concept: interner.intern("phase56_holds_0"),
+            node: Some(node),
+            node2: None,
+        });
+        let mut env = Env::new();
+        let mut ctx = EvalCtx::new(&graph, &interner).with_concepts(&concepts);
+        let _ = evaluate(&arena, root, &mut env, &mut ctx);
+        assert_eq!(ctx.eval_limit_error, Some(EvalLimitError {
+            kind: "Holds", depth: 257, limit: 256,
+        }));
     }
 
     #[test]

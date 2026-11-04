@@ -35,10 +35,22 @@ use crate::graph::{NodeID, TypedGraph};
 use crate::sym::{Interner, Sym};
 use crate::term::{TermArena, TermIdx, TermNode};
 use crate::value::{SurfaceKind, Value};
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 
 const TERM_NODE_PREFIX: &str = "Term.";
 const CHILD_EDGE_PREFIX: &str = "child.";
+
+/// Per-call reconstruction budget. Traversal is iterative, so this bounds
+/// total work and heap growth rather than the depth of valid terms.
+pub const TERM_FROM_SUBGRAPH_MAX_VISITS: u32 = 65_536;
+/// Maximum number of node attribute entries examined and copied by one
+/// reverse-reflection call, summed across visited nodes. This is an entry
+/// count budget; it does not bound key lengths or the byte size of Value data.
+pub const TERM_FROM_SUBGRAPH_MAX_ATTRS: u32 = 65_536;
+/// Maximum number of child-edge attribute entries examined by one
+/// reverse-reflection call, summed across reconstructed nodes. This bounds
+/// map-entry scans, not key lengths or the byte size of attribute values.
+pub const TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS: u32 = 65_536;
 
 /// Insert `idx` and its subterms into `graph` as typed-graph elements.
 /// Returns the NodeID of the root term node.
@@ -48,76 +60,154 @@ pub fn term_to_subgraph(
     graph: &mut TypedGraph,
     interner: &mut Interner,
 ) -> NodeID {
-    let node = arena.get(idx);
-    let (variant, fields) = describe(node);
-    let type_sym = interner.intern(&format!("{}{}", TERM_NODE_PREFIX, variant));
+    struct Frame<'a> {
+        term_idx: TermIdx,
+        type_sym: Sym,
+        fields: Vec<Option<FieldValue<'a>>>,
+        field_pos: usize,
+        children: Option<(&'static str, &'a [TermIdx], usize)>,
+        attrs: FxHashMap<Sym, Value>,
+        child_edges: Vec<(String, Option<i64>, NodeID)>,
+        parent_edge: Option<(String, Option<i64>)>,
+    }
+    enum Action {
+        Continue,
+        Enter(TermIdx, String, Option<i64>),
+        Finish,
+    }
+    fn frame_for<'a>(
+        arena: &'a TermArena,
+        term_idx: TermIdx,
+        parent_edge: Option<(String, Option<i64>)>,
+        interner: &mut Interner,
+    ) -> Frame<'a> {
+        let (variant, fields) = describe(arena.get(term_idx));
+        // Match recursive entry semantics: the parent's type is interned
+        // before any child is visited.
+        let type_sym = interner.intern(&format!("{}{}", TERM_NODE_PREFIX, variant));
+        Frame {
+            term_idx,
+            type_sym,
+            fields: fields.into_iter().map(Some).collect(),
+            field_pos: 0,
+            children: None,
+            attrs: FxHashMap::default(),
+            child_edges: Vec::new(),
+            parent_edge,
+        }
+    }
 
-    // Build the scalar attr map for this node; recurse to insert
-    // children and stash their NodeIDs alongside the field/index info
-    // so we can wire up edges after the node is created.
-    let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
-    let mut child_edges: Vec<(String, Option<i64>, NodeID)> = Vec::new();
-
-    for field in fields {
-        match field {
-            FieldValue::ScalarSym { name, value } => {
-                let k = interner.intern(name);
-                attrs.insert(k, Value::Str(value));
-            }
-            FieldValue::ScalarInt { name, value } => {
-                let k = interner.intern(name);
-                attrs.insert(k, Value::Int(value));
-            }
-            FieldValue::ScalarBool { name, value } => {
-                let k = interner.intern(name);
-                attrs.insert(k, Value::Bool(value));
-            }
-            FieldValue::ScalarValue { name, value } => {
-                let k = interner.intern(name);
-                attrs.insert(k, value);
-            }
-            FieldValue::ScalarSurfaceKind { name, kind } => {
-                let k = interner.intern(name);
-                let s = match kind {
-                    SurfaceKind::Text => "text",
-                    SurfaceKind::Bytes => "bytes",
-                };
-                let v = interner.intern(s);
-                attrs.insert(k, Value::Str(v));
-            }
-            FieldValue::Child { name, child } => {
-                let child_nid = term_to_subgraph(arena, child, graph, interner);
-                child_edges.push((name.to_string(), None, child_nid));
-            }
-            FieldValue::OptChild { name, child } => {
-                if let Some(c) = child {
-                    let child_nid = term_to_subgraph(arena, c, graph, interner);
-                    child_edges.push((name.to_string(), None, child_nid));
+    // Keep traversal frames on the heap while preserving the recursive
+    // implementation's interning and postorder insertion sequence.
+    let mut stack = vec![frame_for(arena, idx, None, interner)];
+    let mut active = FxHashSet::default();
+    active.insert(idx);
+    let mut root = None;
+    loop {
+        let action = {
+            let frame = stack.last_mut().expect("root frame remains until complete");
+            if let Some((name, items, child_pos)) = frame.children {
+                if child_pos < items.len() {
+                    let child = items[child_pos];
+                    frame.children = Some((name, items, child_pos + 1));
+                    Action::Enter(child, name.to_string(), Some(child_pos as i64))
+                } else {
+                    frame.children = None;
+                    Action::Continue
+                }
+            } else if frame.field_pos >= frame.fields.len() {
+                Action::Finish
+            } else {
+                let field = frame.fields[frame.field_pos]
+                    .take()
+                    .expect("each field is consumed once");
+                frame.field_pos += 1;
+                match field {
+                    FieldValue::ScalarSym { name, value } => {
+                        let key = interner.intern(name);
+                        frame.attrs.insert(key, Value::Str(value));
+                        Action::Continue
+                    }
+                    FieldValue::ScalarInt { name, value } => {
+                        let key = interner.intern(name);
+                        frame.attrs.insert(key, Value::Int(value));
+                        Action::Continue
+                    }
+                    FieldValue::ScalarBool { name, value } => {
+                        let key = interner.intern(name);
+                        frame.attrs.insert(key, Value::Bool(value));
+                        Action::Continue
+                    }
+                    FieldValue::ScalarValue { name, value } => {
+                        let key = interner.intern(name);
+                        frame.attrs.insert(key, value);
+                        Action::Continue
+                    }
+                    FieldValue::ScalarSurfaceKind { name, kind } => {
+                        // Keep the old key-then-value interning order.
+                        let key = interner.intern(name);
+                        let value = interner.intern(match kind {
+                            SurfaceKind::Text => "text",
+                            SurfaceKind::Bytes => "bytes",
+                        });
+                        frame.attrs.insert(key, Value::Str(value));
+                        Action::Continue
+                    }
+                    FieldValue::Child { name, child } => {
+                        Action::Enter(child, name.to_string(), None)
+                    }
+                    FieldValue::OptChild { name, child: Some(child) } => {
+                        Action::Enter(child, name.to_string(), None)
+                    }
+                    FieldValue::OptChild { child: None, .. } => Action::Continue,
+                    FieldValue::Children { name, items } => {
+                        if items.is_empty() {
+                            Action::Continue
+                        } else {
+                            frame.children = Some((name, items, 0));
+                            Action::Continue
+                        }
+                    }
                 }
             }
-            FieldValue::Children { name, items } => {
-                for (i, c) in items.iter().enumerate() {
-                    let child_nid = term_to_subgraph(arena, *c, graph, interner);
-                    child_edges.push((name.to_string(), Some(i as i64), child_nid));
+        };
+        match action {
+            Action::Continue => {}
+            Action::Enter(child, edge_name, index) => {
+                assert!(
+                    !active.contains(&child),
+                    "cyclic TermArena cannot be reflected to a subgraph"
+                );
+                active.insert(child);
+                stack.push(frame_for(arena, child, Some((edge_name, index)), interner));
+            }
+            Action::Finish => {
+                let frame = stack.pop().unwrap();
+                active.remove(&frame.term_idx);
+                let node_id = graph.insert_node(frame.type_sym, frame.attrs);
+                let index_key = interner.intern("index");
+                for (name, index, child_nid) in frame.child_edges {
+                    let edge_type = interner.intern(&format!("{}{}", CHILD_EDGE_PREFIX, name));
+                    let mut edge_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
+                    if let Some(i) = index {
+                        edge_attrs.insert(index_key, Value::Int(i));
+                    }
+                    graph
+                        .insert_edge(node_id, edge_type, child_nid, edge_attrs)
+                        .expect("freshly-inserted nodes always connect");
+                }
+                if let Some(parent) = stack.last_mut() {
+                    let (name, index) = frame.parent_edge.unwrap();
+                    parent.child_edges.push((name, index, node_id));
+                } else {
+                    debug_assert!(frame.parent_edge.is_none());
+                    root = Some(node_id);
+                    break;
                 }
             }
         }
     }
-
-    let node_id = graph.insert_node(type_sym, attrs);
-    let index_key = interner.intern("index");
-
-    for (name, index, child_nid) in child_edges {
-        let edge_type = interner.intern(&format!("{}{}", CHILD_EDGE_PREFIX, name));
-        let mut edge_attrs: FxHashMap<Sym, Value> = FxHashMap::default();
-        if let Some(i) = index {
-            edge_attrs.insert(index_key, Value::Int(i));
-        }
-        graph
-            .insert_edge(node_id, edge_type, child_nid, edge_attrs)
-            .expect("freshly-inserted nodes always connect");
-    }
-    node_id
+    root.expect("root traversal builds one node")
 }
 
 /// Read a typed subgraph back into the term arena and return the
@@ -129,83 +219,139 @@ pub fn term_from_subgraph(
     root: NodeID,
     arena: &mut TermArena,
 ) -> Result<TermIdx, ReflectError> {
-    crate::access_trace::note_helper_work(53, 1);
-    crate::access_trace::note_node_type_and_attrs(graph, root);
-    crate::access_trace::note_out_edges(graph, root, None);
-    let node = graph.node(root);
-    let type_name = interner.resolve(node.type_);
-    let Some(variant) = type_name.strip_prefix(TERM_NODE_PREFIX) else {
-        return Err(ReflectError::NotATerm {
-            type_name: type_name.to_string(),
-        });
-    };
-
-    // Collect children grouped by field name, with their optional index
-    // so tuple-shaped fields can be re-ordered after collection.
-    let mut groups: FxHashMap<String, Vec<(Option<i64>, NodeID)>> = FxHashMap::default();
-    for edge_idx in graph.out_edges_idx(root, None) {
-        let edge = graph.edge(edge_idx);
-        let et = interner.resolve(edge.edge_type);
-        let Some(field) = et.strip_prefix(CHILD_EDGE_PREFIX) else {
-            continue;
+    struct Frame {
+        nid: NodeID,
+        variant: String,
+        type_name: String,
+        attrs: FxHashMap<String, Value>,
+        groups: Vec<(String, Vec<(Option<i64>, NodeID)>)>,
+        group_pos: usize,
+        item_pos: usize,
+        active_group: Option<(String, bool)>,
+        single_children: FxHashMap<String, TermIdx>,
+        listy_children: FxHashMap<String, Vec<TermIdx>>,
+        parent_dest: Option<(String, bool)>,
+    }
+    fn frame_for(graph: &TypedGraph, interner: &Interner, nid: NodeID, parent_dest: Option<(String, bool)>, edges_seen: &mut u32, attrs_seen: &mut u32, edge_attrs_seen: &mut u32) -> Result<Frame, ReflectError> {
+        crate::access_trace::note_helper_work(53, 1);
+        let node = graph.node(nid);
+        let type_name = interner.resolve(node.type_).to_string();
+        let Some(variant) = type_name.strip_prefix(TERM_NODE_PREFIX) else {
+            return Err(ReflectError::NotATerm { type_name });
         };
-        let index_sym = interner.lookup("index");
-        if let Some(index_sym) = index_sym {
-            crate::access_trace::note(15, edge.src.0, index_sym.0, edge.tgt.0);
+        let edges = graph.out_edges_slice(nid, None);
+        *edges_seen = edges_seen.saturating_add(u32::try_from(edges.len()).unwrap_or(u32::MAX));
+        if *edges_seen > TERM_FROM_SUBGRAPH_MAX_VISITS {
+            return Err(ReflectError::ResourceLimit { kind: "ReflectEdges", observed: *edges_seen, limit: TERM_FROM_SUBGRAPH_MAX_VISITS });
         }
-        let idx_attr = graph
-            .edge_attrs(edge_idx)
-            .iter()
-            .find(|(k, _)| interner.resolve(**k) == "index")
-            .map(|(_, v)| v.as_i64());
-        groups
-            .entry(field.to_string())
-            .or_default()
-            .push((idx_attr, edge.tgt));
-    }
-    for v in groups.values_mut() {
-        v.sort_by_key(|(i, _)| i.unwrap_or(i64::MIN));
-    }
-
-    // Build child TermIdx recursively so the rest of construction is
-    // just field reads.
-    let mut single_children: FxHashMap<String, TermIdx> = FxHashMap::default();
-    let mut listy_children: FxHashMap<String, Vec<TermIdx>> = FxHashMap::default();
-    for (field, items) in groups {
-        if items.iter().all(|(i, _)| i.is_none()) {
-            // Single-child field. The Python expects exactly one; we
-            // mirror that — anything else is a bug in the dump.
-            if items.len() != 1 {
-                return Err(ReflectError::MalformedField {
-                    type_name: type_name.to_string(),
-                    field,
-                });
-            }
-            let child = term_from_subgraph(graph, interner, items[0].1, arena)?;
-            single_children.insert(field.to_string(), child);
-        } else {
-            let mut list = Vec::with_capacity(items.len());
-            for (_, nid) in items {
-                list.push(term_from_subgraph(graph, interner, nid, arena)?);
-            }
-            listy_children.insert(field.to_string(), list);
+        *attrs_seen = attrs_seen.saturating_add(u32::try_from(node.attrs.len()).unwrap_or(u32::MAX));
+        if *attrs_seen > TERM_FROM_SUBGRAPH_MAX_ATTRS {
+            return Err(ReflectError::ResourceLimit { kind: "ReflectAttrs", observed: *attrs_seen, limit: TERM_FROM_SUBGRAPH_MAX_ATTRS });
         }
+        // Preflight the maps that the subsequent `index` lookups could scan.
+        // This uses only bounded adjacency metadata and map lengths: no trace
+        // rows, map iteration, group allocation, or value cloning happens
+        // until the cumulative resource check succeeds.
+        let edge_attr_entries = edges.iter()
+            .filter(|&&edge_idx| {
+                let edge = graph.edge(edge_idx);
+                interner.resolve(edge.edge_type).starts_with(CHILD_EDGE_PREFIX)
+            })
+            .fold(0u32, |total, &edge_idx| {
+                total.saturating_add(u32::try_from(graph.edge_attrs(edge_idx).len()).unwrap_or(u32::MAX))
+            });
+        *edge_attrs_seen = edge_attrs_seen.saturating_add(edge_attr_entries);
+        if *edge_attrs_seen > TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS {
+            return Err(ReflectError::ResourceLimit { kind: "ReflectEdgeAttrs", observed: *edge_attrs_seen, limit: TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS });
+        }
+        // Preserve the ordinary trace order, but don't let optional tracing
+        // scan an over-budget adjacency list before the resource check.
+        crate::access_trace::note_node_type_and_attrs(graph, nid);
+        crate::access_trace::note_out_edges(graph, nid, None);
+        let mut groups: FxHashMap<String, Vec<(Option<i64>, NodeID)>> = FxHashMap::default();
+        for &edge_idx in edges {
+            let edge = graph.edge(edge_idx);
+            let et = interner.resolve(edge.edge_type);
+            let Some(field) = et.strip_prefix(CHILD_EDGE_PREFIX) else { continue };
+            if let Some(index_sym) = interner.lookup("index") {
+                crate::access_trace::note(15, edge.src.0, index_sym.0, edge.tgt.0);
+            }
+            let idx_attr = graph.edge_attrs(edge_idx).iter()
+                .find(|(k, _)| interner.resolve(**k) == "index")
+                .map(|(_, v)| v.as_i64());
+            groups.entry(field.to_string()).or_default().push((idx_attr, edge.tgt));
+        }
+        for items in groups.values_mut() { items.sort_by_key(|(i, _)| i.unwrap_or(i64::MIN)); }
+        let groups = groups.into_iter().collect();
+        let mut attrs = FxHashMap::default();
+        for (k, v) in &node.attrs { attrs.insert(interner.resolve(*k).to_string(), v.clone()); }
+        Ok(Frame { nid, variant: variant.to_string(), type_name, attrs, groups,
+            group_pos: 0, item_pos: 0, active_group: None,
+            single_children: FxHashMap::default(), listy_children: FxHashMap::default(), parent_dest })
     }
 
-    // Read scalar attrs by resolving each Sym to its string name so we
-    // can look up by field name regardless of which interner minted them.
-    let mut attrs_by_name: FxHashMap<String, Value> = FxHashMap::default();
-    for (k, v) in &node.attrs {
-        attrs_by_name.insert(interner.resolve(*k).to_string(), v.clone());
-    }
-
-    let term = reconstruct(
-        variant,
-        &attrs_by_name,
-        &mut single_children,
-        &mut listy_children,
-    )?;
-    Ok(arena.add(term))
+    let snapshot = arena.nodes.len();
+    let result = (|| {
+        let mut visits = 1u32;
+        let mut edges_seen = 0u32;
+        let mut attrs_seen = 0u32;
+        let mut edge_attrs_seen = 0u32;
+        let mut active = FxHashSet::default();
+        let mut stack = vec![frame_for(graph, interner, root, None, &mut edges_seen, &mut attrs_seen, &mut edge_attrs_seen)?];
+        active.insert(root);
+        let mut returned: Option<(String, bool, TermIdx)> = None;
+        loop {
+            if let Some((field, is_list, child)) = returned.take() {
+                let parent = stack.last_mut().expect("child has parent");
+                if is_list { parent.listy_children.entry(field).or_default().push(child); }
+                else { parent.single_children.insert(field, child); }
+            }
+            let frame = stack.last_mut().expect("root frame remains until completion");
+            let next = loop {
+                if let Some((field, is_list)) = frame.active_group.clone() {
+                    let items = &frame.groups[frame.group_pos - 1].1;
+                    if frame.item_pos < items.len() {
+                        let nid = items[frame.item_pos].1;
+                        frame.item_pos += 1;
+                        break Some((field, is_list, nid));
+                    }
+                    frame.active_group = None;
+                    frame.item_pos = 0;
+                    continue;
+                }
+                if frame.group_pos == frame.groups.len() { break None; }
+                let (field, items) = &frame.groups[frame.group_pos];
+                let field = field.clone();
+                let is_list = !items.iter().all(|(i, _)| i.is_none());
+                if !is_list && items.len() != 1 {
+                    return Err(ReflectError::MalformedField { type_name: frame.type_name.clone(), field });
+                }
+                frame.group_pos += 1;
+                frame.active_group = Some((field.clone(), is_list));
+                if is_list { frame.listy_children.insert(field.clone(), Vec::with_capacity(items.len())); }
+                continue;
+            };
+            if let Some((field, is_list, child_nid)) = next {
+                if active.contains(&child_nid) { return Err(ReflectError::ResourceLimit { kind: "ReflectCycle", observed: visits + 1, limit: TERM_FROM_SUBGRAPH_MAX_VISITS }); }
+                visits += 1;
+                if visits > TERM_FROM_SUBGRAPH_MAX_VISITS {
+                    return Err(ReflectError::ResourceLimit { kind: "ReflectVisits", observed: visits, limit: TERM_FROM_SUBGRAPH_MAX_VISITS });
+                }
+                active.insert(child_nid);
+                stack.push(frame_for(graph, interner, child_nid, Some((field, is_list)), &mut edges_seen, &mut attrs_seen, &mut edge_attrs_seen)?);
+                continue;
+            }
+            let mut frame = stack.pop().unwrap();
+            active.remove(&frame.nid);
+            let term = reconstruct(&frame.variant, &frame.attrs,
+                &mut frame.single_children, &mut frame.listy_children)?;
+            let idx = arena.add(term);
+            if stack.is_empty() { return Ok(idx); }
+            returned = frame.parent_dest.map(|(f, l)| (f, l, idx));
+        }
+    })();
+    if result.is_err() { arena.nodes.truncate(snapshot); }
+    result
 }
 
 #[derive(Debug, Clone)]
@@ -229,6 +375,7 @@ pub enum ReflectError {
         field: String,
         expected: &'static str,
     },
+    ResourceLimit { kind: &'static str, observed: u32, limit: u32 },
 }
 
 // --- Per-variant field descriptor ---
@@ -5439,6 +5586,116 @@ fn reconstruct(
 }
 
 #[cfg(test)]
+mod phase73_probe {
+    use super::*;
+    use crate::term::{TermArena, TermNode};
+
+    #[test]
+    fn phase73_term_to_subgraph_small_stack_probe() {
+        std::thread::Builder::new().stack_size(512 * 1024).spawn(|| {
+            let mut arena = TermArena::new();
+            let mut root = arena.add(TermNode::Lit { value: Value::Bool(true) });
+            for _ in 0..20_000 {
+                root = arena.add(TermNode::Not { arg: root });
+            }
+            let mut graph = TypedGraph::new();
+            let mut interner = Interner::new();
+            let node = term_to_subgraph(&arena, root, &mut graph, &mut interner);
+            assert_eq!(graph.node_count(), 20_001);
+            assert!(node.value() < 20_001);
+        }).unwrap().join().unwrap();
+    }
+
+    #[test]
+    fn phase73_branching_node_ids_edges_and_indices_match_postorder_contract() {
+        let mut arena = TermArena::new();
+        let first = arena.add(TermNode::Lit { value: Value::Int(11) });
+        let second = arena.add(TermNode::Lit { value: Value::Int(22) });
+        let root = arena.add(TermNode::And { items: vec![first, second] });
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let root_node = term_to_subgraph(&arena, root, &mut graph, &mut interner);
+
+        // The previous recursive implementation visits children left to right
+        // and inserts each parent after its children.
+        assert_eq!(root_node, NodeID(2));
+        assert_eq!(graph.node(NodeID(0)).attrs.get(&interner.intern("value")), Some(&Value::Int(11)));
+        assert_eq!(graph.node(NodeID(1)).attrs.get(&interner.intern("value")), Some(&Value::Int(22)));
+        assert_eq!(graph.node(root_node).type_, interner.intern("Term.And"));
+        let expected_symbols = ["Term.And", "Term.Lit", "value", "index", "child.items"];
+        for (offset, expected) in expected_symbols.iter().enumerate() {
+            assert_eq!(interner.resolve(Sym((offset + 1) as u32)), *expected);
+        }
+        let edge_type = interner.intern("child.items");
+        let index_key = interner.intern("index");
+        for (index, target) in [(0i64, NodeID(0)), (1, NodeID(1))] {
+            let edge_idx = graph.edge_idx(root_node, edge_type, target).unwrap();
+            assert_eq!(graph.edge(edge_idx).tgt, target);
+            assert_eq!(graph.edge_attrs(edge_idx).get(&index_key), Some(&Value::Int(index)));
+        }
+    }
+
+    #[test]
+    fn phase73_child_then_scalar_preserves_recursive_interner_order() {
+        let mut arena = TermArena::new();
+        let mut interner = Interner::new();
+        let child_name = interner.intern("child_name");
+        let attr_key = interner.intern("attr_key");
+        let child = arena.add(TermNode::Var { name: child_name });
+        let root = arena.add(TermNode::Attr { node: child, key: attr_key });
+        let mut graph = TypedGraph::new();
+        let root_node = term_to_subgraph(&arena, root, &mut graph, &mut interner);
+        let expected_symbols = [
+            "child_name", "attr_key", "Term.Attr", "Term.Var", "name", "index", "key", "child.node",
+        ];
+        for (offset, expected) in expected_symbols.iter().enumerate() {
+            assert_eq!(interner.resolve(Sym((offset + 1) as u32)), *expected);
+        }
+        assert_eq!(root_node, NodeID(1));
+        assert_eq!(graph.node(NodeID(0)).type_, interner.intern("Term.Var"));
+        assert_eq!(graph.node(NodeID(1)).type_, interner.intern("Term.Attr"));
+    }
+
+    #[test]
+    fn phase73_surface_fields_keep_key_then_kind_interning_order() {
+        let mut arena = TermArena::new();
+        let root = arena.add(TermNode::Surface { kind: SurfaceKind::Text, payload: Value::None });
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let _ = term_to_subgraph(&arena, root, &mut graph, &mut interner);
+        let expected_symbols = ["Term.Surface", "kind", "text", "payload", "index"];
+        for (offset, expected) in expected_symbols.iter().enumerate() {
+            assert_eq!(interner.resolve(Sym((offset + 1) as u32)), *expected);
+        }
+    }
+
+    #[test]
+    fn phase73_cycle_panics_without_growing_an_unbounded_worklist() {
+        let mut arena = TermArena::new();
+        let idx = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        arena.nodes[idx.0 as usize] = TermNode::Not { arg: idx };
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            term_to_subgraph(&arena, idx, &mut graph, &mut interner)
+        }));
+        assert!(result.is_err());
+        assert_eq!(graph.node_count(), 0);
+    }
+
+    #[test]
+    fn phase73_shared_term_is_still_expanded_per_occurrence() {
+        let mut arena = TermArena::new();
+        let leaf = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let root = arena.add(TermNode::Eq { a: leaf, b: leaf });
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let _ = term_to_subgraph(&arena, root, &mut graph, &mut interner);
+        assert_eq!(graph.node_count(), 3);
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::sym::Interner;
@@ -5821,4 +6078,496 @@ mod tests {
             other => panic!("expected Plus, got {:?}", other),
         }
     }
+
+    fn layered_shared_graph(layers: usize) -> (TypedGraph, Interner, NodeID) {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let lit = interner.intern("Term.Lit");
+        let mut lit_attrs = FxHashMap::default();
+        lit_attrs.insert(interner.intern("value"), Value::Int(0));
+        let mut child = graph.insert_node(lit, lit_attrs);
+        let and_type = interner.intern("Term.And");
+        let edge_type = interner.intern("child.items");
+        let index = interner.intern("index");
+        for _ in 0..layers {
+            // Two distinct wrappers point to the same child, then their
+            // parent points to both wrappers: traversal work doubles each
+            // layer while graph storage grows linearly.
+            let left = graph.insert_node(and_type, FxHashMap::default());
+            let right = graph.insert_node(and_type, FxHashMap::default());
+            let mut a = FxHashMap::default(); a.insert(index, Value::Int(0));
+            let mut b = FxHashMap::default(); b.insert(index, Value::Int(0));
+            graph.insert_edge(left, edge_type, child, a).unwrap();
+            graph.insert_edge(right, edge_type, child, b).unwrap();
+            let parent = graph.insert_node(and_type, FxHashMap::default());
+            for (i, target) in [left, right].into_iter().enumerate() {
+                let mut attrs = FxHashMap::default(); attrs.insert(index, Value::Int(i as i64));
+                graph.insert_edge(parent, edge_type, target, attrs).unwrap();
+            }
+            child = parent;
+        }
+        (graph, interner, child)
+    }
+
+    #[test]
+    fn phase68_reflector_caps_depth_and_cycles_with_typed_error() {
+        let (mut graph, mut interner, root) = layered_shared_graph(0);
+        // Active-path detection rejects cycles without collapsing shared DAG nodes.
+        let not_type = interner.intern("Term.Not");
+        let edge_type = interner.intern("child.arg");
+        let cycle = graph.insert_node(not_type, FxHashMap::default());
+        graph.insert_edge(cycle, edge_type, cycle, FxHashMap::default()).unwrap();
+        let mut arena = TermArena::new();
+        assert!(matches!(term_from_subgraph(&graph, &interner, cycle, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectCycle", .. })));
+        let mut ordinary = TermArena::new();
+        assert!(term_from_subgraph(&graph, &interner, root, &mut ordinary).is_ok());
+    }
+
+    #[test]
+    fn phase68_reflector_caps_shared_dag_visit_expansion() {
+        let (graph, interner, root) = layered_shared_graph(15);
+        let mut arena = TermArena::new();
+        let result = term_from_subgraph(&graph, &interner, root, &mut arena);
+        assert!(matches!(result, Err(ReflectError::ResourceLimit { kind: "ReflectVisits", .. })), "unexpected result: {:?}", result);
+        assert_eq!(arena.len(), 0, "failed reconstruction must roll back partial terms");
+    }
+
+
+    #[test]
+    fn phase68_eval_subgraph_preserves_reflector_resource_error() {
+        let (graph, interner, root) = layered_shared_graph(15);
+        let mut arena = TermArena::new();
+        let graph_root = arena.add(TermNode::Lit { value: Value::Node(root) });
+        let expression = arena.add(TermNode::EvalSubgraph { node: graph_root });
+        let mut env: crate::term::Env = Default::default();
+        let mut ctx = crate::term::EvalCtx::new(&graph, &interner);
+        let value = crate::term::evaluate(&arena, expression, &mut env, &mut ctx);
+        assert!(matches!(value, Value::None));
+        assert_eq!(ctx.eval_limit_error, Some(crate::term::EvalLimitError {
+            kind: "ReflectVisits", depth: TERM_FROM_SUBGRAPH_MAX_VISITS + 1,
+            limit: TERM_FROM_SUBGRAPH_MAX_VISITS,
+        }));
+    }
+
+
+    #[test]
+    fn phase68_deep_finite_graph_reconstructs_iteratively() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let mut attrs = FxHashMap::default();
+        attrs.insert(interner.intern("value"), Value::Int(0));
+        let mut child = graph.insert_node(interner.intern("Term.Lit"), attrs);
+        let not_type = interner.intern("Term.Not");
+        let edge_type = interner.intern("child.arg");
+        for _ in 0..20_000 {
+            let parent = graph.insert_node(not_type, FxHashMap::default());
+            graph.insert_edge(parent, edge_type, child, FxHashMap::default()).unwrap();
+            child = parent;
+        }
+        let handle = std::thread::Builder::new()
+            .name("phase76_reflect_from_512k".into())
+            .stack_size(512 * 1024)
+            .spawn(move || {
+                let mut arena = TermArena::new();
+                assert!(term_from_subgraph(&graph, &interner, child, &mut arena).is_ok());
+                arena.len()
+            })
+            .expect("spawn 512 KiB reflector thread");
+        assert_eq!(handle.join().expect("512 KiB reflector thread must not overflow"), 20_001);
+    }
+
+
+    #[test]
+    fn phase68_previous_depth_boundary_accepts_64_and_65_nodes() {
+        fn chain(not_count: usize) -> (TypedGraph, Interner, NodeID) {
+            let mut graph = TypedGraph::new();
+            let mut interner = Interner::new();
+            let mut attrs = FxHashMap::default();
+            attrs.insert(interner.intern("value"), Value::Int(0));
+            let mut child = graph.insert_node(interner.intern("Term.Lit"), attrs);
+            let not_type = interner.intern("Term.Not");
+            let edge_type = interner.intern("child.arg");
+            for _ in 0..not_count {
+                let parent = graph.insert_node(not_type, FxHashMap::default());
+                graph.insert_edge(parent, edge_type, child, FxHashMap::default()).unwrap();
+                child = parent;
+            }
+            (graph, interner, child)
+        }
+        // Root depth is zero. 63 Not nodes plus one Lit are 64 visited nodes.
+        let (g64, i64, r64) = chain(63);
+        assert!(term_from_subgraph(&g64, &i64, r64, &mut TermArena::new()).is_ok());
+        // The former 64-node boundary no longer rejects a valid 65-node chain.
+        let (g65, i65, r65) = chain(64);
+        assert!(term_from_subgraph(&g65, &i65, r65, &mut TermArena::new()).is_ok());
+    }
+
+    #[test]
+    fn phase76_cycle_propagates_and_preserves_arena_prefix() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let not_type = interner.intern("Term.Not");
+        let edge_type = interner.intern("child.arg");
+        let cycle = graph.insert_node(not_type, FxHashMap::default());
+        graph.insert_edge(cycle, edge_type, cycle, FxHashMap::default()).unwrap();
+        let mut arena = TermArena::new();
+        let prefix = arena.add(TermNode::Lit { value: Value::Int(17) });
+        assert!(matches!(term_from_subgraph(&graph, &interner, cycle, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectCycle", .. })));
+        assert_eq!(arena.len(), 1);
+        assert!(matches!(arena.get(prefix), TermNode::Lit { value: Value::Int(17) }));
+        let root = arena.add(TermNode::Lit { value: Value::Node(cycle) });
+        let expr = arena.add(TermNode::EvalSubgraph { node: root });
+        let mut env: crate::term::Env = Default::default();
+        let mut ctx = crate::term::EvalCtx::new(&graph, &interner);
+        assert!(matches!(crate::term::evaluate(&arena, expr, &mut env, &mut ctx), Value::None));
+        assert!(matches!(ctx.eval_limit_error, Some(crate::term::EvalLimitError { kind: "ReflectCycle", .. })));
+    }
+
+    #[test]
+    fn phase76_edge_budget_is_bounded_and_invalid_type_takes_precedence() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let lit = interner.intern("Term.Lit");
+        let unrelated = interner.intern("not_a_child");
+        let root = graph.insert_node(lit, FxHashMap::default());
+        for _ in 0..=TERM_FROM_SUBGRAPH_MAX_VISITS {
+            let child = graph.insert_node(lit, FxHashMap::default());
+            graph.insert_edge(root, unrelated, child, FxHashMap::default()).unwrap();
+        }
+        let mut arena = TermArena::new();
+        let prefix = arena.add(TermNode::Lit { value: Value::Int(17) });
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectEdges", observed: 65_537, limit: 65_536 })));
+        assert_eq!(arena.len(), 1);
+        assert!(matches!(arena.get(prefix), TermNode::Lit { value: Value::Int(17) }));
+        let bad_type = interner.intern("NotATerm");
+        graph.node_mut(root).type_ = bad_type;
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::NotATerm { .. })));
+        assert_eq!(arena.len(), 1);
+    }
+
+    // Small acyclic-graph oracle copied from the Phase 68 recursive traversal.
+    // It intentionally has no Phase 76 cycle/edge budgets; inputs below stay
+    // within Phase 68's depth and visit bounds.
+    fn phase68_reference(
+        graph: &TypedGraph, interner: &Interner, nid: NodeID, arena: &mut TermArena,
+        depth: u32, visits: &mut u32,
+    ) -> Result<TermIdx, ReflectError> {
+        if depth >= 64 {
+            return Err(ReflectError::ResourceLimit { kind: "ReflectDepth", observed: depth + 1, limit: 64 });
+        }
+        *visits += 1;
+        if *visits > 65_536 {
+            return Err(ReflectError::ResourceLimit { kind: "ReflectVisits", observed: *visits, limit: 65_536 });
+        }
+        crate::access_trace::note_helper_work(53, 1);
+        crate::access_trace::note_node_type_and_attrs(graph, nid);
+        crate::access_trace::note_out_edges(graph, nid, None);
+        let node = graph.node(nid);
+        let type_name = interner.resolve(node.type_);
+        let Some(variant) = type_name.strip_prefix(TERM_NODE_PREFIX) else {
+            return Err(ReflectError::NotATerm { type_name: type_name.to_owned() });
+        };
+        let mut groups: FxHashMap<String, Vec<(Option<i64>, NodeID)>> = FxHashMap::default();
+        for &edge_idx in graph.out_edges_slice(nid, None) {
+            let edge = graph.edge(edge_idx);
+            let Some(field) = interner.resolve(edge.edge_type).strip_prefix(CHILD_EDGE_PREFIX) else { continue };
+            if let Some(index_sym) = interner.lookup("index") {
+                crate::access_trace::note(15, edge.src.0, index_sym.0, edge.tgt.0);
+            }
+            let index = graph.edge_attrs(edge_idx).iter()
+                .find(|(key, _)| interner.resolve(**key) == "index")
+                .map(|(_, value)| value.as_i64());
+            groups.entry(field.to_owned()).or_default().push((index, edge.tgt));
+        }
+        for items in groups.values_mut() { items.sort_by_key(|(index, _)| index.unwrap_or(i64::MIN)); }
+        let mut singles = FxHashMap::default();
+        let mut lists = FxHashMap::default();
+        for (field, items) in groups {
+            if items.iter().all(|(index, _)| index.is_none()) {
+                if items.len() != 1 {
+                    return Err(ReflectError::MalformedField { type_name: type_name.to_owned(), field });
+                }
+                let child = phase68_reference(graph, interner, items[0].1, arena, depth + 1, visits)?;
+                singles.insert(field, child);
+            } else {
+                let mut list = Vec::new();
+                for (_, child_nid) in items {
+                    list.push(phase68_reference(graph, interner, child_nid, arena, depth + 1, visits)?);
+                }
+                lists.insert(field, list);
+            }
+        }
+        let mut attrs = FxHashMap::default();
+        for (key, value) in &node.attrs { attrs.insert(interner.resolve(*key).to_owned(), value.clone()); }
+        Ok(arena.add(reconstruct(variant, &attrs, &mut singles, &mut lists)?))
+    }
+
+    #[test]
+    fn phase79_iterative_matches_phase68_small_graphs_and_trace() {
+        fn make_graph(case_id: usize) -> (TypedGraph, Interner, NodeID) {
+            let mut graph = TypedGraph::new();
+            let mut interner = Interner::new();
+            let lit = interner.intern("Term.Lit");
+            let value = interner.intern("value");
+            let mut attrs = FxHashMap::default();
+            attrs.insert(value, Value::Int(case_id as i64));
+            let leaf = graph.insert_node(lit, attrs);
+            let root = match case_id % 5 {
+                0 => {
+                    let and = graph.insert_node(interner.intern("Term.And"), FxHashMap::default());
+                    let edge = interner.intern("child.items");
+                    for (index, target) in [leaf, leaf].into_iter().enumerate() {
+                        let mut attrs = FxHashMap::default();
+                        attrs.insert(interner.intern("index"), Value::Int((1 - index) as i64));
+                        graph.insert_edge(and, edge, target, attrs).unwrap();
+                    }
+                    and
+                }
+                1 => {
+                    let not = graph.insert_node(interner.intern("Term.Not"), FxHashMap::default());
+                    graph.insert_edge(not, interner.intern("child.arg"), leaf, FxHashMap::default()).unwrap();
+                    not
+                }
+                2 => {
+                    let not = graph.insert_node(interner.intern("Term.Not"), FxHashMap::default());
+                    for _ in 0..2 {
+                        graph.insert_edge(not, interner.intern("child.arg"), leaf, FxHashMap::default()).unwrap();
+                    }
+                    not
+                }
+                3 => graph.insert_node(interner.intern("Term.NoSuchVariant"), FxHashMap::default()),
+                _ => {
+                    let and = graph.insert_node(interner.intern("Term.And"), FxHashMap::default());
+                    let edge = interner.intern("child.items");
+                    for index in 0..3 {
+                        let mut attrs = FxHashMap::default();
+                        attrs.insert(interner.intern("index"), Value::Int(index as i64));
+                        graph.insert_edge(and, edge, leaf, attrs).unwrap();
+                    }
+                    and
+                }
+            };
+            (graph, interner, root)
+        }
+
+        for case_id in 0..20 {
+            let (graph, interner, root) = make_graph(case_id);
+            let mut old_arena = TermArena::new();
+            let mut old_visits = 0;
+            crate::access_trace::reset();
+            crate::access_trace::set_enabled(true, 79);
+            let old_result = phase68_reference(&graph, &interner, root, &mut old_arena, 0, &mut old_visits);
+            let old_trace = crate::access_trace::snapshot(79).0;
+            crate::access_trace::reset();
+            let mut new_arena = TermArena::new();
+            let new_result = term_from_subgraph(&graph, &interner, root, &mut new_arena);
+            let new_trace = crate::access_trace::snapshot(79).0;
+            crate::access_trace::set_enabled(false, 79);
+            assert_eq!(format!("{:?}", old_result), format!("{:?}", new_result), "case {case_id}");
+            assert_eq!(format!("{:?}", old_arena.nodes), format!("{:?}", new_arena.nodes), "arena case {case_id}");
+            assert_eq!(old_trace, new_trace, "access trace case {case_id}");
+        }
+    }
+
+    #[test]
+    fn phase79_trace_does_not_expand_over_budget_outgoing_edges() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let root = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+        let other = interner.intern("irrelevant");
+        for _ in 0..=TERM_FROM_SUBGRAPH_MAX_VISITS {
+            let target = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+            graph.insert_edge(root, other, target, FxHashMap::default()).unwrap();
+        }
+        crate::access_trace::reset();
+        crate::access_trace::set_enabled(true, 80);
+        let mut arena = TermArena::new();
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectEdges", .. })));
+        let events = crate::access_trace::snapshot(80).0;
+        crate::access_trace::set_enabled(false, 80);
+        assert!(!events.iter().any(|(event, _)| event.kind == 14));
+    }
+
+    #[test]
+    fn phase80_attribute_budget_rejects_before_trace_copy_and_propagates() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let mut attrs = FxHashMap::default();
+        attrs.insert(interner.intern("value"), Value::Int(7));
+        for index in 0..TERM_FROM_SUBGRAPH_MAX_ATTRS {
+            attrs.insert(interner.intern(&format!("extra_{index}")), Value::Int(index as i64));
+        }
+        let root = graph.insert_node(interner.intern("Term.Lit"), attrs);
+
+        let mut arena = TermArena::new();
+        let prefix = arena.add(TermNode::Lit { value: Value::Int(17) });
+        crate::access_trace::reset();
+        crate::access_trace::set_enabled(true, 81);
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectAttrs", observed: 65_537, limit: TERM_FROM_SUBGRAPH_MAX_ATTRS })));
+        assert_eq!(arena.len(), 1, "failed reconstruction must preserve the arena prefix");
+        assert!(matches!(arena.get(prefix), TermNode::Lit { value: Value::Int(17) }));
+        assert!(crate::access_trace::snapshot(81).0.is_empty(), "rejected attributes must not be traced");
+
+        let value_node = arena.add(TermNode::Lit { value: Value::Node(root) });
+        let expression = arena.add(TermNode::EvalSubgraph { node: value_node });
+        let mut env: crate::term::Env = Default::default();
+        let mut ctx = crate::term::EvalCtx::new(&graph, &interner);
+        assert!(matches!(crate::term::evaluate(&arena, expression, &mut env, &mut ctx), Value::None));
+        assert_eq!(ctx.eval_limit_error, Some(crate::term::EvalLimitError {
+            kind: "ReflectAttrs", depth: 65_537, limit: TERM_FROM_SUBGRAPH_MAX_ATTRS,
+        }), "the evaluator must retain the resource error instead of silently returning None");
+
+        graph.node_mut(root).type_ = interner.intern("NotATerm");
+        crate::access_trace::reset();
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::NotATerm { .. })), "invalid type keeps precedence over attribute budget");
+        assert!(crate::access_trace::snapshot(81).0.is_empty());
+        crate::access_trace::set_enabled(false, 81);
+    }
+
+    #[test]
+    fn phase80_attribute_budget_accepts_exact_cumulative_boundary() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let value_key = interner.intern("value");
+        let extra_key = interner.intern("extra");
+        let mut attrs = FxHashMap::default();
+        attrs.insert(value_key, Value::Int(1));
+        attrs.insert(extra_key, Value::Int(0));
+        let mut child = graph.insert_node(interner.intern("Term.Lit"), attrs);
+        let not_type = interner.intern("Term.Not");
+        let edge_type = interner.intern("child.arg");
+        for _ in 0..(TERM_FROM_SUBGRAPH_MAX_ATTRS as usize / 2 - 1) {
+            let mut attrs = FxHashMap::default();
+            attrs.insert(value_key, Value::Int(1));
+            attrs.insert(extra_key, Value::Int(0));
+            let parent = graph.insert_node(not_type, attrs);
+            graph.insert_edge(parent, edge_type, child, FxHashMap::default()).unwrap();
+            child = parent;
+        }
+        let mut arena = TermArena::new();
+        assert!(term_from_subgraph(&graph, &interner, child, &mut arena).is_ok());
+        assert_eq!(arena.len(), TERM_FROM_SUBGRAPH_MAX_ATTRS as usize / 2);
+    }
+
+    #[test]
+    fn phase80_attribute_budget_is_cumulative_across_nodes() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let value_key = interner.intern("value");
+        let extra_key = interner.intern("extra");
+        let mut attrs = FxHashMap::default();
+        attrs.insert(value_key, Value::Int(1));
+        attrs.insert(extra_key, Value::Int(0));
+        let mut child = graph.insert_node(interner.intern("Term.Lit"), attrs);
+        let not_type = interner.intern("Term.Not");
+        let edge_type = interner.intern("child.arg");
+        for _ in 0..(TERM_FROM_SUBGRAPH_MAX_ATTRS as usize / 2) {
+            let mut attrs = FxHashMap::default();
+            attrs.insert(value_key, Value::Int(1));
+            attrs.insert(extra_key, Value::Int(0));
+            let parent = graph.insert_node(not_type, attrs);
+            graph.insert_edge(parent, edge_type, child, FxHashMap::default()).unwrap();
+            child = parent;
+        }
+        let mut arena = TermArena::new();
+        assert!(matches!(term_from_subgraph(&graph, &interner, child, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectAttrs", observed: 65_538, limit: TERM_FROM_SUBGRAPH_MAX_ATTRS })));
+        assert_eq!(arena.len(), 0, "cumulative failure rolls back partial reconstruction");
+    }
+
+    #[test]
+    fn phase82_edge_attribute_budget_rejects_before_trace_and_propagates() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let root = graph.insert_node(interner.intern("Term.And"), FxHashMap::default());
+        let child = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+        let mut edge_attrs = FxHashMap::default();
+        edge_attrs.insert(interner.intern("index"), Value::Int(0));
+        for index in 0..TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS {
+            edge_attrs.insert(interner.intern(&format!("irrelevant_{index}")), Value::Int(index as i64));
+        }
+        graph.insert_edge(root, interner.intern("child.items"), child, edge_attrs).unwrap();
+
+        let mut arena = TermArena::new();
+        let prefix = arena.add(TermNode::Lit { value: Value::Int(17) });
+        crate::access_trace::reset();
+        crate::access_trace::set_enabled(true, 82);
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectEdgeAttrs", observed: 65_537, limit: TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS })));
+        assert_eq!(arena.len(), 1, "failed reconstruction must preserve the arena prefix");
+        assert!(matches!(arena.get(prefix), TermNode::Lit { value: Value::Int(17) }));
+        assert!(crate::access_trace::snapshot(82).0.is_empty(), "rejected edge attributes must not be traced");
+
+        let value_node = arena.add(TermNode::Lit { value: Value::Node(root) });
+        let expression = arena.add(TermNode::EvalSubgraph { node: value_node });
+        let mut env: crate::term::Env = Default::default();
+        let mut ctx = crate::term::EvalCtx::new(&graph, &interner);
+        assert!(matches!(crate::term::evaluate(&arena, expression, &mut env, &mut ctx), Value::None));
+        assert_eq!(ctx.eval_limit_error, Some(crate::term::EvalLimitError {
+            kind: "ReflectEdgeAttrs", depth: 65_537, limit: TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS,
+        }));
+
+        graph.node_mut(root).type_ = interner.intern("NotATerm");
+        crate::access_trace::reset();
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::NotATerm { .. })), "invalid type keeps precedence over edge attribute budget");
+        assert!(crate::access_trace::snapshot(82).0.is_empty());
+        crate::access_trace::set_enabled(false, 82);
+    }
+
+    #[test]
+    fn phase82_edge_attribute_budget_accepts_exact_cumulative_boundary() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let root = graph.insert_node(interner.intern("Term.And"), FxHashMap::default());
+        let first = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+        let second = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+        let edge_type = interner.intern("child.items");
+        for (child, base) in [(first, 0u32), (second, TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS / 2)] {
+            let mut attrs = FxHashMap::default();
+            attrs.insert(interner.intern("index"), Value::Int((base / (TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS / 2)) as i64));
+            for offset in 1..(TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS / 2) {
+                attrs.insert(interner.intern(&format!("irrelevant_{}", base + offset)), Value::Int(offset as i64));
+            }
+            graph.insert_edge(root, edge_type, child, attrs).unwrap();
+        }
+        let mut arena = TermArena::new();
+        assert!(term_from_subgraph(&graph, &interner, root, &mut arena).is_ok());
+        assert_eq!(arena.len(), 3);
+    }
+
+    #[test]
+    fn phase82_edge_attribute_budget_is_cumulative_across_edges() {
+        let mut graph = TypedGraph::new();
+        let mut interner = Interner::new();
+        let root = graph.insert_node(interner.intern("Term.And"), FxHashMap::default());
+        let first = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+        let second = graph.insert_node(interner.intern("Term.Lit"), FxHashMap::default());
+        let edge_type = interner.intern("child.items");
+        for (child, count, base, order) in [
+            (first, TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS / 2, 0u32, 0i64),
+            (second, TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS / 2 + 1, 40_000u32, 1i64),
+        ] {
+            let mut attrs = FxHashMap::default();
+            attrs.insert(interner.intern("index"), Value::Int(order));
+            for offset in 1..count {
+                attrs.insert(interner.intern(&format!("irrelevant_{}", base + offset)), Value::Int(offset as i64));
+            }
+            graph.insert_edge(root, edge_type, child, attrs).unwrap();
+        }
+        let mut arena = TermArena::new();
+        let prefix = arena.add(TermNode::Lit { value: Value::Int(17) });
+        assert!(matches!(term_from_subgraph(&graph, &interner, root, &mut arena),
+            Err(ReflectError::ResourceLimit { kind: "ReflectEdgeAttrs", observed: 65_537, limit: TERM_FROM_SUBGRAPH_MAX_EDGE_ATTRS })));
+        assert_eq!(arena.len(), 1, "cumulative failure rolls back partial reconstruction");
+        assert!(matches!(arena.get(prefix), TermNode::Lit { value: Value::Int(17) }));
+    }
+
 }

@@ -468,6 +468,25 @@ pub fn capture(
                     attrs,
                 });
             }
+            UndoStep::ScopedEdge(crate::graph::TemporaryEdgeUndo::Revealed { key, .. }) => {
+                // Subsequent effects in the same firing may have deleted the
+                // revealed edge. Match AddedEdge capture's absent-edge behavior
+                // so an ordered AddEdge/DelEdge pair remains capturable.
+                let attrs = graph
+                    .edge_idx(key.src, key.edge_type, key.tgt)
+                    .map(|idx| graph.edge_attrs(idx).clone())
+                    .unwrap_or_default();
+                writes.push(Write::AddEdge {
+                    src: as_ref(key.src, &slots),
+                    edge_type: key.edge_type,
+                    tgt: as_ref(key.tgt, &slots),
+                    attrs,
+                });
+            }
+            UndoStep::ScopedEdge(crate::graph::TemporaryEdgeUndo::Inserted(_))
+            | UndoStep::ScopedEdge(crate::graph::TemporaryEdgeUndo::Existing) => {
+                debug_assert!(false, "unexpected scoped-edge undo token in captured proposal");
+            }
             UndoStep::EdgeAttrsSet { key, .. } => {
                 let attrs = graph
                     .edge_idx(key.src, key.edge_type, key.tgt)
@@ -673,6 +692,55 @@ pub fn commit(proposal: &Proposal, graph: &mut TypedGraph) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn capture_handles_hidden_edge_added_then_deleted_and_undo_restores_it() {
+        use crate::rewrite::{undo_apply, RewriteRule};
+
+        let mut graph = TypedGraph::new();
+        let mut interner = crate::sym::Interner::default();
+        let node_type = interner.intern("Node");
+        let edge_type = interner.intern("relation");
+        let attr = interner.intern("weight");
+        let src = graph.insert_node(node_type, Attrs::default());
+        let tgt = graph.insert_node(node_type, Attrs::default());
+        let original = graph
+            .insert_edge(src, edge_type, tgt, Attrs(vec![(attr, Value::Int(7))]))
+            .unwrap();
+        graph.set_focus_edge_scope(&[src], 0);
+
+        let token = graph
+            .insert_temporary_edge_with_attrs(
+                src,
+                edge_type,
+                tgt,
+                Attrs(vec![(attr, Value::Int(9))]),
+            )
+            .unwrap();
+        let visible = graph.edge_idx(src, edge_type, tgt).unwrap();
+        let deleted_attrs = graph.edge_attrs(visible).clone();
+        graph.delete_edge(visible);
+
+        let undo = vec![
+            UndoStep::ScopedEdge(token),
+            UndoStep::DeletedEdge {
+                src,
+                edge_type,
+                tgt,
+                attrs: deleted_attrs,
+            },
+        ];
+        let proposal = capture(&RewriteRule::default(), &undo, &[], &graph, true);
+        assert_eq!(proposal.writes.len(), 2);
+        assert!(matches!(&proposal.writes[0], Write::AddEdge { .. }));
+        assert!(matches!(&proposal.writes[1], Write::DelEdge { .. }));
+
+        undo_apply(undo, &mut graph);
+        assert_eq!(graph.edge_idx(src, edge_type, tgt), None);
+        graph.set_focus_edge_scope(&[], 0);
+        assert_eq!(graph.edge_idx(src, edge_type, tgt), Some(original));
+        assert_eq!(graph.edge_attrs(original).get(&attr), Some(&Value::Int(7)));
+    }
 
     /// Stage A must REFUSE a rule whose effect reads the key it writes.
     ///

@@ -621,6 +621,8 @@ pub struct SettleReport {
     /// areas not selected by a partial settlement call.
     pub residual_by_area: Vec<(Sym, usize)>,
     pub hit_max_rounds: bool,
+    /// First evaluator resource failure observed during this settlement call.
+    pub resource_limit: Option<crate::rewrite::RuleEvalFailure>,
 }
 
 /// Result of ownership-aware cleanup for a reflected Term child-edge tree.
@@ -644,6 +646,10 @@ pub enum RuleRunStatus {
     RepeatedGraphState,
     /// The progress budget prevented another outer pass from starting.
     ProgressBudgetReached,
+    /// At least one interpreter-backed rule predicate hit an evaluator
+    /// resource guard. Exhausted bindings were skipped fail-closed; this is
+    /// not a successful fixed-point claim.
+    ResourceLimit,
 }
 
 /// Structured result for callers that must distinguish settlement from an
@@ -663,6 +669,8 @@ pub struct RuleRunReport {
     /// Name of the last rule that produced progress during this settlement
     /// call. This is call-local evidence, not a durable history record.
     pub last_progress_rule: Option<Sym>,
+    /// First rule-predicate evaluator limit observed during this call.
+    pub resource_limit: Option<crate::rewrite::RuleEvalFailure>,
 }
 
 /// Snapshot recorded after one successful invocation of a watched rule.
@@ -717,6 +725,14 @@ pub struct RuleGraphDeltaReport {
     pub exact_graph_state_diff: bool,
 }
 
+/// Checked result for Microtheory-scoped closure. The legacy integer method
+/// remains available; this companion makes predicate exhaustion observable.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ScopedRuleRunReport {
+    pub progress_steps: usize,
+    pub resource_limit: Option<crate::rewrite::RuleEvalFailure>,
+}
+
 /// Write-target report for one Microtheory-scoped settlement. Scoped closure
 /// currently shares the existing runner's limitation around deferred effect
 /// queues, so callers must inspect `deferred_effects_pending` before treating
@@ -730,6 +746,8 @@ pub struct ScopedRuleGraphDeltaReport {
     pub affected_edges: Vec<EdgeKey>,
     pub affected_microtheories: Vec<NodeID>,
     pub deferred_effects_pending: bool,
+    /// First predicate evaluator resource limit observed during this call.
+    pub resource_limit: Option<crate::rewrite::RuleEvalFailure>,
 }
 
 type GraphNodeSnapshot = FxHashMap<NodeID, (Sym, Vec<(Sym, Value)>)>;
@@ -891,7 +909,7 @@ impl Substrate {
         let mut cache = crate::term::EvalCache::default();
         self.counters.on_evaluation();
 
-        let val = {
+        let (val, eval_limit_error) = {
             let mut ctx = crate::term::EvalCtx::new(&self.graph, &self.interner)
                 .with_cache(&mut cache)
                 .with_counters(&mut self.counters)
@@ -902,10 +920,17 @@ impl Substrate {
             if !self.framebuffers.is_empty() {
                 ctx = ctx.with_framebuffers(&self.framebuffers);
             }
-            crate::term::evaluate(&self.terms, idx, &mut env_v, &mut ctx)
+            let val = crate::term::evaluate(&self.terms, idx, &mut env_v, &mut ctx);
+            (val, ctx.eval_limit_error)
         };
 
         self.terms.nodes.truncate(snapshot);
+        if let Some(error) = eval_limit_error {
+            return Err(format!(
+                "evaluation resource limit: kind={} depth={} limit={}",
+                error.kind, error.depth, error.limit,
+            ));
+        }
         Ok(crate::persist::encode_value(&val, &self.interner))
     }
 
@@ -5697,6 +5722,8 @@ impl Substrate {
                 let mut derived: Vec<crate::stage_a::Proposal> = Vec::new();
                 let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
                     Default::default();
+                let suspended_log = self.graph.take_mutation_log();
+                let derive_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 for b in &bindings {
                     if !seen.insert(self.binding_key(&rule, b)) {
                         continue;
@@ -5722,6 +5749,11 @@ impl Substrate {
                         ));
                     }
                     crate::rewrite::undo_apply(out.undo, &mut self.graph);
+                }
+                }));
+                self.graph.restore_mutation_log(suspended_log);
+                if let Err(payload) = derive_result {
+                    std::panic::resume_unwind(payload);
                 }
                 if crate::stage_a::conflicts(&derived) {
                     crate::stage_a::note_conflict_fallback();
@@ -5741,6 +5773,8 @@ impl Substrate {
                 let mut derived: Vec<crate::stage_a::Proposal> = Vec::new();
                 let mut seen: rustc_hash::FxHashSet<smallvec::SmallVec<[(Sym, NodeID); 8]>> =
                     Default::default();
+                let suspended_log = self.graph.take_mutation_log();
+                let derive_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 for b in &bindings {
                     if !seen.insert(self.binding_key(&rule, b)) {
                         continue;
@@ -5766,6 +5800,11 @@ impl Substrate {
                         ));
                     }
                     crate::rewrite::undo_apply(out.undo, &mut self.graph);
+                }
+                }));
+                self.graph.restore_mutation_log(suspended_log);
+                if let Err(payload) = derive_result {
+                    std::panic::resume_unwind(payload);
                 }
                 proposals = derived;
             }
@@ -6098,6 +6137,7 @@ impl Substrate {
         self.counters.derivation_shape_pruned = 0;
         self.counters.concept_shape_pruned = 0;
 
+        crate::rewrite::clear_rule_eval_failure();
         let mut report = SettleReport::default();
         // Keep the turn-scoped native firing receipt coherent when callers
         // use an area scheduler in place of the committed global fixpoint.
@@ -6219,6 +6259,16 @@ impl Substrate {
                         self.graph.begin_rule_write_event(rule_name, false);
                     }
                     let progressed = self.attempt_one_rule(ri);
+                    if let Some(failure) = crate::rewrite::take_rule_eval_failure() {
+                        if let Some(failed_idx) = self.rules.iter().position(|rule| rule.uid.0 == failure.rule_uid) {
+                            self.rule_dirty[failed_idx] = true;
+                            self.rule_cursors[failed_idx].clear();
+                        }
+                        self.eval_cache.clear_graph_dependent();
+                        if report.resource_limit.is_none() {
+                            report.resource_limit = Some(failure);
+                        }
+                    }
                     if capture_rule_writes {
                         self.graph.finish_rule_write_event(progressed);
                     }
@@ -6737,6 +6787,7 @@ impl Substrate {
         detect_cycles: bool,
         latency_filter: Option<Sym>,
     ) -> RuleRunReport {
+        crate::rewrite::clear_rule_eval_failure();
         self.capture_rule_audit_store_state_if_needed();
         let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
         let _work_operation = crate::access_trace::begin_work_operation(work_scope);
@@ -6765,6 +6816,10 @@ impl Substrate {
         let mut steps = 0;
         let mut passes_completed = 0;
         let mut last_progress_rule = None;
+        // Preserve failed evaluations across all attempted rules in this run.
+        // A resource failure is an incomplete evaluation, so its rule must
+        // remain eligible for a later retry.
+        let mut resource_limit = None;
         while steps < max_steps {
             passes_completed += 1;
             crate::scale_audit::scheduler_pass_started();
@@ -6867,13 +6922,14 @@ impl Substrate {
                 }
                 self.capture_turn_rule_progress(last_progress_rule);
                 return RuleRunReport {
-                    status: RuleRunStatus::FixedPoint,
+                    status: if resource_limit.is_some() { RuleRunStatus::ResourceLimit } else { RuleRunStatus::FixedPoint },
                     progress_steps: steps,
                     requested_progress_budget: max_steps,
                     budget_overshoot: steps.saturating_sub(max_steps),
                     passes_completed,
                     cycle_detection_enabled: detect_cycles,
                     last_progress_rule,
+                    resource_limit,
                 };
             }
             // If any mutation was recorded since the last clean pass,
@@ -6946,6 +7002,22 @@ impl Substrate {
                     self.graph.begin_rule_write_event(rule_name, false);
                 }
                 let progressed = self.attempt_one_rule(rule_idx);
+                if let Some(failure) = crate::rewrite::take_rule_eval_failure() {
+                    if let Some(failed_idx) = self.rules.iter().position(|rule| rule.uid.0 == failure.rule_uid) {
+                        self.rule_dirty[failed_idx] = true;
+                        // A failed binding may have been consumed into the
+                        // semi-naive cursor before its predicate completed.
+                        // Retry from a cold cursor so it is evaluated again.
+                        self.rule_cursors[failed_idx].clear();
+                    }
+                    // Filter/Holds caches can contain degraded values from
+                    // an evaluation that exhausted its budget. Do not let a
+                    // fresh EvalCtx mistake those values for completed work.
+                    self.eval_cache.clear_graph_dependent();
+                    if resource_limit.is_none() {
+                        resource_limit = Some(failure);
+                    }
+                }
                 if capture_rule_writes {
                     self.graph.finish_rule_write_event(progressed);
                 }
@@ -6961,13 +7033,14 @@ impl Substrate {
                 // re-check the same clean state. Exit.
                 self.capture_turn_rule_progress(last_progress_rule);
                 return RuleRunReport {
-                    status: RuleRunStatus::FixedPoint,
+                    status: if resource_limit.is_some() { RuleRunStatus::ResourceLimit } else { RuleRunStatus::FixedPoint },
                     progress_steps: steps,
                     requested_progress_budget: max_steps,
                     budget_overshoot: steps.saturating_sub(max_steps),
                     passes_completed,
                     cycle_detection_enabled: detect_cycles,
                     last_progress_rule,
+                    resource_limit,
                 };
             }
             // CYCLE DETECTION (opt-in). This pass progressed, so the
@@ -6981,26 +7054,28 @@ impl Substrate {
                 if !s.insert(self.graph.state_fingerprint()) {
                     self.capture_turn_rule_progress(last_progress_rule);
                     return RuleRunReport {
-                        status: RuleRunStatus::RepeatedGraphState,
+                        status: if resource_limit.is_some() { RuleRunStatus::ResourceLimit } else { RuleRunStatus::RepeatedGraphState },
                         progress_steps: steps,
                         requested_progress_budget: max_steps,
                         budget_overshoot: steps.saturating_sub(max_steps),
                         passes_completed,
                         cycle_detection_enabled: detect_cycles,
                         last_progress_rule,
+                        resource_limit,
                     };
                 }
             }
         }
         self.capture_turn_rule_progress(last_progress_rule);
         RuleRunReport {
-            status: RuleRunStatus::ProgressBudgetReached,
+            status: if resource_limit.is_some() { RuleRunStatus::ResourceLimit } else { RuleRunStatus::ProgressBudgetReached },
             progress_steps: steps,
             requested_progress_budget: max_steps,
             budget_overshoot: steps.saturating_sub(max_steps),
             passes_completed,
             cycle_detection_enabled: detect_cycles,
             last_progress_rule,
+            resource_limit,
         }
     }
 
@@ -7041,6 +7116,7 @@ impl Substrate {
         detect_cycles: bool,
         scope_mt: Option<NodeID>,
     ) -> usize {
+        crate::rewrite::clear_rule_eval_failure();
         let mt = match scope_mt {
             None => return self.run_rules_opts(max_steps, detect_cycles),
             Some(mt) => mt,
@@ -7073,6 +7149,23 @@ impl Substrate {
             has_concept,
             &owned,
         )
+    }
+
+    /// Checked scoped closure. `scope_mt=None` delegates to the established
+    /// global report API; `Some(mt)` reports matcher resource exhaustion while
+    /// preserving the scoped runner's existing progress-count semantics.
+    pub fn run_rules_scoped_report(
+        &mut self,
+        max_steps: usize,
+        detect_cycles: bool,
+        scope_mt: Option<NodeID>,
+    ) -> ScopedRuleRunReport {
+        if scope_mt.is_none() {
+            let report = self.run_rules_report(max_steps, detect_cycles);
+            return ScopedRuleRunReport { progress_steps: report.progress_steps, resource_limit: report.resource_limit };
+        }
+        let progress_steps = self.run_rules_scoped(max_steps, detect_cycles, scope_mt);
+        ScopedRuleRunReport { progress_steps, resource_limit: crate::rewrite::take_rule_eval_failure() }
     }
 
     /// Diagnostic microbenchmark for the former active-rule snapshot used by
@@ -7108,6 +7201,7 @@ impl Substrate {
         detect_cycles: bool,
         scope_mt: NodeID,
     ) -> ScopedRuleGraphDeltaReport {
+        crate::rewrite::clear_rule_eval_failure();
         self.capture_rule_audit_store_state_if_needed();
         let work_scope = &self.graph as *const crate::graph::TypedGraph as usize;
         let _work_operation = crate::access_trace::begin_work_operation(work_scope);
@@ -7165,6 +7259,7 @@ impl Substrate {
             affected_edges,
             affected_microtheories,
             deferred_effects_pending,
+            resource_limit: crate::rewrite::take_rule_eval_failure(),
         }
     }
 
@@ -8181,6 +8276,587 @@ mod tests {
     }
 
     #[test]
+    fn phase114_stage_a_compare_excludes_speculative_effect_snapshots_from_delta() {
+        crate::stage_a::set_enabled(false);
+        crate::stage_a::set_compare_mode(true);
+        let mut s = empty_substrate();
+        let nt = s.interner.intern("phase114_node");
+        let link = s.interner.intern("phase114_link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let fresh = s.interner.intern("fresh");
+        let src = s.graph.insert_node(nt, FxHashMap::default());
+        let dst = s.graph.insert_node(nt, FxHashMap::default());
+        s.graph.insert_edge(src, link, dst, FxHashMap::default()).unwrap();
+        let yes = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let rule_name = s.interner.intern("phase114_compare_rule");
+        s.add_rule(crate::rewrite::RewriteRule {
+            name: rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type: link, tgt_var: y }],
+            where_: Some(yes),
+            effects: vec![crate::rewrite::Effect::AddNode {
+                new_var: fresh, type_: nt, attrs: Vec::new(),
+            }],
+            ..Default::default()
+        });
+
+        let delta = s.run_rules_effect_delta_report(8, false);
+        crate::stage_a::set_compare_mode(false);
+        assert_eq!(s.graph.nodes_of_type(nt).len(), 3);
+        assert_eq!(delta.affected_nodes.len(), 1);
+        let event = delta.rule_write_events.iter().find(|event| event.rule_name == rule_name && event.progressed)
+            .expect("committed rule event");
+        assert_eq!(event.node_ids.len(), 1);
+        assert!(delta.affected_nodes.contains(&event.node_ids[0]));
+        assert_eq!(event.effect_snapshots.len(), 1, "only the committed effect snapshot belongs in the delta");
+        assert_eq!(event.effect_snapshots[0].effect_index, 0);
+        assert_eq!(event.effect_snapshots[0].node_values.len(), 1);
+        assert_eq!(event.effect_snapshots[0].node_values[0].node_id, event.node_ids[0]);
+    }
+
+    #[test]
+    fn phase59_computed_effect_limit_reports_provenance_and_skips_only_exhausted_effect() {
+        let mut s = empty_substrate();
+        let nt = s.interner.intern("Node");
+        let edge_type = s.interner.intern("link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let before = s.interner.intern("before");
+        let marker = s.interner.intern("marker");
+        let after = s.interner.intern("after");
+        let src = s.graph.insert_node(nt, FxHashMap::default());
+        let dst = s.graph.insert_node(nt, FxHashMap::default());
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let bad_arg = s.terms.add(TermNode::Not { arg: exhausted });
+        let rule_name = s.interner.intern("phase59_effect_report");
+        let rule = crate::rewrite::RewriteRule {
+            name: rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(true_term),
+            effects: vec![
+                crate::rewrite::Effect::SetAttr { var: x, key: before, value: crate::rewrite::EffectArg::Literal(Value::Int(1)) },
+                crate::rewrite::Effect::SetAttr { var: x, key: marker, value: crate::rewrite::EffectArg::Computed(bad_arg) },
+                crate::rewrite::Effect::SetAttr { var: x, key: after, value: crate::rewrite::EffectArg::Literal(Value::Int(3)) },
+            ],
+            ..Default::default()
+        };
+        let rule_idx = s.add_rule(rule);
+        let report = s.run_rules_report(8, false);
+        assert_eq!(report.status, RuleRunStatus::ResourceLimit, "{report:?}");
+        let failure = report.resource_limit.expect("effect evaluation failure provenance");
+        assert_eq!(s.interner.resolve(failure.rule_name), "phase59_effect_report");
+        assert_eq!(failure.term, bad_arg);
+        assert_eq!((failure.error.kind, failure.error.depth, failure.error.limit), ("EvalSubgraph", 257, 256));
+        assert_eq!(s.graph.node(src).attrs.get(&before), Some(&Value::Int(1)));
+        assert_eq!(s.graph.node(src).attrs.get(&marker), None);
+        assert_eq!(s.graph.node(src).attrs.get(&after), Some(&Value::Int(3)));
+        assert!(s.rule_dirty[rule_idx.0 as usize], "failed effect rule must remain retryable");
+        let retry = s.run_rules_report(8, false);
+        assert_eq!(retry.status, RuleRunStatus::ResourceLimit, "retry must not claim a fixed point: {retry:?}");
+        assert!(retry.resource_limit.is_some());
+    }
+
+    #[test]
+    fn phase57_structured_rule_report_never_calls_resource_failure_fixed_point() {
+        let mut s = empty_substrate();
+        let node_type = s.interner.intern("Node");
+        let edge_type = s.interner.intern("link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let src = s.graph.insert_node(node_type, FxHashMap::default());
+        let dst = s.graph.insert_node(node_type, FxHashMap::default());
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let where_ = s.terms.add(TermNode::Not { arg: exhausted });
+        let rule = crate::rewrite::RewriteRule {
+            name: s.interner.intern("exhaustion_report_rule"),
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(where_),
+            ..Default::default()
+        };
+        let rule_idx = s.add_rule(rule);
+        assert!(
+            s.rule_where_jit[rule_idx.0 as usize].is_none(),
+            "EvalSubgraph where-clause must fall back to interpreter"
+        );
+        let report = s.run_rules_report(8, false);
+        eprintln!("PHASE57 structured run report: {report:?}");
+        assert_eq!(report.status, RuleRunStatus::ResourceLimit);
+        let failure = report.resource_limit.expect("structured report should retain first limit provenance");
+        assert_eq!(s.interner.resolve(failure.rule_name), "exhaustion_report_rule");
+        assert_eq!(failure.error.kind, "EvalSubgraph");
+        assert_eq!(failure.error.depth, 257);
+        assert_eq!(failure.error.limit, 256);
+        eprintln!("PHASE61 matcher retry marker dirty={:?} uid={:?}", s.rule_dirty, s.rules.iter().map(|r| r.uid.0).collect::<Vec<_>>());
+        let second = s.run_rules_report(8, false);
+        eprintln!("PHASE61 retry after resource limit: {second:?}");
+        assert_eq!(second.status, RuleRunStatus::ResourceLimit);
+        assert!(second.resource_limit.is_some());
+    }
+
+    #[test]
+    fn phase69_evaluate_json_reports_resource_limit() {
+        let mut s = empty_substrate();
+        let initial_terms = s.terms.nodes.len();
+        assert_eq!(s.evaluate_json(&serde_json::json!({"type":"Lit","value":null}), None), Ok(serde_json::Value::Null));
+        assert_eq!(s.terms.nodes.len(), initial_terms, "ordinary None must restore the temporary arena");
+        assert_eq!(s.evaluate_json(&serde_json::json!({"type":"Lit","value":42}), None), Ok(serde_json::json!(42)));
+        assert_eq!(s.terms.nodes.len(), initial_terms, "ordinary value must restore the temporary arena");
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let term = serde_json::json!({
+            "type": "EvalSubgraph",
+            "node": {"type": "Lit", "value": {"__nid__": previous.0}}
+        });
+        let result = s.evaluate_json(&term, None);
+        eprintln!("PHASE69 evaluate_json result: {result:?}");
+        assert_eq!(s.terms.nodes.len(), initial_terms + 1 + 258 * 2, "resource error must restore only the temporary evaluation terms");
+        assert!(result.is_err(), "resource-limited direct evaluation must not return a successful value");
+        let error = result.unwrap_err();
+        assert!(error.contains("EvalSubgraph"), "error should identify the evaluator limit: {error}");
+        assert!(error.contains("257") && error.contains("256"), "error should preserve depth and limit: {error}");
+    }
+
+    #[test]
+    fn phase69_scoped_runner_omits_resource_status_but_rechecks_on_later_calls() {
+        let mut s = empty_substrate();
+        let node_type = s.interner.intern("Node");
+        let edge_type = s.interner.intern("link");
+        let owner_edge = s.interner.intern("has_concept");
+        let mt_type = s.interner.intern("Microtheory");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let mt = s.graph.insert_node(mt_type, FxHashMap::default());
+        let src = s.graph.insert_node(node_type, FxHashMap::default());
+        let dst = s.graph.insert_node(node_type, FxHashMap::default());
+        s.graph.insert_edge(mt, owner_edge, src, FxHashMap::default()).unwrap();
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let where_ = s.terms.add(TermNode::Not { arg: exhausted });
+        let rule_name = s.interner.intern("phase69_scoped_limit");
+        let idx = s.add_rule(crate::rewrite::RewriteRule {
+            name: rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(where_),
+            ..Default::default()
+        });
+        // A separate active rule with no matching edge must not mask or
+        // contaminate the predicate failure in the checked report.
+        let absent_edge = s.interner.intern("phase74_absent_edge");
+        let clean_rule = s.interner.intern("phase74_clean_no_match");
+        let clean_idx = s.add_rule(crate::rewrite::RewriteRule {
+            name: clean_rule,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type: absent_edge, tgt_var: y }],
+            ..Default::default()
+        });
+
+        let scoped = s.run_rules_scoped(8, false, Some(mt));
+        eprintln!("PHASE69 scoped integer result: {scoped}; dirty={}", s.rule_dirty[idx.0 as usize]);
+        assert_eq!(scoped, 0, "legacy scoped API exposes only zero progress");
+        assert!(s.rule_dirty[idx.0 as usize], "scoped runner must not consume global dirty state");
+        let scoped_retry = s.run_rules_scoped(8, false, Some(mt));
+        assert_eq!(scoped_retry, 0, "a later scoped call reevaluates but still cannot expose the failure");
+        assert!(s.rule_dirty[idx.0 as usize]);
+        let checked = s.run_rules_scoped_report(8, false, Some(mt));
+        assert_eq!(checked.progress_steps, 0);
+        let failure = checked.resource_limit.expect("checked scoped API must expose resource exhaustion");
+        assert_eq!(failure.rule_name, rule_name, "clean no-match rules do not own the failure");
+        assert!(s.rule_dirty[idx.0 as usize], "checked scoped API must preserve dirty state");
+        assert!(s.rule_dirty[clean_idx.0 as usize], "scoped closure leaves global dirty bookkeeping untouched for every rule");
+        let checked_retry = s.run_rules_scoped_report(8, false, Some(mt));
+        assert_eq!(checked_retry.resource_limit, checked.resource_limit, "each scoped call reports its own repeat failure");
+        let delta = s.run_rules_scoped_delta_report(8, false, mt);
+        assert_eq!(delta.resource_limit, checked.resource_limit, "delta report must expose the same call-local failure");
+        let global = s.run_rules_report(8, false);
+        assert_eq!(global.status, RuleRunStatus::ResourceLimit, "the unscoped report independently retries and exposes the failure");
+    }
+
+    #[test]
+    fn phase74_scoped_checked_report_distinguishes_no_match_and_success() {
+        let mut s = empty_substrate();
+        let mt_type = s.interner.intern("Microtheory");
+        let node_type = s.interner.intern("Node");
+        let owner_edge = s.interner.intern("has_concept");
+        let edge_type = s.interner.intern("phase74_link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let mt = s.graph.insert_node(mt_type, FxHashMap::default());
+        let no_match = s.run_rules_scoped_report(8, false, Some(mt));
+        assert_eq!(no_match.progress_steps, 0);
+        assert_eq!(no_match.resource_limit, None);
+
+        let src = s.graph.insert_node(node_type, FxHashMap::default());
+        let dst = s.graph.insert_node(node_type, FxHashMap::default());
+        s.graph.insert_edge(mt, owner_edge, src, FxHashMap::default()).unwrap();
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+        let attr = s.interner.intern("phase74_marked");
+        let success_rule_name = s.interner.intern("phase74_scoped_success");
+        s.add_rule(crate::rewrite::RewriteRule {
+            name: success_rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            effects: vec![crate::rewrite::Effect::SetAttr {
+                var: x,
+                key: attr,
+                value: crate::rewrite::EffectArg::Literal(Value::Int(1)),
+            }],
+            ..Default::default()
+        });
+        let success = s.run_rules_scoped_report(8, false, Some(mt));
+        assert_eq!(success.progress_steps, 1);
+        assert_eq!(success.resource_limit, None);
+        assert_eq!(s.graph.node(src).attrs.get(&attr), Some(&Value::Int(1)));
+    }
+
+    #[test]
+    fn phase74_scoped_checked_report_captures_computed_effect_limit() {
+        let mut s = empty_substrate();
+        let nt = s.interner.intern("Node");
+        let mt_type = s.interner.intern("Microtheory");
+        let link = s.interner.intern("phase74_effect_link");
+        let has_concept = s.interner.intern("has_concept");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let mt = s.graph.insert_node(mt_type, FxHashMap::default());
+        let src = s.graph.insert_node(nt, FxHashMap::default());
+        let dst = s.graph.insert_node(nt, FxHashMap::default());
+        s.graph.insert_edge(mt, has_concept, src, FxHashMap::default()).unwrap();
+        s.graph.insert_edge(src, link, dst, FxHashMap::default()).unwrap();
+
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let bad_arg = s.terms.add(TermNode::Not { arg: exhausted });
+        let before = s.interner.intern("phase74_effect_before");
+        let marker = s.interner.intern("phase74_effect_marker");
+        let after = s.interner.intern("phase74_effect_after");
+        let rule_name = s.interner.intern("phase74_scoped_effect_limit");
+        s.add_rule(crate::rewrite::RewriteRule {
+            name: rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type: link, tgt_var: y }],
+            where_: Some(true_term),
+            effects: vec![
+                crate::rewrite::Effect::SetAttr { var: x, key: before, value: crate::rewrite::EffectArg::Literal(Value::Int(1)) },
+                crate::rewrite::Effect::SetAttr { var: x, key: marker, value: crate::rewrite::EffectArg::Computed(bad_arg) },
+                crate::rewrite::Effect::SetAttr { var: x, key: after, value: crate::rewrite::EffectArg::Literal(Value::Int(3)) },
+            ],
+            ..Default::default()
+        });
+
+        let report = s.run_rules_scoped_report(8, false, Some(mt));
+        let failure = report.resource_limit.expect("scoped checked report must include computed-effect exhaustion");
+        assert_eq!(failure.rule_name, rule_name);
+        assert_eq!(failure.term, bad_arg);
+        assert_eq!((failure.error.kind, failure.error.depth, failure.error.limit), ("EvalSubgraph", 257, 256));
+        assert_eq!(s.graph.node(src).attrs.get(&before), Some(&Value::Int(1)));
+        assert_eq!(s.graph.node(src).attrs.get(&marker), None);
+        assert_eq!(s.graph.node(src).attrs.get(&after), Some(&Value::Int(3)));
+
+        let delta = s.run_rules_scoped_delta_report(8, false, mt);
+        assert_eq!(delta.resource_limit, report.resource_limit);
+    }
+
+    #[test]
+    fn phase65_settle_scheduler_loses_resource_limited_binding_and_retry() {
+        let mut s = empty_substrate();
+        let node_type = s.interner.intern("Node");
+        let edge_type = s.interner.intern("link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let src = s.graph.insert_node(node_type, FxHashMap::default());
+        let dst = s.graph.insert_node(node_type, FxHashMap::default());
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let where_ = s.terms.add(TermNode::Not { arg: exhausted });
+        let rule_name = s.interner.intern("phase65_settle_exhaustion");
+        let idx = s.add_rule(crate::rewrite::RewriteRule {
+            name: rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(where_),
+            ..Default::default()
+        });
+        let first = s.run_rules_settle(0, 1, false, false);
+        let dirty_after_first = s.rule_dirty[idx.0 as usize];
+        assert_eq!(first.resource_limit.unwrap().error.kind, "EvalSubgraph");
+        assert_eq!(first.rounds[0].residual, 1);
+        assert_eq!(first.residual_by_area.iter().map(|(_, n)| n).sum::<usize>(), 1);
+        let second = s.run_rules_settle(0, 1, false, false);
+        assert!(second.resource_limit.is_some(), "retry must surface the repeated failure");
+        assert_eq!(second.rounds[0].residual, 1);
+        let area = s.rules[idx.0 as usize].area;
+        let selected = s.run_rules_settle_selected(&[area], 0, 1, false);
+        assert!(selected.resource_limit.is_some(), "selected settlement must surface the same failure");
+        assert_eq!(selected.rounds[0].residual, 1);
+        assert!(dirty_after_first, "resource failure must leave work retryable");
+    }
+
+    #[test]
+    fn phase61_retry_and_eval_cache_resist_limit_poisoning_across_rules_and_filters() {
+        let mut s = empty_substrate();
+        let node_type = s.interner.intern("Node");
+        let edge_type = s.interner.intern("link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let z = s.interner.intern("z");
+        let concept = s.interner.intern("deep_concept");
+        let src = s.graph.insert_node(node_type, FxHashMap::default());
+        let dst = s.graph.insert_node(node_type, FxHashMap::default());
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let pred = s.terms.add(TermNode::Not { arg: exhausted });
+        let nodes = s.terms.add(TermNode::NodesOfType { node_type });
+        let filtered = s.terms.add(TermNode::Filter {
+            source: nodes,
+            var_name: z,
+            predicate: pred,
+        });
+        s.concepts.insert(concept, exhausted);
+        let src_lit = s.terms.add(TermNode::Lit { value: Value::Node(src) });
+        let holds_term = s.terms.add(TermNode::Holds {
+            concept,
+            node: Some(src_lit),
+            node2: None,
+        });
+
+        let mut shared_cache = crate::term::EvalCache::default();
+        for pass in 0..2 {
+            let mut env = crate::term::Env::new();
+            let mut ctx = crate::term::EvalCtx::new(&s.graph, &s.interner)
+                .with_cache(&mut shared_cache)
+                .with_concepts(&s.concepts);
+            let _ = crate::term::evaluate(&s.terms, filtered, &mut env, &mut ctx);
+            assert!(
+                ctx.eval_limit_error.is_some(),
+                "pass {pass}: Filter evaluation must re-trigger limit error rather than hit poisoned cache"
+            );
+            assert!(
+                ctx.cache.as_ref().unwrap().filter.is_empty(),
+                "pass {pass}: Filter cache must not store degraded results on EvalLimitError"
+            );
+
+            let mut ctx2 = crate::term::EvalCtx::new(&s.graph, &s.interner)
+                .with_cache(&mut shared_cache)
+                .with_concepts(&s.concepts);
+            let _ = crate::term::evaluate(&s.terms, holds_term, &mut env, &mut ctx2);
+            assert!(
+                ctx2.eval_limit_error.is_some(),
+                "pass {pass}: Holds evaluation must re-trigger limit error rather than hit poisoned cache"
+            );
+            assert!(
+                ctx2.cache.as_ref().unwrap().holds.is_empty(),
+                "pass {pass}: Holds cache must not store degraded results on EvalLimitError"
+            );
+        }
+
+        let count_filtered = s.terms.add(TermNode::Count { source: filtered });
+        let zero = s.terms.add(TermNode::Lit { value: Value::Int(0) });
+        let where1 = s.terms.add(TermNode::Eq { a: count_filtered, b: zero });
+        let where2 = s.terms.add(TermNode::Not { arg: holds_term });
+
+        let fast = s.interner.intern("fast");
+        let r1_name = s.interner.intern("phase61_filter_limit_rule_1");
+        let r2_name = s.interner.intern("phase61_holds_limit_rule_2");
+        let r1 = s.add_rule(crate::rewrite::RewriteRule {
+            name: r1_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(where1),
+            latency_class: fast,
+            ..Default::default()
+        });
+        let r2 = s.add_rule(crate::rewrite::RewriteRule {
+            name: r2_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(where2),
+            latency_class: fast,
+            ..Default::default()
+        });
+
+        let first = s.run_rules_opts_report_filtered(8, false, Some(fast));
+        assert_eq!(first.status, RuleRunStatus::ResourceLimit, "{first:?}");
+        let f1 = first.resource_limit.expect("first failure retained");
+        assert_eq!(s.interner.resolve(f1.rule_name), "phase61_filter_limit_rule_1");
+        assert!(s.rule_dirty[r1.0 as usize] && s.rule_dirty[r2.0 as usize]);
+        assert!(s.rule_cursors[r1.0 as usize].is_empty() && s.rule_cursors[r2.0 as usize].is_empty());
+
+        let second = s.run_rules_opts_report_filtered(8, false, Some(fast));
+        assert_eq!(second.status, RuleRunStatus::ResourceLimit, "{second:?}");
+        let f2 = second.resource_limit.expect("second retry failure retained");
+        assert_eq!(s.interner.resolve(f2.rule_name), "phase61_filter_limit_rule_1");
+        assert!(s.rule_dirty[r1.0 as usize] && s.rule_dirty[r2.0 as usize]);
+    }
+
+    #[test]
+    fn phase62_jit_where_dispatch_and_computed_effect_limit_preserve_interpreter_parity_and_retry() {
+        let mut s = empty_substrate();
+        let node_type = s.interner.intern("Node");
+        let edge_type = s.interner.intern("link");
+        let x = s.interner.intern("x");
+        let y = s.interner.intern("y");
+        let before = s.interner.intern("before");
+        let marker = s.interner.intern("marker");
+        let after = s.interner.intern("after");
+        let node0_truthy = s.interner.intern("node0_truthy");
+        let frac_attr = s.interner.intern("frac_attr");
+        let frac_fired = s.interner.intern("frac_fired");
+
+        let mut src_attrs = FxHashMap::default();
+        src_attrs.insert(frac_attr, Value::Float(0.5));
+        let src = s.graph.insert_node(node_type, src_attrs);
+        assert_eq!(src.0, 0, "first inserted node must be NodeID(0)");
+        let dst = s.graph.insert_node(node_type, FxHashMap::default());
+        s.graph.insert_edge(src, edge_type, dst, FxHashMap::default()).unwrap();
+
+        // Build an EvalSubgraph chain exceeding MAX_HOLDS_DEPTH (257 > 256) for the computed effect.
+        let true_term = s.terms.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut previous = crate::reflect::term_to_subgraph(&s.terms, true_term, &mut s.graph, &mut s.interner);
+        for _ in 0..258 {
+            let leaf = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+            let wrapper = s.terms.add(TermNode::EvalSubgraph { node: leaf });
+            previous = crate::reflect::term_to_subgraph(&s.terms, wrapper, &mut s.graph, &mut s.interner);
+        }
+        let ref_node = s.terms.add(TermNode::Lit { value: Value::Node(previous) });
+        let exhausted = s.terms.add(TermNode::EvalSubgraph { node: ref_node });
+        let bad_arg = s.terms.add(TermNode::Not { arg: exhausted });
+
+        // 1. Genuinely JIT-compiled graph-access `where` clause:
+        //    (TypeOf(x) == "Node") AND (Count(Neighbours(x, link)) >= 1)
+        let x_var = s.terms.add(TermNode::Var { name: x });
+        let tof_x = s.terms.add(TermNode::TypeOf { node: x_var });
+        let node_lit = s.terms.add(TermNode::Lit { value: Value::Str(node_type) });
+        let eq_type = s.terms.add(TermNode::Eq { a: tof_x, b: node_lit });
+        let nbrs = s.terms.add(TermNode::Neighbours {
+            node: x_var,
+            edge_type,
+            any_type: false,
+        });
+        let cnt = s.terms.add(TermNode::Count { source: nbrs });
+        let one = s.terms.add(TermNode::Lit { value: Value::Int(1) });
+        let gte_cnt = s.terms.add(TermNode::Gte { a: cnt, b: one });
+        let jit_where = s.terms.add(TermNode::And { items: vec![eq_type, gte_cnt] });
+
+        let jit_rule_name = s.interner.intern("phase62_jit_where_effect_limit");
+        let jit_rule_idx = s.add_rule(crate::rewrite::RewriteRule {
+            name: jit_rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(jit_where),
+            effects: vec![
+                crate::rewrite::Effect::SetAttr { var: x, key: before, value: crate::rewrite::EffectArg::Literal(Value::Int(10)) },
+                crate::rewrite::Effect::SetAttr { var: x, key: marker, value: crate::rewrite::EffectArg::Computed(bad_arg) },
+                crate::rewrite::Effect::SetAttr { var: x, key: after, value: crate::rewrite::EffectArg::Literal(Value::Int(30)) },
+            ],
+            ..Default::default()
+        });
+        assert!(
+            s.rule_where_jit[jit_rule_idx.0 as usize].is_some(),
+            "graph-access where clause without Attr must compile to native JIT"
+        );
+
+        // 2. Fallback rules that must NOT compile to JIT and must preserve interpreter truthiness on NodeID(0):
+        //    a) `where_ = Var(x)` on NodeID(0) -> truthy in interpreter (`Value::Node(NodeID(0)).truthy() == true`)
+        //    b) `where_ = Attr(Var(x), frac_attr)` with Float(0.5) -> truthy in interpreter (`0.5 != 0.0`)
+        let node0_rule_name = s.interner.intern("phase62_node0_truthy_fallback");
+        let node0_rule_idx = s.add_rule(crate::rewrite::RewriteRule {
+            name: node0_rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(x_var),
+            effects: vec![
+                crate::rewrite::Effect::SetAttr { var: x, key: node0_truthy, value: crate::rewrite::EffectArg::Literal(Value::Int(1)) },
+            ],
+            ..Default::default()
+        });
+        assert!(
+            s.rule_where_jit[node0_rule_idx.0 as usize].is_none(),
+            "Node variable condition must fall back to interpreter so NodeID(0) remains truthy"
+        );
+
+        let attr_term = s.terms.add(TermNode::Attr { node: x_var, key: frac_attr });
+        let frac_rule_name = s.interner.intern("phase62_frac_attr_fallback");
+        let frac_rule_idx = s.add_rule(crate::rewrite::RewriteRule {
+            name: frac_rule_name,
+            match_edges: vec![crate::rewrite::MatchEdge { src_var: x, edge_type, tgt_var: y }],
+            where_: Some(attr_term),
+            effects: vec![
+                crate::rewrite::Effect::SetAttr { var: x, key: frac_fired, value: crate::rewrite::EffectArg::Literal(Value::Int(1)) },
+            ],
+            ..Default::default()
+        });
+        assert!(
+            s.rule_where_jit[frac_rule_idx.0 as usize].is_none(),
+            "Attr where clause must fall back to interpreter so Float(0.5) remains truthy"
+        );
+
+        let report = s.run_rules_report(8, false);
+        assert_eq!(report.status, RuleRunStatus::ResourceLimit, "{report:?}");
+        let failure = report.resource_limit.expect("JIT-matched rule effect limit provenance");
+        assert_eq!(s.interner.resolve(failure.rule_name), "phase62_jit_where_effect_limit");
+        assert_eq!(failure.term, bad_arg);
+        assert_eq!((failure.error.kind, failure.error.depth, failure.error.limit), ("EvalSubgraph", 257, 256));
+        assert_eq!(s.graph.node(src).attrs.get(&before), Some(&Value::Int(10)));
+        assert_eq!(s.graph.node(src).attrs.get(&marker), None);
+        assert_eq!(s.graph.node(src).attrs.get(&after), Some(&Value::Int(30)));
+        assert_eq!(s.graph.node(src).attrs.get(&node0_truthy), Some(&Value::Int(1)));
+        assert_eq!(s.graph.node(src).attrs.get(&frac_fired), Some(&Value::Int(1)));
+        assert!(s.rule_dirty[jit_rule_idx.0 as usize]);
+
+        let retry = s.run_rules_report(8, false);
+        assert_eq!(retry.status, RuleRunStatus::ResourceLimit, "{retry:?}");
+        assert!(retry.resource_limit.is_some());
+    }
+
+    #[test]
     fn independent_substrates_keep_overlapping_rule_indices_distinct_in_audit() {
         let _guard = crate::scale_audit::exclusive();
         crate::scale_audit::set_enabled(true);
@@ -8470,9 +9146,11 @@ mod tests {
             ..Default::default()
         });
         assert!(s.apply_rule_once(dispatch));
+        // Queue provenance names the rule whose effect queued this patch,
+        // not the target rule whose clause the patch will modify.
         assert_eq!(
             s.graph.pending_rule_patches,
-            vec![(patch, vec![s.rules[0].name])]
+            vec![(patch, vec![dispatch_name])]
         );
         s.apply_pending_rule_patches();
 

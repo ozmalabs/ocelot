@@ -44,7 +44,11 @@ pub fn term_from_json(
         .get("type")
         .and_then(|v| v.as_str())
         .ok_or(JsonError::ShapeMismatch("missing 'type' field"))?;
-    read_term(variant, obj, arena, interner)
+    // Every recursive child parse re-enters this boundary, so grow the
+    // native stack before descending into an externally supplied Term tree.
+    stacker::maybe_grow(1024 * 1024, 2 * 1024 * 1024, || {
+        read_term(variant, obj, arena, interner)
+    })
 }
 
 /// Serialise a Grammar (its productions) to JSON. Matches the Python
@@ -3748,5 +3752,34 @@ mod tests {
         let idx = term_from_json(&json, &mut rebuilt, &mut interner).unwrap();
         assert!(matches!(rebuilt.get(idx), TermNode::SCMIntervene { .. }));
         assert_eq!(json, term_to_json(&rebuilt, idx, &interner));
+    }
+}
+
+#[cfg(test)]
+mod phase73_probe {
+    use super::*;
+
+    #[test]
+    fn phase73_term_json_ingestion_small_stack_probe() {
+        std::thread::Builder::new().stack_size(512 * 1024).spawn(|| {
+            let mut base = Map::new();
+            base.insert("type".to_string(), J::String("Lit".to_string()));
+            base.insert("value".to_string(), J::Bool(true));
+            let mut json = J::Object(base);
+            for _ in 0..20_000 {
+                let mut obj = Map::new();
+                obj.insert("type".to_string(), J::String("Not".to_string()));
+                obj.insert("arg".to_string(), json);
+                json = J::Object(obj);
+            }
+            let mut arena = TermArena::new();
+            let mut interner = Interner::new();
+            eprintln!("phase73 json probe: entering term_from_json");
+            let idx = term_from_json(&json, &mut arena, &mut interner).unwrap();
+            eprintln!("phase73 json probe: returned from term_from_json");
+            assert_eq!(arena.nodes.len(), 20_001);
+            let _ = idx;
+            std::mem::forget(json);
+        }).unwrap().join().unwrap();
     }
 }
