@@ -1,0 +1,4486 @@
+{
+ "id": "affect_frame",
+ "version": "0.1.0",
+ "self_load_only": true,
+ "depends_on": [
+  "core_emotions",
+  "shape_decode_loop"
+ ],
+ "area": "retina",
+ "description": "AFFECT FRAME + CODEBOOK (block 369000; design and predictions in docs/research/psychology_affect/AFFECT_FRAME_CODEBOOK_PREREG.md). Each fired emotion of core_emotions publishes one integer affect frame, an Observation of relations aff:<tag>:val_sign, aff:<tag>:val_level and aff:<tag>:ar_level, whose levels are LogQuantum base-2 log levels of the emotion's own magnitudes. The unchanged shape_decode_loop decodes each frame against twelve affect ShapeSignature parts (the codebook, copied from the canonical appraisals' frames). An intensity change arrives as a per-predicate quantum delta and is recognised as recognized_transformed with no growth. The af_direction rule compares the frames of two successive appraisals (follows edge) and writes val_direction and ar_direction. Opt-in and self_load_only: no existing seed is changed, and the old valence/arousal contract is untouched. No Rust, no Python decision.",
+ "nodes": [
+  {
+   "local_id": 1,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:surprise",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:surprise:val_sign",
+      0.0
+     ],
+     [
+      "aff:surprise:ar_level",
+      9
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 2,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:fear",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:fear:val_sign",
+      -1.0
+     ],
+     [
+      "aff:fear:ar_level",
+      7
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 3,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:anxiety",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:anxiety:val_sign",
+      -1.0
+     ],
+     [
+      "aff:anxiety:ar_level",
+      10
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 4,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:anger",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:anger:val_sign",
+      -1.0
+     ],
+     [
+      "aff:anger:ar_level",
+      10
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 5,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:frustration",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:frustration:val_sign",
+      -1.0
+     ],
+     [
+      "aff:frustration:ar_level",
+      10
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 6,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:disgust",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:disgust:val_sign",
+      -1.0
+     ],
+     [
+      "aff:disgust:ar_level",
+      9
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 7,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:joy",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:joy:val_sign",
+      1.0
+     ],
+     [
+      "aff:joy:val_level",
+      9
+     ],
+     [
+      "aff:joy:ar_level",
+      9
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 8,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:sadness",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:sadness:val_sign",
+      -1.0
+     ],
+     [
+      "aff:sadness:val_level",
+      9
+     ],
+     [
+      "aff:sadness:ar_level",
+      6
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 9,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:curiosity",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:curiosity:val_sign",
+      1.0
+     ],
+     [
+      "aff:curiosity:val_level",
+      7
+     ],
+     [
+      "aff:curiosity:ar_level",
+      7
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 10,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:boredom",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:boredom:val_sign",
+      -1.0
+     ],
+     [
+      "aff:boredom:ar_level",
+      6
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 11,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:fulfilment",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:fulfilment:val_sign",
+      1.0
+     ],
+     [
+      "aff:fulfilment:val_level",
+      8
+     ],
+     [
+      "aff:fulfilment:ar_level",
+      8
+     ]
+    ]
+   }
+  },
+  {
+   "local_id": 12,
+   "type": "ShapeSignature",
+   "attrs": {
+    "name": "affect:none",
+    "kind": "affect",
+    "signature": [
+     [
+      "aff:none:val_sign",
+      0.0
+     ],
+     [
+      "aff:none:ar_level",
+      6
+     ]
+    ]
+   }
+  }
+ ],
+ "edges": [],
+ "productions": [
+  {
+   "provenance": "seed:affect_frame:agent-emotion-hub",
+   "src": {
+    "type": "Agent",
+    "var": "ag"
+   },
+   "edge_type": "has_emotion_hub",
+   "tgt": {
+    "type": "EmotionHub",
+    "var": "hub"
+   }
+  },
+  {
+   "provenance": "seed:affect_frame:appraisal-frame",
+   "src": {
+    "type": "Appraisal",
+    "var": "ap"
+   },
+   "edge_type": "has_affect_frame",
+   "tgt": {
+    "type": "Observation",
+    "var": "f"
+   }
+  },
+  {
+   "provenance": "seed:affect_frame:appraisal-follows",
+   "src": {
+    "type": "Appraisal",
+    "var": "ap2"
+   },
+   "edge_type": "follows",
+   "tgt": {
+    "type": "Appraisal",
+    "var": "ap1"
+   }
+  }
+ ],
+ "rules": [
+  {
+   "name": "af_emit_surprise",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_surprise"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "surprise"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "surprise",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "surprise"
+         }
+        ]
+       }
+      },
+      "val_sign": 0,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "residual"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:surprise:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:surprise:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "residual"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_fear",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_fear"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "fear"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "fear",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "fear"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "threat_precision"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:fear:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:fear:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "threat_precision"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_anxiety",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_anxiety"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "anxiety"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "anxiety",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "anxiety"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "threat_precision"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:anxiety:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:anxiety:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "threat_precision"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_anger",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_anger"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "anger"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "anger",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "anger"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ep"
+                  },
+                  "key": "high_arousal"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:anger:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:anger:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ep"
+                      },
+                      "key": "high_arousal"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_frustration",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_frustration"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "frustration"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "frustration",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "frustration"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ep"
+                  },
+                  "key": "high_arousal"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:frustration:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:frustration:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ep"
+                      },
+                      "key": "high_arousal"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_disgust",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_disgust"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "disgust"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "disgust",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "disgust"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ep"
+                  },
+                  "key": "mid_arousal"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:disgust:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:disgust:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ep"
+                      },
+                      "key": "mid_arousal"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_joy",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_joy"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "joy"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "joy",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "joy"
+         }
+        ]
+       }
+      },
+      "val_sign": 1,
+      "val_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "value_progress"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "value_progress"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:joy:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:joy:val_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "value_progress"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:joy:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "value_progress"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_sadness",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_sadness"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "sadness"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "sadness",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "sadness"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "val_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Abs",
+                  "arg": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "ap"
+                   },
+                   "key": "value_progress"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ep"
+                  },
+                  "key": "low_arousal"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:sadness:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:sadness:val_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Abs",
+                      "arg": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "ap"
+                       },
+                       "key": "value_progress"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:sadness:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ep"
+                      },
+                      "key": "low_arousal"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_curiosity",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_curiosity"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "curiosity"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "curiosity",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "curiosity"
+         }
+        ]
+       }
+      },
+      "val_sign": 1,
+      "val_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "learning_progress"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ap"
+                  },
+                  "key": "learning_progress"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:curiosity:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:curiosity:val_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "learning_progress"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:curiosity:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ap"
+                      },
+                      "key": "learning_progress"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_boredom",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_boredom"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "boredom"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "boredom",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "boredom"
+         }
+        ]
+       }
+      },
+      "val_sign": -1,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ep"
+                  },
+                  "key": "low_arousal"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:boredom:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": -1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:boredom:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ep"
+                      },
+                      "key": "low_arousal"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_fulfilment",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ap"
+       },
+       "key": "hit_fulfilment"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "fulfilment"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "fulfilment",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "fulfilment"
+         }
+        ]
+       }
+      },
+      "val_sign": 1,
+      "val_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Abs",
+                  "arg": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "ap"
+                   },
+                   "key": "weighted_contribution"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Abs",
+                  "arg": {
+                   "type": "Attr",
+                   "node": {
+                    "type": "Var",
+                    "name": "ap"
+                   },
+                   "key": "weighted_contribution"
+                  }
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:fulfilment:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": 1.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:fulfilment:val_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Abs",
+                      "arg": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "ap"
+                       },
+                       "key": "weighted_contribution"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:fulfilment:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Abs",
+                      "arg": {
+                       "type": "Attr",
+                       "node": {
+                        "type": "Var",
+                        "name": "ap"
+                       },
+                       "key": "weighted_contribution"
+                      }
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_emit_none",
+   "area": "retina",
+   "order": 10,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "has_emotion_hub",
+     "hub"
+    ],
+    [
+     "hub",
+     "has_emotion_params",
+     "ep"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "ep"
+       },
+       "key": "enabled"
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "And",
+      "items": [
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ap"
+         },
+         "key": "n_fired"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       },
+       {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ap"
+         },
+         "key": "appraised"
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       }
+      ]
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "fx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "fx"
+         },
+         "key": "aff_tag"
+        },
+        "b": {
+         "type": "Lit",
+         "value": "none"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "f",
+     "Observation",
+     {
+      "status": "pending",
+      "aff_tag": "none",
+      "key": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Lit",
+          "value": "affect"
+         },
+         {
+          "type": "Lit",
+          "value": "none"
+         }
+        ]
+       }
+      },
+      "val_sign": 0,
+      "ar_level": {
+       "__term__": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "IndexAt",
+         "seq": {
+          "type": "IndexAt",
+          "seq": {
+           "type": "LogQuantum",
+           "population": {
+            "type": "Vec",
+            "items": [
+             {
+              "type": "Vec",
+              "items": [
+               {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Lit",
+                  "value": "x"
+                 },
+                 {
+                  "type": "Attr",
+                  "node": {
+                   "type": "Var",
+                   "name": "ep"
+                  },
+                  "key": "low_arousal"
+                 }
+                ]
+               }
+              ]
+             }
+            ]
+           },
+           "value_slot": 1,
+           "base_num": 2,
+           "base_den": 1,
+           "delta_num": 1,
+           "delta_den": 1,
+           "raw": true
+          },
+          "index": {
+           "type": "Lit",
+           "value": 0
+          }
+         },
+         "index": {
+          "type": "Lit",
+          "value": 0
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 1
+        }
+       }
+      },
+      "signature": {
+       "__term__": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:none:val_sign"
+           },
+           {
+            "type": "Lit",
+            "value": 0.0
+           }
+          ]
+         },
+         {
+          "type": "Vec",
+          "items": [
+           {
+            "type": "Lit",
+            "value": "aff:none:ar_level"
+           },
+           {
+            "type": "IndexAt",
+            "seq": {
+             "type": "IndexAt",
+             "seq": {
+              "type": "IndexAt",
+              "seq": {
+               "type": "LogQuantum",
+               "population": {
+                "type": "Vec",
+                "items": [
+                 {
+                  "type": "Vec",
+                  "items": [
+                   {
+                    "type": "Vec",
+                    "items": [
+                     {
+                      "type": "Lit",
+                      "value": "x"
+                     },
+                     {
+                      "type": "Attr",
+                      "node": {
+                       "type": "Var",
+                       "name": "ep"
+                      },
+                      "key": "low_arousal"
+                     }
+                    ]
+                   }
+                  ]
+                 }
+                ]
+               },
+               "value_slot": 1,
+               "base_num": 2,
+               "base_den": 1,
+               "delta_num": 1,
+               "delta_den": 1,
+               "raw": true
+              },
+              "index": {
+               "type": "Lit",
+               "value": 0
+              }
+             },
+             "index": {
+              "type": "Lit",
+              "value": 0
+             }
+            },
+            "index": {
+             "type": "Lit",
+             "value": 1
+            }
+           }
+          ]
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap",
+     "has_affect_frame",
+     "f"
+    ],
+    [
+     "add_edge",
+     "ag",
+     "observed",
+     "f"
+    ]
+   ]
+  },
+  {
+   "name": "af_direction",
+   "area": "retina",
+   "order": 11,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ap2",
+     "follows",
+     "ap1"
+    ],
+    [
+     "ap1",
+     "has_affect_frame",
+     "f1"
+    ],
+    [
+     "ap2",
+     "has_affect_frame",
+     "f2"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap1"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     },
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap2"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 1.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "ap2",
+     "val_direction",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f2"
+           },
+           "key": "val_level"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f2"
+          },
+          "key": "val_sign"
+         },
+         "other": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f2"
+            },
+            "key": "val_sign"
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f2"
+              },
+              "key": "val_level"
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             }
+            ]
+           }
+          ]
+         }
+        },
+        "b": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Eq",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f1"
+           },
+           "key": "val_level"
+          },
+          "b": {
+           "type": "Lit",
+           "value": null
+          }
+         },
+         "then": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f1"
+          },
+          "key": "val_sign"
+         },
+         "other": {
+          "type": "Times",
+          "items": [
+           {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f1"
+            },
+            "key": "val_sign"
+           },
+           {
+            "type": "Plus",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f1"
+              },
+              "key": "val_level"
+             },
+             {
+              "type": "Lit",
+              "value": 1.0
+             }
+            ]
+           }
+          ]
+         }
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f2"
+            },
+            "key": "val_level"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f2"
+           },
+           "key": "val_sign"
+          },
+          "other": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f2"
+             },
+             "key": "val_sign"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "f2"
+               },
+               "key": "val_level"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f1"
+            },
+            "key": "val_level"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f1"
+           },
+           "key": "val_sign"
+          },
+          "other": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f1"
+             },
+             "key": "val_sign"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "f1"
+               },
+               "key": "val_level"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": -1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ap2",
+     "ar_direction",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Gt",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f2"
+         },
+         "key": "ar_level"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f1"
+         },
+         "key": "ar_level"
+        }
+       },
+       "then": {
+        "type": "Lit",
+        "value": 1.0
+       },
+       "other": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Lt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f2"
+          },
+          "key": "ar_level"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f1"
+          },
+          "key": "ar_level"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": -1.0
+        },
+        "other": {
+         "type": "Lit",
+         "value": 0.0
+        }
+       }
+      }
+     }
+    ]
+   ]
+  }
+ ]
+}
