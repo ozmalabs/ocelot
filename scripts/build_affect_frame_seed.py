@@ -28,6 +28,7 @@ import tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "seeds", "affect_frame.json")
+OUT_CANON = os.path.join(ROOT, "seeds", "affect_frame_canonical.json")
 
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
@@ -87,6 +88,23 @@ def Count(src):
 
 def Exists(src, var, pred):
     return {"type": "Exists", "source": src, "var_name": var, "predicate": pred}
+
+
+def InNbrs(node_var, edge):
+    return {"type": "InNeighbours", "node": {"type": "Var", "name": node_var},
+            "edge_type": edge, "any_type": False}
+
+
+def StrCat(*parts):
+    return {"type": "StringConcat", "parts": list(parts)}
+
+
+def MapList(src, var, value):
+    return {"type": "MapList", "source": src, "var_name": var, "value": value}
+
+
+def NodesOfType(t):
+    return {"type": "NodesOfType", "node_type": t}
 
 
 def LQ(x):
@@ -203,6 +221,82 @@ direction_rule = {
 
 RULES = [emit_rule(tag, sign, vs, ars) for tag, sign, vs, ars in TABLE] + [direction_rule]
 
+# ------------------------------------------------------------- v0.2.0 rules (prereg 370000 sec 2)
+# A mixed event emits two frames, so af_direction (single-frame only) skips it. This rule
+# compares like with like: each emotion tag that the previous appraisal also carried gets a
+# ComponentDirection node. The guard is one per (appraisal, tag).
+component_direction_rule = {
+    "name": "af_component_direction",
+    "area": "retina",
+    "order": 11,
+    "latency_class": "hard_realtime",
+    "match": [["ap2", "follows", "ap1"],
+              ["ap1", "has_affect_frame", "f1"],
+              ["ap2", "has_affect_frame", "f2"]],
+    "where": And(Eq(A("f1", "aff_tag"), A("f2", "aff_tag")),
+                 Not(Exists(Nbrs("ap2", "has_component_direction"), "cx",
+                            Eq(A("cx", "tag"), A("f2", "aff_tag"))))),
+    "effects": [
+        ["add_node", "cd", "ComponentDirection",
+         {"tag": {"__term__": A("f2", "aff_tag")},
+          "val_direction": {"__term__": cmp3(K("f2"), K("f1"))},
+          "ar_direction": {"__term__": cmp3(A("f2", "ar_level"), A("f1", "ar_level"))}}],
+        ["add_edge", "ap2", "has_component_direction", "cd"],
+    ],
+}
+
+# Codebook growth, the graph form of grow_part_library. A frame minted by the sd loop (no held
+# shape explained it) adds one ShapeSignature named "affect:<tag>" and bumps codebook_epoch,
+# so sd_redecode re-arms every affect observation against the grown codebook. The Not(Exists)
+# guard makes each tag grow once.
+grow_codebook_rule = {
+    "name": "af_grow_codebook",
+    "area": "retina",
+    "order": 12,
+    "latency_class": "hard_realtime",
+    "match": [["ag", "observed", "obs"],
+              ["obs", "minted", "axis"]],
+    "where": And(Eq(IndexAt(A("obs", "key"), 0), L_str("affect")),
+                 Not(Exists(NodesOfType("ShapeSignature"), "s",
+                            Eq(A("s", "name"), StrCat(L_str("affect:"), A("obs", "aff_tag")))))),
+    "effects": [
+        ["add_node", "sig", "ShapeSignature",
+         {"name": {"__term__": StrCat(L_str("affect:"), A("obs", "aff_tag"))},
+          "kind": "affect",
+          "signature": {"__term__": A("obs", "signature")}}],
+        ["set_attr", "ag", "codebook_epoch",
+         {"__term__": Plus(A("ag", "codebook_epoch"), L(1))}],
+    ],
+}
+
+# Projection of the latest appraisal's frames onto the canonical AffectiveState (additive attrs
+# only; valence, arousal and baseline are not written). "Latest" = no incoming follows edge.
+_PROJ_FRAMES = Nbrs("ap", "has_affect_frame")
+project_affect_rule = {
+    "name": "af_project_affective_state",
+    "area": "retina",
+    "order": 12,
+    "latency_class": "hard_realtime",
+    "match": [["hub", "has_affective_state", "affect"],
+              ["hub", "has_appraisal", "ap"]],
+    "where": And(Eq(Count(InNbrs("ap", "follows")), L(0)),
+                 Gt(Count(_PROJ_FRAMES), L(0))),
+    "effects": [
+        ["set_attr", "affect", "frame_components",
+         {"__term__": MapList(_PROJ_FRAMES, "f",
+                              Vec(A("f", "aff_tag"), A("f", "val_sign"),
+                                  A("f", "val_level"), A("f", "ar_level")))}],
+        ["set_attr", "affect", "frame_count", {"__term__": Count(_PROJ_FRAMES)}],
+        ["set_attr", "affect", "frame_key",
+         {"__term__": Ite(Eq(Count(_PROJ_FRAMES), L(1)),
+                          IndexAt(MapList(_PROJ_FRAMES, "f", K("f")), 0),
+                          L_none())}],
+    ],
+}
+
+RULES_V02 = [component_direction_rule, grow_codebook_rule, project_affect_rule]
+RULES = RULES + RULES_V02
+
 PRODUCTIONS = [
     {"provenance": "seed:affect_frame:agent-emotion-hub",
      "src": {"type": "Agent", "var": "ag"},
@@ -216,21 +310,35 @@ PRODUCTIONS = [
      "src": {"type": "Appraisal", "var": "ap2"},
      "edge_type": "follows",
      "tgt": {"type": "Appraisal", "var": "ap1"}},
+    {"provenance": "seed:affect_frame:appraisal-component-direction",
+     "src": {"type": "Appraisal", "var": "ap2"},
+     "edge_type": "has_component_direction",
+     "tgt": {"type": "ComponentDirection", "var": "cd"}},
 ]
 
 DESCRIPTION = (
-    "AFFECT FRAME + CODEBOOK (block 369000; design and predictions in "
-    "docs/research/psychology_affect/AFFECT_FRAME_CODEBOOK_PREREG.md). Each fired "
-    "emotion of core_emotions publishes one integer affect frame, an Observation of "
-    "relations aff:<tag>:val_sign, aff:<tag>:val_level and aff:<tag>:ar_level, whose "
-    "levels are LogQuantum base-2 log levels of the emotion's own magnitudes. The "
-    "unchanged shape_decode_loop decodes each frame against twelve affect ShapeSignature "
-    "parts (the codebook, copied from the canonical appraisals' frames). An intensity "
-    "change arrives as a per-predicate quantum delta and is recognised as "
-    "recognized_transformed with no growth. The af_direction rule compares the frames of "
-    "two successive appraisals (follows edge) and writes val_direction and ar_direction. "
-    "Opt-in and self_load_only: no existing seed is changed, and the old valence/arousal "
-    "contract is untouched. No Rust, no Python decision."
+    "AFFECT FRAME RULES v0.2.0 (block 369000 design; block 370000 extension, prereg "
+    "docs/research/psychology_affect/AFFECT_FRAME_V02_PREREG.md). Each fired emotion of "
+    "core_emotions publishes one integer affect frame, an Observation of relations "
+    "aff:<tag>:val_sign, aff:<tag>:val_level and aff:<tag>:ar_level, whose levels are "
+    "LogQuantum base-2 log levels of the emotion's own magnitudes. The af_direction rule "
+    "compares the single frames of two successive appraisals (follows edge). "
+    "af_component_direction does the same per shared emotion tag, so mixed events get "
+    "ComponentDirection nodes. af_grow_codebook adds a ShapeSignature for an sd-minted "
+    "affect frame and bumps codebook_epoch, so the sd loop re-decodes against the grown "
+    "codebook. af_project_affective_state writes the latest appraisal's frames onto the "
+    "canonical AffectiveState as additive attrs. The codebook itself lives in the "
+    "affect_frame_canonical seed. No Rust, no Python decision."
+)
+
+CANON_DESCRIPTION = (
+    "AFFECT FRAME CANONICAL CODEBOOK v0.1.0 (block 369000, unchanged content; split out as "
+    "block 370000 so the rules seed can grow its codebook from experience). The twelve "
+    "ShapeSignature parts are the frames that the canonical core_emotions appraisals "
+    "produce once the affect_frame rules are loaded, copied verbatim as native relation "
+    "lists. Design and predictions: docs/research/psychology_affect/"
+    "AFFECT_FRAME_CODEBOOK_PREREG.md (block 369000) and AFFECT_FRAME_V02_PREREG.md (block "
+    "370000). Opt-in and self_load_only; nothing outside the affect_frame seed reads it."
 )
 
 
@@ -287,7 +395,7 @@ def derive_codebook(base_manifest):
 def main():
     base = {
         "id": "affect_frame",
-        "version": "0.1.0",
+        "version": "0.2.0",
         "self_load_only": True,
         "depends_on": ["core_emotions", "shape_decode_loop"],
         "area": "retina",
@@ -298,6 +406,7 @@ def main():
         "rules": RULES,
     }
     # Step 2: the manifest without codebook nodes goes to a temp file, and is read back.
+    # Derivation boots the full v0.2 rule set (growth included), as the prereg requires.
     fd, tmp = tempfile.mkstemp(prefix="affect_frame_base_", suffix=".json")
     try:
         with os.fdopen(fd, "w") as fh:
@@ -308,13 +417,26 @@ def main():
     finally:
         os.remove(tmp)
 
-    manifest = dict(base)
-    manifest["nodes"] = codebook
+    canonical = {
+        "id": "affect_frame_canonical",
+        "version": "0.1.0",
+        "self_load_only": True,
+        "depends_on": ["affect_frame"],
+        "area": "retina",
+        "description": CANON_DESCRIPTION,
+        "nodes": codebook,
+        "edges": [],
+        "productions": [],
+        "rules": [],
+    }
     with open(OUT, "w") as fh:
-        json.dump(manifest, fh, indent=1)
+        json.dump(base, fh, indent=1)
         fh.write("\n")
-    print("wrote", OUT, "-", len(codebook), "codebook nodes,",
-          len(RULES), "rules,", len(PRODUCTIONS), "productions")
+    with open(OUT_CANON, "w") as fh:
+        json.dump(canonical, fh, indent=1)
+        fh.write("\n")
+    print("wrote", OUT, "(%d rules, %d productions)" % (len(RULES), len(PRODUCTIONS)))
+    print("wrote", OUT_CANON, "(%d codebook nodes)" % len(codebook))
 
 
 if __name__ == "__main__":

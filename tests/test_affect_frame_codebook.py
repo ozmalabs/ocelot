@@ -25,13 +25,14 @@ pytest.importorskip("substrate_rs")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_PATH = os.path.join(ROOT, "results", "affect_frame_codebook.json")
-SEED_PATH = os.path.join(ROOT, "seeds", "affect_frame.json")
+SEED_PATH = os.path.join(ROOT, "seeds", "affect_frame_canonical.json")
 START_COMMIT = "2e674bd99454403d4a01d90e195ba328e1345723"
 # VISION_PROTOCOL §12.3: G-0's no-change claim is about THIS RUNG's own commits, so it is
 # pinned to the rung's range (prereg commit .. result commit), never to the mutable tree. The
 # live-tree form failed the day it landed, when an unrelated merge brought engine changes.
 RESULT_COMMIT = "ddea502fb3b394ecb41314a934ea1bf49feb2553"
 SEED_ID = "affect_frame"
+SEED_ID_CANON = "affect_frame_canonical"
 LOW, T_PRESENT = 50, 256
 SURPRISE_R = [150, 200, 400, 800, 1600]
 
@@ -169,6 +170,7 @@ def _boot():
     eye, inner = M._eye()
     _ensure_shape_decode_loop(eye.substrate, inner, eye._agent)
     inner.load_seed_manifest(manifest_for(SEED_ID), eye._agent)
+    inner.load_seed_manifest(manifest_for(SEED_ID_CANON), eye._agent)
     return eye, inner
 
 

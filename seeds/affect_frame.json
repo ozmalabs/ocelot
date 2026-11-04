@@ -1,247 +1,14 @@
 {
  "id": "affect_frame",
- "version": "0.1.0",
+ "version": "0.2.0",
  "self_load_only": true,
  "depends_on": [
   "core_emotions",
   "shape_decode_loop"
  ],
  "area": "retina",
- "description": "AFFECT FRAME + CODEBOOK (block 369000; design and predictions in docs/research/psychology_affect/AFFECT_FRAME_CODEBOOK_PREREG.md). Each fired emotion of core_emotions publishes one integer affect frame, an Observation of relations aff:<tag>:val_sign, aff:<tag>:val_level and aff:<tag>:ar_level, whose levels are LogQuantum base-2 log levels of the emotion's own magnitudes. The unchanged shape_decode_loop decodes each frame against twelve affect ShapeSignature parts (the codebook, copied from the canonical appraisals' frames). An intensity change arrives as a per-predicate quantum delta and is recognised as recognized_transformed with no growth. The af_direction rule compares the frames of two successive appraisals (follows edge) and writes val_direction and ar_direction. Opt-in and self_load_only: no existing seed is changed, and the old valence/arousal contract is untouched. No Rust, no Python decision.",
- "nodes": [
-  {
-   "local_id": 1,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:surprise",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:surprise:val_sign",
-      0.0
-     ],
-     [
-      "aff:surprise:ar_level",
-      9
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 2,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:fear",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:fear:val_sign",
-      -1.0
-     ],
-     [
-      "aff:fear:ar_level",
-      7
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 3,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:anxiety",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:anxiety:val_sign",
-      -1.0
-     ],
-     [
-      "aff:anxiety:ar_level",
-      10
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 4,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:anger",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:anger:val_sign",
-      -1.0
-     ],
-     [
-      "aff:anger:ar_level",
-      10
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 5,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:frustration",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:frustration:val_sign",
-      -1.0
-     ],
-     [
-      "aff:frustration:ar_level",
-      10
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 6,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:disgust",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:disgust:val_sign",
-      -1.0
-     ],
-     [
-      "aff:disgust:ar_level",
-      9
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 7,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:joy",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:joy:val_sign",
-      1.0
-     ],
-     [
-      "aff:joy:val_level",
-      9
-     ],
-     [
-      "aff:joy:ar_level",
-      9
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 8,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:sadness",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:sadness:val_sign",
-      -1.0
-     ],
-     [
-      "aff:sadness:val_level",
-      9
-     ],
-     [
-      "aff:sadness:ar_level",
-      6
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 9,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:curiosity",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:curiosity:val_sign",
-      1.0
-     ],
-     [
-      "aff:curiosity:val_level",
-      7
-     ],
-     [
-      "aff:curiosity:ar_level",
-      7
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 10,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:boredom",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:boredom:val_sign",
-      -1.0
-     ],
-     [
-      "aff:boredom:ar_level",
-      6
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 11,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:fulfilment",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:fulfilment:val_sign",
-      1.0
-     ],
-     [
-      "aff:fulfilment:val_level",
-      8
-     ],
-     [
-      "aff:fulfilment:ar_level",
-      8
-     ]
-    ]
-   }
-  },
-  {
-   "local_id": 12,
-   "type": "ShapeSignature",
-   "attrs": {
-    "name": "affect:none",
-    "kind": "affect",
-    "signature": [
-     [
-      "aff:none:val_sign",
-      0.0
-     ],
-     [
-      "aff:none:ar_level",
-      6
-     ]
-    ]
-   }
-  }
- ],
+ "description": "AFFECT FRAME RULES v0.2.0 (block 369000 design; block 370000 extension, prereg docs/research/psychology_affect/AFFECT_FRAME_V02_PREREG.md). Each fired emotion of core_emotions publishes one integer affect frame, an Observation of relations aff:<tag>:val_sign, aff:<tag>:val_level and aff:<tag>:ar_level, whose levels are LogQuantum base-2 log levels of the emotion's own magnitudes. The af_direction rule compares the single frames of two successive appraisals (follows edge). af_component_direction does the same per shared emotion tag, so mixed events get ComponentDirection nodes. af_grow_codebook adds a ShapeSignature for an sd-minted affect frame and bumps codebook_epoch, so the sd loop re-decodes against the grown codebook. af_project_affective_state writes the latest appraisal's frames onto the canonical AffectiveState as additive attrs. The codebook itself lives in the affect_frame_canonical seed. No Rust, no Python decision.",
+ "nodes": [],
  "edges": [],
  "productions": [
   {
@@ -278,6 +45,18 @@
    "tgt": {
     "type": "Appraisal",
     "var": "ap1"
+   }
+  },
+  {
+   "provenance": "seed:affect_frame:appraisal-component-direction",
+   "src": {
+    "type": "Appraisal",
+    "var": "ap2"
+   },
+   "edge_type": "has_component_direction",
+   "tgt": {
+    "type": "ComponentDirection",
+    "var": "cd"
    }
   }
  ],
@@ -4476,6 +4255,816 @@
          "type": "Lit",
          "value": 0.0
         }
+       }
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "af_component_direction",
+   "area": "retina",
+   "order": 11,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ap2",
+     "follows",
+     "ap1"
+    ],
+    [
+     "ap1",
+     "has_affect_frame",
+     "f1"
+    ],
+    [
+     "ap2",
+     "has_affect_frame",
+     "f2"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f1"
+       },
+       "key": "aff_tag"
+      },
+      "b": {
+       "type": "Attr",
+       "node": {
+        "type": "Var",
+        "name": "f2"
+       },
+       "key": "aff_tag"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap2"
+        },
+        "edge_type": "has_component_direction",
+        "any_type": false
+       },
+       "var_name": "cx",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "cx"
+         },
+         "key": "tag"
+        },
+        "b": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "f2"
+         },
+         "key": "aff_tag"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "cd",
+     "ComponentDirection",
+     {
+      "tag": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "f2"
+        },
+        "key": "aff_tag"
+       }
+      },
+      "val_direction": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f2"
+            },
+            "key": "val_level"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f2"
+           },
+           "key": "val_sign"
+          },
+          "other": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f2"
+             },
+             "key": "val_sign"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "f2"
+               },
+               "key": "val_level"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           ]
+          }
+         },
+         "b": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f1"
+            },
+            "key": "val_level"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f1"
+           },
+           "key": "val_sign"
+          },
+          "other": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f1"
+             },
+             "key": "val_sign"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "f1"
+               },
+               "key": "val_level"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f2"
+             },
+             "key": "val_level"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f2"
+            },
+            "key": "val_sign"
+           },
+           "other": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f2"
+              },
+              "key": "val_sign"
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "f2"
+                },
+                "key": "val_level"
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            ]
+           }
+          },
+          "b": {
+           "type": "IfThenElse",
+           "cond": {
+            "type": "Eq",
+            "a": {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f1"
+             },
+             "key": "val_level"
+            },
+            "b": {
+             "type": "Lit",
+             "value": null
+            }
+           },
+           "then": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f1"
+            },
+            "key": "val_sign"
+           },
+           "other": {
+            "type": "Times",
+            "items": [
+             {
+              "type": "Attr",
+              "node": {
+               "type": "Var",
+               "name": "f1"
+              },
+              "key": "val_sign"
+             },
+             {
+              "type": "Plus",
+              "items": [
+               {
+                "type": "Attr",
+                "node": {
+                 "type": "Var",
+                 "name": "f1"
+                },
+                "key": "val_level"
+               },
+               {
+                "type": "Lit",
+                "value": 1.0
+               }
+              ]
+             }
+            ]
+           }
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": -1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       }
+      },
+      "ar_direction": {
+       "__term__": {
+        "type": "IfThenElse",
+        "cond": {
+         "type": "Gt",
+         "a": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f2"
+          },
+          "key": "ar_level"
+         },
+         "b": {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f1"
+          },
+          "key": "ar_level"
+         }
+        },
+        "then": {
+         "type": "Lit",
+         "value": 1.0
+        },
+        "other": {
+         "type": "IfThenElse",
+         "cond": {
+          "type": "Lt",
+          "a": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f2"
+           },
+           "key": "ar_level"
+          },
+          "b": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f1"
+           },
+           "key": "ar_level"
+          }
+         },
+         "then": {
+          "type": "Lit",
+          "value": -1.0
+         },
+         "other": {
+          "type": "Lit",
+          "value": 0.0
+         }
+        }
+       }
+      }
+     }
+    ],
+    [
+     "add_edge",
+     "ap2",
+     "has_component_direction",
+     "cd"
+    ]
+   ]
+  },
+  {
+   "name": "af_grow_codebook",
+   "area": "retina",
+   "order": 12,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "ag",
+     "observed",
+     "obs"
+    ],
+    [
+     "obs",
+     "minted",
+     "axis"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "IndexAt",
+       "seq": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "key"
+       },
+       "index": {
+        "type": "Lit",
+        "value": 0
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": "affect"
+      }
+     },
+     {
+      "type": "Not",
+      "arg": {
+       "type": "Exists",
+       "source": {
+        "type": "NodesOfType",
+        "node_type": "ShapeSignature"
+       },
+       "var_name": "s",
+       "predicate": {
+        "type": "Eq",
+        "a": {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "s"
+         },
+         "key": "name"
+        },
+        "b": {
+         "type": "StringConcat",
+         "parts": [
+          {
+           "type": "Lit",
+           "value": "affect:"
+          },
+          {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "obs"
+           },
+           "key": "aff_tag"
+          }
+         ]
+        }
+       }
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "add_node",
+     "sig",
+     "ShapeSignature",
+     {
+      "name": {
+       "__term__": {
+        "type": "StringConcat",
+        "parts": [
+         {
+          "type": "Lit",
+          "value": "affect:"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "obs"
+          },
+          "key": "aff_tag"
+         }
+        ]
+       }
+      },
+      "kind": "affect",
+      "signature": {
+       "__term__": {
+        "type": "Attr",
+        "node": {
+         "type": "Var",
+         "name": "obs"
+        },
+        "key": "signature"
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "ag",
+     "codebook_epoch",
+     {
+      "__term__": {
+       "type": "Plus",
+       "items": [
+        {
+         "type": "Attr",
+         "node": {
+          "type": "Var",
+          "name": "ag"
+         },
+         "key": "codebook_epoch"
+        },
+        {
+         "type": "Lit",
+         "value": 1.0
+        }
+       ]
+      }
+     }
+    ]
+   ]
+  },
+  {
+   "name": "af_project_affective_state",
+   "area": "retina",
+   "order": 12,
+   "latency_class": "hard_realtime",
+   "match": [
+    [
+     "hub",
+     "has_affective_state",
+     "affect"
+    ],
+    [
+     "hub",
+     "has_appraisal",
+     "ap"
+    ]
+   ],
+   "where": {
+    "type": "And",
+    "items": [
+     {
+      "type": "Eq",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "InNeighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "follows",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     },
+     {
+      "type": "Gt",
+      "a": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       }
+      },
+      "b": {
+       "type": "Lit",
+       "value": 0.0
+      }
+     }
+    ]
+   },
+   "effects": [
+    [
+     "set_attr",
+     "affect",
+     "frame_components",
+     {
+      "__term__": {
+       "type": "MapList",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       },
+       "var_name": "f",
+       "value": {
+        "type": "Vec",
+        "items": [
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "aff_tag"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "val_sign"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "val_level"
+         },
+         {
+          "type": "Attr",
+          "node": {
+           "type": "Var",
+           "name": "f"
+          },
+          "key": "ar_level"
+         }
+        ]
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "affect",
+     "frame_count",
+     {
+      "__term__": {
+       "type": "Count",
+       "source": {
+        "type": "Neighbours",
+        "node": {
+         "type": "Var",
+         "name": "ap"
+        },
+        "edge_type": "has_affect_frame",
+        "any_type": false
+       }
+      }
+     }
+    ],
+    [
+     "set_attr",
+     "affect",
+     "frame_key",
+     {
+      "__term__": {
+       "type": "IfThenElse",
+       "cond": {
+        "type": "Eq",
+        "a": {
+         "type": "Count",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "ap"
+          },
+          "edge_type": "has_affect_frame",
+          "any_type": false
+         }
+        },
+        "b": {
+         "type": "Lit",
+         "value": 1.0
+        }
+       },
+       "then": {
+        "type": "IndexAt",
+        "seq": {
+         "type": "MapList",
+         "source": {
+          "type": "Neighbours",
+          "node": {
+           "type": "Var",
+           "name": "ap"
+          },
+          "edge_type": "has_affect_frame",
+          "any_type": false
+         },
+         "var_name": "f",
+         "value": {
+          "type": "IfThenElse",
+          "cond": {
+           "type": "Eq",
+           "a": {
+            "type": "Attr",
+            "node": {
+             "type": "Var",
+             "name": "f"
+            },
+            "key": "val_level"
+           },
+           "b": {
+            "type": "Lit",
+            "value": null
+           }
+          },
+          "then": {
+           "type": "Attr",
+           "node": {
+            "type": "Var",
+            "name": "f"
+           },
+           "key": "val_sign"
+          },
+          "other": {
+           "type": "Times",
+           "items": [
+            {
+             "type": "Attr",
+             "node": {
+              "type": "Var",
+              "name": "f"
+             },
+             "key": "val_sign"
+            },
+            {
+             "type": "Plus",
+             "items": [
+              {
+               "type": "Attr",
+               "node": {
+                "type": "Var",
+                "name": "f"
+               },
+               "key": "val_level"
+              },
+              {
+               "type": "Lit",
+               "value": 1.0
+              }
+             ]
+            }
+           ]
+          }
+         }
+        },
+        "index": {
+         "type": "Lit",
+         "value": 0
+        }
+       },
+       "other": {
+        "type": "Lit",
+        "value": null
        }
       }
      }
