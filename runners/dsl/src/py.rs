@@ -1301,6 +1301,20 @@ fn json_to_pyobj<'py>(py: Python<'py>, j: &J) -> PyResult<Bound<'py, PyAny>> {
     Ok(json_mod.call_method1("loads", (s,))?)
 }
 
+fn rule_eval_failure_to_json(
+    failure: crate::rewrite::RuleEvalFailure,
+    interner: &crate::sym::Interner,
+) -> J {
+    serde_json::json!({
+        "rule_uid": failure.rule_uid,
+        "rule_name": interner.resolve(failure.rule_name),
+        "term_idx": failure.term.0,
+        "kind": failure.error.kind,
+        "depth": failure.error.depth,
+        "limit": failure.error.limit,
+    })
+}
+
 fn rule_write_event_to_json(
     event: &crate::graph::RuleWriteEvent,
     interner: &crate::sym::Interner,
@@ -1407,7 +1421,16 @@ fn rule_delta_report_to_pyobj<'py>(
         crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
         crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
         crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+        crate::substrate::RuleRunStatus::ResourceLimit => "resource_limit",
     };
+    let resource_limit = report.run.resource_limit.map(|failure| serde_json::json!({
+        "rule_uid": failure.rule_uid,
+        "rule_name": interner.resolve(failure.rule_name),
+        "term_idx": failure.term.0,
+        "kind": failure.error.kind,
+        "depth": failure.error.depth,
+        "limit": failure.error.limit,
+    }));
     let affected_edges: Vec<(u32, String, u32)> = report
         .affected_edges
         .iter()
@@ -1428,6 +1451,7 @@ fn rule_delta_report_to_pyobj<'py>(
             "status": status,
             "progress_steps": report.run.progress_steps,
             "requested_progress_budget": report.run.requested_progress_budget,
+            "resource_limit": resource_limit,
             "budget_overshoot": report.run.budget_overshoot,
             "passes_completed": report.run.passes_completed,
             "cycle_detection_enabled": report.run.cycle_detection_enabled,
@@ -1466,7 +1490,11 @@ fn rule_delta_report_to_pyobj<'py>(
 /// Evaluate one Term against the live graph + env, returning its Value. Borrows
 /// `inner` only for the duration of the eval, so the caller is free to mutate
 /// the graph between calls (the backtracking add/remove edge).
-fn search_eval(inner: &mut SubstrateRs, idx: TermIdx, env: &Env) -> Value {
+fn search_eval(
+    inner: &mut SubstrateRs,
+    idx: TermIdx,
+    env: &Env,
+) -> Result<Value, crate::term::EvalLimitError> {
     // Clone the (small, constant) base env per eval: `evaluate` uses env as a
     // scratch stack (pushing Filter/Exists iteration vars), so sharing one &mut
     // env across the fail/open/options evals of a level would let one eval's
@@ -1487,8 +1515,18 @@ fn search_eval(inner: &mut SubstrateRs, idx: TermIdx, env: &Env) -> Value {
     if !concepts.is_empty() {
         ctx = ctx.with_concepts(concepts);
     }
-    evaluate(terms, idx, &mut env_local, &mut ctx)
+    let value = evaluate(terms, idx, &mut env_local, &mut ctx);
+    match ctx.eval_limit_error {
+        Some(error) => Err(error),
+        None => Ok(value),
+    }
 }
+
+type SearchEvaluator = fn(
+    &mut SubstrateRs,
+    TermIdx,
+    &Env,
+) -> Result<Value, crate::term::EvalLimitError>;
 
 /// Extract the NodeIDs a strategy Term evaluated to (Filter / Neighbours yield a
 /// Set; a bare Node is a singleton).
@@ -1510,8 +1548,81 @@ fn search_nodes(v: &Value) -> Vec<NodeID> {
     }
 }
 
+#[derive(Debug)]
+enum SearchError {
+    Eval(crate::term::EvalLimitError),
+    Insert(crate::graph::EdgeInsertError),
+    NoProgress { src: NodeID, tgt: NodeID },
+    TraversalLimit { kind: &'static str, limit: usize },
+}
+
+/// Default search limits for a fresh Substrate. `None` means unlimited. Depth is
+/// unbounded by default: every depth level is an entered frame, so the visits
+/// limit already bounds depth, and the stacker guards the native stack.
+const DEFAULT_SEARCH_MAX_DEPTH: Option<usize> = None;
+const DEFAULT_SEARCH_MAX_VISITS: Option<usize> = Some(100_000);
+
+struct SearchBudget {
+    max_depth: Option<usize>,
+    max_visits: Option<usize>,
+    visits: usize,
+}
+
+impl SearchBudget {
+    fn enter(&mut self, depth: usize) -> Result<(), SearchError> {
+        if let Some(limit) = self.max_depth {
+            if depth > limit {
+                return Err(SearchError::TraversalLimit { kind: "depth", limit });
+            }
+        }
+        if let Some(limit) = self.max_visits {
+            if self.visits >= limit {
+                return Err(SearchError::TraversalLimit { kind: "visits", limit });
+            }
+        }
+        self.visits += 1;
+        Ok(())
+    }
+}
+
+/// A search limit argument from Python. `Unset` means the keyword was omitted,
+/// `Unlimited` means Python `None`, and `Limit(n)` is an integer. Python `None`
+/// and an omitted argument must be distinguished, so this is not an `Option`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SearchLimitArg {
+    Unset,
+    Unlimited,
+    Limit(usize),
+}
+
+impl SearchLimitArg {
+    /// Value after applying this argument to `current`.
+    fn apply(self, current: Option<usize>) -> Option<usize> {
+        match self {
+            Self::Unset => current,
+            Self::Unlimited => None,
+            Self::Limit(n) => Some(n),
+        }
+    }
+}
+
+impl<'py> FromPyObject<'py> for SearchLimitArg {
+    fn extract_bound(ob: &Bound<'py, PyAny>) -> PyResult<Self> {
+        if ob.is_none() {
+            Ok(Self::Unlimited)
+        } else {
+            Ok(Self::Limit(ob.extract::<usize>()?))
+        }
+    }
+}
+
+impl From<crate::term::EvalLimitError> for SearchError {
+    fn from(error: crate::term::EvalLimitError) -> Self { Self::Eval(error) }
+}
+
 /// DFS with undo. Returns the count of solutions (when `value` is None) or the
 /// sum of `value` over solution leaves. `fail` prunes; `accept` gates a leaf.
+#[cfg(test)]
 #[allow(clippy::too_many_arguments)]
 fn search_recurse(
     inner: &mut SubstrateRs,
@@ -1522,37 +1633,108 @@ fn search_recurse(
     value: Option<TermIdx>,
     accept: Option<TermIdx>,
     env: &Env,
-) -> f64 {
+) -> Result<f64, SearchError> {
+    search_recurse_with_evaluator(inner, open, options, assign, fail, value, accept, env, search_eval)
+}
+
+#[cfg(test)]
+#[allow(clippy::too_many_arguments)]
+fn search_recurse_with_evaluator(
+    inner: &mut SubstrateRs,
+    open: TermIdx,
+    options: TermIdx,
+    assign: Sym,
+    fail: Option<TermIdx>,
+    value: Option<TermIdx>,
+    accept: Option<TermIdx>,
+    env: &Env,
+    evaluator: SearchEvaluator,
+) -> Result<f64, SearchError> {
+    let mut budget = SearchBudget {
+        max_depth: DEFAULT_SEARCH_MAX_DEPTH,
+        max_visits: DEFAULT_SEARCH_MAX_VISITS,
+        visits: 0,
+    };
+    search_recurse_budgeted(inner, open, options, assign, fail, value, accept, env, evaluator, 0, &mut budget)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn search_recurse_budgeted(
+    inner: &mut SubstrateRs,
+    open: TermIdx,
+    options: TermIdx,
+    assign: Sym,
+    fail: Option<TermIdx>,
+    value: Option<TermIdx>,
+    accept: Option<TermIdx>,
+    env: &Env,
+    evaluator: SearchEvaluator,
+    depth: usize,
+    budget: &mut SearchBudget,
+) -> Result<f64, SearchError> {
+    budget.enter(depth)?;
+    // DFS is recursive independently of term evaluation. Check stack headroom
+    // at every branch, as the term evaluator does, before entering its frame.
+    stacker::maybe_grow(1024 * 1024, 2 * 1024 * 1024, || {
+        search_recurse_inner(inner, open, options, assign, fail, value, accept, env, evaluator, depth, budget)
+    })
+}
+
+#[inline(never)]
+#[allow(clippy::too_many_arguments)]
+fn search_recurse_inner(
+    inner: &mut SubstrateRs,
+    open: TermIdx,
+    options: TermIdx,
+    assign: Sym,
+    fail: Option<TermIdx>,
+    value: Option<TermIdx>,
+    accept: Option<TermIdx>,
+    env: &Env,
+    evaluator: SearchEvaluator,
+    depth: usize,
+    budget: &mut SearchBudget,
+) -> Result<f64, SearchError> {
     if let Some(f) = fail {
-        if search_eval(inner, f, env).truthy() {
-            return 0.0; // constraint violated → prune
+        if evaluator(inner, f, env)?.truthy() {
+            return Ok(0.0); // constraint violated → prune
         }
     }
-    let opens = search_nodes(&search_eval(inner, open, env));
+    let opens = search_nodes(&evaluator(inner, open, env)?);
     if opens.is_empty() {
         if let Some(a) = accept {
-            if !search_eval(inner, a, env).truthy() {
-                return 0.0;
+            if !evaluator(inner, a, env)?.truthy() {
+                return Ok(0.0);
             }
         }
         return match value {
-            Some(v) => search_eval(inner, v, env).as_f64(),
-            None => 1.0, // complete + consistent → one solution
+            Some(v) => Ok(evaluator(inner, v, env)?.as_f64()),
+            None => Ok(1.0), // complete + consistent → one solution
         };
     }
     let item = *opens.iter().min().unwrap(); // deterministic choice
-    let opts = search_nodes(&search_eval(inner, options, env));
+    let opts = search_nodes(&evaluator(inner, options, env)?);
     let mut total = 0.0;
     for opt in opts {
-        let _ = inner
-            .graph
-            .insert_edge(item, assign, opt, FxHashMap::<Sym, Value>::default());
-        total += search_recurse(inner, open, options, assign, fail, value, accept, env);
-        if let Some(idx) = inner.graph.edge_idx(item, assign, opt) {
-            inner.graph.delete_edge(idx); // backtrack
+        // Preserve an assignment edge already present in the caller's graph:
+        // insert_edge overwrites its attributes, and deleting it on unwind
+        // would otherwise corrupt caller-owned state.
+        let undo = inner.graph.insert_temporary_edge(item, assign, opt)
+            .map_err(SearchError::Insert)?;
+        if matches!(&undo, crate::graph::TemporaryEdgeUndo::Existing) {
+            return Err(SearchError::NoProgress { src: item, tgt: opt });
         }
+        let branch = match depth.checked_add(1) {
+            Some(next_depth) => search_recurse_budgeted(inner, open, options, assign, fail, value, accept, env, evaluator, next_depth, budget),
+            None => Err(SearchError::TraversalLimit {
+                kind: "depth",
+                limit: budget.max_depth.unwrap_or(usize::MAX),
+            }),
+        };
+        inner.graph.undo_temporary_edge(undo); // backtrack before propagating errors
+        total += branch?;
     }
-    total
+    Ok(total)
 }
 
 // --- Substrate -----------------------------------------------------------
@@ -1587,6 +1769,10 @@ pub struct PySubstrate {
     /// `memory_bound`; persists across calls so the growth history + the
     /// order-N shape index accumulate.
     memory: Option<crate::memory::MemoryFaculty>,
+    /// Default `search` depth limit (`None` = unlimited), set by `set_search_limits`.
+    search_max_depth: Option<usize>,
+    /// Default `search` visits limit (`None` = unlimited), set by `set_search_limits`.
+    search_max_visits: Option<usize>,
 }
 
 /// Immutable reusable native base. It contains no Python hooks or external
@@ -1616,6 +1802,8 @@ impl PySubstrateSnapshot {
             agent_thread: None,
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             memory: None,
+            search_max_depth: DEFAULT_SEARCH_MAX_DEPTH,
+            search_max_visits: DEFAULT_SEARCH_MAX_VISITS,
         })
     }
 }
@@ -1632,7 +1820,32 @@ impl PySubstrate {
             agent_thread: None,
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             memory: None,
+            search_max_depth: DEFAULT_SEARCH_MAX_DEPTH,
+            search_max_visits: DEFAULT_SEARCH_MAX_VISITS,
         }
+    }
+
+    /// Set this Substrate's default `search` limits. `None` means unlimited.
+    /// An omitted argument leaves that limit unchanged. Both arguments are
+    /// validated before either is stored, so a rejected call changes nothing.
+    /// Per-call `search(max_depth=..., max_visits=...)` values override these
+    /// defaults for that call only.
+    #[pyo3(
+        signature = (max_depth=SearchLimitArg::Unset, max_visits=SearchLimitArg::Unset),
+        text_signature = "(self, max_depth=..., max_visits=...)"
+    )]
+    fn set_search_limits(&mut self, max_depth: SearchLimitArg, max_visits: SearchLimitArg) {
+        self.search_max_depth = max_depth.apply(self.search_max_depth);
+        self.search_max_visits = max_visits.apply(self.search_max_visits);
+    }
+
+    /// Return this Substrate's default `search` limits as
+    /// `{"max_depth": int|None, "max_visits": int|None}`. `None` means unlimited.
+    fn get_search_limits<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
+        let limits = PyDict::new_bound(py);
+        limits.set_item("max_depth", self.search_max_depth)?;
+        limits.set_item("max_visits", self.search_max_visits)?;
+        Ok(limits)
     }
 
     /// Report the active global Rayon pool size for runtime diagnostics.
@@ -1715,6 +1928,8 @@ impl PySubstrate {
             agent_thread: None,
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             memory: None,
+            search_max_depth: self.search_max_depth,
+            search_max_visits: self.search_max_visits,
         })
     }
 
@@ -1751,6 +1966,8 @@ impl PySubstrate {
             agent_thread: None,
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             memory: None,
+            search_max_depth: self.search_max_depth,
+            search_max_visits: self.search_max_visits,
         })
     }
 
@@ -1787,6 +2004,8 @@ impl PySubstrate {
             agent_thread: None,
             agent_stop: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             memory: None,
+            search_max_depth: self.search_max_depth,
+            search_max_visits: self.search_max_visits,
         })
     }
 
@@ -3709,6 +3928,16 @@ impl PySubstrate {
         }
         let _host_evaluation_scope = crate::scale_audit::host_evaluation_scope();
         let v = evaluate(terms, idx, &mut env_v, &mut ctx);
+        // Only this Python `Substrate.evaluate` entrypoint translates the
+        // sticky limit signal today. Native/rule-engine callers that consume
+        // `Value` directly still need an explicit Result-based API migration.
+        if let Some(error) = ctx.eval_limit_error {
+            terms.nodes.truncate(snapshot);
+            return Err(PyRuntimeError::new_err(format!(
+                "EVAL_RESOURCE_LIMIT: kind={} depth={} limit={}",
+                error.kind, error.depth, error.limit
+            )));
+        }
         // Release the scratch Terms — concepts/productions live below
         // the snapshot so their TermIdx remain valid.
         terms.nodes.truncate(snapshot);
@@ -4457,18 +4686,27 @@ impl PySubstrate {
     ) -> PyResult<Bound<'py, PyAny>> {
         crate::scale_audit::ffi(1, 0);
         crate::scale_audit::begin_epoch();
-        let (report, last_progress_rule) = py.allow_threads(|| {
+        let (report, last_progress_rule, resource_limit) = py.allow_threads(|| {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
             let report = guard.run_rules_report(max_steps, detect_cycles);
             let last_progress_rule = report
                 .last_progress_rule
                 .map(|name| guard.interner.resolve(name).to_owned());
-            (report, last_progress_rule)
+            let resource_limit = report.resource_limit.map(|failure| serde_json::json!({
+                "rule_uid": failure.rule_uid,
+                "rule_name": guard.interner.resolve(failure.rule_name),
+                "term_idx": failure.term.0,
+                "kind": failure.error.kind,
+                "depth": failure.error.depth,
+                "limit": failure.error.limit,
+            }));
+            (report, last_progress_rule, resource_limit)
         });
         let status = match report.status {
             crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
             crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
             crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+            crate::substrate::RuleRunStatus::ResourceLimit => "resource_limit",
         };
         json_to_pyobj(
             py,
@@ -4480,6 +4718,7 @@ impl PySubstrate {
                 "passes_completed": report.passes_completed,
                 "cycle_detection_enabled": report.cycle_detection_enabled,
                 "last_progress_rule": last_progress_rule,
+                "resource_limit": resource_limit,
             }),
         )
     }
@@ -4560,7 +4799,16 @@ impl PySubstrate {
             crate::substrate::RuleRunStatus::FixedPoint => "fixed_point",
             crate::substrate::RuleRunStatus::RepeatedGraphState => "repeated_graph_state",
             crate::substrate::RuleRunStatus::ProgressBudgetReached => "progress_budget_reached",
+            crate::substrate::RuleRunStatus::ResourceLimit => "resource_limit",
         };
+        let resource_limit = run.resource_limit.map(|failure| serde_json::json!({
+            "rule_uid": failure.rule_uid,
+            "rule_name": guard.interner.resolve(failure.rule_name),
+            "term_idx": failure.term.0,
+            "kind": failure.error.kind,
+            "depth": failure.error.depth,
+            "limit": failure.error.limit,
+        }));
         let edges: Vec<(u32, String, u32, bool)> = edges
             .iter()
             .map(|(key, now)| (key.src.0, guard.interner.resolve(key.edge_type).to_string(), key.tgt.0, *now))
@@ -4574,6 +4822,7 @@ impl PySubstrate {
             "progress_steps": run.progress_steps,
             "affected_nodes": by_type,
             "edges_changed": edges,
+            "resource_limit": resource_limit,
         }))
     }
 
@@ -4620,6 +4869,37 @@ impl PySubstrate {
             let mut guard = self.inner.lock().expect("substrate mutex poisoned");
             guard.run_rules_scoped(max_steps, detect_cycles, scope_node)
         })
+    }
+
+    /// Checked scoped closure; includes the first matcher or computed-effect resource limit, if any.
+    #[pyo3(signature = (max_steps=100_000, detect_cycles=false, scope_mt=None))]
+    fn run_rules_scoped_report<'py>(
+        &mut self,
+        py: Python<'py>,
+        max_steps: usize,
+        detect_cycles: bool,
+        scope_mt: Option<PyRef<'_, PyNodeID>>,
+    ) -> PyResult<Bound<'py, PyAny>> {
+        crate::scale_audit::ffi(1, 0);
+        crate::scale_audit::begin_epoch();
+        let scope_node = scope_mt.as_ref().map(|r| r.to_node());
+        let report = py.allow_threads(|| {
+            let mut guard = self.inner.lock().expect("substrate mutex poisoned");
+            guard.run_rules_scoped_report(max_steps, detect_cycles, scope_node)
+        });
+        let guard = self.inner.lock().expect("substrate mutex poisoned");
+        let failure = report.resource_limit.map(|failure| serde_json::json!({
+            "rule_uid": failure.rule_uid,
+            "rule_name": guard.interner.resolve(failure.rule_name),
+            "term_idx": failure.term.0,
+            "kind": failure.error.kind,
+            "depth": failure.error.depth,
+            "limit": failure.error.limit,
+        }));
+        json_to_pyobj(py, &serde_json::json!({
+            "progress_steps": report.progress_steps,
+            "resource_limit": failure,
+        }))
     }
 
     /// Diagnostic only: time repeated construction/drop of the active-rule
@@ -4676,6 +4956,14 @@ impl PySubstrate {
                 "affected_edges": affected_edges,
                 "affected_microtheories": report.affected_microtheories.iter().map(|nid| nid.0).collect::<Vec<_>>(),
                 "deferred_effects_pending": report.deferred_effects_pending,
+                "resource_limit": report.resource_limit.map(|failure| serde_json::json!({
+                    "rule_uid": failure.rule_uid,
+                    "rule_name": guard.interner.resolve(failure.rule_name),
+                    "term_idx": failure.term.0,
+                    "kind": failure.error.kind,
+                    "depth": failure.error.depth,
+                    "limit": failure.error.limit,
+                })),
                 "frame_notifications_complete": false,
             }),
         )
@@ -4761,10 +5049,14 @@ impl PySubstrate {
         let residual_by_area: Vec<J> = report.residual_by_area.iter()
             .map(|(area, residual)| serde_json::json!({"area": name(*area), "residual": residual}))
             .collect();
+        let resource_limit = report.resource_limit.map(|failure| {
+            rule_eval_failure_to_json(failure, &guard.interner)
+        });
         json_to_pyobj(
             py,
             &serde_json::json!({
                 "steps": report.steps,
+                "resource_limit": resource_limit,
                 "rounds": rounds,
                 "n_rounds": report.rounds.len(),
                 "areas": areas,
@@ -4817,8 +5109,11 @@ impl PySubstrate {
         let residual_by_area: Vec<J> = report.residual_by_area.iter()
             .map(|(area, residual)| serde_json::json!({"area": name(*area), "residual": residual}))
             .collect();
+        let resource_limit = report.resource_limit.map(|failure| {
+            rule_eval_failure_to_json(failure, &guard.interner)
+        });
         json_to_pyobj(py, &serde_json::json!({
-            "steps": report.steps, "rounds": rounds, "n_rounds": report.rounds.len(),
+            "steps": report.steps, "resource_limit": resource_limit, "rounds": rounds, "n_rounds": report.rounds.len(),
             "areas": selected_areas, "residual_by_area": residual_by_area,
             "hit_max_rounds": report.hit_max_rounds,
         }))
@@ -7119,7 +7414,14 @@ impl PySubstrate {
     /// with `value` set it SUMS that Term over solution leaves (e.g. the signed
     /// product behind a determinant). `env` pre-binds free vars (anchors, the
     /// matrix node, …). Returns an int when the result is integral, else a float.
-    #[pyo3(signature = (open, options, assign_edge, fail=None, value=None, accept=None, env=None))]
+    /// `max_depth` bounds assignment edges on a path (root is depth 0), and
+    /// `max_visits` bounds entered DFS frames. Exceeding either raises
+    /// RuntimeError after temporary branch edges have been undone.
+    /// `max_depth` and `max_visits` default to None, which uses this
+    /// Substrate's current default (see `set_search_limits`). An int overrides
+    /// the default for this call only. To run one call with no limit, set the
+    /// Substrate default to None with `set_search_limits(None, None)` first.
+    #[pyo3(signature = (open, options, assign_edge, fail=None, value=None, accept=None, env=None, max_depth=None, max_visits=None))]
     fn search<'py>(
         &mut self,
         py: Python<'py>,
@@ -7130,6 +7432,8 @@ impl PySubstrate {
         value: Option<&Bound<'_, PyAny>>,
         accept: Option<&Bound<'_, PyAny>>,
         env: Option<&Bound<'_, PyDict>>,
+        max_depth: Option<usize>,
+        max_visits: Option<usize>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let mut __substrate_guard = self.inner.lock().expect("substrate mutex poisoned");
         let inner = &mut *__substrate_guard;
@@ -7183,7 +7487,12 @@ impl PySubstrate {
                     return Err(err);
                 }
             };
-        let result = search_recurse(
+        let mut budget = SearchBudget {
+            max_depth: max_depth.or(self.search_max_depth),
+            max_visits: max_visits.or(self.search_max_visits),
+            visits: 0,
+        };
+        let result = search_recurse_budgeted(
             inner,
             open_idx,
             options_idx,
@@ -7192,8 +7501,29 @@ impl PySubstrate {
             value_idx,
             accept_idx,
             &env_v,
+            search_eval,
+            0,
+            &mut budget,
         );
         inner.terms.nodes.truncate(snapshot);
+        let result = result.map_err(|error| match error {
+            SearchError::Eval(error) => PyRuntimeError::new_err(format!(
+                "search evaluation resource limit: kind={} depth={} limit={}",
+                error.kind, error.depth, error.limit,
+            )),
+            SearchError::Insert(error) => PyValueError::new_err(format!(
+                "search assignment edge insertion failed: {:?}", error,
+            )),
+            SearchError::NoProgress { src, tgt } => PyRuntimeError::new_err(format!(
+                "search made no progress: assignment edge ({}, {}, {}) already exists",
+                src.0,
+                inner.interner.resolve(assign_sym),
+                tgt.0,
+            )),
+            SearchError::TraversalLimit { kind, limit } => PyRuntimeError::new_err(format!(
+                "search traversal limit: kind={} limit={}", kind, limit,
+            )),
+        })?;
         let v = if result.fract() == 0.0 && result.abs() < 9e15 {
             Value::Int(result as i64)
         } else {
@@ -12481,6 +12811,35 @@ mod reflex_manifest_tests {
         SubstrateRs::new(ConsistencyChecker::new(Grammar::new()))
     }
 
+    #[test]
+    fn phase65_settle_resource_limit_is_exposed_in_python_json() {
+        let mut interner = crate::sym::Interner::new();
+        let rule_name = interner.intern("limited_rule");
+        let failure = crate::rewrite::RuleEvalFailure {
+            rule_uid: 42,
+            rule_name,
+            term: TermIdx(7),
+            error: crate::term::EvalLimitError {
+                kind: "EvalSubgraph",
+                depth: 257,
+                limit: 256,
+            },
+        };
+        let json = serde_json::json!({
+            "resource_limit": rule_eval_failure_to_json(failure, &interner),
+        });
+        pyo3::prepare_freethreaded_python();
+        Python::with_gil(|py| {
+            let value = json_to_pyobj(py, &json).expect("JSON must convert to Python dict");
+            let failure = value.get_item("resource_limit").unwrap();
+            assert_eq!(failure.get_item("rule_uid").unwrap().extract::<u64>().unwrap(), 42);
+            assert_eq!(failure.get_item("rule_name").unwrap().extract::<String>().unwrap(), "limited_rule");
+            assert_eq!(failure.get_item("kind").unwrap().extract::<String>().unwrap(), "EvalSubgraph");
+            assert_eq!(failure.get_item("depth").unwrap().extract::<usize>().unwrap(), 257);
+            assert_eq!(failure.get_item("limit").unwrap().extract::<usize>().unwrap(), 256);
+        });
+    }
+
     /// A well-formed `"reflexes"` manifest entry creates a `Reflex` node
     /// (attrs name/response/refractory_ticks/last_fired_tick/fire_count
     /// at `install_reflex`'s fresh-reflex defaults), materialises its
@@ -15113,5 +15472,259 @@ mod fb_sample_effect_tests {
         );
 
         let _ = std::fs::remove_file(&path);
+    }
+}
+
+#[cfg(test)]
+mod search_eval_result_tests {
+    use super::*;
+
+    #[test]
+    fn small_visit_budget_maps_to_python_error_and_allows_retry() {
+        pyo3::prepare_freethreaded_python();
+        Python::with_gil(|py| {
+            let mut substrate = PySubstrate::new();
+            let before = substrate.inner.lock().unwrap().terms.nodes.len();
+            let literal = PyDict::new_bound(py);
+            literal.set_item("type", "Lit").unwrap();
+            literal.set_item("value", false).unwrap();
+            let error = substrate.search(py, literal.as_any(), literal.as_any(), "assign", None, None, None, None, Some(1), Some(0))
+                .expect_err("zero visit budget must be reported");
+            assert!(error.is_instance_of::<PyRuntimeError>(py));
+            assert!(error.to_string().contains("kind=visits"));
+            assert_eq!(substrate.inner.lock().unwrap().terms.nodes.len(), before);
+            let result = substrate.search(py, literal.as_any(), literal.as_any(), "assign", None, None, None, None, Some(1), Some(1))
+                .expect("one frame must be sufficient for empty search");
+            assert_eq!(result.extract::<i64>().unwrap(), 1);
+            assert_eq!(substrate.inner.lock().unwrap().terms.nodes.len(), before);
+        });
+    }
+
+    #[test]
+    fn small_search_budgets_return_errors_and_remove_parent_edge() {
+        for (max_depth, max_visits, expected_kind) in [(0, 10, "depth"), (10, 1, "visits")] {
+            let mut inner = SubstrateRs::new(ConsistencyChecker::new(Grammar::new()));
+            let open = inner.terms.add(crate::term::TermNode::Lit {
+                value: Value::Set(vec![Value::Node(NodeID(0))].into()),
+            });
+            let options = inner.terms.add(crate::term::TermNode::Lit {
+                value: Value::Set(vec![Value::Node(NodeID(1))].into()),
+            });
+            let node_type = inner.interner.intern("test_node");
+            let assign = inner.interner.intern("test_assignment");
+            inner.graph.insert_node(node_type, FxHashMap::default());
+            inner.graph.insert_node(node_type, FxHashMap::default());
+            let mut budget = SearchBudget { max_depth: Some(max_depth), max_visits: Some(max_visits), visits: 0 };
+            let result = search_recurse_budgeted(
+                &mut inner, open, options, assign, None, None, None, &Env::new(),
+                search_eval, 0, &mut budget,
+            );
+            assert!(matches!(result, Err(SearchError::TraversalLimit { kind, .. }) if kind == expected_kind));
+            assert_eq!(inner.graph.edge_count(), 0, "parent edge must be undone");
+        }
+    }
+
+    fn fail_after_assignment(
+        inner: &mut SubstrateRs,
+        idx: TermIdx,
+        env: &Env,
+    ) -> Result<Value, crate::term::EvalLimitError> {
+        if inner.graph.edge_count() > 0 {
+            return Err(crate::term::EvalLimitError {
+                kind: "SyntheticEvaluatorFailure",
+                depth: 7,
+                limit: 99,
+            });
+        }
+        search_eval(inner, idx, env)
+    }
+
+    #[test]
+    fn search_returns_normal_count_when_open_set_is_empty() {
+        let mut inner = SubstrateRs::new(ConsistencyChecker::new(Grammar::new()));
+        let empty = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(Vec::<Value>::new().into()),
+        });
+        let assign = inner.interner.intern("test_assignment");
+
+        let result = search_recurse(
+            &mut inner,
+            empty,
+            empty,
+            assign,
+            None,
+            None,
+            None,
+            &Env::new(),
+        );
+
+        assert!(matches!(result, Ok(1.0)));
+    }
+
+    #[test]
+    fn search_returns_error_when_temporary_assignment_insert_fails() {
+        let mut inner = SubstrateRs::new(ConsistencyChecker::new(Grammar::new()));
+        let open = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(NodeID(40))].into()),
+        });
+        let options = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(NodeID(41))].into()),
+        });
+        let assign = inner.interner.intern("test_assignment");
+
+        let result = search_recurse(
+            &mut inner, open, options, assign, None, None, None, &Env::new(),
+        );
+
+        assert!(matches!(result, Err(SearchError::Insert(crate::graph::EdgeInsertError::MissingSrc(NodeID(40))))));
+        assert_eq!(inner.graph.edge_count(), 0);
+    }
+
+    #[test]
+    fn search_returns_error_when_assignment_edge_already_exists() {
+        let mut inner = SubstrateRs::new(ConsistencyChecker::new(Grammar::new()));
+        let open = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(NodeID(0))].into()),
+        });
+        let options = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(NodeID(1))].into()),
+        });
+        let node_type = inner.interner.intern("test_node");
+        let assign = inner.interner.intern("test_assignment");
+        inner.graph.insert_node(node_type, FxHashMap::default());
+        inner.graph.insert_node(node_type, FxHashMap::default());
+        inner.graph.insert_edge(NodeID(0), assign, NodeID(1), FxHashMap::default()).unwrap();
+
+        let result = search_recurse(
+            &mut inner, open, options, assign, None, None, None, &Env::new(),
+        );
+
+        assert!(matches!(result, Err(SearchError::NoProgress { src: NodeID(0), tgt: NodeID(1) })));
+        assert_eq!(inner.graph.edge_count(), 1);
+        assert!(inner.graph.edge_idx(NodeID(0), assign, NodeID(1)).is_some());
+    }
+
+    #[test]
+    fn search_propagates_evaluator_failure_and_undoes_ancestor_assignment() {
+        let mut inner = SubstrateRs::new(ConsistencyChecker::new(Grammar::new()));
+        let open = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(NodeID(0))].into()),
+        });
+        let options = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(NodeID(1))].into()),
+        });
+        let node_type = inner.interner.intern("test_node");
+        let assign = inner.interner.intern("test_assignment");
+        inner.graph.insert_node(node_type, FxHashMap::default());
+        inner.graph.insert_node(node_type, FxHashMap::default());
+
+        let result = search_recurse_with_evaluator(
+            &mut inner, open, options, assign, None, None, None, &Env::new(),
+            fail_after_assignment,
+        );
+
+        assert!(matches!(result, Err(SearchError::Eval(crate::term::EvalLimitError {
+            kind: "SyntheticEvaluatorFailure", depth: 7, limit: 99,
+        }))));
+        assert_eq!(inner.graph.edge_count(), 0, "ancestor assignment must be undone before error propagation");
+        assert!(inner.graph.edge_idx(NodeID(0), assign, NodeID(1)).is_none());
+    }
+
+    /// Chain fixture: `n` items and one option node. Each level assigns one item
+    /// to the option, so the search depth is `n` and it enters `n + 1` frames.
+    fn chain_fixture(n: usize) -> (SubstrateRs, TermIdx, TermIdx, Sym) {
+        let mut inner = SubstrateRs::new(ConsistencyChecker::new(Grammar::new()));
+        let node_type = inner.interner.intern("test_node");
+        let assign = inner.interner.intern("test_assignment");
+        let items: Vec<Value> = (0..n)
+            .map(|_| Value::Node(inner.graph.insert_node(node_type, FxHashMap::default())))
+            .collect();
+        let option = inner.graph.insert_node(node_type, FxHashMap::default());
+        let open = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(items.into()),
+        });
+        let options = inner.terms.add(crate::term::TermNode::Lit {
+            value: Value::Set(vec![Value::Node(option)].into()),
+        });
+        (inner, open, options, assign)
+    }
+
+    /// Test evaluator: `search_eval`, then keep only nodes with no outgoing edge.
+    /// Items gain an outgoing assignment edge once chosen, so each search level
+    /// consumes one item. The option node never gains one and stays available.
+    fn unassigned_only_eval(
+        inner: &mut SubstrateRs,
+        idx: TermIdx,
+        env: &Env,
+    ) -> Result<Value, crate::term::EvalLimitError> {
+        let value = search_eval(inner, idx, env)?;
+        match value {
+            Value::Set(items) => {
+                let kept: Vec<Value> = items
+                    .iter()
+                    .filter(|v| match v {
+                        Value::Node(n) => inner.graph.out_edges_idx(*n, None).is_empty(),
+                        _ => false,
+                    })
+                    .cloned()
+                    .collect();
+                Ok(Value::Set(kept.into()))
+            }
+            other => Ok(other),
+        }
+    }
+
+    #[test]
+    fn default_limits_allow_chain_depth_above_256() {
+        let defaults = PySubstrate::new();
+        assert_eq!(defaults.search_max_depth, None);
+        assert_eq!(defaults.search_max_visits, Some(100_000));
+        let n = 300;
+        let (mut inner, open, options, assign) = chain_fixture(n);
+        let mut budget = SearchBudget {
+            max_depth: defaults.search_max_depth,
+            max_visits: defaults.search_max_visits,
+            visits: 0,
+        };
+        let result = search_recurse_budgeted(
+            &mut inner, open, options, assign, None, None, None, &Env::new(),
+            unassigned_only_eval, 0, &mut budget,
+        );
+        assert!(matches!(result, Ok(c) if c == 1.0), "chain of {} must have one solution", n);
+        assert_eq!(budget.visits, n + 1);
+        assert_eq!(inner.graph.edge_count(), 0, "all temporary assignment edges must be undone");
+    }
+
+    #[test]
+    fn unlimited_depth_still_reports_visits_limit() {
+        let (mut inner, open, options, assign) = chain_fixture(300);
+        let mut budget = SearchBudget { max_depth: None, max_visits: Some(50), visits: 0 };
+        let result = search_recurse_budgeted(
+            &mut inner, open, options, assign, None, None, None, &Env::new(),
+            unassigned_only_eval, 0, &mut budget,
+        );
+        assert!(matches!(result, Err(SearchError::TraversalLimit { kind: "visits", limit: 50 })));
+        assert_eq!(inner.graph.edge_count(), 0);
+    }
+
+    #[test]
+    fn search_limits_set_and_get_round_trip() {
+        pyo3::prepare_freethreaded_python();
+        Python::with_gil(|py| {
+            let mut substrate = PySubstrate::new();
+            let read = |s: &PySubstrate| {
+                let d = s.get_search_limits(py).expect("get_search_limits");
+                let depth: Option<usize> = d.get_item("max_depth").unwrap().unwrap().extract().unwrap();
+                let visits: Option<usize> = d.get_item("max_visits").unwrap().unwrap().extract().unwrap();
+                (depth, visits)
+            };
+            assert_eq!(read(&substrate), (None, Some(100_000)));
+            substrate.set_search_limits(SearchLimitArg::Limit(10), SearchLimitArg::Unset);
+            assert_eq!(read(&substrate), (Some(10), Some(100_000)));
+            substrate.set_search_limits(SearchLimitArg::Unset, SearchLimitArg::Unlimited);
+            assert_eq!(read(&substrate), (Some(10), None));
+            substrate.set_search_limits(SearchLimitArg::Unlimited, SearchLimitArg::Limit(7));
+            assert_eq!(read(&substrate), (None, Some(7)));
+        });
     }
 }

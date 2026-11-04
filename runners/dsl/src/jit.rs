@@ -95,9 +95,18 @@ impl CompiledWhere {
             // Beyond what our 5-arg SysV register layout handles.
             return None;
         }
-        if cmp_reads_attr(arena, where_idx) {
-            // A comparison reads an attr that may be a Float; the i64 JIT can't compare floats
-            // correctly. Let the interpreter handle the whole where (numeric coercion).
+        // Machine arithmetic wraps; Rust integer operators panic on overflow
+        // in debug builds. Preserve interpreter behavior for constant cases.
+        let mut overflow_budget = MAX_NODES;
+        if known_overflow(arena, where_idx, 0, &mut overflow_budget) {
+            return None;
+        }
+        let mut attr_budget = MAX_NODES;
+        if subtree_has_attr(arena, where_idx, 0, &mut attr_budget)? {
+            // Dynamic node attributes may be floats, nodes, strings, collections,
+            // or missing (`Value::None`). Let the interpreter handle any rule
+            // `where` clause that reads `Attr` so numeric coercion, truthiness,
+            // and fallback-trace accounting remain exact.
             return None;
         }
         let var_indices: FxHashMap<Sym, u32> = binding_vars
@@ -105,7 +114,12 @@ impl CompiledWhere {
             .enumerate()
             .map(|(i, s)| (*s, i as u32))
             .collect();
-        let jit = compile(arena, where_idx, &var_indices)?;
+        let mut kind_budget = MAX_NODES;
+        let root_kind = infer_kind(arena, where_idx, &var_indices, true, 0, &mut kind_budget)?;
+        if !root_kind.is_condition_compatible() {
+            return None;
+        }
+        let jit = compile_internal(arena, where_idx, &var_indices, true)?;
         Some(CompiledWhere {
             jit,
             var_order: binding_vars.to_vec(),
@@ -187,7 +201,20 @@ pub fn compile(
     root: TermIdx,
     var_indices: &FxHashMap<Sym, u32>,
 ) -> Option<JittedFn> {
-    let needs_ctx = scan_needs_ctx(arena, root);
+    compile_internal(arena, root, var_indices, false)
+}
+
+fn compile_internal(
+    arena: &TermArena,
+    root: TermIdx,
+    var_indices: &FxHashMap<Sym, u32>,
+    var_is_node: bool,
+) -> Option<JittedFn> {
+    let mut kind_budget = MAX_NODES;
+    infer_kind(arena, root, var_indices, var_is_node, 0, &mut kind_budget)?;
+
+    let mut ctx_budget = MAX_NODES;
+    let needs_ctx = scan_needs_ctx(arena, root, 0, &mut ctx_budget)?;
 
     let mut ops = dynasmrt::x64::Assembler::new().ok()?;
     let entry = ops.offset();
@@ -211,7 +238,8 @@ pub fn compile(
         ; mov [rbp - 48], r9
     );
 
-    emit_term(&mut ops, arena, root, var_indices, 0)?;
+    let mut emit_budget = MAX_NODES;
+    emit_term(&mut ops, arena, root, var_indices, 0, &mut emit_budget)?;
 
     dynasm!(ops
         ; .arch x64
@@ -229,96 +257,358 @@ pub fn compile(
     })
 }
 
-/// True iff the Term-tree references any graph state — used to decide
-/// which `call_*` variant the caller must use.
-fn scan_needs_ctx(arena: &TermArena, idx: TermIdx) -> bool {
+/// Static value-kind taxonomy for the untagged i64 JIT.
+///
+/// Because the JIT represents every value in a raw 64-bit register, static
+/// kind verification ensures:
+/// 1. `Value::Node(NodeID(0))` (which is truthy in the interpreter) is never
+///    tested as a boolean condition (`0i64` would be falsy) or compared/combined
+///    with `Int`/`Bool`/`Str`.
+/// 2. `Value::Str(Sym)` (from `TypeOf` or `Lit(Str)`) is only compared via `Eq`
+///    against another `Str`, never ordered with `Lt`/`Lte`/`Gt`/`Gte` (which in
+///    the interpreter uses lexicographic string order, not raw `Sym.0` order)
+///    or tested as a boolean condition.
+/// 3. `Eq` never compares incompatible value domains (`Int(1) == Bool(true)` or
+///    `Node(NodeID(0)) == Int(0)`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ValKind {
+    Int,
+    Bool,
+    Str,
+    Node,
+    /// Unconstrained variable in standalone `compile` (may be passed as `Int`
+    /// or `NodeID` by direct callers). In `CompiledWhere::try_compile`, pattern
+    /// variables are always bound to graph nodes (`ValKind::Node`).
+    VarAny,
+}
+
+impl ValKind {
+    #[inline]
+    fn is_int(self) -> bool {
+        matches!(self, ValKind::Int | ValKind::VarAny)
+    }
+
+    #[inline]
+    fn is_node(self) -> bool {
+        matches!(self, ValKind::Node | ValKind::VarAny)
+    }
+
+    #[inline]
+    fn is_condition_compatible(self) -> bool {
+        matches!(self, ValKind::Int | ValKind::Bool | ValKind::VarAny)
+    }
+
+    #[inline]
+    fn eq_compatible(self, other: Self) -> bool {
+        match (self, other) {
+            (ValKind::Int | ValKind::VarAny, ValKind::Int | ValKind::VarAny) => true,
+            (ValKind::Bool, ValKind::Bool) => true,
+            (ValKind::Str, ValKind::Str) => true,
+            (ValKind::Node | ValKind::VarAny, ValKind::Node | ValKind::VarAny) => true,
+            _ => false,
+        }
+    }
+
+    #[inline]
+    fn unify_branch(self, other: Self) -> Option<Self> {
+        match (self, other) {
+            (ValKind::Int, ValKind::Int)
+            | (ValKind::Int, ValKind::VarAny)
+            | (ValKind::VarAny, ValKind::Int) => Some(ValKind::Int),
+            (ValKind::Bool, ValKind::Bool) => Some(ValKind::Bool),
+            (ValKind::Str, ValKind::Str) => Some(ValKind::Str),
+            (ValKind::Node, ValKind::Node)
+            | (ValKind::Node, ValKind::VarAny)
+            | (ValKind::VarAny, ValKind::Node) => Some(ValKind::Node),
+            (ValKind::VarAny, ValKind::VarAny) => Some(ValKind::VarAny),
+            _ => None,
+        }
+    }
+}
+
+fn step_budget(depth: i32, budget: &mut usize) -> Option<()> {
+    if depth >= MAX_DEPTH || *budget == 0 {
+        return None;
+    }
+    *budget -= 1;
+    Some(())
+}
+
+fn constant_int(arena: &TermArena, idx: TermIdx, depth: i32, budget: &mut usize) -> Option<i64> {
+    step_budget(depth, budget)?;
     match arena.get(idx) {
-        TermNode::TypeOf { .. } | TermNode::Attr { .. } => true,
-        TermNode::Count { source } => {
-            // Count(Neighbours(...)) uses ctx.
-            matches!(arena.get(*source), TermNode::Neighbours { .. })
-                || scan_needs_ctx(arena, *source)
-        }
-        TermNode::Plus { items }
-        | TermNode::Times { items }
-        | TermNode::And { items }
-        | TermNode::Or { items } => items.iter().any(|i| scan_needs_ctx(arena, *i)),
-        TermNode::Minus { a, b }
-        | TermNode::Lt { a, b }
-        | TermNode::Lte { a, b }
-        | TermNode::Gt { a, b }
-        | TermNode::Gte { a, b }
-        | TermNode::Eq { a, b } => scan_needs_ctx(arena, *a) || scan_needs_ctx(arena, *b),
-        TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
-            scan_needs_ctx(arena, *arg)
-        }
-        TermNode::IfThenElse { cond, then, other } => {
-            scan_needs_ctx(arena, *cond)
-                || scan_needs_ctx(arena, *then)
-                || scan_needs_ctx(arena, *other)
-        }
+        TermNode::Lit { value: Value::Int(n) } => Some(*n),
+        TermNode::Plus { items } if items.len() == 2 => constant_int(arena, items[0], depth + 1, budget)?.checked_add(constant_int(arena, items[1], depth + 1, budget)?),
+        TermNode::Times { items } if items.len() == 2 => constant_int(arena, items[0], depth + 1, budget)?.checked_mul(constant_int(arena, items[1], depth + 1, budget)?),
+        TermNode::Minus { a, b } => constant_int(arena, *a, depth + 1, budget)?.checked_sub(constant_int(arena, *b, depth + 1, budget)?),
+        TermNode::Neg { arg } => constant_int(arena, *arg, depth + 1, budget)?.checked_neg(),
+        TermNode::Abs { arg } => constant_int(arena, *arg, depth + 1, budget)?.checked_abs(),
+        _ => None,
+    }
+}
+
+fn known_overflow(arena: &TermArena, idx: TermIdx, depth: i32, budget: &mut usize) -> bool {
+    // Exhaustion rejects compilation. The budget is shared with every nested
+    // constant-fold attempt, so repeated visits through a shared Term DAG are
+    // bounded by MAX_NODES in total, not once per recursive branch.
+    if step_budget(depth, budget).is_none() { return true; }
+    let arithmetic = matches!(arena.get(idx), TermNode::Plus { .. } | TermNode::Times { .. } | TermNode::Minus { .. } | TermNode::Neg { .. } | TermNode::Abs { .. });
+    // A nonconstant integer source (notably Count(Neighbours)) can overflow
+    // at runtime when combined with another integer. Its where predicate must
+    // stay interpreted because the JIT has no checked-arithmetic panic path.
+    let here = arithmetic && constant_int(arena, idx, 0, budget).is_none();
+    if here { return true; }
+    match arena.get(idx) {
+        TermNode::Plus { items } | TermNode::Times { items } | TermNode::And { items } | TermNode::Or { items } => items.iter().any(|&i| known_overflow(arena, i, depth + 1, budget)),
+        TermNode::Minus { a, b } | TermNode::Lt { a, b } | TermNode::Lte { a, b } | TermNode::Gt { a, b } | TermNode::Gte { a, b } | TermNode::Eq { a, b } => known_overflow(arena, *a, depth + 1, budget) || known_overflow(arena, *b, depth + 1, budget),
+        TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => known_overflow(arena, *arg, depth + 1, budget),
+        TermNode::IfThenElse { cond, then, other } => known_overflow(arena, *cond, depth + 1, budget) || known_overflow(arena, *then, depth + 1, budget) || known_overflow(arena, *other, depth + 1, budget),
         _ => false,
     }
 }
 
-/// True iff the subtree contains an `Attr` (whose runtime value may be a Float).
-fn subtree_has_attr(arena: &TermArena, idx: TermIdx) -> bool {
+fn infer_kind(
+    arena: &TermArena,
+    idx: TermIdx,
+    vars: &FxHashMap<Sym, u32>,
+    var_is_node: bool,
+    depth: i32,
+    budget: &mut usize,
+) -> Option<ValKind> {
+    step_budget(depth, budget)?;
     match arena.get(idx) {
-        TermNode::Attr { .. } => true,
-        TermNode::Count { source } => subtree_has_attr(arena, *source),
-        TermNode::Plus { items }
-        | TermNode::Times { items }
-        | TermNode::And { items }
-        | TermNode::Or { items } => items.iter().any(|i| subtree_has_attr(arena, *i)),
-        TermNode::Minus { a, b }
-        | TermNode::Lt { a, b }
-        | TermNode::Lte { a, b }
-        | TermNode::Gt { a, b }
-        | TermNode::Gte { a, b }
-        | TermNode::Eq { a, b } => subtree_has_attr(arena, *a) || subtree_has_attr(arena, *b),
-        TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
-            subtree_has_attr(arena, *arg)
+        TermNode::Lit { value } => match value {
+            Value::Int(_) => Some(ValKind::Int),
+            Value::Bool(_) => Some(ValKind::Bool),
+            Value::Str(_) => Some(ValKind::Str),
+            Value::Node(_) => Some(ValKind::Node),
+            _ => None,
+        },
+        TermNode::Var { name } => {
+            let arg_idx = *vars.get(name)?;
+            if arg_idx >= 5 {
+                return None;
+            }
+            Some(if var_is_node {
+                ValKind::Node
+            } else {
+                ValKind::VarAny
+            })
         }
-        TermNode::IfThenElse { cond, then, other } => {
-            subtree_has_attr(arena, *cond)
-                || subtree_has_attr(arena, *then)
-                || subtree_has_attr(arena, *other)
+        TermNode::Plus { items } | TermNode::Times { items } if items.len() == 2 => {
+            let ka = infer_kind(arena, items[0], vars, var_is_node, depth + 1, budget)?;
+            let kb = infer_kind(arena, items[1], vars, var_is_node, depth + 1, budget)?;
+            if ka.is_int() && kb.is_int() {
+                Some(ValKind::Int)
+            } else {
+                None
+            }
         }
-        _ => false,
-    }
-}
-
-/// True iff any COMPARISON node (Eq / Lt / Lte / Gt / Gte) reads an `Attr` in its operands.
-/// Such a comparison can compare FLOAT attrs, and the JIT compares in i64 (`cmp`), which is wrong
-/// for floats (0.317 and 0.6 both truncate to 0). When this holds we refuse to JIT the whole where
-/// and let the interpreter — which compares numerically with int/float coercion — handle it.
-fn cmp_reads_attr(arena: &TermArena, idx: TermIdx) -> bool {
-    match arena.get(idx) {
-        TermNode::Eq { a, b }
-        | TermNode::Lt { a, b }
+        TermNode::Minus { a, b } => {
+            let ka = infer_kind(arena, *a, vars, var_is_node, depth + 1, budget)?;
+            let kb = infer_kind(arena, *b, vars, var_is_node, depth + 1, budget)?;
+            if ka.is_int() && kb.is_int() {
+                Some(ValKind::Int)
+            } else {
+                None
+            }
+        }
+        TermNode::Neg { arg } | TermNode::Abs { arg } => {
+            let k = infer_kind(arena, *arg, vars, var_is_node, depth + 1, budget)?;
+            if k.is_int() {
+                Some(ValKind::Int)
+            } else {
+                None
+            }
+        }
+        TermNode::Lt { a, b }
         | TermNode::Lte { a, b }
         | TermNode::Gt { a, b }
         | TermNode::Gte { a, b } => {
-            subtree_has_attr(arena, *a)
-                || subtree_has_attr(arena, *b)
-                || cmp_reads_attr(arena, *a)
-                || cmp_reads_attr(arena, *b)
+            let ka = infer_kind(arena, *a, vars, var_is_node, depth + 1, budget)?;
+            let kb = infer_kind(arena, *b, vars, var_is_node, depth + 1, budget)?;
+            if ka.is_int() && kb.is_int() {
+                Some(ValKind::Bool)
+            } else {
+                None
+            }
         }
-        TermNode::And { items }
-        | TermNode::Or { items }
-        | TermNode::Plus { items }
-        | TermNode::Times { items } => items.iter().any(|i| cmp_reads_attr(arena, *i)),
-        TermNode::Minus { a, b } => cmp_reads_attr(arena, *a) || cmp_reads_attr(arena, *b),
-        TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
-            cmp_reads_attr(arena, *arg)
+        TermNode::Eq { a, b } => {
+            let ka = infer_kind(arena, *a, vars, var_is_node, depth + 1, budget)?;
+            let kb = infer_kind(arena, *b, vars, var_is_node, depth + 1, budget)?;
+            if ka.eq_compatible(kb) {
+                Some(ValKind::Bool)
+            } else {
+                None
+            }
         }
-        TermNode::Count { source } => cmp_reads_attr(arena, *source),
+        TermNode::Not { arg } => {
+            let k = infer_kind(arena, *arg, vars, var_is_node, depth + 1, budget)?;
+            if k.is_condition_compatible() {
+                Some(ValKind::Bool)
+            } else {
+                None
+            }
+        }
+        TermNode::And { items } | TermNode::Or { items } => {
+            for item in items {
+                let k = infer_kind(arena, *item, vars, var_is_node, depth + 1, budget)?;
+                if !k.is_condition_compatible() {
+                    return None;
+                }
+            }
+            Some(ValKind::Bool)
+        }
         TermNode::IfThenElse { cond, then, other } => {
-            cmp_reads_attr(arena, *cond)
-                || cmp_reads_attr(arena, *then)
-                || cmp_reads_attr(arena, *other)
+            let kc = infer_kind(arena, *cond, vars, var_is_node, depth + 1, budget)?;
+            if !kc.is_condition_compatible() {
+                return None;
+            }
+            let kt = infer_kind(arena, *then, vars, var_is_node, depth + 1, budget)?;
+            let ko = infer_kind(arena, *other, vars, var_is_node, depth + 1, budget)?;
+            kt.unify_branch(ko)
         }
-        _ => false,
+        TermNode::TypeOf { node } => {
+            let kn = infer_kind(arena, *node, vars, var_is_node, depth + 1, budget)?;
+            if kn.is_node() {
+                Some(ValKind::Str)
+            } else {
+                None
+            }
+        }
+        TermNode::Attr { node, .. } => {
+            let kn = infer_kind(arena, *node, vars, var_is_node, depth + 1, budget)?;
+            if kn.is_node() {
+                Some(ValKind::Int)
+            } else {
+                None
+            }
+        }
+        TermNode::Count { source } => {
+            if let TermNode::Neighbours { node, .. } = arena.get(*source) {
+                let kn = infer_kind(arena, *node, vars, var_is_node, depth + 1, budget)?;
+                if kn.is_node() {
+                    Some(ValKind::Int)
+                } else {
+                    None
+                }
+            } else {
+                None
+            }
+        }
+        _ => None,
+    }
+}
+
+/// True iff the Term-tree references any graph state — used to decide
+/// which `call_*` variant the caller must use. Bounded by `MAX_DEPTH` and `budget`.
+fn scan_needs_ctx(
+    arena: &TermArena,
+    idx: TermIdx,
+    depth: i32,
+    budget: &mut usize,
+) -> Option<bool> {
+    step_budget(depth, budget)?;
+    match arena.get(idx) {
+        TermNode::TypeOf { .. } | TermNode::Attr { .. } => Some(true),
+        TermNode::Count { source } => {
+            if let TermNode::Neighbours { node, .. } = arena.get(*source) {
+                let _ = scan_needs_ctx(arena, *node, depth + 1, budget)?;
+                Some(true)
+            } else {
+                None
+            }
+        }
+        TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::And { items }
+        | TermNode::Or { items } => {
+            let mut any = false;
+            for i in items {
+                any |= scan_needs_ctx(arena, *i, depth + 1, budget)?;
+            }
+            Some(any)
+        }
+        TermNode::Minus { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b }
+        | TermNode::Eq { a, b } => {
+            let la = scan_needs_ctx(arena, *a, depth + 1, budget)?;
+            let lb = scan_needs_ctx(arena, *b, depth + 1, budget)?;
+            Some(la || lb)
+        }
+        TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
+            scan_needs_ctx(arena, *arg, depth + 1, budget)
+        }
+        TermNode::IfThenElse { cond, then, other } => {
+            let lc = scan_needs_ctx(arena, *cond, depth + 1, budget)?;
+            let lt = scan_needs_ctx(arena, *then, depth + 1, budget)?;
+            let lo = scan_needs_ctx(arena, *other, depth + 1, budget)?;
+            Some(lc || lt || lo)
+        }
+        TermNode::Lit { .. } | TermNode::Var { .. } => Some(false),
+        _ => None,
+    }
+}
+
+/// True iff the subtree contains an `Attr` within the JIT depth/node budget.
+/// Returns `None` if the tree exceeds `MAX_DEPTH` or `budget` (which also forces
+/// `CompiledWhere::try_compile` to fall back to the interpreter).
+fn subtree_has_attr(
+    arena: &TermArena,
+    idx: TermIdx,
+    depth: i32,
+    budget: &mut usize,
+) -> Option<bool> {
+    step_budget(depth, budget)?;
+    match arena.get(idx) {
+        TermNode::Attr { .. } => Some(true),
+        TermNode::Count { source } => {
+            if let TermNode::Neighbours { node, .. } = arena.get(*source) {
+                subtree_has_attr(arena, *node, depth + 1, budget)
+            } else {
+                None
+            }
+        }
+        TermNode::Plus { items }
+        | TermNode::Times { items }
+        | TermNode::And { items }
+        | TermNode::Or { items } => {
+            for i in items {
+                if subtree_has_attr(arena, *i, depth + 1, budget)? {
+                    return Some(true);
+                }
+            }
+            Some(false)
+        }
+        TermNode::Minus { a, b }
+        | TermNode::Lt { a, b }
+        | TermNode::Lte { a, b }
+        | TermNode::Gt { a, b }
+        | TermNode::Gte { a, b }
+        | TermNode::Eq { a, b } => {
+            if subtree_has_attr(arena, *a, depth + 1, budget)? {
+                return Some(true);
+            }
+            subtree_has_attr(arena, *b, depth + 1, budget)
+        }
+        TermNode::Neg { arg } | TermNode::Abs { arg } | TermNode::Not { arg } => {
+            subtree_has_attr(arena, *arg, depth + 1, budget)
+        }
+        TermNode::IfThenElse { cond, then, other } => {
+            if subtree_has_attr(arena, *cond, depth + 1, budget)? {
+                return Some(true);
+            }
+            if subtree_has_attr(arena, *then, depth + 1, budget)? {
+                return Some(true);
+            }
+            subtree_has_attr(arena, *other, depth + 1, budget)
+        }
+        TermNode::TypeOf { node } => subtree_has_attr(arena, *node, depth + 1, budget),
+        TermNode::Lit { .. } | TermNode::Var { .. } => Some(false),
+        _ => None,
     }
 }
 
@@ -326,6 +616,7 @@ const CTX_SLOT: i32 = -8;
 const ARG_SLOT_BASE: i32 = -16;
 const TEMP_SLOT_BASE: i32 = -72;
 const MAX_DEPTH: i32 = 32;
+const MAX_NODES: usize = 256;
 
 #[inline]
 fn temp_slot(depth: i32) -> i32 {
@@ -338,30 +629,29 @@ fn emit_term(
     idx: TermIdx,
     vars: &FxHashMap<Sym, u32>,
     depth: i32,
+    budget: &mut usize,
 ) -> Option<()> {
-    if depth >= MAX_DEPTH {
-        return None;
-    }
+    step_budget(depth, budget)?;
     match arena.get(idx) {
         TermNode::Lit { value } => emit_lit(ops, value),
         TermNode::Var { name } => emit_var(ops, vars, *name),
 
         TermNode::Plus { items } if items.len() == 2 => {
-            emit_binop(ops, arena, items[0], items[1], vars, depth, |o| {
-                dynasm!(o; .arch x64; add rax, [rbp + (TEMP_SLOT_BASE - 8 * depth)]);
+            emit_binop(ops, arena, items[0], items[1], vars, depth, budget, |o| {
+                dynasm!(o; .arch x64; add rax, [rbp + temp_slot(depth)]);
             })
         }
         TermNode::Times { items } if items.len() == 2 => {
-            emit_binop(ops, arena, items[0], items[1], vars, depth, |o| {
-                dynasm!(o; .arch x64; imul rax, [rbp + (TEMP_SLOT_BASE - 8 * depth)]);
+            emit_binop(ops, arena, items[0], items[1], vars, depth, budget, |o| {
+                dynasm!(o; .arch x64; imul rax, [rbp + temp_slot(depth)]);
             })
         }
         TermNode::Minus { a, b } => {
-            // Need a - b. Compute a, save; compute b; rax holds b; subtract a's slot from b.
-            // a - b = -(b - a) = neg(b - rax-of-a) ... simpler: compute b, sub from saved a.
-            emit_term(ops, arena, *a, vars, depth)?;
+            // Need a - b. Compute a at depth + 1, save to temp_slot(depth);
+            // compute b at depth + 1; subtract b from saved a.
+            emit_term(ops, arena, *a, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64; mov [rbp + temp_slot(depth)], rax);
-            emit_term(ops, arena, *b, vars, depth + 1)?;
+            emit_term(ops, arena, *b, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64
                 ; mov r10, rax
                 ; mov rax, [rbp + temp_slot(depth)]
@@ -370,12 +660,12 @@ fn emit_term(
             Some(())
         }
         TermNode::Neg { arg } => {
-            emit_term(ops, arena, *arg, vars, depth)?;
+            emit_term(ops, arena, *arg, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64; neg rax);
             Some(())
         }
         TermNode::Abs { arg } => {
-            emit_term(ops, arena, *arg, vars, depth)?;
+            emit_term(ops, arena, *arg, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64
                 ; mov r10, rax
                 ; sar r10, 63
@@ -385,14 +675,14 @@ fn emit_term(
             Some(())
         }
 
-        TermNode::Lt { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, CmpKind::Lt),
-        TermNode::Lte { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, CmpKind::Lte),
-        TermNode::Gt { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, CmpKind::Gt),
-        TermNode::Gte { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, CmpKind::Gte),
-        TermNode::Eq { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, CmpKind::Eq),
+        TermNode::Lt { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, budget, CmpKind::Lt),
+        TermNode::Lte { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, budget, CmpKind::Lte),
+        TermNode::Gt { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, budget, CmpKind::Gt),
+        TermNode::Gte { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, budget, CmpKind::Gte),
+        TermNode::Eq { a, b } => emit_cmp(ops, arena, *a, *b, vars, depth, budget, CmpKind::Eq),
 
         TermNode::Not { arg } => {
-            emit_term(ops, arena, *arg, vars, depth)?;
+            emit_term(ops, arena, *arg, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64
                 ; test rax, rax
                 ; sete al
@@ -401,35 +691,35 @@ fn emit_term(
             Some(())
         }
         TermNode::And { items } => {
-            emit_short_circuit(ops, arena, items, vars, depth, /*want_true=*/ false)
+            emit_short_circuit(ops, arena, items, vars, depth, budget, /*want_true=*/ false)
         }
         TermNode::Or { items } => {
-            emit_short_circuit(ops, arena, items, vars, depth, /*want_true=*/ true)
+            emit_short_circuit(ops, arena, items, vars, depth, budget, /*want_true=*/ true)
         }
 
         TermNode::IfThenElse { cond, then, other } => {
-            emit_term(ops, arena, *cond, vars, depth)?;
+            emit_term(ops, arena, *cond, vars, depth + 1, budget)?;
             let else_lbl = ops.new_dynamic_label();
             let end_lbl = ops.new_dynamic_label();
             dynasm!(ops; .arch x64
                 ; test rax, rax
                 ; jz =>else_lbl
             );
-            emit_term(ops, arena, *then, vars, depth)?;
+            emit_term(ops, arena, *then, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64
                 ; jmp =>end_lbl
                 ; =>else_lbl
             );
-            emit_term(ops, arena, *other, vars, depth)?;
+            emit_term(ops, arena, *other, vars, depth + 1, budget)?;
             dynasm!(ops; .arch x64; =>end_lbl);
             Some(())
         }
 
         // --- graph access ---
         TermNode::TypeOf { node } => {
-            emit_term(ops, arena, *node, vars, depth)?;
+            emit_term(ops, arena, *node, vars, depth + 1, budget)?;
             // rax = node-id (as i64). Call thunk_type_of(ctx, node).
-            let thunk_addr = thunk_type_of as usize as i64;
+            let thunk_addr = thunk_type_of as *const () as usize as i64;
             dynasm!(ops; .arch x64
                 ; mov rsi, rax
                 ; mov rdi, [rbp + CTX_SLOT]
@@ -439,9 +729,9 @@ fn emit_term(
             Some(())
         }
         TermNode::Attr { node, key } => {
-            emit_term(ops, arena, *node, vars, depth)?;
+            emit_term(ops, arena, *node, vars, depth + 1, budget)?;
             let key_int = key.0 as i64;
-            let thunk_addr = thunk_attr_int as usize as i64;
+            let thunk_addr = thunk_attr_int as *const () as usize as i64;
             dynasm!(ops; .arch x64
                 ; mov rsi, rax
                 ; mov rdx, QWORD key_int
@@ -459,9 +749,9 @@ fn emit_term(
                 any_type,
             } = arena.get(*source)
             {
-                emit_term(ops, arena, *node, vars, depth)?;
+                emit_term(ops, arena, *node, vars, depth + 1, budget)?;
                 let et: i64 = if *any_type { 0 } else { edge_type.0 as i64 };
-                let thunk_addr = thunk_neighbour_count as usize as i64;
+                let thunk_addr = thunk_neighbour_count as *const () as usize as i64;
                 dynasm!(ops; .arch x64
                     ; mov rsi, rax
                     ; mov rdx, QWORD et
@@ -486,14 +776,15 @@ fn emit_binop<F>(
     b: TermIdx,
     vars: &FxHashMap<Sym, u32>,
     depth: i32,
+    budget: &mut usize,
     combine: F,
 ) -> Option<()>
 where
     F: FnOnce(&mut dynasmrt::x64::Assembler),
 {
-    emit_term(ops, arena, a, vars, depth)?;
+    emit_term(ops, arena, a, vars, depth + 1, budget)?;
     dynasm!(ops; .arch x64; mov [rbp + temp_slot(depth)], rax);
-    emit_term(ops, arena, b, vars, depth + 1)?;
+    emit_term(ops, arena, b, vars, depth + 1, budget)?;
     combine(ops);
     Some(())
 }
@@ -559,11 +850,12 @@ fn emit_cmp(
     b: TermIdx,
     vars: &FxHashMap<Sym, u32>,
     depth: i32,
+    budget: &mut usize,
     kind: CmpKind,
 ) -> Option<()> {
-    emit_term(ops, arena, a, vars, depth)?;
+    emit_term(ops, arena, a, vars, depth + 1, budget)?;
     dynasm!(ops; .arch x64; mov [rbp + temp_slot(depth)], rax);
-    emit_term(ops, arena, b, vars, depth + 1)?;
+    emit_term(ops, arena, b, vars, depth + 1, budget)?;
     dynasm!(ops; .arch x64
         ; mov r10, rax
         ; mov rax, [rbp + temp_slot(depth)]
@@ -587,6 +879,7 @@ fn emit_short_circuit(
     items: &[TermIdx],
     vars: &FxHashMap<Sym, u32>,
     depth: i32,
+    budget: &mut usize,
     want_true: bool,
 ) -> Option<()> {
     if items.is_empty() {
@@ -596,7 +889,7 @@ fn emit_short_circuit(
     }
     let end_lbl = ops.new_dynamic_label();
     for (i, item) in items.iter().enumerate() {
-        emit_term(ops, arena, *item, vars, depth)?;
+        emit_term(ops, arena, *item, vars, depth + 1, budget)?;
         dynasm!(ops; .arch x64; test rax, rax);
         if i < items.len() - 1 {
             if want_true {
@@ -607,9 +900,9 @@ fn emit_short_circuit(
         }
     }
     dynasm!(ops; .arch x64
+        ; =>end_lbl
         ; setne al
         ; movzx rax, al
-        ; =>end_lbl
     );
     Some(())
 }
@@ -624,15 +917,18 @@ fn emit_short_circuit(
 
 unsafe extern "sysv64" fn thunk_type_of(ctx: *const JitCtx, node: i64) -> i64 {
     if ctx.is_null() {
-        return 0;
+        return -1;
     }
     let graph = (*ctx).graph;
     if graph.is_null() {
-        return 0;
+        return -1;
     }
-    let nid = NodeID(node as u32);
+    let Ok(raw) = u32::try_from(node) else {
+        return -1;
+    };
+    let nid = NodeID(raw);
     if !(*graph).has_node(nid) {
-        return 0;
+        return -1;
     }
     let type_sym = (*graph).node(nid).type_;
     crate::access_trace::note(13, nid.0, type_sym.0, crate::access_trace::NO_ID);
@@ -640,6 +936,7 @@ unsafe extern "sysv64" fn thunk_type_of(ctx: *const JitCtx, node: i64) -> i64 {
 }
 
 unsafe extern "sysv64" fn thunk_attr_int(ctx: *const JitCtx, node: i64, key_sym: i64) -> i64 {
+    crate::fallback_trace::note_attr_eval();
     if ctx.is_null() {
         return 0;
     }
@@ -647,11 +944,17 @@ unsafe extern "sysv64" fn thunk_attr_int(ctx: *const JitCtx, node: i64, key_sym:
     if graph.is_null() {
         return 0;
     }
-    let nid = NodeID(node as u32);
+    let Ok(raw_node) = u32::try_from(node) else {
+        return 0;
+    };
+    let Ok(raw_key) = u32::try_from(key_sym) else {
+        return 0;
+    };
+    let nid = NodeID(raw_node);
     if !(*graph).has_node(nid) {
         return 0;
     }
-    let key = Sym(key_sym as u32);
+    let key = Sym(raw_key);
     crate::access_trace::note(12, nid.0, key.0, crate::access_trace::NO_ID);
     match (*graph).node(nid).attrs.get(&key) {
         Some(Value::Int(n)) => *n,
@@ -662,18 +965,19 @@ unsafe extern "sysv64" fn thunk_attr_int(ctx: *const JitCtx, node: i64, key_sym:
                 0
             }
         }
-        // Float attrs: the JIT compares in i64, so read the integer part — a
-        // flag stored as 1.0 must read as 1 (else `Eq(Attr,1)` silently fails).
-        // JIT'd wheres only ever compare against INTEGER Lits (a Float Lit makes
-        // emit_lit bail to the interpreter), so integer-valued floats — the
-        // realistic case (flags, counts) — compare exactly; the interpreter
-        // handles any fractional-threshold where (it has a Float Lit and isn't
-        // JIT'd). Without this case a Float fell through `_ => 0`.
-        Some(Value::Float(f)) => *f as i64,
+        // Admit only finite, integer-valued floats (such as 1.0 or 2.0 flags)
+        // when invoked via standalone `jit::compile`. Fractional floats are not
+        // truncated to 0; rule `where` clauses containing `Attr` fall back to
+        // the interpreter via `CompiledWhere::try_compile`.
+        Some(Value::Float(f)) if f.is_finite() && f.fract() == 0.0 => *f as i64,
         // Str values resolve to their Sym so JIT'd comparison sees the
         // same i64 the interpreter would.
         Some(Value::Str(s)) => s.0 as i64,
         Some(Value::Node(n)) => n.0 as i64,
+        None => {
+            crate::fallback_trace::note_defaulted_read(key);
+            0
+        }
         _ => 0,
     }
 }
@@ -690,11 +994,20 @@ unsafe extern "sysv64" fn thunk_neighbour_count(
     if graph.is_null() {
         return 0;
     }
-    let nid = NodeID(node as u32);
+    let Ok(raw_node) = u32::try_from(node) else {
+        return 0;
+    };
+    let nid = NodeID(raw_node);
+    if !(*graph).has_node(nid) {
+        return 0;
+    }
     let et = if edge_type_sym == 0 {
         None
     } else {
-        Some(Sym(edge_type_sym as u32))
+        let Ok(raw_et) = u32::try_from(edge_type_sym) else {
+            return 0;
+        };
+        Some(Sym(raw_et))
     };
     let edges = (*graph).out_edges_slice(nid, et);
     crate::access_trace::note_out_edges(&*graph, nid, et);
@@ -1351,5 +1664,270 @@ mod tests {
         let speedup = dt_interp.as_nanos() as f64 / dt_jit.as_nanos() as f64;
         eprintln!("JIT speedup:        {:.2}×", speedup);
         assert_eq!(acc, acc2);
+    }
+
+    #[test]
+    fn jit_enforces_max_depth_and_budget_on_unary_left_binary_and_nested_eq_trees() {
+        let mut a = TermArena::new();
+        let mut ir = Interner::new();
+        let x = ir.intern("x");
+
+        // 1. Deep unary Not chain (> MAX_DEPTH) must return None cleanly.
+        let mut cur_not = a.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
+        for _ in 0..40 {
+            cur_not = a.add(TermNode::Not { arg: cur_not });
+        }
+        let vars = FxHashMap::default();
+        assert!(compile(&a, cur_not, &vars).is_none());
+        assert!(CompiledWhere::try_compile(&a, cur_not, &[x]).is_none());
+
+        // 2. Deep left-associated Plus chain (> MAX_DEPTH) must return None cleanly,
+        // while a moderate left-associated Plus chain (depth 8) compiles and matches.
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let mut shallow_plus = one;
+        for _ in 0..8 {
+            shallow_plus = a.add(TermNode::Plus {
+                items: vec![shallow_plus, one],
+            });
+        }
+        assert_eq!(compile_pure(&a, shallow_plus, &[]), 9);
+
+        let mut deep_plus = one;
+        for _ in 0..40 {
+            deep_plus = a.add(TermNode::Plus {
+                items: vec![deep_plus, one],
+            });
+        }
+        assert!(compile(&a, deep_plus, &vars).is_none());
+
+        // 3. Deep nested Eq chain (which previously triggered O(2^d) blowup in cmp_reads_attr)
+        // must bail out immediately within MAX_DEPTH / MAX_NODES.
+        let mut deep_eq = a.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
+        let true_lit = deep_eq;
+        for _ in 0..40 {
+            deep_eq = a.add(TermNode::Eq {
+                a: deep_eq,
+                b: true_lit,
+            });
+        }
+        assert!(CompiledWhere::try_compile(&a, deep_eq, &[x]).is_none());
+    }
+
+    #[test]
+    fn jit_or_short_circuit_normalizes_non_unit_truthy_values_to_one() {
+        let mut a = TermArena::new();
+        let two = a.add(TermNode::Lit {
+            value: Value::Int(2),
+        });
+        let three = a.add(TermNode::Lit {
+            value: Value::Int(3),
+        });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
+        let or_short = a.add(TermNode::Or {
+            items: vec![two, zero],
+        });
+        let and_full = a.add(TermNode::And {
+            items: vec![two, three],
+        });
+        assert_eq!(
+            compile_pure(&a, or_short, &[]),
+            1,
+            "Or short-circuiting on 2 must normalize result to 1"
+        );
+        assert_eq!(
+            compile_pure(&a, and_full, &[]),
+            1,
+            "And ending on 3 must normalize result to 1"
+        );
+    }
+
+    #[test]
+    fn jit_compiled_where_rejects_type_confusion_and_attr_reads() {
+        let mut a = TermArena::new();
+        let mut ir = Interner::new();
+        let x = ir.intern("x");
+        let alive = ir.intern("Alive");
+        let adj = ir.intern("adj");
+        let flag = ir.intern("flag");
+
+        let x_var = a.add(TermNode::Var { name: x });
+        let zero = a.add(TermNode::Lit {
+            value: Value::Int(0),
+        });
+        let one = a.add(TermNode::Lit {
+            value: Value::Int(1),
+        });
+        let alive_lit = a.add(TermNode::Lit {
+            value: Value::Str(alive),
+        });
+
+        // Node variable used directly as condition or inside Not must fall back
+        // (NodeID(0) is truthy in interpreter, falsy as raw 0i64).
+        assert!(CompiledWhere::try_compile(&a, x_var, &[x]).is_none());
+        let not_x = a.add(TermNode::Not { arg: x_var });
+        assert!(CompiledWhere::try_compile(&a, not_x, &[x]).is_none());
+
+        // Cross-type Eq(Node, Int) and Eq(Int, Bool) must fall back.
+        let eq_node_int = a.add(TermNode::Eq { a: x_var, b: zero });
+        assert!(CompiledWhere::try_compile(&a, eq_node_int, &[x]).is_none());
+        let true_lit = a.add(TermNode::Lit {
+            value: Value::Bool(true),
+        });
+        let eq_int_bool = a.add(TermNode::Eq {
+            a: one,
+            b: true_lit,
+        });
+        assert!(compile(&a, eq_int_bool, &FxHashMap::default()).is_none());
+
+        // Ordering comparison on Str (TypeOf(x) < "Alive") must fall back to lexicographic interpreter.
+        let tof = a.add(TermNode::TypeOf { node: x_var });
+        let lt_str = a.add(TermNode::Lt {
+            a: tof,
+            b: alive_lit,
+        });
+        assert!(CompiledWhere::try_compile(&a, lt_str, &[x]).is_none());
+
+        // Attr reads inside or outside comparisons in CompiledWhere must fall back to interpreter.
+        let attr = a.add(TermNode::Attr {
+            node: x_var,
+            key: flag,
+        });
+        assert!(CompiledWhere::try_compile(&a, attr, &[x]).is_none());
+        let not_attr = a.add(TermNode::Not { arg: attr });
+        assert!(CompiledWhere::try_compile(&a, not_attr, &[x]).is_none());
+        let eq_attr = a.add(TermNode::Eq { a: attr, b: one });
+        assert!(CompiledWhere::try_compile(&a, eq_attr, &[x]).is_none());
+
+        // Well-typed graph predicates compile cleanly in CompiledWhere.
+        let eq_type = a.add(TermNode::Eq {
+            a: tof,
+            b: alive_lit,
+        });
+        let nbrs = a.add(TermNode::Neighbours {
+            node: x_var,
+            edge_type: adj,
+            any_type: false,
+        });
+        let cnt = a.add(TermNode::Count { source: nbrs });
+        let gte_cnt = a.add(TermNode::Gte { a: cnt, b: one });
+        let conj = a.add(TermNode::And {
+            items: vec![eq_type, gte_cnt],
+        });
+        assert!(CompiledWhere::try_compile(&a, conj, &[x]).is_some());
+    }
+
+    #[test]
+    fn phase63_compiled_where_falls_back_for_debug_overflow_constants() {
+        let mut arena = TermArena::new();
+        let max = arena.add(TermNode::Lit { value: Value::Int(i64::MAX) });
+        let one = arena.add(TermNode::Lit { value: Value::Int(1) });
+        let min = arena.add(TermNode::Lit { value: Value::Int(i64::MIN) });
+
+        // Positive control: ordinary safe constant arithmetic still compiles.
+        let two = arena.add(TermNode::Lit { value: Value::Int(2) });
+        let three = arena.add(TermNode::Lit { value: Value::Int(3) });
+        let five = arena.add(TermNode::Lit { value: Value::Int(5) });
+        let safe_sum = arena.add(TermNode::Plus { items: vec![two, three] });
+        let safe_eq = arena.add(TermNode::Eq { a: safe_sum, b: five });
+        assert!(CompiledWhere::try_compile(&arena, safe_eq, &[]).is_some(),
+            "safe constant arithmetic must remain JIT eligible");
+
+        // Positive control: a standard TypeOf graph predicate has no integer
+        // arithmetic and must remain on the graph-access JIT path.
+        let mut ir = Interner::new();
+        let x = ir.intern("x");
+        let alive = ir.intern("Alive");
+        let x_var = arena.add(TermNode::Var { name: x });
+        let type_of = arena.add(TermNode::TypeOf { node: x_var });
+        let alive_lit = arena.add(TermNode::Lit { value: Value::Str(alive) });
+        let graph_eq = arena.add(TermNode::Eq { a: type_of, b: alive_lit });
+        assert!(CompiledWhere::try_compile(&arena, graph_eq, &[x]).is_some(),
+            "ordinary graph where predicates must remain JIT eligible");
+
+        let sum = arena.add(TermNode::Plus { items: vec![max, one] });
+        let eq = arena.add(TermNode::Eq { a: sum, b: min });
+        assert!(CompiledWhere::try_compile(&arena, eq, &[]).is_none(),
+            "overflowing constant predicates must use interpreter semantics");
+        // Standalone JIT keeps its established machine-wrap semantics; the
+        // rule-where adapter is the boundary that must preserve interpreter parity.
+        let f = compile(&arena, eq, &FxHashMap::default()).expect("standalone JIT remains supported");
+        assert_eq!(f.call_pure(&[]), 1);
+
+        // Count(Neighbours(x)) is a runtime integer. Arithmetic involving it
+        // can overflow even when the other operand is a literal, so it too
+        // must remain on the interpreter path.
+        let edge = ir.intern("edge");
+        let x_var = arena.add(TermNode::Var { name: x });
+        let neighbours = arena.add(TermNode::Neighbours { node: x_var, edge_type: edge, any_type: false });
+        let count = arena.add(TermNode::Count { source: neighbours });
+        let dynamic_sum = arena.add(TermNode::Plus { items: vec![count, max] });
+        let zero = arena.add(TermNode::Lit { value: Value::Int(0) });
+        let dynamic_predicate = arena.add(TermNode::Gt { a: dynamic_sum, b: zero });
+        assert!(CompiledWhere::try_compile(&arena, dynamic_predicate, &[x]).is_none());
+
+        // A depth-31 shared DAG has only 32 distinct nodes but exponentially
+        // many root-to-leaf walks if the overflow scanner revisits each edge.
+        // Its single shared budget must exhaust and conservatively decline.
+        let truth = arena.add(TermNode::Lit { value: Value::Bool(true) });
+        let mut shared = truth;
+        for _ in 0..31 {
+            shared = arena.add(TermNode::And { items: vec![shared, shared] });
+        }
+        let mut budget = MAX_NODES;
+        assert!(known_overflow(&arena, shared, 0, &mut budget));
+        assert_eq!(budget, 0, "shared DAG scan must stop at the shared node budget");
+        assert!(CompiledWhere::try_compile(&arena, shared, &[]).is_none());
+    }
+
+    #[test]
+    fn jit_thunks_reject_missing_and_out_of_range_node_ids() {
+        let mut ir = Interner::new();
+        let mut g = TypedGraph::new();
+        let cell = ir.intern("Cell");
+        let adj = ir.intern("adj");
+        let score = ir.intern("score");
+        let mut attrs: rustc_hash::FxHashMap<Sym, Value> = Default::default();
+        attrs.insert(score, Value::Float(0.5));
+        let n0 = g.insert_node(cell, attrs);
+
+        let mut a = TermArena::new();
+        let x = ir.intern("x");
+        let x_var = a.add(TermNode::Var { name: x });
+        let tof = a.add(TermNode::TypeOf { node: x_var });
+        let attr = a.add(TermNode::Attr {
+            node: x_var,
+            key: score,
+        });
+        let nbrs = a.add(TermNode::Neighbours {
+            node: x_var,
+            edge_type: adj,
+            any_type: false,
+        });
+        let cnt = a.add(TermNode::Count { source: nbrs });
+
+        let mut vars = FxHashMap::default();
+        vars.insert(x, 0);
+        let f_tof = compile(&a, tof, &vars).expect("compile TypeOf");
+        let f_attr = compile(&a, attr, &vars).expect("compile Attr");
+        let f_cnt = compile(&a, cnt, &vars).expect("compile Count(Neighbours)");
+
+        let ctx = JitCtx::from_graph(&g);
+        // Out-of-range and missing NodeIDs return -1 for TypeOf (never colliding with Sym(0))
+        // and 0 for Attr / Count(Neighbours) without panicking or truncating to u32(0).
+        for bad_id in [-1i64, 999i64, (u32::MAX as i64) + 1 + (n0.0 as i64)] {
+            assert_eq!(f_tof.call_with_ctx(&ctx, &[bad_id]), -1);
+            assert_eq!(f_attr.call_with_ctx(&ctx, &[bad_id]), 0);
+            assert_eq!(f_cnt.call_with_ctx(&ctx, &[bad_id]), 0);
+        }
+        // Fractional float 0.5 is not coerced to integer 1.
+        assert_eq!(f_attr.call_with_ctx(&ctx, &[n0.0 as i64]), 0);
     }
 }

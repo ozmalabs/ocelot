@@ -80,6 +80,15 @@ impl CowShardKey for Value {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct EdgeIdx(pub u32);
 
+/// Undo record for one temporary search assignment. Visible caller-owned
+/// edges are left untouched; hidden edges retain their slot and attributes.
+#[derive(Debug)]
+pub enum TemporaryEdgeUndo {
+    Existing,
+    Revealed { key: EdgeKey, attrs: Attrs },
+    Inserted(EdgeIdx),
+}
+
 /// (src, edge_type, tgt) triple — the structural key of an edge.
 /// `Sym` for edge_type so look-ups are u32 compares on the hot path.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
@@ -1239,6 +1248,19 @@ impl TypedGraph {
 
     /// Begin opt-in write-target collection. Nested collection is a caller
     /// error because each report must have one unambiguous closure boundary.
+    /// Temporarily remove the active observer log while speculative graph
+    /// writes are applied and rolled back. The exact log (including nested
+    /// rule/effect attribution state and budgets) must be restored afterward.
+    pub fn take_mutation_log(&mut self) -> Option<GraphMutationLog> {
+        self.mutation_log.take()
+    }
+
+    /// Restore a log previously returned by `take_mutation_log`.
+    pub fn restore_mutation_log(&mut self, log: Option<GraphMutationLog>) {
+        assert!(self.mutation_log.is_none(), "cannot restore over an active mutation log");
+        self.mutation_log = log;
+    }
+
     pub fn begin_mutation_log(&mut self) {
         assert!(
             self.mutation_log.is_none(),
@@ -2412,6 +2434,80 @@ impl TypedGraph {
         Ok(idx)
     }
 
+    /// Add an edge for a search branch and return the exact operation needed
+    /// to restore caller state. An edge hidden by the active read scope is
+    /// revealed for the branch, with its prior attributes retained in undo.
+    pub fn insert_temporary_edge(
+        &mut self,
+        src: NodeID,
+        edge_type: Sym,
+        tgt: NodeID,
+    ) -> Result<TemporaryEdgeUndo, EdgeInsertError> {
+        self.insert_temporary_edge_with_attrs(src, edge_type, tgt, Attrs::default())
+    }
+
+    /// Add or reveal an edge for a temporary branch, writing `attrs` while
+    /// retaining the exact prior visibility and attributes for rollback.
+    pub fn insert_temporary_edge_with_attrs(
+        &mut self,
+        src: NodeID,
+        edge_type: Sym,
+        tgt: NodeID,
+        attrs: impl Into<Attrs>,
+    ) -> Result<TemporaryEdgeUndo, EdgeInsertError> {
+        let attrs = attrs.into();
+        if !self.has_node(src) {
+            return Err(EdgeInsertError::MissingSrc(src));
+        }
+        if !self.has_node(tgt) {
+            return Err(EdgeInsertError::MissingTgt(tgt));
+        }
+        if self.edge_idx(src, edge_type, tgt).is_some() {
+            return Ok(TemporaryEdgeUndo::Existing);
+        }
+        if let Some(idx) = self.edge_idx_unscoped(src, edge_type, tgt) {
+            let old_attrs = self.edge_attrs(idx).clone();
+            let key = EdgeKey { src, edge_type, tgt };
+            self.log_edge_before(key);
+            self.edge_read_scope.as_mut().expect("hidden edge requires scope")
+                .insert(idx, key);
+            if attrs.is_empty() { self.edge_attrs.remove(&idx); }
+            else { self.edge_attrs.insert(idx, attrs); }
+            self.bump_mutation_version();
+            if self.log_edge_writes {
+                self.edge_write_log.push((src, edge_type, tgt));
+            }
+            self.log_edge_mutation(key);
+            return Ok(TemporaryEdgeUndo::Revealed { key, attrs: old_attrs });
+        }
+        let idx = self.insert_edge(src, edge_type, tgt, attrs)?;
+        Ok(TemporaryEdgeUndo::Inserted(idx))
+    }
+
+    /// Restore a temporary search branch edge. Caller-visible edges remain
+    /// untouched; a revealed edge is hidden again with its original attrs.
+    pub fn undo_temporary_edge(&mut self, undo: TemporaryEdgeUndo) {
+        match undo {
+            TemporaryEdgeUndo::Existing => {}
+            TemporaryEdgeUndo::Inserted(idx) => { self.delete_edge(idx); }
+            TemporaryEdgeUndo::Revealed { key, attrs } => {
+                // A later rule effect may delete this revealed edge. During
+                // reverse replay that deletion is restored first, potentially
+                // at a different slot, so resolve the structural key again.
+                let Some(idx) = self.edge_idx_unscoped(key.src, key.edge_type, key.tgt) else {
+                    return;
+                };
+                self.log_edge_before(key);
+                self.edge_read_scope.as_mut().expect("revealed edge scope remains active")
+                    .remove(idx, key);
+                if attrs.is_empty() { self.edge_attrs.remove(&idx); }
+                else { self.edge_attrs.insert(idx, attrs); }
+                self.bump_mutation_version();
+                self.log_edge_mutation(key);
+            }
+        }
+    }
+
     pub fn delete_edge(&mut self, idx: EdgeIdx) -> Option<EdgeData> {
         if self
             .mutation_log
@@ -2902,6 +2998,110 @@ mod tests {
 
     fn setup() -> (TypedGraph, Interner) {
         (TypedGraph::new(), Interner::new())
+    }
+
+    #[test]
+    fn temporary_edge_reveals_hidden_edge_then_restores_attributes_and_scope() {
+        let (mut g, mut i) = setup();
+        let ty = i.intern("edge");
+        let attr = i.intern("state");
+        let src = g.insert_node(i.intern("N"), Attrs::default());
+        let tgt = g.insert_node(i.intern("N"), Attrs::default());
+        let idx = g.insert_edge(src, ty, tgt, Attrs(vec![(attr, Value::Int(7))])).unwrap();
+
+        assert_eq!(g.set_focus_edge_scope(&[src], 0), 0);
+        assert_eq!(g.edge_idx(src, ty, tgt), None);
+        let undo = g.insert_temporary_edge(src, ty, tgt).unwrap();
+        assert_eq!(g.edge_idx(src, ty, tgt), Some(idx));
+        assert!(g.edge_attrs(idx).is_empty());
+        g.undo_temporary_edge(undo);
+        assert_eq!(g.edge_idx(src, ty, tgt), None);
+        assert_eq!(g.edge_count(), 0);
+
+        g.set_focus_edge_scope(&[], 0);
+        assert_eq!(g.edge_idx(src, ty, tgt), Some(idx));
+        assert_eq!(g.edge_attrs(idx).get(&attr), Some(&Value::Int(7)));
+    }
+
+    #[test]
+    fn temporary_edge_with_attrs_restores_hidden_edge_attrs() {
+        let (mut g, mut i) = setup();
+        let ty = i.intern("edge");
+        let attr = i.intern("state");
+        let src = g.insert_node(i.intern("N"), Attrs::default());
+        let tgt = g.insert_node(i.intern("N"), Attrs::default());
+        let idx = g.insert_edge(src, ty, tgt, Attrs(vec![(attr, Value::Int(7))])).unwrap();
+
+        g.set_focus_edge_scope(&[src], 0);
+        let undo = g.insert_temporary_edge_with_attrs(
+            src, ty, tgt, Attrs(vec![(attr, Value::Int(9))]),
+        ).unwrap();
+        assert_eq!(g.edge_idx(src, ty, tgt), Some(idx));
+        assert_eq!(g.edge_attrs(idx).get(&attr), Some(&Value::Int(9)));
+        g.undo_temporary_edge(undo);
+        assert_eq!(g.edge_idx(src, ty, tgt), None);
+
+        g.set_focus_edge_scope(&[], 0);
+        assert_eq!(g.edge_idx(src, ty, tgt), Some(idx));
+        assert_eq!(g.edge_attrs(idx).get(&attr), Some(&Value::Int(7)));
+    }
+
+    #[test]
+    fn temporary_edge_preserves_visible_existing_and_removes_new_edge() {
+        let (mut g, mut i) = setup();
+        let ty = i.intern("edge");
+        let attr = i.intern("state");
+        let src = g.insert_node(i.intern("N"), Attrs::default());
+        let tgt = g.insert_node(i.intern("N"), Attrs::default());
+        let idx = g.insert_edge(src, ty, tgt, Attrs(vec![(attr, Value::Int(9))])).unwrap();
+
+        let undo = g.insert_temporary_edge(src, ty, tgt).unwrap();
+        assert!(matches!(&undo, TemporaryEdgeUndo::Existing));
+        g.undo_temporary_edge(undo);
+        assert_eq!(g.edge_idx(src, ty, tgt), Some(idx));
+        assert_eq!(g.edge_attrs(idx).get(&attr), Some(&Value::Int(9)));
+
+        let other = i.intern("other");
+        let undo = g.insert_temporary_edge(src, other, tgt).unwrap();
+        assert_eq!(g.edge_count(), 2);
+        g.undo_temporary_edge(undo);
+        assert_eq!(g.edge_count(), 1);
+        assert_eq!(g.edge_idx(src, other, tgt), None);
+    }
+
+    #[test]
+    fn suspended_mutation_log_preserves_open_rule_effect_metadata_without_speculative_targets() {
+        let (mut g, mut i) = setup();
+        let nt = i.intern("N");
+        let key = i.intern("value");
+        let rule = i.intern("observed_rule");
+        let speculative = g.insert_node(nt, Attrs::default());
+        let committed = g.insert_node(nt, Attrs::default());
+        g.begin_mutation_log();
+        g.enable_rule_write_attribution();
+        g.enable_rule_write_effect_attribution();
+        g.begin_rule_write_event(rule, false);
+        g.begin_rule_write_effect(7);
+
+        let suspended = g.take_mutation_log();
+        g.set_node_attr(speculative, key, Value::Int(1));
+        g.restore_mutation_log(suspended);
+
+        // The in-progress event and effect index survived exactly, so the real
+        // write is still attributed to its original rule/effect.
+        g.set_node_attr(committed, key, Value::Int(2));
+        g.finish_rule_write_effect();
+        g.finish_rule_write_event(true);
+        let log = g.finish_mutation_log();
+        assert!(!log.changed_nodes.contains(&speculative));
+        assert!(log.changed_nodes.contains(&committed));
+        assert_eq!(log.rule_write_events.len(), 1);
+        let event = &log.rule_write_events[0];
+        assert_eq!(event.rule_name, rule);
+        assert_eq!(event.node_ids, vec![committed]);
+        assert_eq!(event.effect_snapshots.len(), 1);
+        assert_eq!(event.effect_snapshots[0].effect_index, 7);
+        assert_eq!(event.effect_snapshots[0].node_values[0].node_id, committed);
     }
 
     #[test]
