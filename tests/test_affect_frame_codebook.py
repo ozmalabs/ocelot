@@ -27,6 +27,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_PATH = os.path.join(ROOT, "results", "affect_frame_codebook.json")
 SEED_PATH = os.path.join(ROOT, "seeds", "affect_frame.json")
 START_COMMIT = "2e674bd99454403d4a01d90e195ba328e1345723"
+# VISION_PROTOCOL §12.3: G-0's no-change claim is about THIS RUNG's own commits, so it is
+# pinned to the rung's range (prereg commit .. result commit), never to the mutable tree. The
+# live-tree form failed the day it landed, when an unrelated merge brought engine changes.
+RESULT_COMMIT = "ddea502fb3b394ecb41314a934ea1bf49feb2553"
 SEED_ID = "affect_frame"
 LOW, T_PRESENT = 50, 256
 SURPRISE_R = [150, 200, 400, 800, 1600]
@@ -296,7 +300,7 @@ def _header():
 # ---------------------------------------------------------------------------------------------
 
 def test_G0_default_preserved():
-    diff = subprocess.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, "--",
+    diff = subprocess.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, RESULT_COMMIT, "--",
                            "seeds/core_emotions.json", "scripts/build_core_emotions_seed.py",
                            "runners/"], capture_output=True, text=True)
     _record("G-0", {"rc": diff.returncode, "diff_stat": diff.stdout})
