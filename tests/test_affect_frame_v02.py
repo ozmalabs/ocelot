@@ -28,6 +28,8 @@ pytest.importorskip("substrate_rs")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_PATH = os.path.join(ROOT, "results", "affect_frame_v02.json")
 START_COMMIT = "d1e7d6abaaddc2b2c654449427cd12b5e1018486"
+# VISION_PROTOCOL §12.3: G-0 is pinned to this rung's own range, never the mutable tree.
+RESULT_COMMIT = "d3000ad51ce56b319d0f385f45986e9c01990a3c"
 LOW = 50
 
 M = importlib.import_module("scripts.core_emotions_measure")
@@ -365,7 +367,7 @@ def _arm_c():
 
 def test_G0_isolation():
     import subprocess as sp
-    diff = sp.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, "--",
+    diff = sp.run(["git", "-C", ROOT, "diff", "--stat", START_COMMIT, RESULT_COMMIT, "--",
                    "seeds/core_emotions.json", "scripts/build_core_emotions_seed.py",
                    "runners/"], capture_output=True, text=True)
     _record("G-0", {"rc": diff.returncode, "diff_stat": diff.stdout})
