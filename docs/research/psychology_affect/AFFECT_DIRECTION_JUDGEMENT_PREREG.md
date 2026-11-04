@@ -23,6 +23,11 @@ SEED CLAIM 368000-368999: CLEAN -- no collision DETECTED.
 The rung is **deterministic**. Every sample set is a full enumeration fixed below, and no
 number is drawn from the block. The block is claimed for hygiene and successor safety.
 
+**Erratum (4 November 2026, before any run, commit after `2c753aaa`):** G-0 originally said
+"25 family events". The §4 table lists 4 families × 5 levels = 20 family events, 22 events
+with neutral and mixed. Only the count in the G-0 text changed. No prediction, constant or
+sample set changed.
+
 ## 1. The question
 
 The predecessor rung ([`AFFECT_MAP_REUSE_GRID_CODE_RESULTS.md`](AFFECT_MAP_REUSE_GRID_CODE_RESULTS.md),
@@ -169,7 +174,7 @@ loss **5/25** (only the 5 same-level pairs).
 
 | gate | prediction | fails if |
 |---|---|---|
-| **G-0** harness reproduces the oracle | every isolated read-off in §4 (25 family events, neutral, mixed) equals its predicted (valence, arousal, emotion), and `n_fired` is 1 (0 for neutral, 2 for mixed) | any mismatch. **Every later gate is then uninterpretable until the cause is localised.** |
+| **G-0** harness reproduces the oracle | every isolated read-off in §4 (20 family events, neutral, mixed: 22 events) equals its predicted (valence, arousal, emotion), and `n_fired` is 1 (0 for neutral, 2 for mixed) | any mismatch. **Every later gate is then uninterpretable until the cause is localised.** |
 | **G-1** context independence | in every one of the 221 trials, each event's read-off equals its isolated read-off | any difference (the first event changes the second) |
 | **G-2** valence-only direction | 81/121 correct; within-category 0/40; cross-category 70/70; same-level 11/11 | any count differs |
 | **G-3** joint information bound | 3 distinct valences, 7 distinct tuples; 101/121 resolvable; the unresolvable set is exactly the 20 distinct-level loss–loss pairs | any count or set differs |
