@@ -234,6 +234,15 @@ def _run_streams():
 # gates
 # ---------------------------------------------------------------------------------------------
 
+# H-1 and H-2 FAILED as pre-registered (SD_LOOP_GEN_REARM_AND_TIE_PARITY_RESULTS.md section 2).
+# Their assertions are kept unchanged; strict xfail reports if they ever start to pass.
+_H1_FAILED = ("H-1 failed as pre-registered: it compares raw gen_explained (re-armed 0, fresh "
+              "absent) and the first-recognition has_transform receipt kept by design (block "
+              "371000 amendment). See RESULTS section 2.")
+_H2_FAILED = ("H-2 failed as pre-registered: re-armed views are re-recognised by the transform "
+              "or dimension rung, so GenInfer never runs and gen_checked stays 0 after the "
+              "reset. See RESULTS section 2.")
+
 def test_H0_seed_resets_gen_flags_and_version():
     with open(SEED_PATH, encoding="utf-8") as fh:
         seed = json.load(fh)
@@ -247,6 +256,7 @@ def test_H0_seed_resets_gen_flags_and_version():
     assert "block 372000" in rule["comment"]
 
 
+@pytest.mark.xfail(strict=True, reason=_H1_FAILED)
 def test_H1_stream_a_affect_rearm_equals_fresh():
     res = _run_streams()["a"]
     _record("H-1a", res)
@@ -254,6 +264,7 @@ def test_H1_stream_a_affect_rearm_equals_fresh():
     assert res["n_agree"] == res["n_total"], res["disagree"][:5]
 
 
+@pytest.mark.xfail(strict=True, reason=_H1_FAILED)
 def test_H1_stream_b_det1_rearm_equals_fresh():
     res = _run_streams()["b"]
     _record("H-1b", res)
@@ -261,6 +272,7 @@ def test_H1_stream_b_det1_rearm_equals_fresh():
     assert res["n_agree"] == res["n_total"], res["disagree"][:5]
 
 
+@pytest.mark.xfail(strict=True, reason=_H1_FAILED)
 def test_H1_stream_c_tromino_rearm_equals_fresh():
     res = _run_streams()["c"]
     _record("H-1c", res)
@@ -268,6 +280,7 @@ def test_H1_stream_c_tromino_rearm_equals_fresh():
     assert res["n_agree"] == res["n_total"], res["disagree"]
 
 
+@pytest.mark.xfail(strict=True, reason=_H2_FAILED)
 def test_H2_stream_b_rearmed_views_gen_checked():
     res = _run_streams()["b"]
     _record("H-2", {"n_rearmed": res["n_rearmed"],
@@ -275,6 +288,29 @@ def test_H2_stream_b_rearmed_views_gen_checked():
                     "not_1": res["rearmed_gen_checked_not_1"]})
     assert res["n_rearmed"] > 0
     assert res["rearmed_gen_checked_not_1"] == [], res["rearmed_gen_checked_not_1"]
+
+
+def _guard_truth_disagreements(rows):
+    def truth(v):
+        return v == 1 or v is True
+    return [d["label"] for d in rows
+            if truth(d["re"].get("gen_explained")) != truth(d["fresh"].get("gen_explained"))]
+
+
+def test_posthoc_guard_truth_rearm_equals_fresh():
+    """POST-HOC diagnostic, not a pre-registered gate (RESULTS section 2.3).
+
+    Every guard reads gen_explained as `== 1`. On that reading a re-armed observation agrees
+    with a fresh one in all three streams after the fix. The pre-fix control shows 13 stale
+    disagreements on the det1 shear views.
+    """
+    runs = _run_streams()
+    for key in ("a", "b", "c"):
+        assert _guard_truth_disagreements(runs[key]["disagree"]) == [], key
+        statuses = [d for d in runs[key]["disagree"]
+                    if d["re"]["status"] != d["fresh"]["status"]
+                    or d["re"]["covered_by"] != d["fresh"]["covered_by"]]
+        assert statuses == [], (key, statuses[:3])
 
 
 def test_control_prefix_disagreement_record_only(monkeypatch):
