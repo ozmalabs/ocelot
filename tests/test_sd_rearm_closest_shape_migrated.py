@@ -371,6 +371,7 @@ def test_source_rule_sites_use_closest_shape():
     for name in NEW_RULES:
         assert name in rules, name
         assert rules[name]["match"] == [["ag", "observed", "obs"], ["obs", "has_transform", "t"]]
-    assert seed["version"] == "1.18.0", seed["version"]
+    # 1.18.0 introduced these sites; later versions (1.19.0, block 372000) must keep them.
+    assert tuple(int(p) for p in seed["version"].split(".")) >= (1, 18, 0), seed["version"]
     _record("source", {"sites": sorted(sites), "new_rules": list(NEW_RULES),
                        "version": seed["version"]})

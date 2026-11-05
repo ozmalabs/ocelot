@@ -3,7 +3,7 @@
 **Pre-registration:** [`SD_LOOP_GEN_REARM_AND_TIE_PARITY_PREREG.md`](SD_LOOP_GEN_REARM_AND_TIE_PARITY_PREREG.md)
 (start commit `dca17cfa`). No amendment.
 
-**Outcome.** H-0 passes. H-3 passes: 0 per-id outcome changes on the 2022-id set. **H-1 and
+**Outcome.** H-0 passes. H-3 passes on the 2022-id set with 0 per-id outcome changes; one source-version pin outside that set broke and was fixed (§3). **H-1 and
 H-2 fail as written.** The failures come from how the two gates were specified, not from
 the change. They are reported as failures, and the gate assertions are kept unchanged in
 the test file under `xfail(strict=True)`. A labelled post-hoc diagnostic (§2.3) shows the
@@ -106,6 +106,22 @@ match block 371000's.
 `test_graph_walks_with_alternating_support_and_bounded_aerial_phases`, with
 `bounded_lateral_drift: False` (expected True) on both trees. It is not caused by this
 change, and its cause was not investigated here.
+
+**Scope miss found after merge.** The scope list was written before block 371000, so it
+does not contain that block's own test file. On merged main,
+`test_sd_rearm_closest_shape_migrated.py::test_source_rule_sites_use_closest_shape` failed:
+it pinned `version == "1.18.0"`, and G1 bumps the seed to 1.19.0. That is a pass→fail
+caused by this change. It is a source pin, not a behaviour change, and it now asserts
+`version >= 1.18.0` (17 passed with the provenance file). The other sd-loop test files not
+in the scope list are this block's own file, `test_structured_find.py` (collection error:
+no `PIL`) and `test_vision_floor_migrated.py` (skipped). The last two give the same result
+on the start commit.
+
+**Post-merge check on main** (canonical engine `3ceb5431062c`): the provenance,
+block 371000 and 372000, selector-winner, det1, similarity, chunk-composite and affect
+frame v0.2 files give 60 passed and 4 xfailed. The 5 failures in
+`test_argmin_unique_migrated.py` and `test_refusal_representable_migrated.py` fail the same
+way on the start commit.
 
 ## 4. Measurement of committed records (prereg §4)
 
