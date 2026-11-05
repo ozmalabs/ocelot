@@ -1,6 +1,6 @@
 # engine_substrate — index
 
-79 documents.
+80 documents.
 
 ## Documents
 
@@ -22,6 +22,7 @@ must be represented as explicit transitions.
 | file | title |
 |---|---|
 | [`SD_LOOP_REARM_AND_JSON_SIGNATURE_PREREG.md`](SD_LOOP_REARM_AND_JSON_SIGNATURE_PREREG.md) | SD LOOP — re-armed transforms stuck; JSON-string signature scoring — PRE-REGISTRATION (block 371000) |
+| [`SD_LOOP_REARM_AND_JSON_SIGNATURE_AMENDMENT.md`](SD_LOOP_REARM_AND_JSON_SIGNATURE_AMENDMENT.md) | SD LOOP block 371000 — AMENDMENT before the final regression run |
 | [`AFFECT_WEIGHTED_ROUTE_VALUATION_DESIGN.md`](AFFECT_WEIGHTED_ROUTE_VALUATION_DESIGN.md) | What should replace enumeration order in routing: route choice is a weighted valuation with a felt-cost term, ties are its diagnostic rather than the phenomenon, and the substrate already has both halves with no wire between them. Includes the cheaper mechanisms one per capability layer (bacterium, woodlouse, ant colony), why the stigmergic probe goes first, and why the felt term is optional at the substrate but required for desire paths in a social simulation. |
 | [`TIE_CONSEQUENTIALITY_RESULTS.md`](TIE_CONSEQUENTIALITY_RESULTS.md) | Are ties consequential? Refusing every tie is free in conversation and fails 7 of 25 routing tests in space — enumeration order has been silently supplying the navigation tie-break policy. |
 | [`CONSTANT_RANKING_SELECTOR_CENSUS.md`](CONSTANT_RANKING_SELECTOR_CENSUS.md) | Constant-ranking selector census — a null over 1491 seed selectors that retires the seed-data rung proposed one section earlier; the salience case is path-dependent, not structural. |
