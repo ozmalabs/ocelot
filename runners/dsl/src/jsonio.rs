@@ -239,6 +239,7 @@ fn variant_name(node: &TermNode) -> &'static str {
         TermNode::EffectFingerprint { .. } => "EffectFingerprint",
         TermNode::PermParity { .. } => "PermParity",
         TermNode::MatDet { .. } => "MatDet",
+        TermNode::ClosestShape { .. } => "ClosestShape",
         TermNode::Fold { .. } => "Fold",
         TermNode::BitsAt { .. } => "BitsAt",
         TermNode::BitsWrite { .. } => "BitsWrite",
@@ -902,6 +903,10 @@ fn write_fields(node: &TermNode, arena: &TermArena, interner: &Interner, m: &mut
         }
         TermNode::MatDet { m: mat } => {
             m.insert("m".into(), child(*mat, arena, interner));
+        }
+        TermNode::ClosestShape { goal, codebook_type } => {
+            m.insert("goal".into(), child(*goal, arena, interner));
+            m.insert("codebook_type".into(), sym_str(*codebook_type, interner));
         }
         TermNode::Fold {
             source,
@@ -2305,6 +2310,19 @@ fn read_term(
         "MatDet" => TermNode::MatDet {
             m: child_of("m", obj, arena, interner, variant)?,
         },
+        "ClosestShape" => {
+            // The wild marker is interned here, as `AntiUnify`'s parse does, so the
+            // evaluator's `lookup("·?·")` always succeeds for a loaded Term.
+            let _ = interner.intern("·?·");
+            TermNode::ClosestShape {
+                goal: child_of("goal", obj, arena, interner, variant)?,
+                codebook_type: interner.intern(
+                    obj.get("codebook_type")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("ShapeSignature"),
+                ),
+            }
+        }
         "Fold" => TermNode::Fold {
             source: child_of("source", obj, arena, interner, variant)?,
             var_name: get_sym("var_name", interner)?,

@@ -791,6 +791,7 @@ fn children(node: &TermNode) -> Vec<TermIdx> {
         EffectSupport { p } | PermParity { p } => vec![*p],
         EffectFingerprint { p, probes } => vec![*p, *probes],
         MatDet { m } => vec![*m],
+        ClosestShape { goal, .. } => vec![*goal],
         Fold {
             source, init, body, ..
         } => vec![*source, *init, *body],

@@ -155,9 +155,11 @@ DELTAS = {
     ("surprise", 800): ("surprise", {"ar_level": 3}),
     ("surprise", 1600): ("surprise", {"ar_level": 4}),
 }
+# block 371000 (D1 re-arm fix, prereg SD_LOOP_REARM_AND_JSON_SIGNATURE_PREREG §2): these 11
+# frames were pinned at "decoded" by the block 370000 defect. They now end recognized_transformed.
 for _ev in [("loss", k) for k in range(1, 5)] + [("gain", k) for k in range(1, 5)] \
         + [("threat", 1), ("threat", 2), ("threat", 4)]:
-    STATUS[(_ev, DELTAS[_ev][0])] = "decoded"
+    STATUS[(_ev, DELTAS[_ev][0])] = "recognized_transformed"
 for _r in (200, 400, 800, 1600):
     STATUS[(("surprise", _r), "surprise")] = "recognized_transformed"
 STATUS[(("threat", 0), "anxiety")] = "recognized"
@@ -488,7 +490,9 @@ def test_G3_growth():
     assert b["ax_after"] - b["ax_before"] == 6
     assert b["epoch"] == 6
     assert n_checked == 23
-    assert counts == {"recognized": 8, "recognized_transformed": 4, "decoded": 11}, counts
+    # block 371000 (D1 fix): 8/15/0, was 8/4/11 at block 370000 (the stuck-state record).
+    full = {k: counts.get(k, 0) for k in ("recognized", "recognized_transformed", "decoded")}
+    assert full == {"recognized": 8, "recognized_transformed": 15, "decoded": 0}, counts
     assert not status_bad, f"frame statuses or transforms differ from prereg section 4.2: {status_bad}"
 
 

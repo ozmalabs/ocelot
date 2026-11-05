@@ -3375,6 +3375,19 @@ pub enum TermNode {
     EffectFingerprint { p: TermIdx, probes: TermIdx },
     PermParity { p: TermIdx },
     MatDet { m: TermIdx },
+
+    /// `ClosestShape { goal, codebook_type = "ShapeSignature" }` — the NODE of
+    /// `codebook_type` whose `signature` best covers `goal`. It returns what
+    /// `Argmax(NodesOfType(codebook_type), sig, FixedCount(AntiUnify(SetT[goal,
+    /// Attr(sig,"signature")])))` returns, with one difference: a `signature`
+    /// that is a JSON-array string (`Str` or `Surface(Text)`) is read the way
+    /// `load_parts` reads it, via `json_to_value_scoped`. A native-list
+    /// signature is used unchanged, so native parts score exactly as before.
+    /// Same iteration order, comparator and first-wins tie rule as `Argmax`.
+    /// Returns `Value::None` for an empty codebook. The rule-side `Argmax`
+    /// cannot do this because `AntiUnify` treats a JSON string as one opaque
+    /// value (block 371000 prereg §1, D2). See `shape_decode::eval_closest_shape`.
+    ClosestShape { goal: TermIdx, codebook_type: Sym },
 }
 
 /// Arena for a Term tree. Childless to outside callers — construction
@@ -5186,6 +5199,9 @@ fn copy_subtree(src: &TermArena, dst: &mut TermArena, idx: TermIdx) -> TermIdx {
         },
         TermNode::PermParity { p } => TermNode::PermParity { p: copy_subtree(src, dst, p) },
         TermNode::MatDet { m } => TermNode::MatDet { m: copy_subtree(src, dst, m) },
+        TermNode::ClosestShape { goal, codebook_type } => TermNode::ClosestShape {
+            goal: copy_subtree(src, dst, goal), codebook_type,
+        },
         // --- Program IR (P1) ---
         TermNode::ProgSeq { stmts } => TermNode::ProgSeq {
             stmts: stmts.iter().map(|s| copy_subtree(src, dst, *s)).collect(),
@@ -9328,6 +9344,9 @@ fn evaluate_inner(arena: &TermArena, idx: TermIdx, env: &mut Env, ctx: &mut Eval
         TermNode::MatDet { m } => {
             let mv = evaluate(arena, *m, env, ctx);
             crate::process_algebra::mat_det(&mv)
+        }
+        TermNode::ClosestShape { goal, codebook_type } => {
+            crate::shape_decode::eval_closest_shape(arena, *goal, *codebook_type, env, ctx)
         }
 
         // --- Program IR (P1): STRUCTURAL variants are INERT here. ---
@@ -15323,6 +15342,7 @@ pub(crate) fn children(node: &TermNode) -> SmallVec<[TermIdx; 8]> {
         TermNode::ProcessCompose { a, b } => out.extend([*a, *b]),
         TermNode::ProcessInverse { a } | TermNode::EffectSupport { p: a }
         | TermNode::PermParity { p: a } | TermNode::MatDet { m: a } => out.push(*a),
+        TermNode::ClosestShape { goal, .. } => out.push(*goal),
         TermNode::ProcessApply { p, state } => out.extend([*p, *state]),
         TermNode::ProcessRepairVerify { p, fresh_states, goals } => {
             out.extend([*p, *fresh_states, *goals]);

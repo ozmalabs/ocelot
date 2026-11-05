@@ -147,7 +147,10 @@ def test_the_ablations_are_flags_not_python_decisions():
     guarded = [r["name"] for r in sd["rules"]
                if json.dumps(r.get("where", {})).find('"associative"') >= 0]
     assert sorted(guarded) == ["sd_recognize", "sd_recognize_dim",
-                               "sd_recognize_transformed"], guarded
+                               "sd_recognize_transformed", "sd_rerecognize_dim",
+                               "sd_rerecognize_transformed"], guarded
+    # block 371000: sd_rerecognize_* also write covered_by (re-armed transforms), so the
+    # associative lesion must guard them too; they carry the same guard, copied verbatim.
     gr = json.load(open(os.path.join(here, "seeds", "vision_ground.json")))
     guarded_g = [r["name"] for r in gr["rules"]
                  if json.dumps(r.get("where", {})).find('"apperceptive"') >= 0]

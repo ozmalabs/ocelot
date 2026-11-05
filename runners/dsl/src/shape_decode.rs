@@ -2747,6 +2747,96 @@ fn subst_pair_count(transforms: &[DimTransform]) -> usize {
         .sum()
 }
 
+/// Evaluate `ClosestShape` (block 371000, prereg §2 D2). Same selection as
+/// `Argmax(NodesOfType(codebook_type), sig, FixedCount(AntiUnify(SetT[goal,
+/// Attr(sig,"signature")])))`, except that a JSON-array `signature` string is
+/// parsed the way `load_parts` parses one. Iteration follows the frozenset that
+/// `NodesOfType` builds (`Value::make_frozenset`), so the candidate order matches
+/// `Argmax`. Ties keep the first candidate. A native-list signature is used as
+/// is. See `TermNode::ClosestShape` in term.rs.
+pub(crate) fn eval_closest_shape(
+    arena: &TermArena,
+    goal_idx: TermIdx,
+    codebook_type: Sym,
+    env: &mut Env,
+    ctx: &mut EvalCtx,
+) -> Value {
+    let goal_val = evaluate(arena, goal_idx, env, ctx);
+    // `ClosestShape` parsing interns the marker (see jsonio.rs), so the lookup
+    // succeeds for every Term built through the JSON loader.
+    let wild_sym = ctx
+        .interner
+        .lookup("·?·")
+        .expect("ClosestShape: the \"·?·\" wild marker must be interned at parse time");
+    let wild_val = wild_value(wild_sym);
+    let sig_key = ctx.interner.lookup("signature");
+    let nodes: Vec<Value> = ctx
+        .graph
+        .nodes_of_type(codebook_type)
+        .into_iter()
+        .map(Value::Node)
+        .collect();
+    let population = Value::make_frozenset(nodes);
+    let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
+    let mut next_id: u32 = u32::MAX;
+    let mut best: Option<(Value, Value)> = None; // (score, node)
+    for cand in population.snapshot().iter() {
+        let Value::Node(nid) = cand else {
+            continue;
+        };
+        let raw_sig = sig_key
+            .and_then(|k| ctx.graph.node(*nid).attrs.get(&k).cloned())
+            .unwrap_or(Value::None);
+        let sig = closest_shape_signature(&raw_sig, ctx.interner, &mut extra, &mut next_id);
+        let set = Value::make_frozenset(vec![goal_val.clone(), sig]);
+        let instances: Vec<Value> = match &set {
+            Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
+            _ => Vec::new(),
+        };
+        let score = Value::Int(fixed_count_value(
+            &anti_unify_values(&instances, &wild_val),
+            &wild_val,
+        ));
+        let take_new = match &best {
+            None => true,
+            Some((cur, _)) => {
+                crate::value::cmp_value_lex(&score, cur, ctx.interner)
+                    == std::cmp::Ordering::Greater
+            }
+        };
+        if take_new {
+            best = Some((score, cand.clone()));
+        }
+    }
+    best.map(|(_, node)| node).unwrap_or(Value::None)
+}
+
+/// A `ClosestShape` candidate's signature as `load_parts` reads it. A `Str` or
+/// `Surface(Text)` holding a JSON array becomes a Tuple of converted relations.
+/// Anything else, including a string that is not a JSON array, is returned unchanged.
+fn closest_shape_signature(
+    raw: &Value,
+    interner: &Interner,
+    extra: &mut FxHashMap<String, Sym>,
+    next_id: &mut u32,
+) -> Value {
+    let text: Option<&str> = match raw {
+        Value::Str(s) => Some(interner.resolve(*s)),
+        Value::Surface(SurfaceKind::Text, bytes) => std::str::from_utf8(bytes).ok(),
+        _ => None,
+    };
+    if let Some(text) = text {
+        if let Ok(serde_json::Value::Array(items)) = serde_json::from_str::<serde_json::Value>(text) {
+            let rel: SmallVec<[Value; 4]> = items
+                .iter()
+                .map(|it| json_to_value_scoped(it, interner, extra, next_id))
+                .collect();
+            return Value::Tuple(Arc::new(rel));
+        }
+    }
+    raw.clone()
+}
+
 /// Evaluate `TransformDecode` — the quantum-delta dequantizer. See
 /// `TermNode::TransformDecode`'s doc (term.rs) for the full semantics;
 /// this reuses `load_parts`/`apply_exclude` (codebook read, identical to
@@ -13800,5 +13890,195 @@ mod meta_shape_first_class_tests {
             ]))),
             "a named scope declares a restriction"
         );
+    }
+}
+
+/// `ClosestShape` tests (block 371000, prereg §2 D2). They check that the Term
+/// returns the node that `Argmax(NodesOfType, sig, FixedCount(AntiUnify(SetT[goal,
+/// Attr(sig,"signature")])))` returns on native-list parts, and that JSON-string
+/// parts give the same answer.
+#[cfg(test)]
+mod closest_shape_tests {
+    use super::*;
+    use crate::graph::{NodeID, TypedGraph};
+    use crate::term::TermNode;
+
+    fn add_part(g: &mut TypedGraph, ir: &mut Interner, t: Sym, name: &str, sig: Value) -> NodeID {
+        let mut attrs: FxHashMap<Sym, Value> = FxHashMap::default();
+        attrs.insert(ir.intern("name"), Value::Str(ir.intern(name)));
+        attrs.insert(ir.intern("signature"), sig);
+        g.insert_node(t, attrs)
+    }
+
+    /// A relation tuple whose slots are pre-built `Value`s.
+    fn rel(slots: Vec<Value>) -> Value {
+        let v: SmallVec<[Value; 4]> = slots.into_iter().collect();
+        Value::Tuple(Arc::new(v))
+    }
+
+    fn s(ir: &mut Interner, text: &str) -> Value {
+        Value::Str(ir.intern(text))
+    }
+
+    /// Native signature `[["probe_c","Z",2],["probe_d","W"]]`.
+    fn part_b(ir: &mut Interner) -> Value {
+        let r1 = rel(vec![s(ir, "probe_c"), s(ir, "Z"), Value::Int(2)]);
+        let r2 = rel(vec![s(ir, "probe_d"), s(ir, "W")]);
+        rel(vec![r1, r2])
+    }
+
+    /// Native signature `[["probe_a","X",1],["probe_b","Y"]]`.
+    fn part_a(ir: &mut Interner) -> Value {
+        let r1 = rel(vec![s(ir, "probe_a"), s(ir, "X"), Value::Int(1)]);
+        let r2 = rel(vec![s(ir, "probe_b"), s(ir, "Y")]);
+        rel(vec![r1, r2])
+    }
+
+    /// Goal `[["probe_c","Z",2],["zznew","Q"]]`: covers one relation of part B.
+    fn partial_goal(ir: &mut Interner) -> Value {
+        let r1 = rel(vec![s(ir, "probe_c"), s(ir, "Z"), Value::Int(2)]);
+        let r2 = rel(vec![s(ir, "zznew"), s(ir, "Q")]);
+        rel(vec![r1, r2])
+    }
+
+    /// Goal equal to part B.
+    fn exact_goal(ir: &mut Interner) -> Value {
+        part_b(ir)
+    }
+
+    /// The JSON text a `json.dumps` signature would store for part B.
+    fn json_b(ir: &mut Interner) -> Value {
+        let text = serde_json::to_string(&serde_json::json!([["probe_c", "Z", 2], ["probe_d", "W"]]))
+            .unwrap();
+        Value::Str(ir.intern(&text))
+    }
+
+    /// The JSON text a `json.dumps` signature would store for part A.
+    fn json_a(ir: &mut Interner) -> Value {
+        let text = serde_json::to_string(&serde_json::json!([["probe_a", "X", 1], ["probe_b", "Y"]]))
+            .unwrap();
+        Value::Str(ir.intern(&text))
+    }
+
+    /// The `Argmax` form that `ClosestShape` replaces (the rule-side idiom).
+    fn argmax_term(a: &mut TermArena, ir: &mut Interner, t: Sym, goal: Value) -> TermIdx {
+        let sig = ir.intern("sig");
+        let wild = ir.intern("·?·");
+        let goal_t = a.add(TermNode::Lit { value: goal });
+        let sig_var = a.add(TermNode::Var { name: sig });
+        let sig_attr = a.add(TermNode::Attr {
+            node: sig_var,
+            key: ir.intern("signature"),
+        });
+        let set = a.add(TermNode::SetT {
+            items: vec![goal_t, sig_attr],
+        });
+        let anti = a.add(TermNode::AntiUnify { values: set, wild });
+        let fixed = a.add(TermNode::FixedCount { pattern: anti, wild });
+        let source = a.add(TermNode::NodesOfType { node_type: t });
+        a.add(TermNode::Argmax {
+            source,
+            var_name: sig,
+            value: fixed,
+            default: None,
+        })
+    }
+
+    fn closest_term(a: &mut TermArena, ir: &mut Interner, t: Sym, goal: Value) -> TermIdx {
+        // Same contract as `AntiUnify`'s `wild`: the marker is interned by the
+        // builder (the JSON loader does this too, in jsonio.rs).
+        let _ = ir.intern("·?·");
+        let goal_t = a.add(TermNode::Lit { value: goal });
+        a.add(TermNode::ClosestShape {
+            goal: goal_t,
+            codebook_type: t,
+        })
+    }
+
+    fn run(g: &TypedGraph, ir: &Interner, a: &TermArena, idx: TermIdx) -> Value {
+        let mut env: Env = Env::new();
+        let mut ctx = EvalCtx::new(g, ir);
+        evaluate(a, idx, &mut env, &mut ctx)
+    }
+
+    fn name_of(g: &TypedGraph, ir: &Interner, v: &Value) -> String {
+        let Value::Node(nid) = v else {
+            panic!("expected a node, got {v:?}");
+        };
+        let key = ir.lookup("name").expect("name interned");
+        match g.node(*nid).attrs.get(&key) {
+            Some(Value::Str(sym)) => ir.resolve(*sym).to_string(),
+            other => panic!("expected a Str name, got {other:?}"),
+        }
+    }
+
+    /// Native parts A and B, both stored as relation lists.
+    fn native_graph(ir: &mut Interner) -> (TypedGraph, Sym) {
+        let t = ir.intern("ShapeSignature");
+        let mut g = TypedGraph::default();
+        let a = part_a(ir);
+        let b = part_b(ir);
+        add_part(&mut g, ir, t, "zz_part_A", a);
+        add_part(&mut g, ir, t, "zz_part_B", b);
+        (g, t)
+    }
+
+    /// The same parts, with each signature stored as a JSON string.
+    fn json_graph(ir: &mut Interner) -> (TypedGraph, Sym) {
+        let t = ir.intern("ShapeSignature");
+        let mut g = TypedGraph::default();
+        let a = json_a(ir);
+        let b = json_b(ir);
+        add_part(&mut g, ir, t, "zz_part_A", a);
+        add_part(&mut g, ir, t, "zz_part_B", b);
+        (g, t)
+    }
+
+    /// (1) Native parts: ClosestShape returns exactly the node Argmax returns, for an
+    /// exact match and for a partial match.
+    #[test]
+    fn native_parts_match_argmax() {
+        let mut ir = Interner::default();
+        let (g, t) = native_graph(&mut ir);
+        for goal in [exact_goal(&mut ir), partial_goal(&mut ir)] {
+            let mut a = TermArena::new();
+            let am = argmax_term(&mut a, &mut ir, t, goal.clone());
+            let cs = closest_term(&mut a, &mut ir, t, goal);
+            let argmax_v = run(&g, &ir, &a, am);
+            let closest_v = run(&g, &ir, &a, cs);
+            assert_eq!(closest_v, argmax_v, "ClosestShape must equal Argmax on native parts");
+            assert_eq!(name_of(&g, &ir, &closest_v), "zz_part_B");
+        }
+    }
+
+    /// (2) The same parts stored as JSON strings give the same winner as case (1).
+    #[test]
+    fn json_parts_match_native_winner() {
+        let mut ir = Interner::default();
+        let (native, tn) = native_graph(&mut ir);
+        let (json, tj) = json_graph(&mut ir);
+        for goal in [exact_goal(&mut ir), partial_goal(&mut ir)] {
+            let mut a = TermArena::new();
+            let am = argmax_term(&mut a, &mut ir, tn, goal.clone());
+            let cs_native = closest_term(&mut a, &mut ir, tn, goal.clone());
+            let cs_json = closest_term(&mut a, &mut ir, tj, goal);
+            let expected = name_of(&native, &ir, &run(&native, &ir, &a, am));
+            let native_name = name_of(&native, &ir, &run(&native, &ir, &a, cs_native));
+            let json_name = name_of(&json, &ir, &run(&json, &ir, &a, cs_json));
+            assert_eq!(native_name, expected);
+            assert_eq!(json_name, expected, "JSON-string parts must pick the same part");
+        }
+    }
+
+    /// (3) An empty codebook returns None, as Argmax with `default: null` does.
+    #[test]
+    fn empty_codebook_returns_none() {
+        let mut ir = Interner::default();
+        let t = ir.intern("ShapeSignature");
+        let g = TypedGraph::default();
+        let goal = exact_goal(&mut ir);
+        let mut a = TermArena::new();
+        let cs = closest_term(&mut a, &mut ir, t, goal);
+        assert_eq!(run(&g, &ir, &a, cs), Value::None);
     }
 }

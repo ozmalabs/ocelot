@@ -1466,6 +1466,19 @@ fn describe(node: &TermNode) -> (&'static str, Vec<FieldValue<'_>>) {
         ),
         TermNode::PermParity { p } => ("PermParity", vec![Child { name: "p", child: *p }]),
         TermNode::MatDet { m } => ("MatDet", vec![Child { name: "m", child: *m }]),
+        TermNode::ClosestShape { goal, codebook_type } => (
+            "ClosestShape",
+            vec![
+                Child {
+                    name: "goal",
+                    child: *goal,
+                },
+                ScalarSym {
+                    name: "codebook_type",
+                    value: *codebook_type,
+                },
+            ],
+        ),
         TermNode::Fold {
             source,
             var_name,
@@ -4733,6 +4746,10 @@ fn reconstruct(
         },
         "PermParity" => TermNode::PermParity { p: take_child!("p") },
         "MatDet" => TermNode::MatDet { m: take_child!("m") },
+        "ClosestShape" => TermNode::ClosestShape {
+            goal: take_child!("goal"),
+            codebook_type: get_sym("codebook_type")?,
+        },
         "Fold" => TermNode::Fold {
             source: take_child!("source"),
             var_name: get_sym("var_name")?,

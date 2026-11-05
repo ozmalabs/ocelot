@@ -1037,6 +1037,10 @@ pub fn term_reads_attr_via_node_set(arena: &TermArena, idx: TermIdx) -> bool {
         // `NodesWhere` reads an attr across a whole type — an attr read off the
         // frontier by construction.
         T::NodesWhere { .. } => true,
+        // `ClosestShape` reads the `signature` attr of every codebook node, the
+        // same attr read the `Argmax` it replaces performs. Its only Term child is
+        // `goal`, so the subtree scan cannot see that read. Treat it as an attr read.
+        T::ClosestShape { .. } => true,
         // Node-set iterations: unsafe iff the iteration's subtree reads an attr.
         T::Neighbours { .. }
         | T::InNeighbours { .. }
@@ -1428,7 +1432,8 @@ fn collect_term_reads(
         | T::SupportInfer { .. }
         | T::TransferDecode { .. }
         | T::RecogniseShape { .. }
-        | T::MetaShapeMint { .. } => {
+        | T::MetaShapeMint { .. }
+        | T::ClosestShape { .. } => {
             *reads_any = true;
             for child in crate::term::children(arena.get(idx)) {
                 collect_term_reads(arena, child, reads, reads_any);

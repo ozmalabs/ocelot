@@ -71,7 +71,11 @@ def test_shear_over_merge_persists_under_unimodular():
     assert det(SHEARS["shearY"]) == 1 and det(SHEARS["shearX"]) == 1
     _, cov, _ = identify(OBJ, translate(lin(OBJ["F"], SHEARS["shearY"]), 3, 2),
                          gen_infer=True, uni=True)
-    assert cov == "X", ("shearY(F) aliases onto X — a det=1 shear is admitted by "
+    # block 371000: the alias was pinned as "X", but that was the D2 tie artefact (det1's
+    # codebook stores json.dumps signatures, so every part scored 0 and the tie returned X).
+    # ClosestShape scores the parts properly: the alias is U. The finding is unchanged:
+    # a det=1 shear still lands on ANOTHER identity, never F.
+    assert cov == "U", ("shearY(F) aliases onto U — a det=1 shear is admitted by "
                         "|det|=1 yet is identity-CHANGING (discrimination not exact-0)")
 
 
