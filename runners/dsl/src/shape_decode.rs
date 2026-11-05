@@ -2788,6 +2788,16 @@ pub(crate) fn eval_closest_shape(
     let auditing = crate::selector_audit::enabled();
     let mut n_candidates: usize = 0;
     let mut first_score: Option<Value> = None;
+    // TIE AUDIT (default OFF; one relaxed atomic load each). `ClosestShape`
+    // replaced an `Argmax` (want_min = false, require_unique = false,
+    // refused_on_tie = None) at the sd-loop sites, so it reports to the argmin_tie
+    // census and to its refusal coercion exactly as `argmin_or_argmax_over` does.
+    let tie_audit = crate::argmin_tie::enabled();
+    let refuse_on_tie = crate::argmin_tie::coerces_refusal(false);
+    let tie_tracking = tie_audit || refuse_on_tie;
+    // Candidates tied AT THE CURRENT BEST score (exact `cmp_value_lex == Equal`).
+    let mut n_at_best: usize = 0;
+    let mut n_seen: usize = 0;
     for cand in population.snapshot().iter() {
         let Value::Node(nid) = cand else {
             continue;
@@ -2811,6 +2821,19 @@ pub(crate) fn eval_closest_shape(
                 first_score = Some(score.clone());
             }
         }
+        if tie_audit {
+            n_seen += 1;
+        }
+        if tie_tracking {
+            match &best {
+                None => n_at_best = 1,
+                Some((cur, _)) => match crate::value::cmp_value_lex(&score, cur, ctx.interner) {
+                    std::cmp::Ordering::Equal => n_at_best += 1,
+                    std::cmp::Ordering::Greater => n_at_best = 1,
+                    std::cmp::Ordering::Less => {}
+                },
+            }
+        }
         let take_new = match &best {
             None => true,
             Some((cur, _)) => {
@@ -2821,6 +2844,32 @@ pub(crate) fn eval_closest_shape(
         if take_new {
             best = Some((score, cand.clone()));
         }
+    }
+    // THE TIE VERDICT, taken before the selector audit (same order as
+    // `argmin_or_argmax_over`).
+    if tie_audit {
+        crate::argmin_tie::note_firing();
+        let is_tie = best.is_some() && n_at_best > 1;
+        if best.is_none() {
+            crate::argmin_tie::note_empty();
+        } else if is_tie {
+            crate::argmin_tie::note_tie();
+        }
+        if is_tie {
+            let key = crate::jsonio::term_to_json(arena, goal_idx, ctx.interner).to_string();
+            crate::argmin_tie::note_site("ClosestShape", &key, true);
+        }
+        // A score is never None, so the null census sees no None candidates.
+        if let Some(obs) = crate::argmin_tie::note_nulls(n_seen, 0, false) {
+            let key = crate::jsonio::term_to_json(arena, goal_idx, ctx.interner).to_string();
+            crate::argmin_tie::note_null_site("ClosestShape", &key, obs);
+        }
+    }
+    if refuse_on_tie && best.is_some() && n_at_best > 1 {
+        if tie_audit {
+            crate::argmin_tie::note_refusal();
+        }
+        return Value::None;
     }
     if auditing {
         crate::selector_audit::note_candidates(n_candidates as u64);
@@ -14170,5 +14219,123 @@ mod closest_shape_tests {
         crate::selector_audit::set_mode(crate::selector_audit::MODE_OFF);
         crate::selector_audit::reset();
         assert!(disagreements_fault >= 1, "the injected fault must be caught");
+    }
+
+    /// Two parts with identical signatures, both equal to the goal: a real tie.
+    fn tied_graph(ir: &mut Interner) -> (TypedGraph, Sym) {
+        let t = ir.intern("ShapeSignature");
+        let mut g = TypedGraph::default();
+        let sig1 = part_b(ir);
+        add_part(&mut g, ir, t, "zz_tie_1", sig1);
+        let sig2 = part_b(ir);
+        add_part(&mut g, ir, t, "zz_tie_2", sig2);
+        (g, t)
+    }
+
+    /// Tie-instrument state is process-global: each test resets it and turns
+    /// every instrument back off before it returns.
+    fn tie_reset_off() {
+        crate::argmin_tie::set_mode(crate::argmin_tie::MODE_OFF);
+        crate::argmin_tie::reset();
+    }
+
+    /// (a) A tie is recorded: 1 tie, 1 site named ClosestShape, and no refusal
+    /// in count mode (the winner is still returned).
+    #[test]
+    fn closest_shape_tie_is_recorded_by_argmin_tie() {
+        let mut ir = Interner::default();
+        let (g, t) = tied_graph(&mut ir);
+        let goal = exact_goal(&mut ir);
+        let mut a = TermArena::new();
+        let cs = closest_term(&mut a, &mut ir, t, goal);
+
+        tie_reset_off();
+        crate::argmin_tie::set_mode(crate::argmin_tie::MODE_COUNT);
+        let v = run(&g, &ir, &a, cs);
+        let (firings, ties, empties, refusals, _u) = crate::argmin_tie::stats();
+        let sites = crate::argmin_tie::sites();
+        tie_reset_off();
+
+        assert!(matches!(v, Value::Node(_)), "count mode must still return a winner");
+        assert_eq!(firings, 1);
+        assert_eq!(ties, 1, "two identical parts must register one tie");
+        assert_eq!(empties, 0);
+        assert_eq!(refusals, 0, "count mode observes ties but never refuses");
+        assert_eq!(sites.len(), 1, "one tie site expected, got {sites:?}");
+        assert!(sites[0].0.starts_with("ClosestShape\u{1}"), "site name: {:?}", sites[0].0);
+        assert_eq!(sites[0].1, 1);
+        assert_eq!(sites[0].2, 1);
+    }
+
+    /// (b) Refusal coercion for an Argmax-direction selector returns None on a
+    /// tie. refuse_min does not cover this selector, so it still returns a winner.
+    #[test]
+    fn closest_shape_tie_is_refused_under_refuse_all() {
+        let mut ir = Interner::default();
+        let (g, t) = tied_graph(&mut ir);
+        let goal = exact_goal(&mut ir);
+        let mut a = TermArena::new();
+        let cs = closest_term(&mut a, &mut ir, t, goal);
+
+        tie_reset_off();
+        crate::argmin_tie::set_mode(crate::argmin_tie::MODE_REFUSE_ALL);
+        let refused = run(&g, &ir, &a, cs);
+        let (_f, _t, _e, refusals, _u) = crate::argmin_tie::stats();
+
+        tie_reset_off();
+        crate::argmin_tie::set_mode(crate::argmin_tie::MODE_REFUSE_MIN);
+        let min_mode = run(&g, &ir, &a, cs);
+        tie_reset_off();
+
+        assert_eq!(refused, Value::None, "refuse_all must refuse the tie");
+        assert_eq!(refusals, 1);
+        assert!(matches!(min_mode, Value::Node(_)), "refuse_min must not touch ClosestShape");
+    }
+
+    /// (c) A unique best score records no tie and no site.
+    #[test]
+    fn closest_shape_unique_best_records_no_tie() {
+        let mut ir = Interner::default();
+        let (g, t) = native_graph(&mut ir);
+        let goal = exact_goal(&mut ir);
+        let mut a = TermArena::new();
+        let cs = closest_term(&mut a, &mut ir, t, goal);
+
+        tie_reset_off();
+        crate::argmin_tie::set_mode(crate::argmin_tie::MODE_COUNT);
+        let v = run(&g, &ir, &a, cs);
+        let (firings, ties, empties, _r, _u) = crate::argmin_tie::stats();
+        let sites = crate::argmin_tie::sites();
+        tie_reset_off();
+
+        assert_eq!(name_of(&g, &ir, &v), "zz_part_B");
+        assert_eq!(firings, 1);
+        assert_eq!(ties, 0);
+        assert_eq!(empties, 0);
+        assert!(sites.is_empty());
+    }
+
+    /// (d) With the instruments off, the winner is unchanged by count or refuse
+    /// mode on a tie that count mode does not refuse: the first encountered wins.
+    #[test]
+    fn closest_shape_winner_unchanged_by_instruments_off() {
+        let mut ir = Interner::default();
+        let (g, t) = tied_graph(&mut ir);
+        let goal = exact_goal(&mut ir);
+        let mut a = TermArena::new();
+        let cs = closest_term(&mut a, &mut ir, t, goal);
+
+        tie_reset_off();
+        let off = run(&g, &ir, &a, cs);
+        let (_f0, ties_off, _e0, _r0, _u0) = crate::argmin_tie::stats();
+        crate::argmin_tie::set_mode(crate::argmin_tie::MODE_COUNT);
+        let count = run(&g, &ir, &a, cs);
+        let (_f1, ties_count, _e1, _r1, _u1) = crate::argmin_tie::stats();
+        tie_reset_off();
+
+        assert_eq!(off, count, "count mode must not change the returned winner");
+        assert!(matches!(off, Value::Node(_)));
+        assert_eq!(ties_off, 0, "instruments off: nothing recorded");
+        assert_eq!(ties_count, 1, "count mode records the tie it does not act on");
     }
 }

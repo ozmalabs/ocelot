@@ -17,6 +17,11 @@ Idempotent: a second run finds the edits in place and writes nothing new.
 Formatting is `json.dumps(indent=1)` plus a trailing newline. This reproduces
 the seed byte for byte before any edit (checked when the script was written).
 
+Block 372000 (SD_LOOP_GEN_REARM_AND_TIE_PARITY_PREREG.md, G1): sd_redecode also
+clears `gen_checked` and `gen_explained` on re-arm (appended after the existing
+`dim_explained` reset), and the seed moves v1.18.0 -> v1.19.0. A seed still at
+v1.17.0 passes through v1.18.0 on its way to v1.19.0.
+
 Not handled here: `seeds/prog_construction_loop.json`. Its three Argmax sites
 (`pcon_recognize`, `pcon_mark_merge` x2) read a `Filter`ed source
 (`kind == "prog_construction"`, and a `Covers` predicate in one rule), not the
@@ -32,7 +37,14 @@ ROOT = Path(__file__).resolve().parents[1]
 SEED = ROOT / "seeds" / "shape_decode_loop.json"
 OLD_VERSION = "1.17.0"
 NEW_VERSION = "1.18.0"
+LATEST_VERSION = "1.19.0"
 BLOCK = "block 371000"
+GEN_BLOCK = "block 372000"
+GEN_RESET_ANCHOR = ["set_attr", "obs", "dim_explained", 0]
+GEN_RESETS = [
+    ["set_attr", "obs", "gen_checked", 0],
+    ["set_attr", "obs", "gen_explained", 0],
+]
 
 RERECOGNIZE_T = "sd_rerecognize_transformed"
 RERECOGNIZE_D = "sd_rerecognize_dim"
@@ -218,7 +230,7 @@ def insert_rerecognize(rules):
 
 
 def bump_description(d):
-    if d["version"] == NEW_VERSION:
+    if d["version"] in (NEW_VERSION, LATEST_VERSION):
         return False
     assert d["version"] == OLD_VERSION, f"expected version {OLD_VERSION}, found {d['version']}"
     d["version"] = NEW_VERSION
@@ -233,6 +245,52 @@ def bump_description(d):
     return True
 
 
+def add_gen_resets(rules):
+    """G1 (block 372000): sd_redecode also clears gen_checked and gen_explained on re-arm.
+
+    Inserts the two resets directly after the existing dim_explained reset, and
+    appends one sentence to the sd_redecode comment. Idempotent.
+    """
+    rule = rules[rule_named(rules, "sd_redecode")]
+    fx = rule["effects"]
+    assert GEN_RESET_ANCHOR in fx, f"sd_redecode has no {GEN_RESET_ANCHOR} effect to follow"
+    changed = False
+    pos = fx.index(GEN_RESET_ANCHOR) + 1
+    for eff in GEN_RESETS:
+        if eff in fx:
+            continue
+        fx.insert(pos, copy.deepcopy(eff))
+        pos += 1
+        changed = True
+    if GEN_BLOCK not in rule["comment"]:
+        rule["comment"] = rule["comment"] + (
+            f" {GEN_BLOCK} (v1.19.0): sd_redecode also clears gen_checked and gen_explained, so the "
+            "GenInfer guards take a fresh look at the grown codebook rather than reading a verdict "
+            "made before the growth."
+        )
+        changed = True
+    return changed
+
+
+def bump_latest(d):
+    """v1.18.0 -> v1.19.0 (block 372000). Returns True when the version moved."""
+    if d["version"] == LATEST_VERSION:
+        return False
+    assert d["version"] == NEW_VERSION, f"expected version {NEW_VERSION}, found {d['version']}"
+    d["version"] = LATEST_VERSION
+    d["description"] = d["description"] + (
+        f" v{LATEST_VERSION} ({GEN_BLOCK}): sd_redecode also sets gen_checked and gen_explained "
+        "back to 0 on re-arm, alongside the transform and dimension flags. Before this, the eight "
+        "GenInfer guards (sd_gen_check*, sd_mint_generator, sd_mint_quantum_generator, sd_mint_quantum, "
+        "sd_dedup_existing, sd_recognize_at_grain, sd_mdl_outliers) could read a GenInfer verdict made "
+        "against the codebook before the growth: a gen_checked observation with gen_explained not 1 "
+        "skipped a fresh look, and a gen_explained observation could be recognised from the old "
+        "verdict. The clears use the 0-is-falsy idiom of the other re-arm resets. Specified in "
+        "SD_LOOP_GEN_REARM_AND_TIE_PARITY_PREREG.md, gap G1."
+    )
+    return True
+
+
 def main():
     raw = SEED.read_text(encoding="utf-8")
     d = json.loads(raw)
@@ -243,6 +301,10 @@ def main():
         changed.append("insert:" + RERECOGNIZE_T + "," + RERECOGNIZE_D)
     if bump_description(d):
         changed.append("version")
+    if add_gen_resets(rules):
+        changed.append("sd_redecode:gen_checked,gen_explained")
+    if bump_latest(d):
+        changed.append("version-1.19.0")
     text = json.dumps(d, indent=1) + "\n"
     if text != raw:
         SEED.write_text(text, encoding="utf-8")
