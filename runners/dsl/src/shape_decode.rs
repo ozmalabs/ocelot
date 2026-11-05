@@ -2780,6 +2780,14 @@ pub(crate) fn eval_closest_shape(
     let mut extra: FxHashMap<String, Sym> = FxHashMap::default();
     let mut next_id: u32 = u32::MAX;
     let mut best: Option<(Value, Value)> = None; // (score, node)
+    // SELECTOR AUDIT (default OFF; one relaxed atomic load). `ClosestShape`
+    // replaced an `Argmax` at four sd-loop sites, so it must stay visible to
+    // the selector audit that `Argmax` reports to (selector_audit.rs). Tracked
+    // only while auditing: candidate count and the first candidate's score
+    // (the positive-control fault returns it in place of the true extremum).
+    let auditing = crate::selector_audit::enabled();
+    let mut n_candidates: usize = 0;
+    let mut first_score: Option<Value> = None;
     for cand in population.snapshot().iter() {
         let Value::Node(nid) = cand else {
             continue;
@@ -2797,6 +2805,12 @@ pub(crate) fn eval_closest_shape(
             &anti_unify_values(&instances, &wild_val),
             &wild_val,
         ));
+        if auditing {
+            n_candidates += 1;
+            if first_score.is_none() {
+                first_score = Some(score.clone());
+            }
+        }
         let take_new = match &best {
             None => true,
             Some((cur, _)) => {
@@ -2806,6 +2820,50 @@ pub(crate) fn eval_closest_shape(
         };
         if take_new {
             best = Some((score, cand.clone()));
+        }
+    }
+    if auditing {
+        crate::selector_audit::note_candidates(n_candidates as u64);
+        match &best {
+            Some((recorded, winner)) => {
+                let recorded = if crate::selector_audit::fault_inject_first() {
+                    first_score.clone().unwrap_or_else(|| recorded.clone())
+                } else {
+                    recorded.clone()
+                };
+                // Re-score the RETURNED node from scratch (fresh parse scope),
+                // independently of the fold, and compare with what the fold
+                // recorded as the extremum.
+                let mut extra2: FxHashMap<String, Sym> = FxHashMap::default();
+                let mut next_id2: u32 = u32::MAX;
+                let winner_value = match winner {
+                    Value::Node(nid) => {
+                        let raw = sig_key
+                            .and_then(|k| ctx.graph.node(*nid).attrs.get(&k).cloned())
+                            .unwrap_or(Value::None);
+                        let sig =
+                            closest_shape_signature(&raw, ctx.interner, &mut extra2, &mut next_id2);
+                        let set = Value::make_frozenset(vec![goal_val.clone(), sig]);
+                        let inst: Vec<Value> = match &set {
+                            Value::Set(s) | Value::FrozenSet(s) => s.to_vec(),
+                            _ => Vec::new(),
+                        };
+                        Value::Int(fixed_count_value(&anti_unify_values(&inst, &wild_val), &wild_val))
+                    }
+                    _ => Value::None,
+                };
+                crate::selector_audit::note_firing();
+                if crate::value::cmp_value(&winner_value, &recorded) != std::cmp::Ordering::Equal {
+                    crate::selector_audit::note_disagreement(
+                        "ClosestShape",
+                        &format!("{winner:?}"),
+                        &format!("{winner_value:?}"),
+                        &format!("{recorded:?}"),
+                        n_candidates,
+                    );
+                }
+            }
+            None => crate::selector_audit::note_empty(),
         }
     }
     best.map(|(_, node)| node).unwrap_or(Value::None)
@@ -14080,5 +14138,37 @@ mod closest_shape_tests {
         let mut a = TermArena::new();
         let cs = closest_term(&mut a, &mut ir, t, goal);
         assert_eq!(run(&g, &ir, &a, cs), Value::None);
+    }
+
+    /// (4) ClosestShape reports to the selector audit, as the Argmax it replaced
+    /// did: a firing is recorded, it agrees with the fold, and the positive-control
+    /// fault (recorded := first candidate's score) is caught as a disagreement.
+    /// Process-global counters: run with --test-threads=1.
+    #[test]
+    fn closest_shape_reports_to_selector_audit() {
+        let mut ir = Interner::default();
+        let (g, t) = native_graph(&mut ir);
+        let goal = exact_goal(&mut ir);
+        let mut a = TermArena::new();
+        let cs = closest_term(&mut a, &mut ir, t, goal);
+
+        crate::selector_audit::reset();
+        crate::selector_audit::set_mode(crate::selector_audit::MODE_WARN);
+        let v = run(&g, &ir, &a, cs);
+        let (firings, _cands, _skipped, disagreements, _empty, _row) =
+            crate::selector_audit::stats();
+        assert_eq!(name_of(&g, &ir, &v), "zz_part_B");
+        assert!(firings >= 1, "ClosestShape must register a selector firing");
+        assert_eq!(disagreements, 0);
+
+        // Positive control: part A is the first candidate and scores below B.
+        crate::selector_audit::reset();
+        crate::selector_audit::set_fault_inject_first(true);
+        let _ = run(&g, &ir, &a, cs);
+        let (_f, _c, _s, disagreements_fault, _e, _r) = crate::selector_audit::stats();
+        crate::selector_audit::set_fault_inject_first(false);
+        crate::selector_audit::set_mode(crate::selector_audit::MODE_OFF);
+        crate::selector_audit::reset();
+        assert!(disagreements_fault >= 1, "the injected fault must be caught");
     }
 }

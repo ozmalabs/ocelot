@@ -77,7 +77,9 @@ def test_shears_refused_no_longer_alias_onto_another_identity():
 def test_shears_aliased_without_the_restriction():
     _, covY, _ = identify(OBJ, translate(lin(OBJ["F"], SHEARS["shearY"]), 3, 2),
                           gen_infer=True, sim=False)
-    assert covY == "X", "control: without the similarity restriction shearY(F) aliases onto X"
+    # block 371000: "X" was the D2 tie artefact (JSON-string codebook, every part scored 0);
+    # ClosestShape scores the parts properly and the alias is U. Still not F: the control holds.
+    assert covY == "U", "control: without the similarity restriction shearY(F) aliases onto U"
 
 
 # --- DISCRIMINATION EXACT-0: B1 refused AND no shear aliases onto a DIFFERENT
@@ -169,7 +171,8 @@ def test_every_minted_generator_is_a_similarity():
 def test_off_by_default_is_committed_behaviour():
     st, cov, _ = identify(OBJ, translate(lin(OBJ["F"], SHEARS["shearY"]), 3, 2),
                           gen_infer=True, sim=False)
-    assert st in ("recognized", "recognized_transformed") and cov == "X", (
-        "with sim OFF the committed Regime-B shear alias is unchanged (§9)")
+    # block 371000: the committed alias "X" was the D2 tie artefact; with ClosestShape it is U.
+    assert st in ("recognized", "recognized_transformed") and cov == "U", (
+        "with sim OFF the Regime-B shear alias is unchanged apart from the block 371000 D2 fix (§9)")
     _, covB1, _ = identify(OBJ, COLLINEAR, gen_infer=True, sim=False)
     assert covB1 is not None, "with sim OFF the committed det=0 leak is unchanged (§9)"
