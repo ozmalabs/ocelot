@@ -128,3 +128,27 @@ green at engine `7d5f50c18673`: `test_gen_infer_migrated`,
 `test_engine_provenance_migrated` (62 passed together); the new gate 7/7. Broad
 `scripts/rung7_vision_bench.sh` (`data/` symlinked, §10.2): **200 passed / 0
 failed** at engine `7d5f50c18673` — the committed vision bench is unmoved.
+
+## Correction (5 November 2026, block 371000)
+
+The Regime B numbers above came partly from an engine defect. They are not edited in
+place; this note records the corrected values.
+
+The codebook stores part signatures as `json.dumps` strings. Before block 371000,
+`sd_recognize.covered_by` scored parts with `FixedCount(AntiUnify(...))`, which reads a
+JSON-string signature as one opaque value. Every part scored 0, and the tie returned `X`
+for every exact or multi-part cover. See
+`docs/research/engine_substrate/SD_LOOP_REARM_AND_JSON_SIGNATURE_RESULTS.md` and the
+matching correction in `VISION_DET1_RESULTS.md`.
+
+`scripts/identity_untangling_measure.py` was re-run on the start commit (`1281a482`) and on
+the current tree:
+
+| row | recorded above | corrected |
+|---|---|---|
+| B2 invariance (gen ON) | 61/63 correct, 2 wrong: `shearY(F)→X`, `shearX(T)→X` | **60/63 correct, 3 wrong**: `shearY(F)→U`, `shearX(T)→N`, `shearX(X)→V` |
+| B2 floor (b) detail | `X rrot53 → X` | `X rrot53 → U` |
+
+The Regime A numbers (49/49 invariance, orbit 0) are unchanged. B2's reading, that the
+reachable set is not a group so one object's transformed view reads as another, stands and
+is slightly stronger. The specific alias identities above (`…→X`) are the artefact.

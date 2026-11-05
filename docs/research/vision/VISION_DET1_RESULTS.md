@@ -143,3 +143,30 @@ excluding shears) is the named next fix this rung motivates but does not build.
   §10.2): **200 passed / 0 failed** — the committed vision bench is unmoved,
   and its no-Python-thresholds scan reports zero findings (the `|det|` knob is
   graph data).
+
+## Correction (5 November 2026, block 371000)
+
+Some numbers above came from an engine defect. They are not edited in place; this note
+records the corrected values.
+
+det1's codebook stores part signatures as `json.dumps` strings. Before block 371000,
+`sd_recognize.covered_by` scored parts with `FixedCount(AntiUnify(...))`, which reads a
+JSON-string signature as one opaque value. Every part therefore scored 0, and the tie
+returned the same part, `X`, for every exact or multi-part cover. The new `ClosestShape`
+Term scores parts the way `load_parts` reads them
+(`docs/research/engine_substrate/SD_LOOP_REARM_AND_JSON_SIGNATURE_RESULTS.md`).
+
+`scripts/det1_measure.py` was re-run on the start commit (`1281a482`, engine
+`ebc7f1282082`) and on the fix (engine `a414005f8799`):
+
+| row | recorded above | corrected |
+|---|---|---|
+| A2 invariance (shears) | 12/14 correct, 2 wrong: `shearY(F)→X`, `shearX(T)→X` | **11/14 correct, 3 wrong**: `shearY(F)→U`, `shearX(T)→N`, `shearX(X)→V` |
+| A3 `shear_wrong_id` | 2 | **3** |
+| A4 untangling (shears) | raw 9, orbit 2 | raw 9, **orbit 3** |
+
+The recorded "correct" `X`-shear case was the tie returning `X`, which happened to be
+right. **OUTCOME 2 stands and is slightly stronger**: shears still over-merge under
+|det|=1, onto other identities. The alias identities named in the text (`…→X`) are the
+artefact. The gate `tests/test_det1_migrated.py::test_shear_over_merge_persists_under_unimodular`
+now pins `U`.
