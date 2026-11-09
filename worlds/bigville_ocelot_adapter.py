@@ -22,8 +22,12 @@ general document reader decides what structure it can recover.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
+import os
 import sys
+import tempfile
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -205,6 +209,242 @@ class BigvilleOcelotResident:
                     "chosen_recipe", "chosen_target"):
             self.inner.set_attr(self.agent, key, "")
         self.inner.set_attr(self.agent, "decision_armed", 0.0)
+
+    _CHECKPOINT_SCHEMA = "ocelot/bigville-resident-checkpoint/1"
+
+    @staticmethod
+    def _checkpoint_encode(value, path="state"):
+        """Encode Python-side resident state without lossy repr/pickle fallbacks."""
+        if value is None or isinstance(value, (str, bool, int)):
+            return value
+        if isinstance(value, float):
+            if not math.isfinite(value):
+                raise TypeError(f"unsupported non-finite value at {path}")
+            return value
+        if isinstance(value, dict):
+            return {"$dict": [[BigvilleOcelotResident._checkpoint_encode(k, path + ".key"),
+                               BigvilleOcelotResident._checkpoint_encode(v, path + ".value")]
+                              for k, v in value.items()]}
+        if isinstance(value, list):
+            return {"$list": [BigvilleOcelotResident._checkpoint_encode(v, path + "[]")
+                               for v in value]}
+        if isinstance(value, tuple):
+            return {"$tuple": [BigvilleOcelotResident._checkpoint_encode(v, path + "[]")
+                                for v in value]}
+        if isinstance(value, (set, frozenset)):
+            vals = [BigvilleOcelotResident._checkpoint_encode(v, path + "[]")
+                    for v in value]
+            vals.sort(key=lambda v: json.dumps(v, sort_keys=True))
+            return {"$frozenset" if isinstance(value, frozenset) else "$set": vals}
+        if type(value).__module__.startswith("substrate_rs") and hasattr(value, "value"):
+            return {"$node_id": int(value.value)}
+        raise TypeError(f"unsupported resident checkpoint value at {path}: {type(value).__name__}")
+
+    @staticmethod
+    def _checkpoint_decode(value, node_id_type):
+        if not isinstance(value, dict):
+            return value
+        if len(value) != 1:
+            raise ValueError("invalid tagged value in resident checkpoint")
+        tag, data = next(iter(value.items()))
+        if tag == "$dict":
+            return {BigvilleOcelotResident._checkpoint_decode(k, node_id_type):
+                    BigvilleOcelotResident._checkpoint_decode(v, node_id_type)
+                    for k, v in data}
+        if tag == "$list":
+            return [BigvilleOcelotResident._checkpoint_decode(v, node_id_type) for v in data]
+        if tag == "$tuple":
+            return tuple(BigvilleOcelotResident._checkpoint_decode(v, node_id_type) for v in data)
+        if tag == "$set":
+            return set(BigvilleOcelotResident._checkpoint_decode(v, node_id_type) for v in data)
+        if tag == "$frozenset":
+            return frozenset(BigvilleOcelotResident._checkpoint_decode(v, node_id_type)
+                             for v in data)
+        if tag == "$node_id":
+            return node_id_type(int(data))
+        raise ValueError(f"unknown resident checkpoint tag: {tag}")
+
+    def _checkpoint_python_state(self):
+        # _voice_targets contains live voice-facility objects. They are lazy,
+        # derivable from the restored WorldAdapter and are recreated on demand.
+        persistent = {
+            "name": self.name, "identity": self.identity, "personality": self.personality,
+            "memories": self.memories, "held_frame_seeds": self.held_frame_seeds,
+            "character_seeded": self._character_seeded,
+            "emotion_enabled": self._emotion_enabled,
+            "emotion_competence": self._emotion_competence,
+            "emotion_epoch": self._emotion_epoch,
+            "emotion_history": self._emotion_history,
+            "observed_object_ids": self._observed_object_ids,
+            "read_documents": self._read_documents,
+            "heard_events": self.heard_events, "told_events": self.told_events,
+            "speech_choices": self.speech_choices, "speech_occasion": self._speech_occasion,
+            "pointers": {
+                "emotion_hub": self._emotion_hub,
+                "emotion_params": self._emotion_params,
+                "emotion_appraisal": self._emotion_appraisal,
+                "affective_state": self._affective_state,
+                "affect_coupler": self._affect_coupler,
+                "emotion_modulator": self._emotion_modulator,
+                "resident_can": self._resident_can,
+                "speech_options": self._speech_options,
+                "speech_bonds": self._speech_bonds,
+                "speech_encounters": self._speech_encounters,
+            },
+        }
+        return self._checkpoint_encode(persistent)
+
+    def save(self, path):
+        """Save an atomic, versioned resident checkpoint directory.
+
+        A committed manifest points at immutable graph/state files. A failed
+        write cannot make a partially written checkpoint appear complete.
+        """
+        import json
+        from pathlib import Path
+
+        root = Path(path)
+        root.mkdir(parents=True, exist_ok=True)
+        state_bytes = json.dumps(self._checkpoint_python_state(), sort_keys=True,
+                                 separators=(",", ":"), allow_nan=False).encode("utf-8")
+        generation = "generation-" + uuid.uuid4().hex
+        staging = root / ("." + generation)
+        staging.mkdir()
+        graph_path = staging / "mind.json"
+        try:
+            self.wa.save(str(graph_path))
+            graph_bytes = graph_path.read_bytes()
+            state_path = staging / "resident.json"
+            state_path.write_bytes(state_bytes)
+            final_generation = root / generation
+            os.replace(staging, final_generation)
+            manifest = {
+                "schema": self._CHECKPOINT_SCHEMA,
+                "generation": generation,
+                "graph_sha256": hashlib.sha256(graph_bytes).hexdigest(),
+                "resident_sha256": hashlib.sha256(state_bytes).hexdigest(),
+            }
+            fd, temporary = tempfile.mkstemp(prefix=".manifest-", dir=root)
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as stream:
+                    json.dump(manifest, stream, sort_keys=True)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                os.replace(temporary, root / "manifest.json")
+            finally:
+                if os.path.exists(temporary):
+                    os.unlink(temporary)
+        except Exception:
+            if staging.exists():
+                import shutil
+                shutil.rmtree(staging)
+            raise
+
+    @classmethod
+    def load(cls, path):
+        """Restore a resident checkpoint; malformed or incomplete state fails closed."""
+        import json
+        from pathlib import Path
+        from substrate_rs import NodeID
+
+        root = Path(path)
+        try:
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            if manifest.get("schema") != cls._CHECKPOINT_SCHEMA:
+                raise ValueError(f"unsupported resident checkpoint schema: {manifest.get('schema')!r}")
+            generation = manifest["generation"]
+            if (not isinstance(generation, str) or not generation.startswith("generation-")
+                    or Path(generation).name != generation):
+                raise ValueError("invalid resident checkpoint generation")
+            graph_path = root / generation / "mind.json"
+            state_path = root / generation / "resident.json"
+            graph_bytes, state_bytes = graph_path.read_bytes(), state_path.read_bytes()
+            if hashlib.sha256(graph_bytes).hexdigest() != manifest.get("graph_sha256"):
+                raise ValueError("resident checkpoint graph checksum mismatch")
+            if hashlib.sha256(state_bytes).hexdigest() != manifest.get("resident_sha256"):
+                raise ValueError("resident checkpoint state checksum mismatch")
+            encoded = json.loads(state_bytes)
+            state = cls._checkpoint_decode(encoded, NodeID)
+            wa = WorldAdapter.load(str(graph_path))
+        except Exception as exc:
+            raise ValueError(f"could not restore Bigville Ocelot resident checkpoint at {root}: {exc}") from exc
+
+        resident = cls.__new__(cls)
+        resident.name = str(state["name"])
+        resident.wa = wa
+        resident.s, resident.inner, resident.agent = wa.s, wa.inner, wa.agent
+        resident._read_documents = state["read_documents"]
+        resident._voice_targets = {}
+        resident.heard_events = state["heard_events"]
+        resident.told_events = state["told_events"]
+        resident.speech_choices = state["speech_choices"]
+        resident.identity = state["identity"]
+        resident.personality = state["personality"]
+        resident.memories = state["memories"]
+        resident.held_frame_seeds = state["held_frame_seeds"]
+        resident._character_seeded = bool(state["character_seeded"])
+        resident._emotion_enabled = bool(state["emotion_enabled"])
+        resident._emotion_hub = None
+        resident._emotion_params = None
+        resident._emotion_appraisal = None
+        resident._affective_state = None
+        resident._affect_coupler = None
+        resident._emotion_modulator = None
+        resident._resident_can = None
+        resident._emotion_competence = float(state["emotion_competence"])
+        resident._observed_object_ids = set(state["observed_object_ids"])
+        resident._emotion_epoch = float(state["emotion_epoch"])
+        resident._emotion_history = state["emotion_history"]
+        resident._speech_options = []
+        resident._speech_bonds = {}
+        resident._speech_encounters = {}
+        resident._speech_kind_label = {}
+        resident._speech_option_keys = ()
+        resident._speech_encounter_defaults = {}
+        resident._speech_slot_defaults = {}
+        resident._speech_knobs = {}
+        resident._speech_occasion = int(state["speech_occasion"])
+        node_type = type(resident.agent)
+
+        def node(value, field):
+            if value is None:
+                return None
+            if not isinstance(value, node_type):
+                raise ValueError(f"invalid node reference in checkpoint field {field}")
+            if not resident.s.has_node(value):
+                raise ValueError(f"checkpoint field {field} refers to missing graph node {value}")
+            return value
+
+        pointers = state["pointers"]
+        for key, attr in (("emotion_hub", "_emotion_hub"),
+                          ("emotion_params", "_emotion_params"),
+                          ("emotion_appraisal", "_emotion_appraisal"),
+                          ("affective_state", "_affective_state"),
+                          ("affect_coupler", "_affect_coupler"),
+                          ("emotion_modulator", "_emotion_modulator")):
+            setattr(resident, attr, node(pointers[key], key))
+        resident._resident_can = pointers["resident_can"]
+        resident._speech_options = [node(ref, "speech_options") for ref in pointers["speech_options"]]
+        resident._speech_bonds = {str(k): node(v, "speech_bonds") for k, v in pointers["speech_bonds"].items()}
+        resident._speech_encounters = {str(k): node(v, "speech_encounters") for k, v in pointers["speech_encounters"].items()}
+
+        def validate_refs(value, field):
+            if isinstance(value, node_type):
+                node(value, field)
+            elif isinstance(value, dict):
+                for key, item in value.items():
+                    validate_refs(item, field + "." + str(key))
+            elif isinstance(value, (list, tuple, set)):
+                for index, item in enumerate(value):
+                    validate_refs(item, f"{field}[{index}]")
+
+        validate_refs(resident._resident_can, "resident_can")
+        if resident._speech_options or resident._speech_bonds or resident._speech_encounters:
+            resident._load_speech_configuration()
+        # The checkpoint resumes the same configured ingestion behavior.
+        resident.wa.shadow_read = True
+        resident.wa.deep_ingest = True
+        return resident
 
     # ------------------------------------------------------- character/affect
 
@@ -871,31 +1111,82 @@ class BigvilleOcelotResident:
         for option in list(self.inner.neighbours(self.agent, "has_option")):
             if self.s.node(option)["type"] == "ActorOption":
                 self.inner.remove_node(option)
-        for option in options:
-            node = self.s.add_node("ActorOption", dict(option))
+        for option_id, offered in enumerate(options, start=1):
+            option = dict(offered)
+            # This graph-owned ID distinguishes options that share the public
+            # action tuple but differ in provider parameters (for example,
+            # moving different objects to different destinations).
+            option["option_id"] = float(option_id)
+            # Encode the affordance's ordinary physical role as numeric graph
+            # features. These attributes carry no choice; the Bigville seed
+            # combines them with the resident's observed hunger in Argmax.
+            if option.get("action") == "eat":
+                option["hunger_eat_weight"] = 1.0
+                option["hunger_scored"] = 0.0
+            elif option.get("action") == "fetch" and option.get("food"):
+                option["hunger_fetch_weight"] = 1.0
+                option["hunger_scored"] = 0.0
+            node = self.s.add_node("ActorOption", option)
             self.inner.add_edge_unchecked(self.agent, "has_option", node)
+        # Keep an explicit graph-owned abstention option. It is a small
+        # negative baseline: any ordinary zero-or-better physical option wins,
+        # while a sated resident can decline a negative-utility food fetch.
+        idle = self.s.add_node("ActorOption", {
+            "action": "none", "kind": "", "trade": "", "recipe": "",
+            "target": "", "score": -0.5,
+            "option_id": float(len(options) + 1),
+        })
+        self.inner.add_edge_unchecked(self.agent, "has_option", idle)
         for key in ("chosen_action", "chosen_kind", "chosen_trade",
                     "chosen_recipe", "chosen_target"):
             self.inner.set_attr(self.agent, key, "")
+        self.inner.set_attr(self.agent, "chosen_option_id", 0.0)
         self.inner.set_attr(self.agent, "decision_armed", 1.0)
 
     def decide(self):
         """Run Ocelot's seeded affordance-selection rule and read its result."""
         self.inner.run_rules()
         attrs = self.s.node(self.agent)["attrs"]
-        chosen = {}
-        for option in self.inner.neighbours(self.agent, "has_option"):
-            candidate = self.s.node(option)["attrs"]
-            if candidate.get("action") == attrs.get("chosen_action"):
-                chosen = dict(candidate)
-                break
-        chosen.update({
+        selected = {
             "action": attrs.get("chosen_action", ""),
             "kind": attrs.get("chosen_kind", ""),
             "trade": attrs.get("chosen_trade", ""),
             "recipe": attrs.get("chosen_recipe", ""),
             "target": attrs.get("chosen_target", ""),
-        })
+        }
+        selected_option_id = float(attrs.get("chosen_option_id", 0.0))
+        chosen = {}
+        fallback = {}
+        tuple_match = {}
+        for option in self.inner.neighbours(self.agent, "has_option"):
+            candidate = self.s.node(option)["attrs"]
+            if float(candidate.get("option_id", 0.0)) == selected_option_id:
+                chosen = dict(candidate)
+                break
+            if candidate.get("action", "") != selected["action"]:
+                continue
+            if not fallback:
+                fallback = dict(candidate)
+            if all(candidate.get(key, "") == value
+                   for key, value in selected.items()):
+                # Keep the complete selected affordance, including provider-
+                # opaque parameters, after matching the graph's full public
+                # action tuple.  Matching only action loses the parameters of
+                # duplicate-action choices such as distinct work recipes.
+                tuple_match = dict(candidate)
+        if not chosen:
+            chosen = tuple_match
+        if not chosen:
+            # Older option publishers may not expose the complete tuple. Keep
+            # their compatibility path, but do not leak parameters from an
+            # arbitrary same-action candidate.
+            chosen = {key: value for key, value in selected.items()}
+            if not chosen["action"] and fallback:
+                chosen["action"] = fallback.get("action", "")
+        # These are graph utility features, not physical action parameters.
+        for key in ("hunger_eat_weight", "hunger_fetch_weight", "hunger_scored",
+                    "option_id"):
+            chosen.pop(key, None)
         self.inner.set_attr(self.agent, "decision_armed", 0.0)
         return chosen
 
@@ -1011,8 +1302,22 @@ class BigvilleOcelotResident:
         """Feed a current observation into the resident's private rule faculty."""
         from domains.cognitive_rule_frames import observe_situation
 
+        attributes = attributes if isinstance(attributes, dict) else {}
         result = observe_situation(self.wa, text, cues=cues, kind=kind,
                                    source=source, attributes=attributes)
+        # Keep the current bodily need in graph-native decision state as a
+        # projection of the just-recorded observation. The CognitiveObservation
+        # node remains the source evidence; the scalar is a convenient input
+        # for seeded Argmax rules and is refreshed on every observation.
+        if "hunger" in attributes:
+            try:
+                self.inner.set_attr(self.agent, "observed_hunger",
+                                    float(attributes["hunger"]))
+                observation = result.get("observation")
+                key = self.s.node(observation)["attrs"].get("observation_key", "")
+                self.inner.set_attr(self.agent, "hunger_observation_key", str(key))
+            except (TypeError, ValueError):
+                self.inner.set_attr(self.agent, "observed_hunger", 0.0)
         self._update_emotion(attributes)
         return result
 
@@ -1063,9 +1368,28 @@ class BigvilleOcelotResident:
         # world modules; otherwise ``bigville.runtime`` can re-enter
         # bigville_bond_world while that module is still being initialised.
         import bigville  # noqa: F401
+        self._load_speech_configuration()
+        from worlds.bigville_speech_world import SPEECH_MENU
+        coupler = self._ensure_affect_coupler({})
+        for option in SPEECH_MENU:
+            attrs = {key: 0.0 for key in self._speech_option_keys}
+            attrs.update(option)
+            # Mirror onto the canonical affinity_* names the generic
+            # coupling rule (seeds/affect_coupling.json) reads -- SPEECH_
+            # MENU's own warm_aff/hostile_aff ARE the affinity signature,
+            # just under bigville's own local name. affect_bias starts at 0.
+            attrs["affinity_warm"] = float(attrs.get("warm_aff", 0.0))
+            attrs["affinity_hostile"] = float(attrs.get("hostile_aff", 0.0))
+            attrs["affect_bias"] = 0.0
+            node = self.s.add_node("SpeechOption", attrs)
+            self.inner.add_edge_unchecked(coupler, "couples_affect_to", node)
+            self._speech_options.append(node)
+
+    def _load_speech_configuration(self):
+        """Rebuild module-owned speech configuration without minting graph nodes."""
         from worlds.bigville_bond_world import KNOBS, SLOT_DEFAULTS
         from worlds.bigville_speech_world import (
-            ENCOUNTER_DEFAULTS, KIND_LABEL, SPEECH_MENU, _OPT_KEYS,
+            ENCOUNTER_DEFAULTS, KIND_LABEL, _OPT_KEYS,
         )
         self._speech_kind_label = dict(KIND_LABEL)
         self._speech_option_keys = tuple(_OPT_KEYS)
@@ -1080,22 +1404,6 @@ class BigvilleOcelotResident:
         })
         self._speech_slot_defaults = dict(SLOT_DEFAULTS)
         self._speech_knobs = dict(KNOBS)
-        coupler = self._ensure_affect_coupler({})
-        for option in SPEECH_MENU:
-            attrs = {key: 0.0 for key in self._speech_option_keys}
-            attrs.update(option)
-            # Mirror onto the canonical affinity_* names the generic
-            # coupling rule (seeds/affect_coupling.json) reads -- SPEECH_
-            # MENU's own warm_aff/hostile_aff ARE the affinity signature,
-            # just under bigville's own local name (worlds/bigville_
-            # speech_world.py). affect_bias starts explicit 0.0 so it is
-            # always a valid float even before any rule runs.
-            attrs["affinity_warm"] = float(attrs.get("warm_aff", 0.0))
-            attrs["affinity_hostile"] = float(attrs.get("hostile_aff", 0.0))
-            attrs["affect_bias"] = 0.0
-            node = self.s.add_node("SpeechOption", attrs)
-            self.inner.add_edge_unchecked(coupler, "couples_affect_to", node)
-            self._speech_options.append(node)
 
     def _speech_personality(self, target):
         social = self.personality.get("social_dispositions", {})

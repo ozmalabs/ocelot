@@ -100,6 +100,124 @@ def test_character_payload_seeds_emotional_core_and_spontaneous_speech(monkeypat
         assert choice.get("act")
 
 
+def test_decide_returns_the_exact_duplicate_tuple_affordance_with_extra_fields():
+    resident = BigvilleOcelotResident("ChoiceAda")
+    resident.replace_options([
+        {"action": "move_object", "kind": "box", "trade": "", "recipe": "",
+         "target": "", "score": 1.0, "object_id": "box_a", "destination": "table"},
+        {"action": "move_object", "kind": "box", "trade": "", "recipe": "",
+         "target": "", "score": 5.0, "object_id": "box_b", "destination": "world"},
+        {"action": "move_object", "kind": "box", "trade": "", "recipe": "",
+         "target": "", "score": 2.0, "object_id": "box_c", "destination": "Ada"},
+    ])
+
+    choice = resident.decide()
+
+    assert choice == {
+        "action": "move_object", "kind": "box", "trade": "", "recipe": "",
+        "target": "", "score": 5.0, "object_id": "box_b", "destination": "world",
+    }
+
+
+@pytest.mark.skipif(not (_BIGVILLE_ROOT / "scenarios" /
+                         "monopoly_four_players.json").is_file(),
+                    reason="standalone Bigville checkout is not present")
+def test_real_village_object_affordance_discriminator_preserves_object_and_destination(monkeypatch):
+    """Normal village object affordances can share every public tuple field."""
+    monkeypatch.setenv("BIGVILLE_ROOT", str(_BIGVILLE_ROOT))
+    from bigville import create_world
+
+    world = create_world(scenario="monopoly_four_players",
+                         cognition_factory=BigvilleOcelotResident)
+    mind = world.actor_mind("Alice")
+    options = world.actor_affordances("Alice")
+    move_options = [option for option in options
+                    if option.get("action") == "move_object"
+                    and option.get("object_id") == "game_box"]
+    assert len(move_options) >= 2
+    assert len({option.get("destination") for option in move_options}) >= 2
+    expected = dict(move_options[-1])
+    expected["score"] = 10.0
+    options = [dict(option, score=10.0 if option is move_options[-1] else 0.0)
+               for option in options]
+
+    mind.replace_options(options)
+    choice = mind.decide()
+
+    assert choice == expected
+    assert "option_id" not in choice
+
+
+@pytest.mark.skipif(not (_BIGVILLE_ROOT / "bigville" / "seeds" /
+                         "bigville_actor_decision.json").is_file(),
+                    reason="standalone Bigville checkout is not present")
+def test_observed_hunger_changes_graph_choice_for_eat_and_food_fetch(monkeypatch):
+    """The same afforded choices yield different graph choices at high hunger."""
+    monkeypatch.setenv("BIGVILLE_ROOT", str(_BIGVILLE_ROOT))
+    carrying_bread = [
+        {"action": "work", "kind": "", "recipe": "forge", "target": "", "score": 0.0},
+        {"action": "eat", "kind": "bread", "target": "", "score": 0.0},
+        {"action": "put", "kind": "bread", "target": "target:put", "score": 0.0},
+        {"action": "fetch", "kind": "bread", "food": True,
+         "target": "target:fetch", "score": 0.0},
+        {"action": "rest", "kind": "", "target": "", "score": 0.0},
+    ]
+
+    def choose(name, hunger, options):
+        resident = BigvilleOcelotResident(name)
+        observed = resident.observe_situation(
+            kind="village_observation", attributes={"hunger": hunger, "turn": 1})
+        resident.replace_options(options)
+        selected = resident.decide()
+        attrs = resident.s.node(resident.agent)["attrs"]
+        option_nodes = list(resident.inner.neighbours(resident.agent, "has_option"))
+        offered = [resident.s.node(node)["attrs"] for node in option_nodes]
+        observation = resident.s.node(observed["observation"])["attrs"]
+        scores_before = [float(resident.s.node(node)["attrs"].get("score", 0.0))
+                         for node in option_nodes]
+        resident.inner.run_rules()
+        scores_after = [float(resident.s.node(node)["attrs"].get("score", 0.0))
+                        for node in option_nodes]
+        assert scores_after == scores_before, "the same affordance must not be rescored cumulatively"
+        return selected, attrs, offered, observation
+
+    sated, sated_attrs, _, _ = choose("SatedChoice", 0.0, carrying_bread)
+    hungry, hungry_attrs, hungry_options, observation = choose(
+        "HungryChoice", 0.65, carrying_bread)
+
+    assert sated["action"] == "work"
+    assert hungry["action"] == "eat"
+    assert hungry_attrs["observed_hunger"] == pytest.approx(0.65)
+    assert json.loads(observation["attributes_json"])["hunger"] == pytest.approx(0.65)
+    scores = {option["action"]: float(option.get("score", 0.0))
+              for option in hungry_options}
+    assert scores["eat"] > scores["work"]
+
+    strong_work = [dict(option) for option in carrying_bread]
+    strong_work[0]["score"] = 70.0
+    high_priority_work, _, _, _ = choose("StrongWork", 0.65, strong_work)
+    assert high_priority_work["action"] == "work", "appetite utility must preserve stronger authored scores"
+
+    no_bread = [
+        {"action": "work", "kind": "", "recipe": "forge", "target": "", "score": 0.0},
+        {"action": "fetch", "kind": "bread", "food": True,
+         "target": "target:bread", "score": 0.0},
+        {"action": "rest", "kind": "", "target": "", "score": 0.0},
+    ]
+    sated_fetch, _, _, _ = choose("SatedFetch", 0.0, no_bread)
+    hungry_fetch, _, fetched_options, _ = choose("HungryFetch", 0.65, no_bread)
+    assert sated_fetch["action"] == "work"
+    assert hungry_fetch["action"] == "fetch"
+    fetch_score = next(float(option["score"]) for option in fetched_options
+                       if option["action"] == "fetch")
+    assert fetch_score > 0.0
+
+    no_other_action = [option for option in no_bread if option["action"] == "fetch"]
+    sated_idle, _, idle_options, _ = choose("SatedIdle", 0.0, no_other_action)
+    assert sated_idle["action"] == "none"
+    assert next(option for option in idle_options if option["action"] == "none")["score"] == -0.5
+
+
 @pytest.mark.skipif(not (_BIGVILLE_ROOT / "bigville" / "seeds" /
                          "bigville_actor_decision.json").is_file(),
                     reason="standalone Bigville checkout is not present")
