@@ -413,13 +413,12 @@ def read_relative_self_worth(inner, domain_concept) -> float:
 def ensure_peer_comparison_seed(inner) -> None:
     """Idempotently load seeds/peer_comparison.json (depends_on
     can_native_reimplementation, loaded first via ensure_can_seed)."""
-    import json
-    from substrate.seed_loader import engine_rules_only
+    from substrate.seed_loader import engine_rules_only, manifest_for
 
     ensure_can_seed(inner)
     if inner.nodes("PeerComparisonSeedLoaded"):
         return
-    d = json.load(open("seeds/peer_comparison.json"))
+    d = manifest_for("peer_comparison")
     inner.load_seed_manifest(engine_rules_only(d))
     inner.add_node("PeerComparisonSeedLoaded", {})
 
@@ -446,11 +445,10 @@ def ensure_can_seed(inner) -> None:
     _dynamics) used to be relied on. can_decay_identity depends_on
     can_native_reimplementation, so the base seed is loaded first.
     """
-    import json
     from substrate.seed_loader import engine_rules_only, manifest_for
 
     if not inner.nodes("CanSelfWorthBridgeSeedLoaded"):
-        d = json.load(open("seeds/can_native_reimplementation.json"))
+        d = manifest_for("can_native_reimplementation")
         inner.load_seed_manifest(engine_rules_only(d))
         inner.add_node("CanSelfWorthBridgeSeedLoaded", {})
     # Native decay/identity rules — the native replacement for the (now
