@@ -26,6 +26,11 @@ honest step: graph targets in, graph-recorded transaction out.
 
 Python only for v0. Rust/CST editing is deliberately refused rather than
 half-done; the Rust path belongs with the existing tree-sitter/hub-IR readers.
+
+Edit ordering. Every op's edits are applied bottom-up against the base text.
+Two inserts at the same offset land in op order (the first op's text comes
+first). An insert at X and a replacement that starts at X always put the
+insert before the replaced text, whichever op came first.
 """
 from __future__ import annotations
 
@@ -43,6 +48,7 @@ from typing import Any
 
 from scripts.ocelot_edit_txn import (
     check_base,
+    detect_newline,
     encode_text,
     normalize_newlines,
     read_source,
@@ -54,6 +60,7 @@ from scripts.ocelot_lossless import python_roundtrip
 MAX_SOURCE_BYTES = 2 * 1024 * 1024
 FORBIDDEN_SCRIPT_KEYS = ("diff", "patch", "unified_diff", "hunk")
 _NEWLINE_NAMES = {"\n": "lf", "\r\n": "crlf", "\r": "cr"}
+_CODING_RE = re.compile(r"^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)")
 
 
 class CodeEditError(ValueError):
@@ -78,6 +85,8 @@ class SymbolSpan:
     body_indent: str
     indent: str
     node: ast.AST
+    # True when the body sits on the header line (`def f(self): return 1`).
+    inline_body: bool = False
 
 
 def _line_offsets(source: str) -> list[int]:
@@ -147,14 +156,31 @@ def symbol_table(source: str) -> dict[str, SymbolSpan]:
             end = _line_end_offset(offsets, end_line, n)
             indent = _indent_at(source, offsets, node.lineno)
             body = node.body or []
+            inline = False
             if body:
                 first = body[0]
                 last = body[-1]
-                body_start = offsets[max(0, int(getattr(first, "lineno", node.lineno)) - 1)]
+                first_line = int(getattr(first, "lineno", node.lineno))
+                line_start = offsets[max(0, first_line - 1)]
                 body_end = _line_end_offset(
                     offsets, int(getattr(last, "end_lineno", last.lineno) or last.lineno), n)
-                body_indent = _indent_at(source, offsets,
-                                         int(getattr(first, "lineno", node.lineno)))
+                first_start = _node_span(source, offsets, first)[0]
+                if source[line_start:first_start].strip():
+                    # One-line compound statement (`def f(self): return 1`).
+                    # The span starts after the header colon, so the header
+                    # survives a body replacement.
+                    inline = True
+                    colon = first_start - 1
+                    while colon > 0 and source[colon] in " \t":
+                        colon -= 1
+                    if source[colon] != ":":
+                        raise CodeEditError(
+                            f"cannot locate the header colon of {qual!r}")
+                    body_start = colon + 1
+                    body_indent = indent + "    "
+                else:
+                    body_start = line_start
+                    body_indent = _indent_at(source, offsets, first_line)
             else:
                 body_start = start
                 body_end = end
@@ -162,7 +188,7 @@ def symbol_table(source: str) -> dict[str, SymbolSpan]:
             out[qual] = SymbolSpan(name, qual, kind, start, end,
                                    int(node.lineno), end_line,
                                    body_start, body_end, body_indent,
-                                   indent, node)
+                                   indent, node, inline)
             walk(node.body, qual)
 
     walk(tree.body)
@@ -206,6 +232,9 @@ class AstSpan:
     child_count: int
     list_lengths: dict[str, int]
     preview: str
+    # False for nodes with no lineno/end_lineno (operators, ctx, arguments,
+    # comprehensions). Such nodes keep their path but cannot be edited.
+    located: bool = True
 
 
 def ast_node_table(source: str) -> dict[str, AstSpan]:
@@ -250,6 +279,8 @@ def ast_node_table(source: str) -> dict[str, AstSpan]:
                         children += 1
         raw = source[start:end]
         preview = raw.splitlines()[0][:160] if raw else ""
+        located = (getattr(node, "lineno", None) is not None
+                   and getattr(node, "end_lineno", None) is not None)
         out[path] = AstSpan(
             path=path, node_type=type(node).__name__,
             start=start, end=end,
@@ -259,6 +290,7 @@ def ast_node_table(source: str) -> dict[str, AstSpan]:
             parent=parent, field=field, index=index,
             is_stmt=isinstance(node, ast.stmt),
             child_count=children, list_lengths=lists, preview=preview,
+            located=located,
         )
 
     walk(tree, "", None, "", None)
@@ -287,8 +319,8 @@ def ast_outline(source: str, *, target: str | None = None,
         if len(lines) >= max_nodes:
             return
         rec = table[path]
-        span = f"L{rec.start_line}"
-        if rec.end_line != rec.start_line:
+        span = f"L{rec.start_line}" if rec.located else "(no location)"
+        if rec.located and rec.end_line != rec.start_line:
             span += f"-{rec.end_line}"
         preview = rec.preview.strip()
         if len(preview) > 100:
@@ -306,23 +338,93 @@ def ast_outline(source: str, *, target: str | None = None,
     return {"path": "", "lines": "ast", "text": text, "kind": "ast",
             "n_nodes": len(table), "estimated_tokens": max(1, len(text) // 4)}
 
+def _is_docstring(stmt: ast.AST) -> bool:
+    return (isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Constant)
+            and isinstance(stmt.value.value, str))
+
+
 def _module_insert_offset(source: str, tree: ast.Module,
                           offsets: list[int]) -> int:
-    """After the last top-level import; else after the docstring; else 0."""
-    imports = [n for n in tree.body if isinstance(n, (ast.Import, ast.ImportFrom))]
-    if imports:
-        last = imports[-1]
-        return _line_end_offset(offsets,
-                                int(getattr(last, "end_lineno", last.lineno) or last.lineno),
-                                len(source))
-    if tree.body and isinstance(tree.body[0], ast.Expr):
+    """Where a new top-level import goes.
+
+    1. After the last import of the leading import block (the imports before
+       the first statement that is neither an import nor the docstring).
+    2. Else after the module docstring.
+    3. Else after the shebang and/or encoding-cookie lines at the top.
+    4. Else at offset 0.
+    """
+    n = len(source)
+    last_import: ast.stmt | None = None
+    for idx, stmt in enumerate(tree.body):
+        if isinstance(stmt, (ast.Import, ast.ImportFrom)):
+            last_import = stmt
+            continue
+        if idx == 0 and _is_docstring(stmt):
+            continue
+        break
+    if last_import is not None:
+        return _line_end_offset(
+            offsets, int(getattr(last_import, "end_lineno", last_import.lineno)
+                         or last_import.lineno), n)
+    if tree.body and _is_docstring(tree.body[0]):
         first = tree.body[0]
-        if isinstance(getattr(first, "value", None), ast.Constant) \
-                and isinstance(first.value.value, str):
-            return _line_end_offset(offsets,
-                                    int(getattr(first, "end_lineno", first.lineno)
-                                        or first.lineno), len(source))
-    return 0
+        return _line_end_offset(
+            offsets, int(getattr(first, "end_lineno", first.lineno) or first.lineno), n)
+    # Leading shebang and/or encoding cookie, in that order, on lines 1-2.
+    k = 0
+    for i, line in enumerate(source.split("\n", 2)[:2]):
+        if i == k and (line.startswith("#!") or _CODING_RE.match(line)):
+            k += 1
+        else:
+            break
+    return _line_end_offset(offsets, k, n) if k else 0
+
+
+def _import_key(stmt: ast.stmt, alias: ast.alias) -> tuple[Any, ...]:
+    if isinstance(stmt, ast.Import):
+        return ("import", alias.name, alias.asname)
+    return ("from", int(stmt.level or 0), stmt.module or "",
+            alias.name, alias.asname)
+
+
+def _alias_text(alias: ast.alias) -> str:
+    return alias.name + (f" as {alias.asname}" if alias.asname else "")
+
+
+def _missing_import_text(source: str, text: str) -> str:
+    """The part of `text` (one import statement) that `source` does not already
+    bind at module level. Empty when everything is present.
+
+    Presence is decided on the AST, so comments and substrings do not count.
+    """
+    try:
+        wanted = ast.parse(text).body
+    except SyntaxError as e:
+        raise CodeEditError(f"insert_import text does not parse: {e}") from e
+    present = set()
+    for stmt in ast.parse(source).body:
+        if isinstance(stmt, (ast.Import, ast.ImportFrom)):
+            present.update(_import_key(stmt, a) for a in stmt.names)
+    lines: list[str] = []
+    for stmt in wanted:
+        if not isinstance(stmt, (ast.Import, ast.ImportFrom)):
+            raise CodeEditError("insert_import text must be an import")
+        missing = []
+        for alias in stmt.names:
+            key = _import_key(stmt, alias)
+            if key not in present:
+                present.add(key)
+                missing.append(alias)
+        if not missing:
+            continue
+        items = ", ".join(_alias_text(a) for a in missing)
+        if isinstance(stmt, ast.Import):
+            lines.append(f"import {items}\n")
+        else:
+            module = "." * int(stmt.level or 0) + (stmt.module or "")
+            lines.append(f"from {module} import {items}\n")
+    return "".join(lines)
+
 
 
 def _import_text(op: dict[str, Any]) -> str:
@@ -344,25 +446,82 @@ def _replace_span(source: str, start: int, end: int, text: str) -> str:
     return source[:start] + text + source[end:]
 
 
-def _rename_edits(source: str, old: str, new: str) -> tuple[list[tuple[int, int, str]], int]:
+def _rename_edits(source: str, old: str, new: str
+                  ) -> tuple[list[tuple[int, int, str]], list[list[int]]]:
     """Lexical NAME-token rename edits within one file. Deliberately reported
-    as lexical; scope-aware rename is a later graph pass."""
+    as lexical; scope-aware rename is a later graph pass. Returns the edits and
+    the `[line, col]` of each occurrence (col is a 0-based character column)."""
     if not old.isidentifier() or not new.isidentifier():
         raise CodeEditError("rename needs identifier names")
     edits: list[tuple[int, int, str]] = []
+    where: list[list[int]] = []
     offsets = _line_offsets(source)
     try:
         for tok in tokenize.generate_tokens(StringIO(source).readline):
             if tok.type == tokenize.NAME and tok.string == old:
                 edits.append((_offset(offsets, tok.start[0], tok.start[1]),
                               _offset(offsets, tok.end[0], tok.end[1]), new))
+                where.append([tok.start[0], tok.start[1]])
     except (tokenize.TokenError, IndentationError) as e:
         raise CodeEditError(f"cannot tokenize source: {e}") from e
-    return edits, len(edits)
+    return edits, where
+
+
+def _owns_its_lines(source: str, offsets: list[int], rec: AstSpan) -> bool:
+    """True when nothing but indentation precedes the statement on its first
+    line, and nothing but whitespace or a comment follows it on its last line.
+    Deleting or re-indenting such a statement cannot touch other code."""
+    head = source[offsets[max(0, rec.start_line - 1)]:rec.start]
+    tail_end = offsets[rec.end_line] if rec.end_line < len(offsets) else len(source)
+    tail = source[rec.end:tail_end].strip()
+    return not head.strip() and (tail == "" or tail.startswith("#"))
+
+
+def _string_spans(source: str, offsets: list[int]) -> list[tuple[int, int]]:
+    """Source offsets of every string literal token (f-strings included)."""
+    spans: list[tuple[int, int]] = []
+    fstring_start = getattr(tokenize, "FSTRING_START", None)
+    fstring_end = getattr(tokenize, "FSTRING_END", None)
+    open_fstrings: list[int] = []
+    try:
+        for tok in tokenize.generate_tokens(StringIO(source).readline):
+            if tok.type == tokenize.STRING:
+                spans.append((_offset(offsets, *tok.start),
+                              _offset(offsets, *tok.end)))
+            elif fstring_start is not None and tok.type == fstring_start:
+                open_fstrings.append(_offset(offsets, *tok.start))
+            elif fstring_end is not None and tok.type == fstring_end:
+                spans.append((open_fstrings.pop(),
+                              _offset(offsets, *tok.end)))
+    except (tokenize.TokenError, IndentationError) as e:
+        raise CodeEditError(f"cannot tokenize source: {e}") from e
+    return spans
+
+
+def _indent_statement_lines(source: str, start: int, end: int,
+                            spans: list[tuple[int, int]],
+                            pad: str = "    ") -> str:
+    """Prefix `pad` to each non-blank line of source[start:end] (whole lines).
+    A line whose start offset lies strictly inside a string literal is copied
+    unchanged, so the string value does not change."""
+    parts: list[str] = []
+    pos = start
+    while pos < end:
+        nl = source.find("\n", pos)
+        line_end = len(source) if nl < 0 else nl + 1
+        line = source[pos:line_end]
+        inside = any(a < pos < b for a, b in spans)
+        if not inside and line.strip():
+            line = pad + line
+        parts.append(line)
+        pos = line_end
+    return "".join(parts)
 
 
 def _apply_ops(source: str, ops: list[dict[str, Any]],
-               newline: str = "\n") -> tuple[str, list[dict[str, Any]]]:
+               newline: str | None = None) -> tuple[str, list[dict[str, Any]]]:
+    if newline is None:
+        newline = detect_newline(source)
     tree = ast.parse(source)
     symbols = symbol_table(source)
     offsets = _line_offsets(source)
@@ -386,7 +545,18 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
             raise CodeEditError(
                 f"{op.get('op')}: no AST node at path {target!r}; "
                 f"available (first 30): {available}")
+        if not rec.located:
+            raise CodeEditError(
+                f"{op.get('op')}: AST node {target!r} ({rec.node_type}) has no "
+                f"source location; target an enclosing node")
         return rec
+
+    def require_owned_lines(rec: AstSpan, kind: str) -> None:
+        if rec.is_stmt and not _owns_its_lines(source, offsets, rec):
+            raise CodeEditError(
+                f"{kind}: statement {rec.path!r} shares a line with other code "
+                f"(e.g. 'a = 1; b = 2' or 'if x: y'); split the line first or "
+                f"use replace_span")
 
     def statement_line_span(rec: AstSpan) -> tuple[int, int]:
         start = offsets[max(0, rec.start_line - 1)]
@@ -435,30 +605,35 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                 (indent + line) if line.strip() else ""
                 for line in body.splitlines()
             ) + "\n"
+            if s.inline_body:
+                rendered = "\n" + rendered
             edits.append((s.body_start, s.body_end, rendered, op))
             changes.append({"op": kind, "symbol": s.qualname,
                             "lines": [s.start_line, s.end_line],
                             "summary": "replace function/class body"})
         elif kind == "insert_import":
             text = _import_text(op)
-            if text.strip() and text.strip() in source:
+            missing = _missing_import_text(source, text)
+            if not missing:
                 changes.append({"op": kind, "summary": "already present; skipped"})
                 continue
             at = _module_insert_offset(source, tree, offsets)
             if at > 0 and source[at - 1] != "\n":
-                text = "\n" + text
-            if at < len(source) and source[at:at + 1] not in ("", "\n"):
-                text = text + "\n"
-            edits.append((at, at, text, op))
-            changes.append({"op": kind, "summary": text.strip()})
+                missing = "\n" + missing
+            # One blank line after the new import when code follows directly.
+            # A following line ending means a blank line already exists.
+            nxt = source[at:at + 1]
+            if nxt and nxt not in ("\n", "\r"):
+                missing = missing + "\n"
+            edits.append((at, at, missing, op))
+            changes.append({"op": kind, "summary": missing.strip()})
         elif kind == "delete_symbol":
             s = sym(op)
             # Also consume one trailing blank line, so deleting a function does
-            # not silently accumulate whitespace.
+            # not silently accumulate whitespace. CRLF-aware via `newline`.
             end = s.end
-            while end < len(source) and source[end:end + 1] == "\n":
-                end += 1
-                break
+            if source.startswith(newline, end):
+                end += len(newline)
             edits.append((s.start, end, "", op))
             changes.append({"op": kind, "symbol": s.qualname,
                             "lines": [s.start_line, s.end_line],
@@ -488,6 +663,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
             if not text:
                 raise CodeEditError(f"{kind}: empty text")
             if rec.is_stmt:
+                require_owned_lines(rec, kind)
                 start, end = statement_line_span(rec)
                 indent = source[start:rec.start]
                 body = textwrap.dedent(text).strip("\n")
@@ -505,6 +681,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
         elif kind == "delete_node":
             rec = ast_at(op)
             if rec.is_stmt:
+                require_owned_lines(rec, kind)
                 start, end = statement_line_span(rec)
                 parent = ast_table.get(rec.parent) if (ast_table and rec.parent) else None
                 only = bool(parent and rec.field in
@@ -544,10 +721,13 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                     raise CodeEditError(
                         "wrap_node on a statement needs a block prefix ending "
                         "with ':' (e.g. 'if cond:')")
+                require_owned_lines(rec, kind)
                 start, end = statement_line_span(rec)
                 indent = source[start:rec.start]
-                old = source[start:end]
-                body = textwrap.indent(textwrap.dedent(old), "    ")
+                # Re-indent whole lines; lines that start inside a string
+                # literal are copied as they are, so string values survive.
+                body = _indent_statement_lines(
+                    source, start, end, _string_spans(source, offsets))
                 rendered = indent + prefix.rstrip() + "\n" + body
                 if suffix:
                     rendered += indent + suffix.strip() + "\n"
@@ -567,7 +747,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                     "replace_span needs start_line/start_col/end_line/end_col") from e
             if start < 0 or end < start or end > len(source):
                 raise CodeEditError("replace_span out of range")
-            text = _ensure_newline(str(op.get("text") or ""))
+            text = str(op.get("text") or "")
             edits.append((start, end, text, op))
             changes.append({"op": kind, "summary": f"replace {start}:{end}"})
         elif kind == "rename_symbol":
@@ -579,12 +759,20 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                 raise CodeEditError(
                     "rename_symbol must be the only op in a script (v0 is "
                     "lexical; combine renames separately)")
-            rename_edits, count = _rename_edits(source, s.name, new)
+            same_name = sorted(q for q, d in symbols.items() if d.name == s.name)
+            if len(same_name) > 1:
+                raise CodeEditError(
+                    f"rename_symbol: {s.name!r} is defined {len(same_name)} times "
+                    f"in this file ({', '.join(same_name)}); a lexical rename "
+                    f"would change all of them. Use dev_rename_preview (LSP) or "
+                    f"rename one with replace_symbol")
+            rename_edits, where = _rename_edits(source, s.name, new)
             for st, en, txt in rename_edits:
                 edits.append((st, en, txt, op))
             changes.append({"op": kind, "symbol": s.qualname,
+                            "occurrences": where,
                             "summary": f"renamed {s.name!r} -> {new!r} "
-                                       f"({count} lexical NAME occurrences)"})
+                                       f"({len(where)} lexical NAME occurrences)"})
         else:
             raise CodeEditError(
                 f"unknown op {kind!r}; supported: replace_symbol, "
@@ -594,7 +782,12 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
 
     # Apply bottom-up so earlier offsets stay valid. Refuse overlapping edits:
     # an ambiguous transaction is a bug, not a merge strategy.
-    edits.sort(key=lambda e: (e[0], e[1]), reverse=True)
+    # Edits are appended in op order, so list position is the op index. At one
+    # (start, end) the later op is applied first, which leaves the earlier op's
+    # text in front in the output (E7).
+    order = sorted(range(len(edits)),
+                   key=lambda i: (edits[i][0], edits[i][1], i), reverse=True)
+    edits = [edits[i] for i in order]
     last_start = None
     for start, end, text, _op in edits:
         if last_start is not None and end > last_start:

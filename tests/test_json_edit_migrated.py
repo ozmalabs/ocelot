@@ -185,3 +185,13 @@ def test_latin1_json_is_refused_with_utf8_message(tmp_path: Path) -> None:
     with pytest.raises(CodeEditError, match="not valid UTF-8"):
         apply_json_edit_script(tmp_path, {"file": "demo.json", "ops": [
             {"op": "set", "path": ["id"], "value": "x"}]})
+
+
+def test_merge_new_keys_keep_op_order(tmp_path: Path) -> None:
+    # Two inserts at one offset: the new keys land in value order.
+    p = tmp_path / "doc.json"
+    p.write_text('{\n  "a": 1\n}\n', encoding="utf-8")
+    apply_json_edit_script(tmp_path, {"file": "doc.json", "ops": [
+        {"op": "merge", "path": [], "value": {"b": 2, "c": 3}}]}, write=True)
+    data = json.loads(p.read_text(encoding="utf-8"))
+    assert list(data) == ["a", "b", "c"]

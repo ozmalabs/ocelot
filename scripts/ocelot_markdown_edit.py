@@ -191,6 +191,27 @@ def _ensure_blank(text: str) -> str:
     return text if text.endswith("\n") else text + "\n"
 
 
+def _frontmatter_end(source: str) -> int | None:
+    """Offset just past the closing `---` line of a leading frontmatter block,
+    or None when the document has no frontmatter.
+
+    The opening line must be exactly `---` followed by a newline. The closing
+    line must be exactly `---` after its line ending is removed, so `----` and
+    `---foo` do not close it. CRLF and LF are both accepted.
+    """
+    first_nl = source.find("\n")
+    if first_nl < 0 or source[:first_nl].rstrip("\r") != "---":
+        return None
+    pos = first_nl + 1
+    while pos < len(source):
+        nl = source.find("\n", pos)
+        line_end = len(source) if nl < 0 else nl + 1
+        if source[pos:line_end].rstrip("\r\n") == "---":
+            return line_end
+        pos = line_end
+    raise CodeEditError("frontmatter is not closed")
+
+
 def _section_block(level: int, title: str, body: str) -> str:
     title = title.strip()
     if not title:
@@ -254,14 +275,9 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
         elif kind == "replace_frontmatter":
             body = str(op.get("text") or "").strip("\n")
             rendered = f"---\n{body}\n---\n" if body else ""
-            if source.startswith("---\n"):
-                end = source.find("\n---", 4)
-                if end < 0:
-                    raise CodeEditError("frontmatter is not closed")
-                end += len("\n---")
-                if source[end:end + 1] == "\n":
-                    end += 1
-                edits.append((0, end, rendered, op))
+            fm_end = _frontmatter_end(source)
+            if fm_end is not None:
+                edits.append((0, fm_end, rendered, op))
             else:
                 if source and not source.startswith("\n"):
                     rendered += "\n"
@@ -288,7 +304,9 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                 f"insert_section_before, insert_section_after, "
                 f"delete_section, replace_frontmatter, replace_span")
 
-    edits.sort(key=lambda e: (e[0], e[1]), reverse=True)
+    order = sorted(range(len(edits)),
+                   key=lambda i: (edits[i][0], edits[i][1], i), reverse=True)
+    edits = [edits[i] for i in order]
     last_start = None
     for start, end, text, _op in edits:
         if last_start is not None and end > last_start:

@@ -350,7 +350,9 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                 f"unknown JSON op {kind!r}; supported: set, merge, append, "
                 f"delete, replace_span")
 
-    edits.sort(key=lambda e: (e[0], e[1]), reverse=True)
+    order = sorted(range(len(edits)),
+                   key=lambda i: (edits[i][0], edits[i][1], i), reverse=True)
+    edits = [edits[i] for i in order]
     last_start = None
     for start, end, text, _op in edits:
         if last_start is not None and end > last_start:
