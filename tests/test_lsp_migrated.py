@@ -708,3 +708,31 @@ def test_live_pyright_definition(tmp_path: Path) -> None:
     if not response.get("locations"):
         pytest.skip("pyright gave no definition for the smoke fixture")
     assert any(loc["path"] == "a.py" for loc in response["locations"])
+
+
+def test_paths_outside_the_workspace_are_refused(fake_lsp) -> None:
+    client = fake_lsp["client"]
+    for path in ("/etc/passwd", "../x.py"):
+        resp = client.definition(path, 0, 0)
+        assert resp["ok"] is False
+        assert "path escapes the workspace root" in resp["error"]
+        assert resp["error"].endswith(path)
+
+
+def test_send_is_never_called_while_state_lock_is_held(fake_lsp) -> None:
+    client = fake_lsp["client"]
+    # `_state_lock` is an RLock; `_is_owned()` reports whether the calling
+    # thread holds it. The reader thread never calls `_send`.
+    assert type(client._state_lock).__name__ == "RLock"
+    seen: list[bool] = []
+    real_send = client._send
+
+    def recording_send(payload: dict) -> None:
+        seen.append(client._state_lock._is_owned())
+        real_send(payload)
+
+    client._send = recording_send
+    resp = client.definition("b.py", 3, 8)
+    assert resp["ok"] is True
+    assert len(seen) >= 2, "expected initialize and didOpen to be sent"
+    assert not any(seen)
