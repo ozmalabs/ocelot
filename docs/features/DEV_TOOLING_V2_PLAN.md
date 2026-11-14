@@ -185,17 +185,53 @@ Merge, combined gate, refresh the snapshot, run eval v2 for real, run the
 performance bench, semantic review of `7afb2318..dt/v2`, fix review blockers,
 update `GRAPH_CODING_LANDSCAPE.md` status and record results here.
 
-## Status
+## Status (2026-11-15)
 
 | Task | State | Evidence |
 |---|---|---|
-| W1-A | planned | |
-| W1-B | planned | |
-| W1-C | planned | |
-| W2-A | planned | |
-| W2-B | planned | |
-| W2-C | planned | |
-| W3-A | planned | |
-| W3-B | planned | |
-| W3-C | planned | |
-| W4 | planned | |
+| W1-A | done | shared edit transaction; CRLF/BOM/TOCTOU/backup tests |
+| W1-B | done | MCP transport + arg validation tests; LSP containment/lock tests |
+| W1-C | done | cache racy-window, fingerprint, subset, determinism, PPR tests |
+| W2-A | done | 19 op-semantics tests, each failing on the pre-change base |
+| W2-B | done | output identical to base; memo, parallel==serial tests |
+| W2-C | done | tag schema v2/v3; symbol graph tests; 6/6 spot-checked real callers |
+| W3-A | done | `evaluation/repo_map/RESULTS_V2.md` (fingerprint `c745f6d2…`, seed-stable) |
+| W3-B | done | symbol MCP/CLI tools, precise mode, opt-in post-edit diagnostics |
+| W3-C | done (harness only) | validation 7/7; fake 7/7 both arms; noop 0/7; **no live run** |
+| W3-D | done | scandir walk + persisted search term cache, results identical to base |
+| W4 | done | semantic review (3 blockers, 9 further issues) fixed; final gate 412 passed, 6 skipped |
+
+## Results
+
+**Performance** (final `dt/v2`, this machine, `scripts/ocelot_index_bench.py`):
+
+| Operation | Before (`7afb2318`) | After | Target |
+|---|---|---|---|
+| cold full index (4 workers) | ~60–100 s | 22.0 s | ≤ 30 s |
+| `repo_map` warm | ~6.3 s | 0.24 s | ≤ 1.0 s |
+| `code_search` warm | per-query PageRank, first call ~70–90 s | 0.25–0.29 s | ≤ 0.5 s |
+| `code_search` first call, new process, warm side cache | n/a | 9.6 s | ≤ 10 s |
+| `impact` warm | ~6 s | 0.16–0.18 s | ≤ 0.3 s |
+| symbol callers/impact query | n/a | < 2 ms (graph memo hit) | ≤ 0.3 s |
+
+**Retrieval (eval v2, 30 leakage-free tasks, recall / content-tier recall):**
+
+| Arm | 500 | 900 | 1500 |
+|---|---:|---:|---:|
+| dev_repo_map | 0.28 / 0.28 | 0.25 / 0.25 | 0.47 / 0.38 |
+| grep | 0.70 / 0.00 | 0.83 / 0.00 | 0.90 / 0.00 |
+| code_search | 0.72 / 0.72 | 0.82 / 0.82 | 0.93 / 0.93 |
+
+The repo map does not win once task text stops naming files; `code_search`
+(BM25 + weighted graph prior) is the strongest retriever and the one that
+shows code. The tasks were written after reading the target code, which
+favours lexical arms; treat this as directional (30 tasks, one run).
+
+**End-to-end:** the break/fix harness is validated (fake driver 7/7, noop 0/7)
+but no hosted-model run has been made. A pilot is 7 tasks × 2 arms = 14
+sessions and needs explicit approval and a cost ceiling.
+
+**Open items:** live agent pilot; `_python_parse` (snapshot Symbol nodes)
+still rejects BOM files; untracked-file content changes are not part of the
+staleness digest; the agent-eval task base is `a6df57f0` (an ancestor of
+`dt/v2`).

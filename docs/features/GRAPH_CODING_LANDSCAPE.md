@@ -1,5 +1,12 @@
 # Graph/tree coding-agent landscape — comparison and adopted features
 
+> **Update 2026-11-15:** the v2 work in
+> [`DEV_TOOLING_V2_PLAN.md`](DEV_TOOLING_V2_PLAN.md) closed the symbol-level
+> call graph, warm-index speed and evaluation gaps listed below, and measured
+> that on leakage-free tasks lexical `code_search` beats the repo map. See that
+> plan's Results section for current numbers; the tables below are the
+> original 2026-11-14 analysis.
+
 **Date:** 2026-11-14. **Scope:** graph- and tree-based code retrieval,
 navigation, editing and orchestration for LLM coding agents. The goal is not a
 literature review; it is a gap analysis against the Ocelot dev-memory/edit
