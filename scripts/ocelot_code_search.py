@@ -8,7 +8,9 @@ This is the no-embedding half of hybrid retrieval:
     path, definition symbol names, and source lines;
   * BM25 ranks files lexically (k1=1.5, b=0.75 by default);
   * repo-map PageRank supplies a query-independent structural prior;
-  * the two rankings are fused with Reciprocal Rank Fusion (k=60);
+  * the two rankings are fused with Reciprocal Rank Fusion (k=60), with the
+    graph term weighted by GRAPH_WEIGHT so it breaks ties and cannot
+    overturn a clear lexical lead;
   * results carry the fused score, both component scores, matching symbols,
     and a bounded source snippet.
 
@@ -31,8 +33,7 @@ from scripts.ocelot_repo_map import (
     LANGUAGES,
     MAX_FILE_BYTES,
     SKIP_PARTS,
-    build_reference_graph,
-    personalized_pagerank,
+    graph_prior,
     update_tag_cache,
 )
 
@@ -42,6 +43,11 @@ BM25_B = 0.75
 
 # Reciprocal Rank Fusion constant (the standard value from the RRF paper).
 RRF_K = 60
+
+# Weight of the graph (PageRank) rank term in the fused score. The BM25 term
+# always has weight 1. The graph term is a tie-breaker and a weak prior, so a
+# hub cannot outrank a file that leads clearly on lexical match.
+GRAPH_WEIGHT = 0.25
 
 # Field weights in the single concatenated BM25 document per file. A symbol
 # name hit is a stronger signal than the same term in a comment or string.
@@ -197,13 +203,27 @@ def _bm25_scores(index: dict[str, Any], terms: list[str],
 
 
 def _pagerank(cache: dict[str, Any]) -> dict[str, float]:
-    """Query-independent repo-map reference centrality, made deterministic."""
-    graph = build_reference_graph(cache)
-    # build_reference_graph builds edges from sets; sorting makes the float
-    # summation order stable across processes and hash seeds.
-    graph["edges"] = sorted(graph.get("edges") or [],
-                            key=lambda e: (str(e["src"]), str(e["tgt"])))
-    return personalized_pagerank(graph, task="")
+    """Query-independent repo-map reference centrality (memoised per view)."""
+    return graph_prior(cache)
+
+
+def _competition_ranks(scores: dict[str, float]) -> dict[str, int]:
+    """1-based standard competition ranks: ties share the first position.
+
+    Scores are compared after rounding to 12 places, so float noise in equal
+    scores does not split a tie. Equal scores 3, 2, 2, 1 give ranks 1, 2, 2, 4.
+    """
+    ordered = sorted(scores, key=lambda rel: (-scores[rel], rel))
+    ranks: dict[str, int] = {}
+    previous: float | None = None
+    rank = 0
+    for position, rel in enumerate(ordered, 1):
+        key = round(scores[rel], 12)
+        if key != previous:
+            rank = position
+            previous = key
+        ranks[rel] = rank
+    return ranks
 
 
 def _matched_symbols(symbols: list[dict[str, Any]], terms: list[str],
@@ -320,10 +340,13 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
         rrf_k: RRF constant. Default 60.
 
     Returns:
-        ``{ok, query, results, n, bm25, rrf_k, index}``. Each result is
-        ``{path, score, bm25, graph, symbols, line?, snippet?}`` where
-        ``score`` is the fused RRF score, ``bm25`` the lexical score,
-        ``graph`` the PageRank score, and ``symbols`` matched definitions.
+        ``{ok, query, results, n, bm25, rrf_k, fusion, index}``. Each result is
+        ``{path, score, bm25, bm25_rank, graph, graph_rank, symbols,
+        line?, snippet?}``. ``score`` is the fused score
+        ``1/(rrf_k+bm25_rank) + GRAPH_WEIGHT/(rrf_k+graph_rank)``; the graph
+        term is omitted when the file has no PageRank value. Equal BM25 scores
+        share a rank, and so do equal PageRank values. ``graph`` is the
+        PageRank score, and ``symbols`` the matched definitions.
         ``line``/``snippet`` appear only when a matching source line exists
         and ``include_snippet`` is true.
     """
@@ -332,7 +355,8 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
     b = min(1.0, max(0.0, float(b)))
     rrf_k = max(1, int(rrf_k))
     limit = max(0, int(limit))
-    meta = {"bm25": {"k1": k1, "b": b}, "rrf_k": rrf_k}
+    meta = {"bm25": {"k1": k1, "b": b}, "rrf_k": rrf_k,
+            "fusion": {"rrf_k": rrf_k, "graph_weight": GRAPH_WEIGHT}}
 
     terms = _query_terms(raw_query)
     if not raw_query.strip():
@@ -369,15 +393,14 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
     bm25, idf = _bm25_scores(index, terms, k1, b)
     pagerank = _pagerank(cache)
 
-    bm25_order = sorted(bm25, key=lambda rel: (-bm25[rel], rel))
-    bm25_rank = {rel: i for i, rel in enumerate(bm25_order, 1)}
-    graph_rank = {rel: i for i, rel in enumerate(pagerank, 1)}
+    bm25_rank = _competition_ranks(bm25)
+    graph_rank = _competition_ranks(pagerank)
 
     fused: list[tuple[float, float, str]] = []
-    for rel in bm25_order:
+    for rel in bm25:
         score = 1.0 / (rrf_k + bm25_rank[rel])
         if rel in graph_rank:
-            score += 1.0 / (rrf_k + graph_rank[rel])
+            score += GRAPH_WEIGHT / (rrf_k + graph_rank[rel])
         fused.append((score, bm25[rel], rel))
     fused.sort(key=lambda item: (-item[0], -item[1], item[2]))
 
@@ -388,7 +411,9 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
             "path": rel,
             "score": round(score, 6),
             "bm25": round(lexical, 6),
+            "bm25_rank": bm25_rank[rel],
             "graph": round(pagerank.get(rel, 0.0), 6),
+            "graph_rank": graph_rank.get(rel),
             "symbols": _matched_symbols(index["symbols"].get(rel, []),
                                         terms, idf),
         }
