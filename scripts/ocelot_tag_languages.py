@@ -47,7 +47,7 @@ __all__ = [
 # Bump whenever extraction output changes for any suffix. Tag caches key on
 # extractor_fingerprint(), which includes this number, so a bump invalidates
 # every cached entry.
-TAGS_SCHEMA_VERSION = 1
+TAGS_SCHEMA_VERSION = 2
 
 # Every grammar package inspected for this registry keeps its upstream tag
 # query at <package>/queries/tags.scm.
@@ -158,35 +158,167 @@ def _load_tree_sitter_backend(module_name: str, factory_name: str,
     )
 
 
+_PY_DEF_NODES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
+
+
+def _python_import_tags(node: ast.AST, scope: str) -> list[dict[str, Any]]:
+    """Import tags for one Import/ImportFrom node, one per bound name.
+
+    ``import a.b`` binds ``a`` (imported ``a.b``); ``import a.b as c`` binds
+    ``c``. ``from . import x as y`` binds ``y`` with level 1 and module "".
+    Star imports bind no name and are not tagged.
+    """
+    line = int(getattr(node, "lineno", 1))
+    out: list[dict[str, Any]] = []
+    if isinstance(node, ast.Import):
+        for alias in node.names:
+            bound = alias.asname or alias.name.split(".")[0]
+            out.append({"name": bound, "kind": "import",
+                        "detail": "import.module", "line": line,
+                        "module": alias.name, "level": 0,
+                        "imported": alias.name, "scope": scope})
+    elif isinstance(node, ast.ImportFrom):
+        for alias in node.names:
+            if alias.name == "*":
+                continue
+            out.append({"name": alias.asname or alias.name, "kind": "import",
+                        "detail": "import.from", "line": line,
+                        "module": node.module or "",
+                        "level": int(node.level or 0),
+                        "imported": alias.name, "scope": scope})
+    return out
+
+
 def _python_tags(source: str) -> list[dict[str, Any]]:
-    """Python tags via the stdlib AST fast path.
+    """Python tags via the stdlib AST: defs, refs and imports with scope.
 
     This is the only Python extractor in the tree; ``ocelot_repo_map`` delegates
-    here. It returns class/function definitions plus loaded names and
-    attributes. It avoids paying a tree-sitter parse per Python file while the
-    repo map indexes thousands of them.
+    here. Definitions carry ``qualname`` (the dotted chain of enclosing defs plus
+    the name) and ``end_line``. Loads carry ``scope``, the qualname of the
+    innermost enclosing def ("" at module level). The set of
+    ``(name, kind, detail, line)`` tuples is the same as a plain ``ast.walk``
+    over Name/Attribute loads and def nodes.
+
+    Decorators, default values, annotations, bases and keywords belong to the
+    enclosing scope; only the def body is inside the new scope. The walk uses
+    an explicit stack, so deeply nested expressions cannot hit the recursion
+    limit, and the output is in source (pre-order) order.
     """
     try:
         tree = ast.parse(source)
     except (SyntaxError, ValueError):
         return []
     out: list[dict[str, Any]] = []
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
-                             ast.ClassDef)):
+    stack: list[tuple[ast.AST, tuple[str, ...]]] = [(tree, ())]
+    while stack:
+        node, qual = stack.pop()
+        if isinstance(node, _PY_DEF_NODES):
+            inner = qual + (node.name,)
+            is_class = isinstance(node, ast.ClassDef)
+            line = int(getattr(node, "lineno", 1))
             out.append({"name": node.name, "kind": "def",
-                        "detail": ("definition.class"
-                                   if isinstance(node, ast.ClassDef)
+                        "detail": ("definition.class" if is_class
                                    else "definition.function"),
-                        "line": int(getattr(node, "lineno", 1))})
-        elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
-            out.append({"name": node.id, "kind": "ref",
-                        "detail": "reference.name",
-                        "line": int(getattr(node, "lineno", 1))})
-        elif isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
-            out.append({"name": node.attr, "kind": "ref",
-                        "detail": "reference.attribute",
-                        "line": int(getattr(node, "lineno", 1))})
+                        "line": line,
+                        "end_line": int(getattr(node, "end_lineno", None)
+                                        or line),
+                        "qualname": ".".join(inner)})
+            outer: list[ast.AST] = [*node.decorator_list,
+                                    *getattr(node, "type_params", [])]
+            if is_class:
+                outer += [*node.bases, *node.keywords]
+            else:
+                outer.append(node.args)
+                if node.returns is not None:
+                    outer.append(node.returns)
+            children = [(c, qual) for c in outer]
+            children += [(c, inner) for c in node.body]
+        else:
+            scope = ".".join(qual)
+            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
+                out.append({"name": node.id, "kind": "ref",
+                            "detail": "reference.name",
+                            "line": int(getattr(node, "lineno", 1)),
+                            "scope": scope})
+            elif (isinstance(node, ast.Attribute)
+                  and isinstance(node.ctx, ast.Load)):
+                out.append({"name": node.attr, "kind": "ref",
+                            "detail": "reference.attribute",
+                            "line": int(getattr(node, "lineno", 1)),
+                            "scope": scope})
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                out.extend(_python_import_tags(node, scope))
+            children = [(c, qual) for c in ast.iter_child_nodes(node)]
+        stack.extend(reversed(children))
+    return out
+
+
+class _Span(NamedTuple):
+    """One tree-sitter capture, with byte offsets for nesting."""
+    name: str
+    kind: str
+    detail: str
+    line: int
+    name_start: int
+    def_start: int
+    def_end: int
+    end_line: int
+
+
+def _nest_tree_sitter_tags(spans: list[_Span]) -> list[dict[str, Any]]:
+    """Attach ``qualname`` to defs and ``scope`` to refs, in O(n log n).
+
+    A def encloses another def when its definition node's byte range contains
+    the inner def's start. A ref belongs to the innermost def whose definition
+    node contains the ref's name. Events are sorted by position (defs before
+    refs at the same position, outer defs before inner ones); a stack of open
+    defs gives the innermost enclosing def in amortised constant time.
+
+    Duplicate defs (same definition node, name node and name) are emitted once.
+    Output is in source order (by name position), so it does not depend on the
+    order in which tree-sitter groups query patterns.
+    """
+    events: list[tuple[int, int, int, int]] = []
+    seen_defs: set[tuple[int, int, int, str]] = set()
+    emit = [True] * len(spans)
+    for i, span in enumerate(spans):
+        if span.kind == "def":
+            key = (span.def_start, span.def_end, span.name_start, span.name)
+            if key in seen_defs:
+                emit[i] = False
+                continue
+            seen_defs.add(key)
+            events.append((span.def_start, 0, -span.def_end, i))
+        else:
+            events.append((span.name_start, 1, 0, i))
+    events.sort()
+    qualname: dict[int, str] = {}
+    scope_of: dict[int, str] = {}
+    open_defs: list[int] = []
+    for pos, order, _tie, i in events:
+        while open_defs and spans[open_defs[-1]].def_end <= pos:
+            open_defs.pop()
+        parent = qualname[open_defs[-1]] if open_defs else ""
+        if order == 0:
+            name = spans[i].name
+            qualname[i] = f"{parent}.{name}" if parent else name
+            open_defs.append(i)
+        else:
+            scope_of[i] = parent
+    out: list[dict[str, Any]] = []
+    for i in sorted(range(len(spans)), key=lambda k: (spans[k].name_start, k)):
+        span = spans[i]
+        if not emit[i]:
+            continue
+        if span.kind == "def":
+            out.append({"name": span.name, "kind": "def",
+                        "detail": span.detail, "line": span.line,
+                        "end_line": span.end_line,
+                        "qualname": qualname[i]})
+        else:
+            out.append({"name": span.name, "kind": "ref",
+                        "detail": span.detail, "line": span.line,
+                        "scope": scope_of[i]})
     return out
 
 
@@ -212,7 +344,7 @@ def extract_tags_status(path: str | Path,
         parser = Parser(backend.language)
         tree = parser.parse(source.encode("utf-8"))
         cursor = QueryCursor(backend.query)
-        out: list[dict[str, Any]] = []
+        spans: list[_Span] = []
         # tree-sitter 0.26: matches() yields
         # (pattern_index, {capture_name: [Node, ...]}).
         for _pattern_index, captures in cursor.matches(tree.root_node):
@@ -223,27 +355,39 @@ def extract_tags_status(path: str | Path,
             if not kind_capture:
                 continue
             kind = "def" if kind_capture.startswith("definition.") else "ref"
+            def_nodes = captures.get(kind_capture) or []
             for node in captures.get("name", []):
                 name = node.text.decode("utf-8", errors="replace")
                 if not name:
                     continue
-                out.append({
-                    "name": name,
-                    "kind": kind,
-                    "detail": kind_capture,
-                    "line": int(node.start_point[0]) + 1,
-                })
-        return out, None
+                # Refs and defs without a definition node fall back to the
+                # name node's own range; nesting then uses the name only.
+                outer = def_nodes[0] if (kind == "def" and def_nodes) else node
+                spans.append(_Span(
+                    name=name,
+                    kind=kind,
+                    detail=kind_capture,
+                    line=int(node.start_point[0]) + 1,
+                    name_start=int(node.start_byte),
+                    def_start=int(outer.start_byte),
+                    def_end=int(outer.end_byte),
+                    end_line=int(outer.end_point[0]) + 1,
+                ))
+        return _nest_tree_sitter_tags(spans), None
     except Exception as exc:
         return [], f"{type(exc).__name__}: {exc}"
 
 
 def extract_tags(path: str | Path, source: str) -> list[dict[str, Any]]:
-    """Definitions and references for one file.
+    """Definitions, references and (Python) imports for one file.
 
-    Returns ``[{name, kind: "def"|"ref", detail, line}]`` where ``detail`` is
-    the query capture (for example ``definition.function`` or
-    ``reference.call``) and ``line`` is 1-based.
+    Defs are ``{name, kind: "def", detail, line, end_line, qualname}``. Refs
+    are ``{name, kind: "ref", detail, line, scope}``. Python import bindings
+    are ``{name, kind: "import", detail: "import.module"|"import.from", line,
+    module, level, imported, scope}``. ``detail`` is the query capture (for
+    example ``definition.function`` or ``reference.call``) and ``line`` is
+    1-based. ``qualname`` and ``scope`` are dotted enclosing-def chains, "" at
+    module level. Output is in source order.
 
     Unknown suffixes, missing grammars, missing/uncompilable tag queries and
     malformed source all return ``[]``: one bad file must not kill a repo-wide
