@@ -24,10 +24,7 @@ from __future__ import annotations
 
 import difflib
 import json
-import os
 import re
-import shutil
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -36,8 +33,18 @@ from scripts.ocelot_code_edit import (
     CodeEditError,
     FORBIDDEN_SCRIPT_KEYS,
     MAX_SOURCE_BYTES,
-    sha256_text,
 )
+from scripts.ocelot_edit_txn import (
+    check_base,
+    encode_text,
+    normalize_newlines,
+    read_source,
+    sha256_bytes,
+    write_source,
+)
+from scripts.ocelot_lossless import LosslessText
+
+_NEWLINE_NAMES = {"\n": "lf", "\r\n": "crlf", "\r": "cr"}
 
 _NUMBER_RE = re.compile(r"-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?")
 
@@ -214,7 +221,8 @@ def _render(value: Any, unit: str, base: str) -> str:
     return body.replace("\n", "\n" + base)
 
 
-def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+def _apply_ops(source: str, ops: list[dict[str, Any]],
+               newline: str = "\n") -> tuple[str, list[dict[str, Any]]]:
     root = _Parser(source).parse()
     unit = _indent_unit(source)
     edits: list[tuple[int, int, str, dict[str, Any]]] = []
@@ -342,7 +350,9 @@ def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[s
                 f"unknown JSON op {kind!r}; supported: set, merge, append, "
                 f"delete, replace_span")
 
-    edits.sort(key=lambda e: (e[0], e[1]), reverse=True)
+    order = sorted(range(len(edits)),
+                   key=lambda i: (edits[i][0], edits[i][1], i), reverse=True)
+    edits = [edits[i] for i in order]
     last_start = None
     for start, end, text, _op in edits:
         if last_start is not None and end > last_start:
@@ -351,7 +361,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[s
     from scripts.ocelot_lossless import LosslessText
     doc = LosslessText.from_lines(source)
     for start, end, text, _op in edits:
-        doc.replace(start, end, text)
+        doc.replace(start, end, normalize_newlines(text, newline))
     return doc.render(), changes
 
 
@@ -375,22 +385,16 @@ def apply_json_edit_script(root: str | Path, script: dict[str, Any], *,
         raise CodeEditError("file escapes the repo root") from e
     if path.suffix.lower() != ".json":
         raise CodeEditError("json adapter only handles .json")
-    if not path.is_file():
-        raise CodeEditError(f"no such file: {file}")
-    if path.stat().st_size > MAX_SOURCE_BYTES:
-        raise CodeEditError(f"file exceeds {MAX_SOURCE_BYTES} bytes")
-
-    source = path.read_text(encoding="utf-8")
-    base_sha = sha256_text(source)
-    expected = script.get("base_sha256")
-    if expected and str(expected) != base_sha:
-        raise CodeEditError(
-            f"stale base: file sha256 is {base_sha}, script expected {expected}")
+    src = read_source(root, file, suffixes=(".json",),
+                      max_bytes=MAX_SOURCE_BYTES, error_cls=CodeEditError)
+    source = src.text
+    base_sha = src.sha256
+    check_base(src, script.get("base_sha256"), CodeEditError)
     ops = script.get("ops")
     if not isinstance(ops, list) or not ops:
         raise CodeEditError("edit script needs a non-empty ops list")
 
-    new_source, changes = _apply_ops(source, ops)
+    new_source, changes = _apply_ops(source, ops, newline=src.newline)
     try:
         parsed = json.loads(new_source)
     except json.JSONDecodeError as e:
@@ -398,7 +402,7 @@ def apply_json_edit_script(root: str | Path, script: dict[str, Any], *,
     if isinstance(parsed, dict) and "id" in parsed and "version" in parsed:
         if not str(parsed.get("id") or "").strip():
             raise CodeEditError("seed manifest id became empty")
-    new_sha = sha256_text(new_source)
+    new_sha = sha256_bytes(encode_text(src, new_source))
 
     diff_lines = list(difflib.unified_diff(
         source.splitlines(keepends=True),
@@ -408,22 +412,7 @@ def apply_json_edit_script(root: str | Path, script: dict[str, Any], *,
     applied = False
     backup = None
     if write:
-        backup_dir = root / "var" / "ocelot_dev_edits" / "backups"
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        backup = backup_dir / (
-            f"{time.strftime('%Y%m%d-%H%M%S')}_{base_sha[:12]}_{path.name}")
-        shutil.copy2(path, backup)
-        tmp = path.with_name(path.name + ".ocelot_tmp")
-        tmp.write_text(new_source, encoding="utf-8")
-        try:
-            os.chmod(tmp, path.stat().st_mode)
-            os.replace(tmp, path)
-        finally:
-            if tmp.exists():
-                try:
-                    tmp.unlink()
-                except OSError:
-                    pass
+        backup = write_source(root, src, new_source, error_cls=CodeEditError)
         applied = True
 
     return {
@@ -441,7 +430,12 @@ def apply_json_edit_script(root: str | Path, script: dict[str, Any], *,
         "diff_note": ("a unified diff is a rendered view for humans; the "
                       "canonical record is the op list above"),
         "backup": str(backup) if backup else None,
-        "lossless": {"line_leaves": True, "roundtrip": True},
+        "newline": _NEWLINE_NAMES[src.newline],
+        "bom": src.bom,
+        "lossless": {
+            "line_leaves": True,
+            "roundtrip": LosslessText.from_lines(source).render() == source,
+        },
         "graph_stale": bool(applied),
     }
 

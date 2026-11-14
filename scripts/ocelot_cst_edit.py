@@ -24,9 +24,9 @@ the leaves partition the file byte-for-byte, editing a subtree's range leaves
 every other leaf untouched (comments, blank lines, indentation, trailing
 spaces and line endings included).
 
-When tree-sitter is importable, the graph comes from
-`domains.ts_ingest.ingest_source`. The repository `.venv` currently has no
-`tree_sitter` module, so the adapter also accepts a **synthetic** `CstNode`
+When tree-sitter and the Rust/Lua grammar are importable, the graph comes from
+`domains.ts_ingest.ingest_source`. Without them, the adapter also accepts a
+**synthetic** `CstNode`
 graph supplied by the caller in `script["cst_graph"]` (a nested text tree, a
 serialized node/edge graph, or a `CstGraph` instance). The tests use that path;
 it is not a fake parser, it is the same graph contract with the caller as the
@@ -50,10 +50,7 @@ from __future__ import annotations
 
 import difflib
 import importlib
-import os
 import re
-import shutil
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable
@@ -62,9 +59,18 @@ from scripts.ocelot_code_edit import (
     FORBIDDEN_SCRIPT_KEYS,
     MAX_SOURCE_BYTES,
     CodeEditError,
-    sha256_text,
+)
+from scripts.ocelot_edit_txn import (
+    check_base,
+    encode_text,
+    normalize_newlines,
+    read_source,
+    sha256_bytes,
+    write_source,
 )
 from scripts.ocelot_lossless import Leaf, LosslessError, LosslessText
+
+_NEWLINE_NAMES = {"\n": "lf", "\r\n": "crlf", "\r": "cr"}
 
 # Mirrors domains.ts_ingest._GRAMMARS. Kept here so this module can report an
 # honest backend status without importing tree_sitter at module import time.
@@ -790,7 +796,8 @@ def _node_span(graph: CstGraph, source: str,
 
 
 def _apply_ops(source: str, graph: CstGraph,
-               ops: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+               ops: list[dict[str, Any]],
+               newline: str = "\n") -> tuple[str, list[dict[str, Any]]]:
     old_source = graph.render()
     if old_source != source:
         limit = min(len(old_source), len(source))
@@ -906,7 +913,8 @@ def _apply_ops(source: str, graph: CstGraph,
             f"CST leaf structure does not round-trip the source: {e}") from e
     for edit in sorted(edits, key=lambda e: (e.start, e.end), reverse=True):
         try:
-            doc.replace(edit.start, edit.end, edit.text)
+            doc.replace(edit.start, edit.end,
+                        normalize_newlines(edit.text, newline))
         except LosslessError as e:
             raise CstEditError(f"cannot apply CST edit: {e}") from e
     return doc.render(), changes
@@ -951,22 +959,11 @@ def apply_cst_edit_script(root: str | Path, script: dict[str, Any], *,
             and str(declared).lower() != language):
         raise CstEditError(
             f"language {declared!r} does not match file suffix {suffix!r}")
-    if not path.is_file():
-        raise CstEditError(f"no such file: {file}")
-    if path.stat().st_size > MAX_SOURCE_BYTES:
-        raise CstEditError(f"file exceeds {MAX_SOURCE_BYTES} bytes")
-
-    try:
-        # Read bytes, not text, so CRLF/trailing-newline bytes reach the CST
-        # intact. The leaf structure owns them.
-        source = path.read_bytes().decode("utf-8")
-    except UnicodeDecodeError as e:
-        raise CstEditError(f"{file} is not valid UTF-8: {e}") from e
-    base_sha = sha256_text(source)
-    expected = script.get("base_sha256")
-    if expected and str(expected) != base_sha:
-        raise CstEditError(
-            f"stale base: file sha256 is {base_sha}, script expected {expected}")
+    src = read_source(root_path, file, suffixes=(".rs", ".lua"),
+                      max_bytes=MAX_SOURCE_BYTES, error_cls=CstEditError)
+    source = src.text
+    base_sha = src.sha256
+    check_base(src, script.get("base_sha256"), CstEditError)
     ops = script.get("ops")
     if not isinstance(ops, list) or not ops:
         raise CstEditError("edit script needs a non-empty ops list")
@@ -991,7 +988,7 @@ def apply_cst_edit_script(root: str | Path, script: dict[str, Any], *,
         graph = _parse_graph(source, language)
         backend = "tree_sitter"
 
-    new_source, changes = _apply_ops(source, graph, ops)
+    new_source, changes = _apply_ops(source, graph, ops, newline=src.newline)
     try:
         new_source.encode("utf-8")
     except UnicodeEncodeError as e:
@@ -1002,8 +999,12 @@ def apply_cst_edit_script(root: str | Path, script: dict[str, Any], *,
     if write and reparse["checked"] and not reparse["ok"]:
         raise CstEditError(
             f"edit would not parse as {language}: {reparse['reason']}")
+    if write and not reparse["checked"]:
+        raise CstEditError(
+            f"cannot validate the edited source: tree-sitter backend "
+            f"unavailable for {language}; preview only")
 
-    new_sha = sha256_text(new_source)
+    new_sha = sha256_bytes(encode_text(src, new_source))
     diff_lines = list(difflib.unified_diff(
         source.splitlines(keepends=True),
         new_source.splitlines(keepends=True),
@@ -1013,22 +1014,8 @@ def apply_cst_edit_script(root: str | Path, script: dict[str, Any], *,
     applied = False
     backup = None
     if write:
-        backup_dir = root_path / "var" / "ocelot_dev_edits" / "backups"
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        backup = backup_dir / (
-            f"{time.strftime('%Y%m%d-%H%M%S')}_{base_sha[:12]}_{path.name}")
-        shutil.copy2(path, backup)
-        tmp = path.with_name(path.name + ".ocelot_tmp")
-        tmp.write_bytes(new_source.encode("utf-8"))
-        try:
-            os.chmod(tmp, path.stat().st_mode)
-            os.replace(tmp, path)
-        finally:
-            if tmp.exists():
-                try:
-                    tmp.unlink()
-                except OSError:
-                    pass
+        backup = write_source(root_path, src, new_source,
+                              error_cls=CstEditError)
         applied = True
 
     return {
@@ -1046,8 +1033,10 @@ def apply_cst_edit_script(root: str | Path, script: dict[str, Any], *,
         "diff_note": ("a unified diff is a rendered view for humans; the "
                       "canonical record is the op list above"),
         "backup": str(backup) if backup else None,
+        "newline": _NEWLINE_NAMES[src.newline],
+        "bom": src.bom,
         "lossless": {
-            "roundtrip": True,
+            "roundtrip": graph.render() == source,
             "language": language,
             "cst_backend": backend,
             "nodes": graph.node_count,

@@ -8,6 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
+from scripts.ocelot_code_edit import CodeEditError
 from scripts.ocelot_markdown_edit import (
     apply_markdown_edit_script,
     headings,
@@ -139,3 +142,80 @@ def test_refusals(tmp_path: Path) -> None:
             "file": "doc.md",
             "ops": [{"op": "replace_section", "section": "Alpha",
                      "text": "x"}]})
+
+
+# --------------------------------------------------------------------------- #
+# edit transaction: CRLF and encoding (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+def test_crlf_section_replace_and_append_match_lf_result(tmp_path: Path) -> None:
+    import re
+    lf_src = SOURCE
+    crlf_src = SOURCE.replace("\n", "\r\n")
+    (tmp_path / "crlf.md").write_bytes(crlf_src.encode("utf-8"))
+    (tmp_path / "lf.md").write_bytes(lf_src.encode("utf-8"))
+    ops = [
+        {"op": "replace_section_body", "section": "Alpha", "text": "New alpha."},
+        {"op": "append_to_section", "section": "Gamma", "text": "Appended."},
+    ]
+    r = apply_markdown_edit_script(tmp_path, {"file": "crlf.md", "ops": ops},
+                                   write=True)
+    apply_markdown_edit_script(tmp_path, {"file": "lf.md", "ops": ops}, write=True)
+    data = (tmp_path / "crlf.md").read_bytes()
+    assert r["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == (tmp_path / "lf.md").read_text(
+        encoding="utf-8").replace("\n", "\r\n")
+    assert "Appended.\r\n" in data.decode("utf-8")
+
+
+def test_latin1_markdown_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    import pytest
+    from scripts.ocelot_code_edit import CodeEditError
+    (tmp_path / "doc.md").write_bytes(b"# T\n\xe9\n")
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+            {"op": "replace_section_body", "section": "T", "text": "x"}]})
+
+
+def test_two_appends_to_one_section_keep_op_order(tmp_path: Path) -> None:
+    p = tmp_path / "doc.md"
+    p.write_text("# T\n\n## S\n\nbody\n", encoding="utf-8")
+    apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+        {"op": "append_to_section", "section": "S", "text": "one"},
+        {"op": "append_to_section", "section": "S", "text": "two"}]},
+        write=True)
+    assert p.read_text(encoding="utf-8") == "# T\n\n## S\n\nbody\none\ntwo\n"
+
+
+def test_crlf_frontmatter_is_replaced_in_place(tmp_path: Path) -> None:
+    p = tmp_path / "doc.md"
+    p.write_bytes(b"---\r\ntitle: Old\r\n---\r\n# Body\r\n")
+    apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+        {"op": "replace_frontmatter", "text": "title: New"}]}, write=True)
+    assert p.read_bytes() == b"---\r\ntitle: New\r\n---\r\n# Body\r\n"
+
+
+def test_four_dashes_do_not_close_frontmatter(tmp_path: Path) -> None:
+    p = tmp_path / "doc.md"
+    p.write_text("---\ntitle: Old\n----\nkey: 1\n---\n# Body\n", encoding="utf-8")
+    apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+        {"op": "replace_frontmatter", "text": "title: New"}]}, write=True)
+    assert p.read_text(encoding="utf-8") == "---\ntitle: New\n---\n# Body\n"
+
+
+def test_frontmatter_closed_only_by_four_dashes_is_refused(tmp_path: Path) -> None:
+    (tmp_path / "doc.md").write_text("---\ntitle: Old\n----\n", encoding="utf-8")
+    with pytest.raises(CodeEditError, match="not closed"):
+        apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+            {"op": "replace_frontmatter", "text": "title: New"}]})
+
+
+def test_cookie_text_in_heading_does_not_block_markdown_edit(tmp_path: Path) -> None:
+    # dt-w4-fixes-b review 5: only Python files carry PEP 263 cookies.
+    (tmp_path / "doc.md").write_bytes(b"# Secure coding: rules\n\n## Alpha\n\nold\n")
+    r = apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+        {"op": "replace_section_body", "section": "Alpha", "text": "new"}]},
+        write=True)
+    assert r["applied"] is True
+    assert (tmp_path / "doc.md").read_text(encoding="utf-8").startswith(
+        "# Secure coding: rules")

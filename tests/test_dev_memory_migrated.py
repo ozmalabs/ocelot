@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.ocelot_dev_memory import DevMemory, build_index
 from scripts.ocelot_dev_memory_mcp import DevMemoryServer
 
@@ -537,3 +539,277 @@ def test_mcp_protocol(tmp_path: Path) -> None:
     })
     entries = json.loads(recent["result"]["content"][0]["text"])["entries"]
     assert entries[-1]["task"] == "touch demo"
+
+
+def _git(root: Path, *args: str) -> None:
+    import subprocess
+    subprocess.run(["git", "-C", str(root), *args], check=True,
+                   capture_output=True, text=True)
+
+
+def test_process_root_override_acts_on_that_checkout(tmp_path: Path) -> None:
+    snap = tmp_path / "snap"
+    _fixture(snap)
+    out = snap / "var" / "dev_graph.json"
+    build_index(snap, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    other = tmp_path / "other"
+    _fixture(other)
+    _write(other / "domains" / "only_here.py", "def only_here():\n    return 1\n")
+    snap_foo = (snap / "domains" / "foo.py").read_text(encoding="utf-8")
+
+    mem = DevMemory(out, tmp_path / "journal.jsonl", root=other)
+    assert mem.raw_repo_root == str(other.resolve())
+    assert mem.ast("domains/only_here.py")["ok"] is True
+    with pytest.raises(ValueError, match="not a Python file"):
+        DevMemory(out, tmp_path / "journal2.jsonl").ast("domains/only_here.py")
+
+    res = mem.edit({**ADD_EDIT_OPS, "apply": True})
+    assert res["applied"] is True
+    assert "return a + b + 1" in (other / "domains" / "foo.py").read_text(
+        encoding="utf-8")
+    assert (snap / "domains" / "foo.py").read_text(encoding="utf-8") == snap_foo
+
+    _git(other, "init", "-q")
+    _git(other, "add", "-A")
+    _git(other, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "base")
+    _write(other / "domains" / "new_module.py", "x = 1\n")
+    changed = mem.changed(limit=50)
+    assert changed["ok"] is True
+    assert "domains/new_module.py" in [f["path"] for f in changed["files"]]
+    assert "snapshot" in changed
+
+
+ADD_EDIT_OPS = {"file": "domains/foo.py",
+                "ops": [{"op": "replace_body", "symbol": "add",
+                         "text": "return a + b + 1"}]}
+
+
+def test_edit_rejects_non_boolean_apply(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    with pytest.raises(ValueError, match="apply must be a boolean"):
+        mem.edit({**ADD_EDIT_OPS, "apply": "maybe"})
+    assert "return a + b + 1" not in (tmp_path / "domains" / "foo.py").read_text(
+        encoding="utf-8")
+
+
+def test_staleness_reports_moved_head(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "one")
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+
+    fresh = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert fresh["stale"] is False
+    assert fresh["snapshot_head"] is not None
+    assert fresh["snapshot_head"] == fresh["head"]
+
+    _write(tmp_path / "NOTES.md", "second commit\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "two")
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    stale = mem.staleness()
+    assert stale["stale"] is True
+    assert stale["snapshot_head"] != stale["head"]
+    assert "snapshot" in mem.brief()
+    assert "WARNING: snapshot is stale" in mem.brief()["markdown"]
+
+
+def test_read_returns_new_content_after_file_changes(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    assert "def add" in mem._read("domains/foo.py")
+    first = mem._read("domains/foo.py")
+    _write(tmp_path / "domains" / "foo.py", first + "\n\nVALUE = 42\n")
+    assert "VALUE = 42" in mem._read("domains/foo.py")
+
+
+def test_scip_path_must_stay_inside_repo(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    with pytest.raises(ValueError, match="scip_path escapes the repo root"):
+        mem.impact("domains/bar.py", scip_path="../x.json")
+    with pytest.raises(ValueError, match="no such SCIP index"):
+        mem.impact("domains/bar.py", scip_path="missing.scip.json")
+
+
+def _stamp(p: Path) -> tuple[int, int] | None:
+    if not p.exists():
+        return None
+    st = p.stat()
+    return (st.st_size, st.st_mtime_ns)
+
+
+def test_index_tools_write_cache_under_process_root(tmp_path: Path) -> None:
+    from scripts.ocelot_dev_memory import ROOT
+    real_cache = ROOT / "var" / "ocelot_dev_tags.json"
+    before = _stamp(real_cache)
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl", root=tmp_path)
+    mem.repo_map("add")
+    mem.impact("domains/bar.py")
+    mem.code_search("helper")
+    mem.architecture()
+    assert (tmp_path / "var" / "ocelot_dev_tags.json").is_file()
+    assert _stamp(real_cache) == before
+
+
+def test_cli_root_flag_selects_the_checkout_that_is_edited(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts.ocelot_dev_memory import main as dev_memory_main
+    snap_root = tmp_path / "a"
+    _fixture(snap_root)
+    out = snap_root / "var" / "dev_graph.json"
+    build_index(snap_root, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    target = tmp_path / "b"
+    _fixture(target)
+    a_before = (snap_root / "domains" / "foo.py").read_text(encoding="utf-8")
+    ops = json.dumps([{"op": "replace_body", "symbol": "add",
+                       "text": "return a + b + 1"}])
+    rc = dev_memory_main(["--dump", str(out),
+                          "--journal", str(tmp_path / "journal.jsonl"),
+                          "edit", "--file", "domains/foo.py",
+                          "--ops-json", ops, "--apply",
+                          "--root", str(target)])
+    assert rc == 0
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["applied"] is True
+    assert "return a + b + 1" in (target / "domains" / "foo.py").read_text(
+        encoding="utf-8")
+    assert (snap_root / "domains" / "foo.py").read_text(
+        encoding="utf-8") == a_before
+
+
+def _commit_all(root: Path) -> None:
+    _git(root, "add", "-A")
+    _git(root, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "base")
+
+
+def test_staleness_follows_the_working_tree(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _commit_all(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    journal = tmp_path / "var" / "journal.jsonl"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+    fresh = DevMemory(out, journal).staleness()
+    assert fresh["stale"] is False
+    assert fresh["tree_changed"] is False
+
+    foo = tmp_path / "domains" / "foo.py"
+    _write(foo, foo.read_text(encoding="utf-8") + "\n# local edit\n")
+    edited = DevMemory(out, journal).staleness()
+    assert edited["stale"] is True
+    assert edited["tree_changed"] is True
+    assert edited["snapshot_head"] == edited["head"]
+
+    _git(tmp_path, "checkout", "--", "domains/foo.py")
+    restored = DevMemory(out, journal).staleness()
+    assert restored["stale"] is False
+    assert restored["tree_changed"] is False
+
+
+def test_staleness_sees_new_untracked_source_file(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _commit_all(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+    _write(tmp_path / "domains" / "new_module.py", "x = 1\n")
+    stale = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert stale["tree_changed"] is True
+    assert stale["stale"] is True
+
+
+def test_snapshot_without_git_records_digest_error(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    repo = next(n for n in json.loads(out.read_text(encoding="utf-8"))["nodes"]
+                if n["type"] == "Repo")
+    assert "tree_digest" not in repo["attrs"]
+    assert repo["attrs"]["tree_digest_error"]
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    assert mem.staleness()["tree_changed"] is False
+
+
+_BOM_SRC = '''"""Bom domain."""
+
+
+class Gadget:
+    def spin(self) -> int:
+        return 1
+
+
+def twist(n: int) -> int:
+    return n
+'''
+
+
+def _symbol_keys(out: Path) -> list[tuple[str, str, int]]:
+    nodes = json.loads(out.read_text(encoding="utf-8"))["nodes"]
+    return sorted((n["attrs"]["qualname"], n["attrs"]["kind"],
+                   n["attrs"]["start_line"])
+                  for n in nodes if n["type"] == "Symbol")
+
+
+def test_bom_prefixed_python_yields_same_symbols(tmp_path: Path) -> None:
+    plain = tmp_path / "plain"
+    bommed = tmp_path / "bommed"
+    _write(plain / "domains" / "bom_mod.py", _BOM_SRC)
+    _write(bommed / "domains" / "bom_mod.py", "\ufeff" + _BOM_SRC)
+    kwargs = dict(include_docs="none", include_git=False,
+                  include_scripts=False)
+    build_index(plain, plain / "var" / "g.json", **kwargs)
+    build_index(bommed, bommed / "var" / "g.json", **kwargs)
+    expected = _symbol_keys(plain / "var" / "g.json")
+    assert any(q == "Gadget.spin" for q, _k, _l in expected)
+    assert _symbol_keys(bommed / "var" / "g.json") == expected
+
+
+def test_staleness_sees_untracked_file_content_edit(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _commit_all(tmp_path)
+    scratch = tmp_path / "domains" / "scratch.py"
+    _write(scratch, "x = 1\n")
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+    fresh = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert fresh["stale"] is False
+    assert fresh["tree_changed"] is False
+
+    _write(scratch, "x = 2\n")
+    edited = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert edited["stale"] is True
+    assert edited["tree_changed"] is True
+
+    _write(scratch, "x = 1\n")
+    restored = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert restored["stale"] is False
+    assert restored["tree_changed"] is False

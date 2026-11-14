@@ -17,13 +17,18 @@ Environment:
     OCELOT_DEV_DUMP     snapshot path (default var/ocelot_dev_graph.json)
     OCELOT_DEV_JOURNAL  journal path  (default var/ocelot_dev_journal.jsonl)
     OCELOT_DEV_AUTOBUILD  "1" to build the snapshot on first start if absent
+    OCELOT_DEV_ROOT     checkout the tools act on (default: this script's repo)
 """
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
+import re
+import signal
 import sys
+import traceback
 from pathlib import Path
 from typing import Any, Callable
 
@@ -36,7 +41,17 @@ from scripts.ocelot_dev_memory import (
 
 SERVER_NAME = "ocelot-dev-memory"
 SERVER_VERSION = "0.1.0"
-PROTOCOL_VERSION = "2024-11-05"
+SUPPORTED_PROTOCOL_VERSIONS = ("2024-11-05", "2025-03-26", "2025-06-18")
+PROTOCOL_VERSION = "2025-06-18"
+
+# JSON-RPC error codes.
+_E_PARSE = -32700
+_E_INVALID_REQUEST = -32600
+_E_METHOD_NOT_FOUND = -32601
+_E_INVALID_PARAMS = -32602
+_E_INTERNAL = -32603
+# Largest Content-Length framed message the stdio reader accepts.
+MAX_MESSAGE_BYTES = 64 * 1024 * 1024
 
 
 # --------------------------------------------------------------------------- #
@@ -236,6 +251,8 @@ _TOOLS: list[dict[str, Any]] = [
                           "description": "Optional synthetic/post-parsed CstNode graph for .rs/.lua when tree-sitter is unavailable."},
             "task": {"type": "string",
                      "description": "Optional journal task label."},
+            "diagnostics": {"type": "boolean", "default": False,
+                            "description": "set diagnostics=true to wait up to 8 s for language-server diagnostics on the edited file. Only after an applied write; skipped when no server is available. Ignored in preview."},
         }, ["file", "ops"]),
     },
     {
@@ -422,32 +439,32 @@ _TOOLS.extend([
     },
     {
         "name": "dev_definition",
-        "description": "Compiler-accurate definition at a position via LSP.",
+        "description": "Compiler-accurate definition at a position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_references",
-        "description": "Compiler-accurate references at a position via LSP.",
+        "description": "Compiler-accurate references at a position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_callers",
-        "description": "Incoming calls (callers) at a symbol position via LSP.",
+        "description": "Incoming calls (callers) at a symbol position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_callees",
-        "description": "Outgoing calls (callees) at a symbol position via LSP.",
+        "description": "Outgoing calls (callees) at a symbol position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_symbol_impact",
-        "description": "Resolved references grouped by file for a symbol position via LSP.",
+        "description": "Resolved references grouped by file for a symbol position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_rename_preview",
-        "description": "LSP rename preview (review-only; never writes).",
+        "description": "LSP rename preview (review-only; never writes). Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(new_name=True),
     },
     {
@@ -460,7 +477,7 @@ _TOOLS.extend([
     },
     {
         "name": "dev_hover",
-        "description": "LSP hover/type/documentation at a position.",
+        "description": "LSP hover/type/documentation at a position. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
@@ -474,9 +491,134 @@ _TOOLS.extend([
 ])
 
 
+_SYMBOL_SYNTAX_NOTE = (
+    "symbol accepts \"path::qualname\", a qualname (\"Class.method\"), or a "
+    "bare name. A bare or qualname that matches several definitions returns "
+    "the candidate ids (under \"ambiguous\", or \"matches\" for "
+    "dev_symbol_resolve). Line numbers (lsp_only rows) are 1-based.")
+
+_TOOLS.extend([
+    {
+        "name": "dev_symbol_callers",
+        "description": (
+            "Symbol callers from the syntactic symbol graph (local, import and "
+            "name resolution, each edge with a confidence). " + _SYMBOL_SYNTAX_NOTE +
+            " Use precise=true to confirm direct callers with LSP references; "
+            "rows then carry lsp_confirmed and LSP-only references are listed "
+            "under lsp_only."),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+            "depth": {"type": "integer", "default": 1},
+            "min_confidence": {"type": "number", "default": 0},
+            "precise": {"type": "boolean", "default": False,
+                        "description": "Confirm depth-1 callers with LSP references (requires a language server)."},
+        }, ["symbol"]),
+    },
+    {
+        "name": "dev_symbol_callees",
+        "description": (
+            "Symbols that a symbol calls or references, from the syntactic "
+            "symbol graph (local, import and name resolution, each edge with a "
+            "confidence). " + _SYMBOL_SYNTAX_NOTE),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+            "depth": {"type": "integer", "default": 1},
+            "min_confidence": {"type": "number", "default": 0},
+        }, ["symbol"]),
+    },
+    {
+        "name": "dev_symbol_graph_impact",
+        "description": (
+            "Transitive callers of a symbol (what breaks if it changes), grouped "
+            "by file, from the syntactic symbol graph with per-edge confidences. "
+            + _SYMBOL_SYNTAX_NOTE + " Use precise=true to confirm depth-1 "
+            "callers with LSP references."),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+            "depth": {"type": "integer", "default": 3},
+            "min_confidence": {"type": "number", "default": 0},
+            "precise": {"type": "boolean", "default": False,
+                        "description": "Confirm depth-1 callers with LSP references (requires a language server)."},
+        }, ["symbol"]),
+    },
+    {
+        "name": "dev_symbol_resolve",
+        "description": (
+            "Resolve a symbol query to its definition ids without walking the "
+            "graph. " + _SYMBOL_SYNTAX_NOTE),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+        }, ["symbol"]),
+    },
+])
+
+
 # --------------------------------------------------------------------------- #
 # dispatch
 # --------------------------------------------------------------------------- #
+class _ArgError(ValueError):
+    """An argument does not match its tool's inputSchema (JSON-RPC -32602)."""
+
+
+_SCHEMAS: dict[str, dict[str, Any]] = {t["name"]: t["inputSchema"] for t in _TOOLS}
+_INT_TEXT = re.compile(r"-?[0-9]+")
+
+
+def _coerce_arg(key: str, value: Any, spec: dict[str, Any]) -> Any:
+    typ = spec.get("type")
+    if typ == "string":
+        if not isinstance(value, str):
+            raise _ArgError(f"argument {key!r} must be a string")
+    elif typ == "integer":
+        if isinstance(value, str) and _INT_TEXT.fullmatch(value):
+            value = int(value)
+        elif isinstance(value, bool) or not isinstance(value, int):
+            raise _ArgError(f"argument {key!r} must be an integer")
+    elif typ == "number":
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise _ArgError(f"argument {key!r} must be a number")
+    elif typ == "boolean":
+        if isinstance(value, str) and value.strip().lower() in ("true", "false"):
+            value = value.strip().lower() == "true"
+        elif not isinstance(value, bool):
+            raise _ArgError(f"argument {key!r} must be a boolean")
+    elif typ == "object":
+        if not isinstance(value, dict):
+            raise _ArgError(f"argument {key!r} must be an object")
+    elif typ == "array":
+        if not isinstance(value, list):
+            raise _ArgError(f"argument {key!r} must be an array")
+    enum = spec.get("enum")
+    if enum is not None and value not in enum:
+        raise _ArgError(f"argument {key!r} must be one of {enum}, "
+                        f"got {value!r}")
+    return value
+
+
+def _validate_args(schema: dict[str, Any], args: Any) -> dict[str, Any]:
+    """Check tool arguments against the tool's inputSchema and return the
+    coerced dict that handlers receive."""
+    if not isinstance(args, dict):
+        raise _ArgError("arguments must be an object")
+    props = schema.get("properties") or {}
+    if schema.get("additionalProperties") is False:
+        for key in args:
+            if key not in props:
+                raise _ArgError(f"unknown argument {key!r}")
+    for key in schema.get("required") or []:
+        if key not in args:
+            raise _ArgError(f"missing required argument {key!r}")
+    out: dict[str, Any] = {}
+    for key, value in args.items():
+        spec = props.get(key)
+        out[key] = value if spec is None else _coerce_arg(key, value, spec)
+    return out
+
+
 class DevMemoryServer:
     def __init__(self, memory: DevMemory):
         self.mem = memory
@@ -520,42 +662,46 @@ class DevMemoryServer:
             "dev_session_finish": self._session_finish,
             "dev_session_list": self._session_list,
             "dev_recent": self._recent,
+            "dev_symbol_callers": self._symbol_callers,
+            "dev_symbol_callees": self._symbol_callees,
+            "dev_symbol_graph_impact": self._symbol_graph_impact,
+            "dev_symbol_resolve": self._symbol_resolve,
         }
 
     # -- tool implementations --------------------------------------------- #
     def _context(self, a: dict[str, Any]) -> Any:
         return self.mem.context(str(a["task"]),
-                                max_items=int(a.get("max_items", 8)),
+                                max_items=a.get("max_items", 8),
                                 mode=str(a.get("mode", "auto")),
-                                budget_tokens=int(a.get("budget_tokens", 6000)))
+                                budget_tokens=a.get("budget_tokens", 6000))
 
     def _brief(self, a: dict[str, Any]) -> Any:
         return self.mem.brief(a.get("task"),
-                              budget_tokens=int(a.get("budget_tokens", 4000)),
-                              write=bool(a.get("write", False)))
+                              budget_tokens=a.get("budget_tokens", 4000),
+                              write=a.get("write", False))
 
     def _repo_map(self, a: dict[str, Any]) -> Any:
         return self.mem.repo_map(str(a.get("task") or ""),
-                                 budget_tokens=int(a.get("budget_tokens", 1500)),
+                                 budget_tokens=a.get("budget_tokens", 1500),
                                  focus_files=a.get("focus_files"),
-                                 force_refresh=bool(a.get("force_refresh", False)),
+                                 force_refresh=a.get("force_refresh", False),
                                  scip_path=a.get("scip_path"))
 
     def _code_search(self, a: dict[str, Any]) -> Any:
         return self.mem.code_search(str(a["query"]),
-                                    limit=int(a.get("limit", 20)),
-                                    include_snippet=bool(a.get("include_snippet", True)))
+                                    limit=a.get("limit", 20),
+                                    include_snippet=a.get("include_snippet", True))
 
     def _scip(self, a: dict[str, Any]) -> Any:
         return self.mem.scip(str(a["path"]),
-                             summary_only=bool(a.get("summary_only", False)))
+                             summary_only=a.get("summary_only", False))
 
     def _architecture(self, a: dict[str, Any]) -> Any:
-        return self.mem.architecture(top=int(a.get("top", 15)))
+        return self.mem.architecture(top=a.get("top", 15))
 
     def _impact(self, a: dict[str, Any]) -> Any:
         return self.mem.impact(str(a["file"]),
-                               depth=int(a.get("depth", 2)),
+                               depth=a.get("depth", 2),
                                scip_path=a.get("scip_path"))
 
     def _outline(self, a: dict[str, Any]) -> Any:
@@ -565,7 +711,7 @@ class DevMemoryServer:
         return {"query": a["text"],
                 "results": self.mem.search(str(a["text"]),
                                            types=a.get("types"),
-                                           limit=int(a.get("limit", 20)))}
+                                           limit=a.get("limit", 20))}
 
     def _file(self, a: dict[str, Any]) -> Any:
         return self.mem.file(str(a["path"]))
@@ -575,19 +721,40 @@ class DevMemoryServer:
 
     def _ast(self, a: dict[str, Any]) -> Any:
         return self.mem.ast(str(a["file"]), node=a.get("node"),
-                            max_nodes=int(a.get("max_nodes", 200)))
+                            max_nodes=a.get("max_nodes", 200))
 
     def _edit(self, a: dict[str, Any]) -> Any:
         script = {
             "file": a["file"],
             "ops": a["ops"],
-            "apply": bool(a.get("apply", False)),
+            "apply": a.get("apply", False),
         }
         if a.get("base_sha256"):
             script["base_sha256"] = a["base_sha256"]
         if a.get("cst_graph") is not None:
             script["cst_graph"] = a["cst_graph"]
-        return self.mem.edit(script, task=a.get("task"))
+        return self.mem.edit(script, task=a.get("task"),
+                             diagnostics=a.get("diagnostics", False))
+
+    def _symbol_callers(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("callers", str(a["symbol"]),
+                                     depth=a.get("depth", 1),
+                                     min_confidence=a.get("min_confidence", 0),
+                                     precise=a.get("precise", False))
+
+    def _symbol_callees(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("callees", str(a["symbol"]),
+                                     depth=a.get("depth", 1),
+                                     min_confidence=a.get("min_confidence", 0))
+
+    def _symbol_graph_impact(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("impact", str(a["symbol"]),
+                                     depth=a.get("depth", 3),
+                                     min_confidence=a.get("min_confidence", 0),
+                                     precise=a.get("precise", False))
+
+    def _symbol_resolve(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("resolve", str(a["symbol"]))
 
     def _tests(self, a: dict[str, Any]) -> Any:
         return self.mem.tests_for(str(a["target"]))
@@ -599,7 +766,7 @@ class DevMemoryServer:
         return self.mem.rule(str(a["name"]))
 
     def _node(self, a: dict[str, Any]) -> Any:
-        nid = int(a["id"])
+        nid = a["id"]
         n = self.mem.node(nid)
         if n is None:
             return {"ok": False, "error": f"no node {nid}"}
@@ -613,7 +780,7 @@ class DevMemoryServer:
         return out
 
     def _neighbours(self, a: dict[str, Any]) -> Any:
-        nid = int(a["id"])
+        nid = a["id"]
         if self.mem.node(nid) is None:
             return {"ok": False, "error": f"no node {nid}"}
         out: dict[str, Any] = {"ok": True, "node": self.mem.view(nid),
@@ -639,40 +806,40 @@ class DevMemoryServer:
         return self.mem.stats()
 
     def _changed(self, a: dict[str, Any]) -> Any:
-        return self.mem.changed(include_all=bool(a.get("all", False)),
-                                limit=int(a.get("limit", 200)))
+        return self.mem.changed(include_all=a.get("all", False),
+                                limit=a.get("limit", 200))
 
     def _lsp_status(self, _a: dict[str, Any]) -> Any:
         return self.mem.lsp_status()
 
     def _lsp_definition(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_definition(str(a["file"]), int(a["line"]),
-                                       int(a["character"]),
+        return self.mem.lsp_definition(str(a["file"]), a["line"],
+                                       a["character"],
                                        language=a.get("language"))
 
     def _lsp_references(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_references(str(a["file"]), int(a["line"]),
-                                       int(a["character"]),
+        return self.mem.lsp_references(str(a["file"]), a["line"],
+                                       a["character"],
                                        language=a.get("language"))
 
     def _lsp_callers(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_callers(str(a["file"]), int(a["line"]),
-                                    int(a["character"]),
+        return self.mem.lsp_callers(str(a["file"]), a["line"],
+                                    a["character"],
                                     language=a.get("language"))
 
     def _lsp_callees(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_callees(str(a["file"]), int(a["line"]),
-                                    int(a["character"]),
+        return self.mem.lsp_callees(str(a["file"]), a["line"],
+                                    a["character"],
                                     language=a.get("language"))
 
     def _lsp_symbol_impact(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_symbol_impact(str(a["file"]), int(a["line"]),
-                                          int(a["character"]),
+        return self.mem.lsp_symbol_impact(str(a["file"]), a["line"],
+                                          a["character"],
                                           language=a.get("language"))
 
     def _lsp_rename_preview(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_rename_preview(str(a["file"]), int(a["line"]),
-                                           int(a["character"]),
+        return self.mem.lsp_rename_preview(str(a["file"]), a["line"],
+                                           a["character"],
                                            str(a["new_name"]),
                                            language=a.get("language"))
 
@@ -681,8 +848,8 @@ class DevMemoryServer:
                                         language=a.get("language"))
 
     def _lsp_hover(self, a: dict[str, Any]) -> Any:
-        return self.mem.lsp_hover(str(a["file"]), int(a["line"]),
-                                  int(a["character"]),
+        return self.mem.lsp_hover(str(a["file"]), a["line"],
+                                  a["character"],
                                   language=a.get("language"))
 
     def _lsp_document_symbols(self, a: dict[str, Any]) -> Any:
@@ -692,7 +859,7 @@ class DevMemoryServer:
     def _session_start(self, a: dict[str, Any]) -> Any:
         from scripts.ocelot_dev_session import DevSession
         sess = DevSession.start(str(a["task"]),
-                                max_attempts=int(a.get("max_attempts", 3)),
+                                max_attempts=a.get("max_attempts", 3),
                                 root=self.mem.raw_repo_root)
         return {"ok": True, "state": sess.state(),
                 "next": sess.next_action()}
@@ -738,16 +905,41 @@ class DevMemoryServer:
             command=a.get("command"), exit_code=a.get("exit_code"))}
 
     def _recent(self, a: dict[str, Any]) -> Any:
-        return {"ok": True, "entries": self.mem.journal_recent(int(a.get("n", 20)))}
+        return {"ok": True, "entries": self.mem.journal_recent(a.get("n", 20))}
 
     # -- JSON-RPC ---------------------------------------------------------- #
-    def handle(self, msg: dict[str, Any]) -> dict[str, Any] | None:
+    def handle(self, msg: Any) -> dict[str, Any] | None:
+        """Answer one JSON-RPC message. Never raises.
+
+        Returns None for notifications (no `id`) that succeed. A notification
+        that fails is logged to stderr and still gets no reply."""
+        if not isinstance(msg, dict):
+            return self._err(None, _E_INVALID_REQUEST,
+                             "invalid request: message must be an object")
+        try:
+            return self._dispatch(msg)
+        except Exception as e:  # noqa: BLE001 - the server must keep running
+            print(f"[{SERVER_NAME}] internal error handling "
+                  f"{msg.get('method')!r}:\n{traceback.format_exc()}",
+                  file=sys.stderr)
+            if "id" not in msg:
+                return None
+            return self._err(msg.get("id"), _E_INTERNAL,
+                             f"internal error: {type(e).__name__}: {e}")
+
+    def _dispatch(self, msg: dict[str, Any]) -> dict[str, Any] | None:
         method = msg.get("method", "")
         msg_id = msg.get("id")
+        if "params" in msg and not isinstance(msg["params"], dict):
+            return self._err(msg_id, _E_INVALID_PARAMS,
+                             "params must be an object")
         params = msg.get("params") or {}
         if method == "initialize":
+            requested = params.get("protocolVersion")
+            version = (requested if requested in SUPPORTED_PROTOCOL_VERSIONS
+                       else PROTOCOL_VERSION)
             return self._ok(msg_id, {
-                "protocolVersion": PROTOCOL_VERSION,
+                "protocolVersion": version,
                 "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
             })
@@ -777,11 +969,20 @@ class DevMemoryServer:
                 }]})
             return self._err(msg_id, -32602, f"unknown resource {uri!r}")
         if method == "tools/call":
-            name = str(params.get("name", ""))
-            args = params.get("arguments") or {}
-            handler = self._handlers.get(name)
-            if handler is None:
-                return self._err(msg_id, -32601, f"unknown tool {name!r}")
+            name = params.get("name", "")
+            if not isinstance(name, str) or name not in self._handlers:
+                return self._err(msg_id, _E_INVALID_PARAMS,
+                                 f"unknown tool {name!r}")
+            if "arguments" in params and not isinstance(
+                    params["arguments"], dict):
+                return self._err(msg_id, _E_INVALID_PARAMS,
+                                 "arguments must be an object")
+            try:
+                args = _validate_args(_SCHEMAS[name],
+                                      params.get("arguments", {}))
+            except _ArgError as e:
+                return self._err(msg_id, _E_INVALID_PARAMS, str(e))
+            handler = self._handlers[name]
             try:
                 result = handler(args)
                 text = json.dumps(result, sort_keys=False)
@@ -795,7 +996,8 @@ class DevMemoryServer:
                                  "text": f"{type(e).__name__}: {e}"}],
                     "isError": True,
                 })
-        return self._err(msg_id, -32601, f"method not found: {method}")
+        return self._err(msg_id, _E_METHOD_NOT_FOUND,
+                         f"method not found: {method}")
 
     @staticmethod
     def _ok(msg_id: Any, result: Any) -> dict[str, Any]:
@@ -810,29 +1012,57 @@ class DevMemoryServer:
 # --------------------------------------------------------------------------- #
 # stdio transport (newline-delimited spec framing + LSP-style fallback)
 # --------------------------------------------------------------------------- #
-def _read_message(stream) -> tuple[dict[str, Any] | None, str]:
-    line = stream.readline()
-    if not line:
-        return None, "newline"
-    if line.lower().startswith(b"content-length:"):
+class _ParseFailure(ValueError):
+    """A message could not be decoded. `framing` is the framing to reply in."""
+
+    def __init__(self, framing: str, detail: str) -> None:
+        super().__init__(detail)
+        self.framing = framing
+
+
+# Returned by `_read_message` at end of input. A JSON `null` is a real message.
+_EOF = object()
+
+
+def _read_message(stream) -> tuple[Any, str]:
+    """Read one message. Returns (message, framing); message is `_EOF` at the
+    end of input. Blank lines are skipped; only EOF ends the stream."""
+    while True:
+        line = stream.readline()
+        if not line:
+            return _EOF, "newline"
+        if line.lower().startswith(b"content-length:"):
+            try:
+                length = int(line.split(b":", 1)[1].strip())
+            except ValueError as e:
+                raise _ParseFailure("content-length",
+                                    "invalid Content-Length header") from e
+            # consume headers until the blank line
+            while True:
+                h = stream.readline()
+                if not h or h in (b"\r\n", b"\n"):
+                    break
+            # A negative length would make stream.read block until EOF, and an
+            # oversized one would buffer without limit. The body is not read.
+            if length < 0 or length > MAX_MESSAGE_BYTES:
+                raise _ParseFailure(
+                    "content-length",
+                    f"Content-Length {length} outside 0..{MAX_MESSAGE_BYTES}")
+            body = stream.read(length)
+            try:
+                return json.loads(body.decode("utf-8")), "content-length"
+            except ValueError as e:
+                raise _ParseFailure("content-length", str(e)) from e
+        text = line.strip()
+        if not text:
+            continue
         try:
-            length = int(line.split(b":", 1)[1].strip())
-        except ValueError:
-            return None, "content-length"
-        # consume headers until the blank line
-        while True:
-            h = stream.readline()
-            if not h or h in (b"\r\n", b"\n"):
-                break
-        body = stream.read(length)
-        return json.loads(body.decode("utf-8")), "content-length"
-    text = line.decode("utf-8", errors="replace").strip()
-    if not text:
-        return None, "newline"
-    return json.loads(text), "newline"
+            return json.loads(text.decode("utf-8")), "newline"
+        except ValueError as e:
+            raise _ParseFailure("newline", str(e)) from e
 
 
-def _write_message(stream, msg: dict[str, Any], framing: str) -> None:
+def _write_message(stream, msg: Any, framing: str) -> None:
     body = json.dumps(msg, ensure_ascii=False).encode("utf-8")
     if framing == "content-length":
         stream.write(f"Content-Length: {len(body)}\r\n\r\n".encode())
@@ -842,25 +1072,50 @@ def _write_message(stream, msg: dict[str, Any], framing: str) -> None:
     stream.flush()
 
 
+def _respond(server: DevMemoryServer, msg: Any) -> dict[str, Any] | None:
+    """One message of a stream or batch. Notifications are never answered."""
+    if isinstance(msg, dict) and "id" not in msg:
+        response = server.handle(msg)
+        if response is not None and "error" in response:
+            print(f"[{SERVER_NAME}] notification failed: "
+                  f"{response['error']}", file=sys.stderr)
+        return None
+    return server.handle(msg)
+
+
 def serve(server: DevMemoryServer) -> int:
     inp = sys.stdin.buffer
     out = sys.stdout.buffer
-    framing = "newline"
-    while True:
-        try:
-            msg, framing = _read_message(inp)
-        except (json.JSONDecodeError, ValueError) as e:
-            print(f"[{SERVER_NAME}] bad message: {e}", file=sys.stderr)
-            continue
-        if msg is None:
-            break
-        if "id" not in msg:
-            # notification: handle, never reply
-            server.handle(msg)
-            continue
-        response = server.handle(msg)
-        if response is not None:
-            _write_message(out, response, framing)
+    # Only protocol messages reach stdout. `out` was captured above; any
+    # stray print from a handler goes to stderr for the duration of serve().
+    saved_stdout = sys.stdout
+    sys.stdout = sys.stderr
+    try:
+        while True:
+            try:
+                msg, framing = _read_message(inp)
+            except _ParseFailure as e:
+                _write_message(out, server._err(
+                    None, _E_PARSE, f"parse error: {e}"), e.framing)
+                continue
+            if msg is _EOF:
+                break
+            if isinstance(msg, list):
+                if not msg:
+                    _write_message(out, server._err(
+                        None, _E_INVALID_REQUEST,
+                        "invalid request: empty batch"), framing)
+                    continue
+                replies = [r for r in (_respond(server, m) for m in msg)
+                           if r is not None]
+                if replies:
+                    _write_message(out, replies, framing)
+                continue
+            response = _respond(server, msg)
+            if response is not None:
+                _write_message(out, response, framing)
+    finally:
+        sys.stdout = saved_stdout
     return 0
 
 
@@ -876,7 +1131,20 @@ def _load_memory(args: argparse.Namespace) -> DevMemory:
                 f"no dev-memory snapshot at {dump}; run "
                 f"`python -m scripts.ocelot_dev_memory build` first "
                 f"(or pass --autobuild)")
-    return DevMemory(dump, Path(args.journal))
+    return DevMemory(dump, Path(args.journal), root=Path(args.root))
+
+
+def _close_lsp() -> None:
+    try:
+        from scripts.ocelot_lsp import close_all
+        close_all()
+    except Exception:  # noqa: BLE001 - best effort during shutdown
+        pass
+
+
+def _on_sigterm(signum: int, frame: Any) -> None:
+    _close_lsp()
+    raise SystemExit(0)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -885,18 +1153,23 @@ def main(argv: list[str] | None = None) -> int:
                                                     str(DEFAULT_DUMP)))
     p.add_argument("--journal", default=os.environ.get("OCELOT_DEV_JOURNAL",
                                                        str(DEFAULT_JOURNAL)))
-    p.add_argument("--root", default=str(Path(__file__).resolve().parent.parent))
+    p.add_argument("--root", default=(
+        os.environ.get("OCELOT_DEV_ROOT")
+        or str(Path(__file__).resolve().parent.parent)))
     p.add_argument("--autobuild", action="store_true")
     args = p.parse_args(argv)
     mem = _load_memory(args)
+    # LSP servers are child processes: close them on normal exit, on exit via
+    # an exception, and on SIGTERM.
+    atexit.register(_close_lsp)
+    try:
+        signal.signal(signal.SIGTERM, _on_sigterm)
+    except ValueError:
+        pass  # not the main thread
     try:
         return serve(DevMemoryServer(mem))
     finally:
-        try:
-            from scripts.ocelot_lsp import close_all
-            close_all()
-        except Exception:
-            pass
+        _close_lsp()
 
 
 if __name__ == "__main__":

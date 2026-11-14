@@ -39,13 +39,33 @@ of the current tree (including `scripts/`) takes ~90 s and produces ~137k
 nodes / ~416k edges; `--no-scripts` roughly halves that. Options:
 
 ```bash
---root PATH          # another checkout
+--root PATH          # the tree to index (default: this repo)
 --out PATH           # another snapshot path
 --docs features|all|none
 --no-git             # skip the 200-commit history
 --no-scripts         # skip scripts/*.py
 --git-limit N
 ```
+
+Query commands (`search`, `context`, `edit`, `repo-map`, `symbol-callers`, and
+the rest) take `--root PATH` after the verb. It names the checkout the tools
+act on, and defaults to `OCELOT_DEV_ROOT` or this repo, as the MCP server does.
+`--dump` picks the snapshot. The two can differ: a snapshot records the root it
+was built from, but reads and writes go to `--root`. `build` keeps its own
+`--root`, which is the tree it indexes.
+
+Staleness: `staleness()` (shown in `brief`, `context` and `changed`) compares
+the snapshot with the checkout now. It is stale when the root differs, when
+`git rev-parse HEAD` moved, or when the working tree changed since the build.
+The working tree check is `tree_changed`: a sha256 over `git diff HEAD` and the
+names of untracked files under the indexed source dirs, recorded at build time
+as the `tree_digest` repo attribute. Each untracked file also contributes its
+path, size and sha256, so editing an untracked file's content marks the
+snapshot stale. Untracked files over 2 MiB contribute path, size and mtime
+instead of a hash. Unreadable untracked files contribute their path and an "unreadable" marker.
+Snapshots without a digest are not judged on the tree. Snapshots built before
+this change carry a different digest, so they report `tree_changed` until
+rebuilt.
 
 What is indexed:
 
@@ -201,6 +221,10 @@ Content-Length fallback for LSP-style clients).
 | `dev_architecture` | Hubs, cycles, coupling, modules, dead-code hints. |
 | `dev_scip` | Import a SCIP JSON export into normalized records/edges. |
 | `dev_code_search` | BM25 + graph-PageRank lexical search. |
+| `dev_symbol_callers` | Who calls a symbol (syntactic graph, with confidences). `precise=true` confirms direct callers with LSP. |
+| `dev_symbol_callees` | What a symbol calls (syntactic graph). |
+| `dev_symbol_graph_impact` | Transitive callers grouped by file: what breaks if the symbol changes. |
+| `dev_symbol_resolve` | Turn a name or `path::qualname` into definition ids. |
 | `dev_lsp_status` | LSP server availability (no server start). |
 | `dev_definition` / `dev_references` | Compiler-accurate navigation at a position. |
 | `dev_callers` / `dev_callees` | LSP call hierarchy. |
@@ -209,7 +233,7 @@ Content-Length fallback for LSP-style clients).
 | `dev_diagnostics` | Push diagnostics for a file. |
 | `dev_hover` / `dev_document_symbols` | Type/docs and symbol hierarchy. |
 | `dev_ast` | Python AST paths + spans for generic node edits. |
-| `dev_edit` | Apply a semantic edit script (preview by default). |
+| `dev_edit` | Apply a semantic edit script (preview by default; `diagnostics=true` waits for LSP diagnostics after an applied write). |
 | `dev_seed` | Before editing a seed: version, deps, rules/concepts, tests, docs. |
 | `dev_rule` | Before editing a rule: its seed, file, and current body. |
 | `dev_tests` | Before/after a change: the scoped gate. |
@@ -318,7 +342,104 @@ are LSP-native 0-based lines/UTF-16 characters.
 - Diagnostics are push-based; `published:false` means nothing arrived, not
   necessarily clean.
 
+Line and character arguments of the position tools are 0-based LSP positions.
+Line numbers that `dev_symbol*` and `dev_file` return are 1-based, so subtract 1
+before you pass one to a position tool.
+
 See [`LSP_BRIDGE.md`](LSP_BRIDGE.md).
+
+## Symbol graph and precise mode
+
+`dev_symbol_callers`, `dev_symbol_callees`, `dev_symbol_graph_impact` and
+`dev_symbol_resolve` answer symbol questions from the tag cache, using
+`scripts/ocelot_symbol_graph.py` (design and limits in
+[`SYMBOL_GRAPH.md`](SYMBOL_GRAPH.md)). The cache is `var/ocelot_dev_tags.json`
+in the process root and is refreshed on each call. Every index tool uses that
+cache: `dev_repo_map`, `dev_impact`, `dev_code_search`, `dev_architecture` and
+the `dev_symbol_*` tools all read `<process root>/var/ocelot_dev_tags.json`, not
+the cache of the checkout that holds the script. The graph is syntactic: each
+reference resolves locally, through a `from X import name` binding, or by a
+unique global name, and each edge carries a confidence. There is no type
+inference.
+
+`symbol` takes `path::qualname`, a qualname such as `Class.method`, or a bare
+name. A name that matches several definitions returns the candidate ids under
+`ambiguous` (for `dev_symbol_resolve`, under `matches`).
+
+`precise=true` on `dev_symbol_callers` and `dev_symbol_graph_impact` asks the
+language server for the target's references, at the target definition's name
+(`PRECISE_TIMEOUT` 20 s). Then:
+
+- each depth-1 row gets `lsp_confirmed`: `true` when a reference falls inside
+  that caller's line span, `false` when none does, and `null` for deeper rows
+  (not checked);
+- references outside every depth-1 row are listed under `lsp_only` with the
+  innermost enclosing symbol (`<module>` at module level), line 1-based;
+- `precision` reports what happened: `{"lsp": "used", "server", "references",
+  "confirmed", "unconfirmed", "lsp_only"}`, `{"lsp": "unavailable: ..."}` when no
+  server is installed (the server is not started just to check; the rows are
+  the syntactic ones), or `{"lsp": "error: ..."}` when the query failed.
+
+An `import alpha` statement is a reference to `alpha`. The server reports it, so
+it appears in `lsp_only` under `<module>`. It is not a call.
+
+Example (live pyright, two-file temp project in which `domains/b.py` imports and
+calls `alpha` from `domains/a.py`; the `stats`, `tag_cache` and `timings` keys
+are omitted):
+
+```json
+{"jsonrpc": "2.0", "id": 7, "method": "tools/call",
+ "params": {"name": "dev_symbol_callers",
+            "arguments": {"symbol": "domains/a.py::alpha", "precise": true}}}
+```
+
+```json
+{"ok": true, "op": "callers", "symbol": "domains/a.py::alpha", "depth": 1,
+ "results": [{"id": "domains/b.py::use", "file": "domains/b.py",
+              "qualname": "use", "depth": 1, "resolution": "import",
+              "confidence": 1.0, "lsp_confirmed": true}],
+ "lsp_only": [{"id": "domains/b.py::<module>", "file": "domains/b.py",
+               "line": 1, "qualname": "<module>"}],
+ "precision": {"lsp": "used", "server": "pyright-langserver", "references": 2,
+               "confirmed": 1, "unconfirmed": 0, "lsp_only": 1}}
+```
+
+Precise mode is only as complete as the server's workspace index. On the Ocelot
+worktree (about 6,800 indexed files), pyright returned 2 references for
+`scripts/ocelot_repo_map.py::update_tag_cache` against 18 syntactic callers, so
+16 rows came back `lsp_confirmed: false`. A later query in the same process
+returned the same 2, and a third timed out after 20 s. Read `false` as "the
+server did not confirm this", not "this is not a caller".
+
+## Post-edit diagnostics
+
+Off by default. `dev_edit` with `apply=true` and `diagnostics=true` waits up to
+8 s for the language server's push diagnostics on the edited file and returns
+them under `diagnostics`:
+`{"ok", "verdict", "count", "errors", "warnings", "published", "items", "server"}`.
+Each item has its 0-based `line` and a 1-based `line1`; `items` holds the first
+20. The LSP client sends `didChange` when the file's hash differs from the last
+hash it saw, so the diagnostics describe the new content.
+
+`verdict` is one of:
+
+- `errors`: at least one severity-1 item.
+- `unknown`: nothing was published within the 8 s window. Nothing is known.
+- `clean`: published, with no items.
+- `warnings`: published, with only non-error items (severity 2 to 4).
+
+The journal `edit` entry is written before the wait, so a timeout or a stopped
+server cannot leave an applied edit unrecorded. It records
+`"diagnostics": "requested"` or `"skipped"`. It does not record the counts, and
+no later line is appended with them.
+
+- Not requested (the default): `{"skipped": "diagnostics=false"}`.
+- No language server: `{"skipped": "unavailable: ..."}`. The edit still applies.
+- A failed query: `{"error": "..."}`. The edit still applies.
+- Preview (`apply=false`) never runs diagnostics, and the key is absent.
+- `verdict: "unknown"` (`published: false`) is not evidence of a clean file.
+
+CLI: `edit --apply --diagnostics` requests the same wait.
 
 ## Lexical hybrid search
 
@@ -610,6 +731,21 @@ layer is honest: semantic targets in, lossless CST out, diff as a view.
   parser but no edit adapter yet. YAML/TOML/other formats are refused rather
   than silently patched. Rename is lexical and reported as such; scope-aware
   rename is a later graph pass.
+- **Symbol graph is syntactic.** Callers and callees come from name, import and
+  local-scope resolution only. `obj.method()` resolves by name, under the name
+  rules. Dynamic dispatch, `getattr` and star re-exports are not followed. Tags are not extracted from a
+  file that starts with a UTF-8 BOM (observed with tree-sitter), so such a file
+  has no symbols in the graph. The tag cache is the exception for Python: since
+  tag schema v3 its stdlib AST path drops one leading BOM, so Python tags match
+  with or without it. The snapshot's own Python parse (`_python_parse`, which
+  makes the Symbol nodes) also drops one leading BOM, so a BOM-prefixed Python
+  file has the same Symbol nodes as the same file without one.
+- **Precise mode is only as complete as the language server.** See the note in
+  *Symbol graph and precise mode*.
+- **Symbol graph CLI verbs.** `symbol-callers`, `symbol-callees`,
+  `symbol-graph-impact` and `symbol-resolve` run the syntactic graph. `python -m
+  scripts.ocelot_dev_memory symbol-impact` is the existing LSP call-impact verb,
+  not the symbol graph. The MCP tool is `dev_symbol_graph_impact`.
 - **No LLM in the server.** It is deterministic and offline. The LLM is the
   coding agent's business; this surface only gives it better input.
 - **No evaluation yet.** The next measurement is the A-vs-baseline ablation:

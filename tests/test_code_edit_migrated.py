@@ -5,6 +5,7 @@ is only a rendered view; raw diff input is refused.
 """
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
@@ -12,7 +13,9 @@ import pytest
 
 from scripts.ocelot_code_edit import (
     CodeEditError,
+    _apply_ops,
     apply_edit_script,
+    ast_outline,
     sha256_text,
     symbol_table,
 )
@@ -265,3 +268,374 @@ def test_path_escape_refused(tmp_path: Path) -> None:
             "ops": [{"op": "replace_body", "symbol": "add",
                      "text": "return 0"}],
         })
+
+
+# --------------------------------------------------------------------------- #
+# edit transaction: CRLF, BOM and encoding (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+_CRLF_MOD = (
+    '"""Demo module."""\r\n'
+    "import os\r\n"
+    "\r\n"
+    "def f(a):\r\n"
+    "    x = 1\r\n"
+    "    return a\r\n"
+)
+
+
+def test_crlf_replace_body_matches_lf_result_and_stays_crlf(tmp_path: Path) -> None:
+    import re
+    crlf = tmp_path / "crlf_mod.py"
+    lf = tmp_path / "lf_mod.py"
+    crlf.write_bytes(_CRLF_MOD.encode("utf-8"))
+    lf.write_bytes(_CRLF_MOD.replace("\r\n", "\n").encode("utf-8"))
+    ops = [{"op": "replace_body", "symbol": "f", "text": "y = 2\nreturn a"}]
+    r_crlf = apply_edit_script(tmp_path, {"file": "crlf_mod.py", "ops": ops},
+                               write=True)
+    apply_edit_script(tmp_path, {"file": "lf_mod.py", "ops": ops}, write=True)
+    data = crlf.read_bytes()
+    assert r_crlf["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == lf.read_text(encoding="utf-8").replace(
+        "\n", "\r\n")
+    assert "    y = 2\r\n    return a\r\n" in data.decode("utf-8")
+
+
+def test_crlf_insert_import_inserts_crlf_lines(tmp_path: Path) -> None:
+    import re
+    p = tmp_path / "mod.py"
+    p.write_bytes(_CRLF_MOD.encode("utf-8"))
+    apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "insert_import", "module": "math", "names": ["sqrt"]}]},
+        write=True)
+    data = p.read_bytes()
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert b"from math import sqrt\r\n" in data
+
+
+def test_crlf_insert_import_adds_no_extra_blank_line(tmp_path: Path) -> None:
+    p = tmp_path / "mod.py"
+    p.write_bytes(_CRLF_MOD.encode("utf-8"))
+    apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "insert_import", "module": "math", "names": ["sqrt"]}]},
+        write=True)
+    assert p.read_bytes() == _CRLF_MOD.replace(
+        "import os\r\n", "import os\r\nfrom math import sqrt\r\n").encode("utf-8")
+
+
+def test_bom_py_keeps_bom_and_edits(tmp_path: Path) -> None:
+    p = tmp_path / "mod.py"
+    p.write_bytes(b"\xef\xbb\xbf" + b"import os\nx = 1\n")
+    r = apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "replace_span", "start_line": 1, "start_col": 0,
+         "end_line": 2, "end_col": 0, "text": "import sys\n"}]}, write=True)
+    assert r["bom"] is True
+    assert p.read_bytes() == b"\xef\xbb\xbf" + b"import sys\nx = 1\n"
+
+
+def test_latin1_py_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    (tmp_path / "mod.py").write_bytes(b"x = '\xe9'\n")
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+            {"op": "replace_span", "start_line": 1, "start_col": 0,
+             "end_line": 2, "end_col": 0, "text": "x = 2\n"}]})
+
+
+def test_declared_latin1_py_is_refused(tmp_path: Path) -> None:
+    (tmp_path / "mod.py").write_bytes(b"# -*- coding: latin-1 -*-\nx = 1\n")
+    with pytest.raises(CodeEditError, match="declares encoding"):
+        apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+            {"op": "replace_span", "start_line": 2, "start_col": 0,
+             "end_line": 3, "end_col": 0, "text": "x = 2\n"}]})
+
+
+def test_lf_base_sha_is_hash_of_file_bytes(tmp_path: Path) -> None:
+    import hashlib
+    p = tmp_path / "mod.py"
+    p.write_bytes(b"import os\nx = 1\n")
+    r = apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "replace_span", "start_line": 2, "start_col": 0,
+         "end_line": 3, "end_col": 0, "text": "x = 2\n"}]})
+    assert r["base_sha256"] == hashlib.sha256(p.read_bytes()).hexdigest()
+    assert r["newline"] == "lf" and r["bom"] is False
+
+
+# --------------------------------------------------------------------------- #
+# Python op semantics (dt-w2a-py-ops): E3-E10
+# --------------------------------------------------------------------------- #
+def test_location_less_nodes_are_refused_and_file_unchanged(tmp_path: Path) -> None:
+    # E3: operators and comprehensions have no lineno; they must not be edited
+    # at a bogus 0:0 span.
+    src = "x = a + b\nys = [y for y in z]\n"
+    p = tmp_path / "mod.py"
+    p.write_text(src, encoding="utf-8")
+    cases = [
+        {"op": "replace_node", "target": "body[0].value.op", "text": "Sub()"},
+        {"op": "delete_node", "target": "body[0].value.op"},
+        {"op": "delete_node", "target": "body[1].value.generators[0]"},
+    ]
+    for case in cases:
+        with pytest.raises(CodeEditError, match="has no source location"):
+            apply_edit_script(tmp_path, {"file": "mod.py", "ops": [case]},
+                              write=True)
+        assert p.read_text(encoding="utf-8") == src
+
+
+def test_outline_marks_location_less_nodes() -> None:
+    text = ast_outline("x = a + b\n")["text"]
+    assert "body[0].value.op : Add (no location)" in text
+    assert "body[0].value : BinOp L1" in text
+
+
+def test_statements_sharing_a_line_are_refused() -> None:
+    # E4: deleting or wrapping one statement must not damage its neighbours.
+    with pytest.raises(CodeEditError, match="shares a line"):
+        _apply_ops("a = 1; b = 2\n",
+                   [{"op": "delete_node", "target": "body[1]"}])
+    inner = "if x: a = 1; b = 2\n"
+    with pytest.raises(CodeEditError, match="shares a line"):
+        _apply_ops(inner, [{"op": "delete_node", "target": "body[0].body[1]"}])
+    with pytest.raises(CodeEditError, match="shares a line"):
+        _apply_ops(inner, [{"op": "insert_after_node",
+                            "target": "body[0].body[0]", "text": "c = 3"}])
+    with pytest.raises(CodeEditError, match="shares a line"):
+        _apply_ops(inner, [{"op": "wrap_node", "target": "body[0].body[1]",
+                            "prefix": "if True:"}])
+
+
+def test_statement_with_trailing_comment_can_be_deleted() -> None:
+    new, _ = _apply_ops("a = 1  # note\nb = 2\n",
+                        [{"op": "delete_node", "target": "body[0]"}])
+    assert new == "b = 2\n"
+
+
+def test_replace_body_keeps_one_line_def_header() -> None:
+    # E5: a one-line compound definition keeps its header.
+    src = "class A:\n    def f(self): return 1\n"
+    new, _ = _apply_ops(src, [{"op": "replace_body", "symbol": "A.f",
+                               "text": "x = 2"}])
+    assert new == "class A:\n    def f(self):\n        x = 2\n"
+    ast.parse(new)
+    new2, _ = _apply_ops("def g(): return 1\n",
+                         [{"op": "replace_body", "symbol": "g", "text": "x = 2"}])
+    assert new2 == "def g():\n    x = 2\n"
+
+
+def test_wrap_node_keeps_multiline_string_value() -> None:
+    # E6: lines inside a string literal are copied unchanged.
+    src = "def f():\n    s = '''x\ny'''\n    return s\n"
+    new, _ = _apply_ops(src, [{"op": "wrap_node", "target": "body[0].body[0]",
+                               "prefix": "if True:"}])
+    assert "if True:\n        s = '''x\ny'''\n" in new
+    values = [n.value for n in ast.walk(ast.parse(new))
+              if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+    assert "x\ny" in values
+
+
+def test_replace_span_inserts_text_exactly() -> None:
+    # E8: no newline is forced onto the inserted text.
+    new, _ = _apply_ops("x = foo(1)\n", [
+        {"op": "replace_span", "start_line": 1, "start_col": 4,
+         "end_line": 1, "end_col": 7, "text": "bar"}])
+    assert new == "x = bar(1)\n"
+
+
+def test_same_offset_inserts_keep_op_order() -> None:
+    # E7: two inserts at one offset land in op order.
+    new, _ = _apply_ops("import sys\n\nx = 1\n", [
+        {"op": "insert_import", "module": "os"},
+        {"op": "insert_import", "module": "re"}])
+    assert new == "import sys\nimport os\nimport re\n\nx = 1\n"
+
+
+def test_insert_import_dedup_is_by_ast() -> None:
+    # E9: `import os.path` does not contain `import os` as a binding; a comment
+    # does not count as an import.
+    new, _ = _apply_ops("import os.path\nx = 1\n",
+                        [{"op": "insert_import", "module": "os"}])
+    assert new.startswith("import os.path\nimport os\n")
+    same, changes = _apply_ops("import os\nx = 1\n",
+                               [{"op": "insert_import", "module": "os"}])
+    assert same == "import os\nx = 1\n"
+    assert changes[0]["summary"] == "already present; skipped"
+    commented, _ = _apply_ops("# import re\nx = 1\n",
+                              [{"op": "insert_import", "module": "re"}])
+    assert "import re" in commented.splitlines()
+
+
+def test_insert_import_goes_after_shebang_and_cookie() -> None:
+    src = "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\nx = 1\n"
+    new, _ = _apply_ops(src, [{"op": "insert_import", "module": "json"}])
+    assert new.startswith(
+        "#!/usr/bin/env python\n# -*- coding: utf-8 -*-\nimport json\n")
+
+
+def test_insert_import_adds_only_missing_names() -> None:
+    new, _ = _apply_ops("from m import x\nz = 1\n", [
+        {"op": "insert_import", "module": "m", "names": ["x", "y"]}])
+    assert "from m import y\n" in new
+    assert "from m import x, y" not in new
+    assert new.count("from m import x") == 1
+
+
+def test_rename_refuses_duplicate_bare_names() -> None:
+    # E10: a lexical rename would change both A.f and B.f.
+    src = ("class A:\n    def f(self):\n        return 1\n\n"
+           "class B:\n    def f(self):\n        return 2\n")
+    with pytest.raises(CodeEditError,
+                       match=r"defined 2 times in this file \(A\.f, B\.f\)"):
+        _apply_ops(src, [{"op": "rename_symbol", "symbol": "A.f",
+                          "new_name": "g"}])
+
+
+def test_rename_reports_occurrences() -> None:
+    new, changes = _apply_ops("def add(a):\n    return a\nprint(add(1))\n", [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert new == "def plus(a):\n    return a\nprint(plus(1))\n"
+    assert changes[0]["occurrences"] == [[1, 4], [3, 6]]
+
+
+def test_crlf_delete_symbol_consumes_one_blank_line_and_stays_crlf(
+        tmp_path: Path) -> None:
+    import re
+    p = tmp_path / "crlf.py"
+    p.write_bytes(b"import os\r\n\r\ndef f(a):\r\n    return a\r\n\r\n"
+                  b"def g():\r\n    return 1\r\n")
+    apply_edit_script(tmp_path, {"file": "crlf.py", "ops": [
+        {"op": "delete_symbol", "symbol": "f"}]}, write=True)
+    data = p.read_bytes()
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data == b"import os\r\n\r\ndef g():\r\n    return 1\r\n"
+
+
+# --------------------------------------------------------------------------- #
+# dt-w4-fixes-b: scope-aware rename (review 4) and per-script import dedup (9)
+# --------------------------------------------------------------------------- #
+def test_rename_leaves_attributes_keywords_and_params_alone() -> None:
+    # Review 4 probe: only the definition name and its module-level uses move.
+    src = ("import subprocess\n"
+           "def run(cmd):\n"
+           "    return subprocess.run(cmd, check=False)\n"
+           "def other(obj, run=None):\n"
+           "    obj.run()\n"
+           "    return run\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "run", "new_name": "execute"}])
+    assert new == ("import subprocess\n"
+                   "def execute(cmd):\n"
+                   "    return subprocess.run(cmd, check=False)\n"
+                   "def other(obj, run=None):\n"
+                   "    obj.run()\n"
+                   "    return run\n")
+    assert changes[0]["occurrences"] == [[2, 4]]
+    assert sorted((s["line"], s["col"], s["reason"])
+                  for s in changes[0]["skipped"]) == [
+        (3, 22, "attribute"), (4, 15, "shadowed"),
+        (5, 8, "attribute"), (6, 11, "shadowed")]
+
+
+def test_rename_keyword_argument_name_is_skipped() -> None:
+    src = ("def run(x):\n    return x\n"
+           "print(run(run=1))\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "run", "new_name": "go"}])
+    assert new == "def go(x):\n    return x\nprint(go(run=1))\n"
+    assert changes[0]["skipped"] == [{"line": 3, "col": 10, "reason": "keyword"}]
+
+
+def test_module_function_used_inside_unshadowed_function_is_renamed() -> None:
+    src = ("def add(a):\n    return a\n\n"
+           "def use():\n    return add(1)\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert new == ("def plus(a):\n    return a\n\n"
+                   "def use():\n    return plus(1)\n")
+    assert changes[0]["occurrences"] == [[1, 4], [5, 11]]
+
+
+def test_local_binding_shadowing_the_function_is_not_renamed() -> None:
+    src = ("def add(a):\n    return a\n\n"
+           "def shadow():\n    add = 3\n    return add\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert "def shadow():\n    add = 3\n    return add\n" in new
+    assert sorted((s["line"], s["reason"]) for s in changes[0]["skipped"]) == [
+        (5, "shadowed"), (6, "shadowed")]
+
+
+def test_global_declaration_follows_the_module_binding() -> None:
+    src = ("def add(a):\n    return a\n\n"
+           "def use():\n    global add\n    return add(1)\n")
+    new, _ = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert new == ("def plus(a):\n    return a\n\n"
+                   "def use():\n    global plus\n    return plus(1)\n")
+
+
+def test_method_rename_updates_self_and_class_refs_only() -> None:
+    src = ("class A:\n"
+           "    def f(self):\n"
+           "        return 1\n"
+           "\n"
+           "    def g(this):\n"
+           "        return this.f() + A.f(this)\n"
+           "\n"
+           "def h(b):\n"
+           "    return b.f()\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "A.f", "new_name": "k"}])
+    assert new == ("class A:\n"
+                   "    def k(self):\n"
+                   "        return 1\n"
+                   "\n"
+                   "    def g(this):\n"
+                   "        return this.k() + A.k(this)\n"
+                   "\n"
+                   "def h(b):\n"
+                   "    return b.f()\n")
+    assert changes[0]["skipped"] == [{"line": 9, "col": 13, "reason": "attribute"}]
+
+
+def test_method_rename_ignores_self_of_other_class() -> None:
+    src = ("class A:\n"
+           "    def f(self):\n"
+           "        return 1\n"
+           "class B:\n"
+           "    def f(self):\n"
+           "        return 2\n")
+    with pytest.raises(CodeEditError, match="defined 2 times"):
+        _apply_ops(src, [{"op": "rename_symbol", "symbol": "A.f",
+                          "new_name": "k"}])
+    src2 = ("class A:\n"
+            "    def f(self):\n"
+            "        return self.f\n"
+            "class B:\n"
+            "    def g(self):\n"
+            "        return self.f\n")
+    new, _ = _apply_ops(src2, [
+        {"op": "rename_symbol", "symbol": "A.f", "new_name": "k"}])
+    assert new == ("class A:\n"
+                   "    def k(self):\n"
+                   "        return self.k\n"
+                   "class B:\n"
+                   "    def g(self):\n"
+                   "        return self.f\n")
+
+
+def test_insert_import_twice_in_one_script_inserts_once() -> None:
+    src = "import os\n\nx = 1\n"
+    new, changes = _apply_ops(src, [
+        {"op": "insert_import", "module": "sys"},
+        {"op": "insert_import", "module": "sys"}])
+    assert new.count("import sys") == 1
+    summaries = [c["summary"] for c in changes]
+    assert summaries[1] == "already present; skipped"
+
+
+def test_insert_import_names_dedup_across_ops() -> None:
+    src = "x = 1\n"
+    new, changes = _apply_ops(src, [
+        {"op": "insert_import", "module": "math", "names": ["sqrt", "pi"]},
+        {"op": "insert_import", "module": "math", "names": ["pi"]}])
+    assert new.count("from math import") == 1
+    assert changes[1]["summary"] == "already present; skipped"

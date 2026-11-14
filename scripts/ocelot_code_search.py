@@ -8,7 +8,9 @@ This is the no-embedding half of hybrid retrieval:
     path, definition symbol names, and source lines;
   * BM25 ranks files lexically (k1=1.5, b=0.75 by default);
   * repo-map PageRank supplies a query-independent structural prior;
-  * the two rankings are fused with Reciprocal Rank Fusion (k=60);
+  * the two rankings are fused with Reciprocal Rank Fusion (k=60), with the
+    graph term weighted by GRAPH_WEIGHT so it breaks ties and cannot
+    overturn a clear lexical lead;
   * results carry the fused score, both component scores, matching symbols,
     and a bounded source snippet.
 
@@ -20,8 +22,15 @@ AGENT RUNTIME.
 """
 from __future__ import annotations
 
+import concurrent.futures
+import hashlib
+import json
+import marshal
 import math
+import os
 import re
+import sys
+import tempfile
 from array import array
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -31,8 +40,8 @@ from scripts.ocelot_repo_map import (
     LANGUAGES,
     MAX_FILE_BYTES,
     SKIP_PARTS,
-    build_reference_graph,
-    personalized_pagerank,
+    _index_workers,
+    graph_prior,
     update_tag_cache,
 )
 
@@ -43,9 +52,28 @@ BM25_B = 0.75
 # Reciprocal Rank Fusion constant (the standard value from the RRF paper).
 RRF_K = 60
 
+# Weight of the graph (PageRank) rank term in the fused score. The BM25 term
+# always has weight 1. The graph term is a tie-breaker and a weak prior, so a
+# hub cannot outrank a file that leads clearly on lexical match.
+GRAPH_WEIGHT = 0.25
+
 # Field weights in the single concatenated BM25 document per file. A symbol
 # name hit is a stronger signal than the same term in a comment or string.
 FIELD_WEIGHTS = {"path": 3.0, "symbol": 4.0, "line": 1.0}
+
+# Persisted per-file term rows (see _term_rows). Bump SEARCH_CACHE_VERSION on
+# a layout change and TOKENIZER_VERSION on any change to _terms,
+# _identifier_terms, _definitions or the field weights. FIELD_WEIGHTS is also
+# part of the side file's key.
+SEARCH_CACHE_VERSION = 1
+TOKENIZER_VERSION = 1
+SEARCH_SIDE_SUFFIX = ".search.marshal"
+# Cold tokenization runs in a process pool once this many files need it.
+SEARCH_PARALLEL_MIN_FILES = 64
+SEARCH_PARALLEL_CHUNK = 64
+
+# Build facts from the most recent _build_index call, for the bench.
+LAST_BUILD: dict[str, Any] = {}
 
 # A snippet is one source line, trimmed to this many characters.
 MAX_SNIPPET_CHARS = 240
@@ -104,7 +132,176 @@ def _definitions(entry: dict[str, Any]) -> list[dict[str, Any]]:
     return out
 
 
-def _build_index(root: Path, cache: dict[str, Any]) -> dict[str, Any]:
+def _tokenize_file(root: str, rel: str,
+                   defs: list[dict[str, Any]]) -> tuple[str, float,
+                                                        tuple[str, ...],
+                                                        tuple[float, ...]]:
+    """Term frequencies for one file: (rel, length, terms, weights).
+
+    Terms and weights are in the order the first occurrence is seen, the same
+    order the old in-line code used, so the length sum is unchanged. Top-level
+    so a process pool can run it.
+    """
+    tf: dict[str, float] = defaultdict(float)
+    for term in _terms(rel):
+        tf[term] += FIELD_WEIGHTS["path"]
+    for sym in defs:
+        for term in _terms(sym["name"]):
+            tf[term] += FIELD_WEIGHTS["symbol"]
+    source = ""
+    try:
+        path = Path(root) / rel
+        if path.stat().st_size <= MAX_FILE_BYTES:
+            source = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        source = ""
+    for line in source.splitlines():
+        for term, count in Counter(_terms(line)).items():
+            tf[term] += count * FIELD_WEIGHTS["line"]
+    length = float(sum(tf.values()))
+    terms = tuple(term for term, weight in tf.items() if weight > 0)
+    weights = tuple(tf[term] for term in terms)
+    return rel, length, terms, weights
+
+
+def _tokenize_chunk(root: str, items: list[tuple[str, list[dict[str, Any]]]]
+                    ) -> list[tuple[str, float, tuple[str, ...],
+                                    tuple[float, ...]]]:
+    return [_tokenize_file(root, rel, defs) for rel, defs in items]
+
+
+def _side_key() -> str:
+    return hashlib.sha256(json.dumps(
+        [TOKENIZER_VERSION, FIELD_WEIGHTS],
+        sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def search_side_cache_path(cache_path: str | Path) -> Path:
+    """Side file that holds the per-file term rows, next to the tag cache."""
+    return Path(f"{cache_path}{SEARCH_SIDE_SUFFIX}")
+
+
+def _load_side(path: Path) -> dict[str, tuple[Any, ...]]:
+    """Well-formed side rows, or {} on any version, key or load problem."""
+    try:
+        data = marshal.loads(path.read_bytes())
+    except Exception:  # missing, unreadable or corrupt: rebuild instead
+        LAST_BUILD["side_cache"] = "ignored: unreadable"
+        return {}
+    if (not isinstance(data, dict)
+            or data.get("version") != SEARCH_CACHE_VERSION
+            or data.get("key") != _side_key()
+            or not isinstance(data.get("files"), dict)):
+        LAST_BUILD["side_cache"] = "ignored: version or key mismatch"
+        return {}
+    rows: dict[str, tuple[Any, ...]] = {}
+    for rel, row in data["files"].items():
+        if (isinstance(rel, str) and isinstance(row, tuple) and len(row) == 5
+                and isinstance(row[2], float)
+                and isinstance(row[3], tuple) and isinstance(row[4], tuple)):
+            rows[rel] = row
+    LAST_BUILD["side_cache"] = "loaded"
+    return rows
+
+
+def _save_side(path: Path, rows: dict[str, tuple[Any, ...]]) -> None:
+    """Atomic write (temp file, then os.replace). A failure only costs a rebuild."""
+    doc = {"version": SEARCH_CACHE_VERSION, "key": _side_key(),
+           "files": rows}
+    try:
+        payload = marshal.dumps(doc)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(dir=str(path.parent),
+                                   prefix=path.name + ".", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(payload)
+            os.replace(tmp, path)
+        except BaseException:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+            raise
+        LAST_BUILD["side_written"] = len(payload)
+    except (OSError, ValueError, TypeError) as exc:
+        LAST_BUILD["side_written"] = f"failed: {type(exc).__name__}: {exc}"
+
+
+def _term_rows(root: Path, cache: dict[str, Any], rels: list[str],
+               cache_path: Path | None, prune: bool
+               ) -> dict[str, tuple[float, tuple[str, ...], tuple[float, ...]]]:
+    """Term rows for every rel in the view, from the side file where valid.
+
+    A side row is valid when its tag sha256 and extractor fingerprint equal
+    the current tag entry's. Only missing or stale rows are tokenized. Rows
+    for files outside a full-scan view are dropped; subset calls keep them.
+    """
+    tag_files = cache.get("files") or {}
+    side_path = search_side_cache_path(cache_path) if cache_path else None
+    if side_path is None:
+        side = {}
+        LAST_BUILD["side_cache"] = "disabled"
+    elif not side_path.exists():
+        side = {}
+        LAST_BUILD["side_cache"] = "absent"
+    else:
+        side = _load_side(side_path)
+    rows: dict[str, tuple[float, tuple[str, ...], tuple[float, ...]]] = {}
+    todo: list[str] = []
+    for rel in rels:
+        entry = tag_files.get(rel) or {}
+        hit = side.get(rel)
+        if (hit is not None and hit[0] == entry.get("sha256")
+                and hit[1] == entry.get("fp")):
+            rows[rel] = (hit[2], hit[3], hit[4])
+        else:
+            todo.append(rel)
+
+    LAST_BUILD.update({"rows": len(rels), "reused": len(rels) - len(todo),
+                       "tokenized": len(todo), "parallel": 1})
+    results = None
+    workers = _index_workers()
+    if workers > 1 and len(todo) >= SEARCH_PARALLEL_MIN_FILES:
+        try:
+            items = [(rel, _definitions(tag_files.get(rel) or {}))
+                     for rel in todo]
+            chunks = [items[i:i + SEARCH_PARALLEL_CHUNK]
+                      for i in range(0, len(items), SEARCH_PARALLEL_CHUNK)]
+            with concurrent.futures.ProcessPoolExecutor(
+                    max_workers=workers) as pool:
+                futures = [pool.submit(_tokenize_chunk, str(root), chunk)
+                           for chunk in chunks]
+                results = [row for fut in futures for row in fut.result()]
+            LAST_BUILD["parallel"] = workers
+        except (OSError, concurrent.futures.BrokenExecutor) as exc:
+            LAST_BUILD["parallel"] = f"fallback: {type(exc).__name__}: {exc}"
+            results = None
+    if results is None:
+        results = [_tokenize_file(str(root), rel,
+                                  _definitions(tag_files.get(rel) or {}))
+                   for rel in todo]
+
+    side_rows = dict(side)
+    for rel, length, terms, weights in results:
+        entry = tag_files.get(rel) or {}
+        terms = tuple(sys.intern(t) for t in terms)
+        rows[rel] = (length, terms, weights)
+        side_rows[rel] = (entry.get("sha256"), entry.get("fp"),
+                          length, terms, weights)
+    if prune:
+        view = set(rels)
+        for stale in [r for r in side_rows if r not in view]:
+            side_rows.pop(stale, None)
+    dropped = set(side) - set(side_rows)
+    if side_path is not None and rels and (todo or dropped):
+        _save_side(side_path, side_rows)
+    return rows
+
+
+def _build_index(root: Path, cache: dict[str, Any],
+                 cache_path: Path | None = None,
+                 prune: bool = False) -> dict[str, Any]:
     """Build the in-memory inverted index from the tag cache + source files.
 
     Each file is one BM25 document. Its weighted term frequencies combine the
@@ -115,40 +312,21 @@ def _build_index(root: Path, cache: dict[str, Any]) -> dict[str, Any]:
     files, so the index does not retain a line posting for every term.
     """
     rels = sorted(cache.get("files") or {})
+    LAST_BUILD.clear()
     postings_ids: dict[str, array] = {}
     postings_tf: dict[str, array] = {}
     lengths = array("d")
     symbols: dict[str, list[dict[str, Any]]] = {}
+    tag_files = cache.get("files") or {}
+    for rel in rels:
+        symbols[rel] = _definitions(tag_files.get(rel) or {})
+
+    rows = _term_rows(root, cache, rels, cache_path, prune)
 
     for file_id, rel in enumerate(rels):
-        entry = cache["files"].get(rel) or {}
-        tf: dict[str, float] = defaultdict(float)
-
-        for term in _terms(rel):
-            tf[term] += FIELD_WEIGHTS["path"]
-
-        defs = _definitions(entry)
-        symbols[rel] = defs
-        for sym in defs:
-            for term in _terms(sym["name"]):
-                tf[term] += FIELD_WEIGHTS["symbol"]
-
-        source = ""
-        try:
-            path = root / rel
-            if path.stat().st_size <= MAX_FILE_BYTES:
-                source = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            source = ""
-
-        for line in source.splitlines():
-            for term, count in Counter(_terms(line)).items():
-                tf[term] += count * FIELD_WEIGHTS["line"]
-        lengths.append(sum(tf.values()))
-
-        for term, weight in tf.items():
-            if weight <= 0:
-                continue
+        length, terms, weights = rows[rel]
+        lengths.append(length)
+        for term, weight in zip(terms, weights):
             ids = postings_ids.get(term)
             if ids is None:
                 postings_ids[term] = array("I", [file_id])
@@ -197,13 +375,27 @@ def _bm25_scores(index: dict[str, Any], terms: list[str],
 
 
 def _pagerank(cache: dict[str, Any]) -> dict[str, float]:
-    """Query-independent repo-map reference centrality, made deterministic."""
-    graph = build_reference_graph(cache)
-    # build_reference_graph builds edges from sets; sorting makes the float
-    # summation order stable across processes and hash seeds.
-    graph["edges"] = sorted(graph.get("edges") or [],
-                            key=lambda e: (str(e["src"]), str(e["tgt"])))
-    return personalized_pagerank(graph, task="")
+    """Query-independent repo-map reference centrality (memoised per view)."""
+    return graph_prior(cache)
+
+
+def _competition_ranks(scores: dict[str, float]) -> dict[str, int]:
+    """1-based standard competition ranks: ties share the first position.
+
+    Scores are compared after rounding to 12 places, so float noise in equal
+    scores does not split a tie. Equal scores 3, 2, 2, 1 give ranks 1, 2, 2, 4.
+    """
+    ordered = sorted(scores, key=lambda rel: (-scores[rel], rel))
+    ranks: dict[str, int] = {}
+    previous: float | None = None
+    rank = 0
+    for position, rel in enumerate(ordered, 1):
+        key = round(scores[rel], 12)
+        if key != previous:
+            rank = position
+            previous = key
+        ranks[rel] = rank
+    return ranks
 
 
 def _matched_symbols(symbols: list[dict[str, Any]], terms: list[str],
@@ -265,11 +457,11 @@ _INDEX_CACHE: dict[tuple[str, str, str], dict[str, Any]] = {}
 
 
 def _get_index(root: Path, cache_path: Path,
-               cache: dict[str, Any]) -> dict[str, Any]:
+               cache: dict[str, Any], prune: bool = False) -> dict[str, Any]:
     key = (str(root), str(cache_path), str(cache.get("root_hash") or ""))
     index = _INDEX_CACHE.get(key)
     if index is None:
-        index = _build_index(root, cache)
+        index = _build_index(root, cache, cache_path, prune)
         _INDEX_CACHE.clear()
         _INDEX_CACHE[key] = index
     return index
@@ -320,10 +512,13 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
         rrf_k: RRF constant. Default 60.
 
     Returns:
-        ``{ok, query, results, n, bm25, rrf_k, index}``. Each result is
-        ``{path, score, bm25, graph, symbols, line?, snippet?}`` where
-        ``score`` is the fused RRF score, ``bm25`` the lexical score,
-        ``graph`` the PageRank score, and ``symbols`` matched definitions.
+        ``{ok, query, results, n, bm25, rrf_k, fusion, index}``. Each result is
+        ``{path, score, bm25, bm25_rank, graph, graph_rank, symbols,
+        line?, snippet?}``. ``score`` is the fused score
+        ``1/(rrf_k+bm25_rank) + GRAPH_WEIGHT/(rrf_k+graph_rank)``; the graph
+        term is omitted when the file has no PageRank value. Equal BM25 scores
+        share a rank, and so do equal PageRank values. ``graph`` is the
+        PageRank score, and ``symbols`` the matched definitions.
         ``line``/``snippet`` appear only when a matching source line exists
         and ``include_snippet`` is true.
     """
@@ -332,7 +527,8 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
     b = min(1.0, max(0.0, float(b)))
     rrf_k = max(1, int(rrf_k))
     limit = max(0, int(limit))
-    meta = {"bm25": {"k1": k1, "b": b}, "rrf_k": rrf_k}
+    meta = {"bm25": {"k1": k1, "b": b}, "rrf_k": rrf_k,
+            "fusion": {"rrf_k": rrf_k, "graph_weight": GRAPH_WEIGHT}}
 
     terms = _query_terms(raw_query)
     if not raw_query.strip():
@@ -354,13 +550,15 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
 
     cache, _stats = update_tag_cache(root, cache_path=Path(cache_path),
                                      files=files)
+    prune = files is None
     if files is None and not cache.get("files"):
         discovered = _discover_source_files(root)
         if discovered:
             cache, _stats = update_tag_cache(root,
                                              cache_path=Path(cache_path),
                                              files=discovered)
-    index = _get_index(root, Path(cache_path), cache)
+            prune = False
+    index = _get_index(root, Path(cache_path), cache, prune)
     if limit == 0 or index["n_files"] == 0:
         return {"ok": True, "query": raw_query, "results": [], "n": 0,
                 "index": {"files": index["n_files"],
@@ -369,15 +567,14 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
     bm25, idf = _bm25_scores(index, terms, k1, b)
     pagerank = _pagerank(cache)
 
-    bm25_order = sorted(bm25, key=lambda rel: (-bm25[rel], rel))
-    bm25_rank = {rel: i for i, rel in enumerate(bm25_order, 1)}
-    graph_rank = {rel: i for i, rel in enumerate(pagerank, 1)}
+    bm25_rank = _competition_ranks(bm25)
+    graph_rank = _competition_ranks(pagerank)
 
     fused: list[tuple[float, float, str]] = []
-    for rel in bm25_order:
+    for rel in bm25:
         score = 1.0 / (rrf_k + bm25_rank[rel])
         if rel in graph_rank:
-            score += 1.0 / (rrf_k + graph_rank[rel])
+            score += GRAPH_WEIGHT / (rrf_k + graph_rank[rel])
         fused.append((score, bm25[rel], rel))
     fused.sort(key=lambda item: (-item[0], -item[1], item[2]))
 
@@ -388,7 +585,9 @@ def code_search(root: str | Path, query: str, *, limit: int = 20,
             "path": rel,
             "score": round(score, 6),
             "bm25": round(lexical, 6),
+            "bm25_rank": bm25_rank[rel],
             "graph": round(pagerank.get(rel, 0.0), 6),
+            "graph_rank": graph_rank.get(rel),
             "symbols": _matched_symbols(index["symbols"].get(rel, []),
                                         terms, idf),
         }

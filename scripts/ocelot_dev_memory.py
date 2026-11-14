@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 import math
 import os
@@ -125,6 +126,32 @@ _PATH_RE = re.compile(
 )
 _SEED_PATH_RE = re.compile(r"seeds/([A-Za-z0-9_.-]+)\.json")
 _TEST_NAME_RE = re.compile(r"^test_[A-Za-z0-9_]+$")
+
+# LSP wait for `symbol_graph(precise=True)` reference queries, in seconds.
+PRECISE_TIMEOUT = 20.0
+# LSP wait for the push diagnostics that follow an applied `edit`, in seconds.
+POST_EDIT_DIAG_TIMEOUT = 8.0
+# Diagnostic items kept in the post-edit result. The counts cover all of them.
+DIAG_ITEM_LIMIT = 20
+_DEF_KEYWORD_RE = re.compile(r"\b(?:def|class)\b")
+
+
+def _utf16_col(line_text: str, char_index: int) -> int:
+    """LSP character offset (UTF-16 code units) of a Python str index."""
+    return len(line_text[:char_index].encode("utf-16-le")) // 2
+
+
+def _name_utf16_col(line_text: str, name: str) -> int | None:
+    """UTF-16 column of the definition name on a def/class line.
+
+    The search starts at the ``def``/``class`` keyword when the line has one,
+    so a name that also appears earlier on the line is not picked.
+    """
+    kw = _DEF_KEYWORD_RE.search(line_text)
+    start = kw.end() if kw else 0
+    hit = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])"
+                     ).search(line_text, start)
+    return None if hit is None else _utf16_col(line_text, hit.start())
 
 
 def _read_text(path: Path, *, limit: int = MAX_PARSE_BYTES) -> str | None:
@@ -241,6 +268,10 @@ def _python_parse(path: Path) -> PyParse | None:
     src = _read_text(path)
     if src is None:
         return None
+    # A UTF-8 byte order mark is not Python source; ast.parse rejects it.
+    # Stripping it leaves every line number unchanged.
+    if src.startswith("\ufeff"):
+        src = src[1:]
     try:
         tree = ast.parse(src)
     except (SyntaxError, ValueError):
@@ -802,6 +833,22 @@ def build_index(root: str | Path = ROOT, out: str | Path = DEFAULT_DUMP,
             if seed_nid is not None:
                 b.edge(did, "documents", seed_nid)
 
+    # -- checkout head ------------------------------------------------------ #
+    # Recorded on its own (not only from the history walk below) so the
+    # snapshot can always be checked for staleness, and a git failure is
+    # recorded instead of being swallowed.
+    try:
+        rev = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                             capture_output=True, text=True, timeout=30,
+                             check=False)
+        if rev.returncode == 0 and rev.stdout.strip():
+            b.nodes[repo]["attrs"]["head"] = rev.stdout.strip()
+        else:
+            b.nodes[repo]["attrs"]["head_error"] = (
+                rev.stderr.strip()[:300] or f"git exited {rev.returncode}")
+    except (OSError, subprocess.SubprocessError) as exc:
+        b.nodes[repo]["attrs"]["head_error"] = f"{type(exc).__name__}: {exc}"[:300]
+
     # -- git history -------------------------------------------------------- #
     if include_git:
         try:
@@ -837,7 +884,7 @@ def build_index(root: str | Path = ROOT, out: str | Path = DEFAULT_DUMP,
                     fid = file_node(rel, indexed=False)
                     b.edge(cid, "changes", fid)
             if commits:
-                b.nodes[repo]["attrs"]["head"] = commits[0]["hash"]
+                b.nodes[repo]["attrs"].setdefault("head", commits[0]["hash"])
                 b.nodes[repo]["attrs"]["head_date"] = commits[0]["date"]
                 b.edge(repo, "head", b._by_key[("commit", commits[0]["hash"])])
         except (OSError, subprocess.SubprocessError):
@@ -893,6 +940,11 @@ def build_index(root: str | Path = ROOT, out: str | Path = DEFAULT_DUMP,
         "commits": b.count("Commit"),
         "failures": b.count("Failure"),
     })
+    digest, digest_err = _tree_digest(root)
+    if digest is not None:
+        b.nodes[repo]["attrs"]["tree_digest"] = digest
+    else:
+        b.nodes[repo]["attrs"]["tree_digest_error"] = digest_err or "unknown"
 
     graph = b.to_dict()
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -915,6 +967,63 @@ def _histogram(values: Iterable[str]) -> dict[str, int]:
     return dict(Counter(values).most_common())
 
 
+def _strict_bool(value: Any, name: str) -> bool:
+    """A boolean from a script dict. Accepts bools and the strings "true" or
+    "false" (case-insensitive). Anything else is an error, not a truthy value."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str) and value.lower() in ("true", "false"):
+        return value.lower() == "true"
+    raise ValueError(f"{name} must be a boolean")
+
+
+def _tree_digest(root: Path) -> tuple[str | None, str | None]:
+    """(digest, error) for the working tree under `root`.
+
+    The digest is sha256 over `git diff HEAD` (tracked content changes), a NUL,
+    and for each untracked file under SOURCE_DIRS (sorted by git): its path, a
+    NUL, then its size and sha256 of its bytes. Untracked files larger than
+    MAX_PARSE_BYTES contribute path, size and mtime_ns instead. Untracked files
+    that cannot be read contribute path and "unreadable".
+    """
+    try:
+        diff = subprocess.run(
+            ["git", "-C", str(root), "diff", "HEAD", "--no-color",
+             "--no-ext-diff"],
+            capture_output=True, timeout=60, check=False)
+        untracked = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--others",
+             "--exclude-standard", "--", *SOURCE_DIRS],
+            capture_output=True, timeout=60, check=False)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, str(e)
+    if diff.returncode != 0 or untracked.returncode != 0:
+        err = (diff.stderr or untracked.stderr or b"git failed").decode(
+            "utf-8", errors="replace").strip()
+        return None, err
+    h = hashlib.sha256()
+    h.update(diff.stdout)
+    h.update(b"\0")
+    for raw in untracked.stdout.split(b"\0"):
+        if not raw:
+            continue
+        h.update(raw)
+        h.update(b"\0")
+        path = root / raw.decode("utf-8", errors="surrogateescape")
+        try:
+            st = path.stat()
+            if st.st_size > MAX_PARSE_BYTES:
+                h.update(f"big:{st.st_size}:{st.st_mtime_ns}".encode())
+            else:
+                data = path.read_bytes()
+                h.update(f"{len(data)}:".encode())
+                h.update(hashlib.sha256(data).hexdigest().encode())
+        except OSError:
+            h.update(b"unreadable")
+        h.update(b"\0")
+    return h.hexdigest(), None
+
+
 # --------------------------------------------------------------------------- #
 # query layer
 # --------------------------------------------------------------------------- #
@@ -922,10 +1031,16 @@ def _histogram(values: Iterable[str]) -> dict[str, int]:
 class DevMemory:
     dump: Path = DEFAULT_DUMP
     journal: Path = DEFAULT_JOURNAL
+    # Process root the tools act on. None means the root recorded in the
+    # snapshot. Set it when the server runs in a worktree other than the one
+    # the snapshot was built from.
+    root: Path | None = None
 
     def __post_init__(self) -> None:
         self.dump = Path(self.dump)
         self.journal = Path(self.journal)
+        if self.root is not None:
+            self.root = Path(self.root)
         if not self.dump.exists():
             raise FileNotFoundError(
                 f"no dev-memory snapshot at {self.dump}; run "
@@ -939,7 +1054,10 @@ class DevMemory:
             s, t = int(e["src"]), int(e["tgt"])
             self._out.setdefault(s, []).append(e)
             self._in.setdefault(t, []).append(e)
-        self._text_cache: dict[str, str] = {}
+        # Keyed by (rel, st_mtime_ns, st_size) so a file changed on disk is
+        # read again.
+        self._text_cache: dict[tuple[str, int, int], str] = {}
+        self._staleness_memo: tuple[float, dict[str, Any]] | None = None
         self._gi = None
         # Token document frequency over labels, used only to weight a search
         # hit by how distinctive its matched words are. This is a mechanical
@@ -1084,13 +1202,27 @@ class DevMemory:
 
     # -- snippets ----------------------------------------------------------- #
     def _read(self, rel: str) -> str:
-        if rel not in self._text_cache:
-            p = Path(self.raw_repo_root) / rel
-            self._text_cache[rel] = _read_text(p, limit=1_000_000) or ""
-        return self._text_cache[rel]
+        p = Path(self.raw_repo_root) / rel
+        try:
+            st = p.stat()
+        except OSError:
+            return ""
+        key = (rel, st.st_mtime_ns, st.st_size)
+        if key not in self._text_cache:
+            # Drop older versions of this file before caching the new one.
+            for old in [k for k in self._text_cache if k[0] == rel]:
+                del self._text_cache[old]
+            self._text_cache[key] = _read_text(p, limit=1_000_000) or ""
+        return self._text_cache[key]
+
+    def _drop_cached(self, rel: str) -> None:
+        for k in [k for k in self._text_cache if k[0] == rel]:
+            del self._text_cache[k]
 
     @property
     def raw_repo_root(self) -> str:
+        if self.root is not None:
+            return str(Path(self.root).resolve())
         for nid in self._nodes_of("Repo"):
             return str(self.nodes[nid]["attrs"].get("root") or ".")
         return "."
@@ -1776,7 +1908,8 @@ class DevMemory:
                 "budget": {"mode": mode, "budget_tokens": int(budget_tokens),
                            "estimated_tokens": total_tokens,
                            "items": len(picked)},
-                "journal": self.journal_recent(5)}
+                "journal": self.journal_recent(5),
+                "snapshot": self.staleness()}
 
     def _build_commands(self) -> list[str]:
         """Mechanical extraction of build/test commands from the root docs."""
@@ -1872,6 +2005,13 @@ class DevMemory:
         lines = ["# Ocelot repo brief", ""]
         lines.append(f"repo: {repo.get('name', '?')}  head: {repo.get('head', '?')[:12]}  "
                      f"snapshot: {repo.get('generated_at', '?')}")
+        snapshot = self.staleness()
+        if snapshot["stale"]:
+            lines.append(
+                f"WARNING: snapshot is stale (snapshot "
+                f"{(snapshot['snapshot_head'] or '?')[:12]} vs HEAD "
+                f"{(snapshot['head'] or '?')[:12]}); rebuild with "
+                f"`python -m scripts.ocelot_dev_memory build`")
         lines.append(f"files: {repo.get('files', '?')}  symbols: {repo.get('symbols', '?')}  "
                      f"tests: {repo.get('tests', '?')}  seeds: {repo.get('seeds', '?')}")
         lines.append("")
@@ -1935,6 +2075,7 @@ class DevMemory:
                 "commands": commands,
                 "key_docs": key_docs,
                 "changed": changed_files,
+                "snapshot": snapshot,
                 "estimated_tokens": self._estimate_tokens(text)}
 
     def stats(self) -> dict[str, Any]:
@@ -1960,10 +2101,12 @@ class DevMemory:
                 ["git", "-C", root, "status", "--porcelain", "-uall"],
                 capture_output=True, text=True, timeout=30, check=False)
         except (OSError, subprocess.SubprocessError) as e:
-            return {"ok": False, "error": str(e)}
+            return {"ok": False, "error": str(e),
+                    "snapshot": self.staleness()}
         if proc.returncode != 0:
             return {"ok": False,
-                    "error": (proc.stderr or "git status failed").strip()}
+                    "error": (proc.stderr or "git status failed").strip(),
+                    "snapshot": self.staleness()}
         files = []
         for line in (proc.stdout or "").splitlines():
             if len(line) < 4:
@@ -1989,7 +2132,65 @@ class DevMemory:
             if len(files) >= int(limit):
                 break
         return {"ok": True, "files": files, "n": len(files),
-                "include_all": include_all, "limit": int(limit)}
+                "include_all": include_all, "limit": int(limit),
+                "snapshot": self.staleness()}
+
+    _STALENESS_TTL_S = 5.0
+
+    def staleness(self) -> dict[str, Any]:
+        """Whether the snapshot still describes this checkout.
+
+        Compares the snapshot's recorded root and HEAD with the process root
+        and `git rev-parse HEAD` now. One git call; memoised for a few seconds.
+        """
+        now = time.monotonic()
+        memo = self._staleness_memo
+        if memo is not None and now - memo[0] < self._STALENESS_TTL_S:
+            return dict(memo[1])
+        repo: dict[str, Any] = {}
+        for nid in self._nodes_of("Repo"):
+            repo = (self.node(nid) or {}).get("attrs", {})
+        snapshot_root = repo.get("root")
+        root = self.raw_repo_root
+        root_mismatch = bool(snapshot_root) and (
+            Path(str(snapshot_root)).resolve() != Path(root).resolve())
+        head: str | None = None
+        try:
+            proc = subprocess.run(
+                ["git", "-C", root, "rev-parse", "HEAD"],
+                capture_output=True, text=True, timeout=10, check=False)
+            if proc.returncode == 0 and proc.stdout.strip():
+                head = proc.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            head = None
+        snapshot_head = repo.get("head") or None
+        # A checkout with a known HEAD and a snapshot without one cannot be
+        # verified, so it counts as stale (`snapshot_head != head`).
+        # The working tree is compared by digest (see `_tree_digest`). Older
+        # snapshots without a digest are not judged on it.
+        snapshot_tree = repo.get("tree_digest") or None
+        tree_now, _tree_err = _tree_digest(Path(root))
+        tree_changed = bool(snapshot_tree and tree_now
+                            and snapshot_tree != tree_now)
+        stale = bool(root_mismatch or (head and snapshot_head != head)
+                     or tree_changed)
+        result: dict[str, Any] = {
+            "snapshot_root": snapshot_root,
+            "root": root,
+            "root_mismatch": root_mismatch,
+            "snapshot_head": snapshot_head,
+            "head": head,
+            "tree_changed": tree_changed,
+            "stale": stale,
+            "generated_at": repo.get("generated_at"),
+        }
+        self._staleness_memo = (now, result)
+        return dict(result)
+
+    def _tag_cache(self) -> Path:
+        """The tag cache under the process root. Index tools pass this so a
+        worktree does not write into the script checkout's `var/`."""
+        return Path(self.raw_repo_root).resolve() / "var" / "ocelot_dev_tags.json"
 
     def repo_map(self, task: str = "", *, budget_tokens: int = 1500,
                  focus_files: Iterable[str] | None = None,
@@ -2033,13 +2234,173 @@ class DevMemory:
                          budget_tokens=budget_tokens,
                          focus_files=focus,
                          force_refresh=force_refresh,
-                         scip_path=scip_path)
+                         cache_path=self._tag_cache(),
+                         scip_path=self._scip_arg(scip_path))
+
+    def _scip_arg(self, scip_path: str | None) -> str | None:
+        """Resolve a SCIP export relative to the repo root and require it to
+        stay inside that root."""
+        if not scip_path:
+            return None
+        root = Path(self.raw_repo_root).resolve()
+        p = Path(scip_path)
+        if not p.is_absolute():
+            p = root / p
+        p = p.resolve()
+        if not p.is_relative_to(root):
+            raise ValueError("scip_path escapes the repo root")
+        if not p.is_file():
+            raise ValueError(f"no such SCIP index: {scip_path}")
+        return str(p)
 
     def impact(self, file: str, *, depth: int = 2,
                scip_path: str | None = None) -> dict[str, Any]:
         from scripts.ocelot_repo_map import impact as _impact
         return _impact(self.raw_repo_root, file=file, depth=depth,
-                       scip_path=scip_path)
+                       cache_path=self._tag_cache(),
+                       scip_path=self._scip_arg(scip_path))
+
+    # -- symbol graph (syntactic; optional LSP refinement) ----------------- #
+    def symbol_graph(self, op: str, symbol: str, *, depth: int | None = None,
+                     min_confidence: float = 0.0,
+                     precise: bool = False) -> dict[str, Any]:
+        """Symbol callers, callees, impact or resolve over the tag cache.
+
+        Rows come from `scripts.ocelot_symbol_graph` and are syntactic (see
+        docs/features/SYMBOL_GRAPH.md). With `precise=True` and op `callers`
+        or `impact`, the target's LSP references refine the depth-1 rows and
+        list references the syntactic graph missed. Lines in the result are
+        1-based.
+        """
+        from scripts.ocelot_repo_map import update_tag_cache
+        from scripts.ocelot_symbol_graph import (
+            DEFAULT_DEPTH, OPS, build_symbol_graph, callers, callees,
+            resolve_symbol, symbol_impact)
+        if op not in OPS:
+            return {"ok": False, "error": f"unknown op: {op}"}
+        root = Path(self.raw_repo_root).resolve()
+        cache_file = root / "var" / "ocelot_dev_tags.json"
+        # The same steps as `symbol_query`, kept in one process so the target
+        # definition is available for the LSP position without a second load
+        # of the tag cache.
+        t0 = time.perf_counter()
+        cache, tag_stats = update_tag_cache(root, cache_path=cache_file)
+        t1 = time.perf_counter()
+        graph = build_symbol_graph(cache)
+        t2 = time.perf_counter()
+        hops = DEFAULT_DEPTH.get(op) if depth is None else depth
+        if op == "resolve":
+            matches = resolve_symbol(graph, symbol)
+            result: dict[str, Any] = (
+                {"ok": True, "op": "resolve", "symbol": symbol,
+                 "matches": matches} if matches
+                else {"ok": False, "error": f"unknown symbol: {symbol}"})
+        elif op == "callers":
+            result = callers(graph, symbol, hops, min_confidence)
+        elif op == "callees":
+            result = callees(graph, symbol, hops, min_confidence)
+        else:
+            result = symbol_impact(graph, symbol, hops, min_confidence)
+        t3 = time.perf_counter()
+        result.update({
+            "root": str(root),
+            "cache": str(cache_file),
+            "stats": graph["stats"],
+            "tag_cache": {key: tag_stats[key] for key in
+                          ("files", "parsed", "reused", "failed", "errors",
+                           "cached_files")},
+            "timings": {"update_seconds": round(t1 - t0, 4),
+                        "build_seconds": round(t2 - t1, 4),
+                        "query_seconds": round(t3 - t2, 4)},
+        })
+        if precise:
+            if op not in ("callers", "impact"):
+                result["precision"] = {
+                    "lsp": f"not applicable: precise applies to callers and impact, not {op}"}
+            elif not result.get("ok"):
+                result["precision"] = {
+                    "lsp": "not run: symbol did not resolve to one definition"}
+            else:
+                self._refine_with_lsp(result, graph, root)
+        return result
+
+    def _refine_with_lsp(self, result: dict[str, Any], graph: dict[str, Any],
+                         root: Path) -> None:
+        """Mark depth-1 rows with LSP-confirmed references (in place)."""
+        from scripts.ocelot_lsp import detect_language, server_candidates
+        target = graph["nodes"][result["symbol"]]
+        rel = target["file"]
+        lang = detect_language(rel)
+        if lang is None:
+            result["precision"] = {
+                "lsp": f"unavailable: no LSP language for {rel!r}"}
+            return
+        candidates = server_candidates(lang, root)
+        ready = [c for c in candidates if c["available"]]
+        if not ready:
+            tried = ", ".join(c["name"] for c in candidates) or "none registered"
+            result["precision"] = {
+                "lsp": f"unavailable: no {lang} language server found "
+                       f"(tried: {tried})"}
+            return
+        server = ready[0]["name"]
+        lines = self._read(rel).split("\n")
+        def_line = lines[target["line"] - 1] if 0 < target["line"] <= len(lines) else ""
+        character = _name_utf16_col(def_line, target["name"])
+        if character is None:
+            result["precision"] = {
+                "lsp": "error: definition name not found on its line"}
+            return
+        refs = self.lsp_references(rel, target["line"] - 1, character,
+                                   timeout=PRECISE_TIMEOUT)
+        if not refs.get("ok"):
+            result["precision"] = {
+                "lsp": f"error: {refs.get('error') or 'references failed'}"}
+            return
+        # (path, 1-based line) for each LSP reference.
+        locations = [(str(loc.get("path") or ""), int(loc.get("line") or 0) + 1)
+                     for loc in refs.get("locations") or []]
+        by_file: dict[str, list[tuple[str, dict[str, Any]]]] = {}
+        for nid, node in graph["nodes"].items():
+            by_file.setdefault(node["file"], []).append((nid, node))
+
+        def innermost(path: str, line1: int) -> tuple[str, str]:
+            spans = [(nid, node) for nid, node in by_file.get(path, [])
+                     if node["line"] <= line1 <= node["end_line"]]
+            if not spans:
+                return f"{path}::<module>", "<module>"
+            nid, node = max(spans, key=lambda s: (
+                s[1]["line"], -(s[1]["end_line"] - s[1]["line"])))
+            return nid, node["qualname"]
+
+        depth1 = [row for row in result["results"] if row["depth"] == 1]
+        covered: set[tuple[str, int]] = set()
+        for row in result["results"]:
+            if row["depth"] != 1:
+                row["lsp_confirmed"] = None
+                continue
+            node = graph["nodes"][row["id"]]
+            inside = {loc for loc in locations if loc[0] == row["file"]
+                      and node["line"] <= loc[1] <= node["end_line"]}
+            covered |= inside
+            row["lsp_confirmed"] = bool(inside)
+        only: dict[tuple[str, str, int], dict[str, Any]] = {}
+        for path, line1 in sorted(set(locations)):
+            if (path, line1) in covered:
+                continue
+            nid, qualname = innermost(path, line1)
+            only[(nid, path, line1)] = {"id": nid, "file": path,
+                                        "line": line1, "qualname": qualname}
+        lsp_only = [only[key] for key in sorted(only)]
+        confirmed = sum(1 for row in depth1 if row["lsp_confirmed"])
+        result["lsp_only"] = lsp_only
+        result["precision"] = {
+            "lsp": "used", "server": server,
+            "references": len(locations),
+            "confirmed": confirmed,
+            "unconfirmed": len(depth1) - confirmed,
+            "lsp_only": len(lsp_only),
+        }
 
     # -- LSP bridge (compiler-accurate; lazy server) ---------------------- #
     def _lsp_client(self, file: str, language: str | None = None,
@@ -2063,14 +2424,17 @@ class DevMemory:
 
     def lsp_references(self, file: str, line: int, character: int,
                        *, language: str | None = None,
-                       command: str | None = None) -> dict[str, Any]:
+                       command: str | None = None,
+                       timeout: float | None = None) -> dict[str, Any]:
         client, err = self._lsp_client(file, language, command)
-        return err or client.references(file, line, character)
+        return err or client.references(file, line, character,
+                                        timeout=timeout)
 
     def lsp_diagnostics(self, file: str, *, language: str | None = None,
-                        command: str | None = None) -> dict[str, Any]:
+                        command: str | None = None,
+                        timeout: float | None = None) -> dict[str, Any]:
         client, err = self._lsp_client(file, language, command)
-        return err or client.diagnostics(file)
+        return err or client.diagnostics(file, timeout=timeout)
 
     def lsp_callers(self, file: str, line: int, character: int,
                     *, language: str | None = None,
@@ -2121,6 +2485,7 @@ class DevMemory:
                     include_snippet: bool = True) -> dict[str, Any]:
         from scripts.ocelot_code_search import code_search as _search
         return _search(self.raw_repo_root, query, limit=limit,
+                       cache_path=self._tag_cache(),
                        include_snippet=include_snippet)
 
     def scip(self, path: str, *, summary_only: bool = False) -> dict[str, Any]:
@@ -2142,7 +2507,8 @@ class DevMemory:
 
     def architecture(self, *, top: int = 15) -> dict[str, Any]:
         from scripts.ocelot_architecture import architecture_report
-        return architecture_report(self.raw_repo_root, top=top)
+        return architecture_report(self.raw_repo_root, top=top,
+                                   cache_path=self._tag_cache())
 
     def ast(self, file: str, *, node: str | None = None,
             max_nodes: int = 200) -> dict[str, Any]:
@@ -2167,15 +2533,22 @@ class DevMemory:
         return {"ok": True, **out}
 
     def edit(self, script: dict[str, Any], *,
-             task: str | None = None) -> dict[str, Any]:
+             task: str | None = None,
+             diagnostics: bool = False) -> dict[str, Any]:
         """Apply a graph-addressed edit script and journal the transaction.
 
         The script is the canonical change; `diff_view` is only a rendering.
-        A raw diff/patch input is refused by the edit layer."""
+        A raw diff/patch input is refused by the edit layer. After an applied
+        write, `diagnostics=True` waits up to POST_EDIT_DIAG_TIMEOUT seconds for
+        the LSP server's push diagnostics on the edited file and attaches them
+        under `result["diagnostics"]`. The journal entry is written before that
+        wait and records `"diagnostics": "requested"` or `"skipped"`."""
         from scripts.ocelot_edit import apply_edit_script
-        result = apply_edit_script(self.raw_repo_root, script,
-                                   write=bool(script.get("apply", False)))
+        write = _strict_bool(script.get("apply", False), "apply")
+        result = apply_edit_script(self.raw_repo_root, script, write=write)
         if result.get("applied"):
+            file_rel = str(script.get("file", result.get("file", "")))
+            self._drop_cached(file_rel)
             entry = self.journal_append(
                 "edit",
                 task or f"edit {result.get('file', '?')}",
@@ -2187,9 +2560,60 @@ class DevMemory:
                 base_sha256=result.get("base_sha256"),
                 new_sha256=result.get("new_sha256"),
                 backup=result.get("backup"),
+                diagnostics="requested" if diagnostics else "skipped",
             )
             result["journaled"] = entry
+            result["diagnostics"] = self._post_edit_diagnostics(
+                file_rel, enabled=diagnostics)
         return result
+
+    def _post_edit_diagnostics(self, file: str, *,
+                               enabled: bool) -> dict[str, Any]:
+        """Push diagnostics for a just-written file, or why there are none.
+
+        The LSP client sends didChange when the file's sha differs from the
+        last one it saw, then waits for the server's publish. Failures are
+        recorded here and never raised, so they cannot fail the edit."""
+        if not enabled:
+            return {"skipped": "diagnostics=false"}
+        from scripts.ocelot_lsp import detect_language, server_candidates
+        try:
+            lang = detect_language(file)
+            if not lang:
+                return {"skipped": f"no LSP language for {file!r}"}
+            ready = [c for c in server_candidates(lang, self.raw_repo_root)
+                     if c["available"]]
+            if not ready:
+                return {"skipped": f"unavailable: no {lang} language server found"}
+            res = self.lsp_diagnostics(file, timeout=POST_EDIT_DIAG_TIMEOUT)
+        except Exception as e:  # noqa: BLE001 - recorded, not raised
+            return {"error": f"{type(e).__name__}: {e}"}
+        if not res.get("ok"):
+            return {"error": str(res.get("error") or "diagnostics failed")}
+        items = res.get("diagnostics") or []
+        errors = sum(1 for d in items if d.get("severity") == 1)
+        published = bool(res.get("published"))
+        # "unknown": the wait ended without a publish, so nothing is known.
+        # "warnings" covers any published non-error item (severity 2-4).
+        if errors:
+            verdict = "errors"
+        elif not published:
+            verdict = "unknown"
+        elif not items:
+            verdict = "clean"
+        else:
+            verdict = "warnings"
+        return {
+            "ok": True,
+            "verdict": verdict,
+            "count": len(items),
+            "errors": errors,
+            "warnings": sum(1 for d in items if d.get("severity") == 2),
+            "published": published,
+            "items": [{**d, "line1": int(d.get("line") or 0) + 1}
+                      for d in items[:DIAG_ITEM_LIMIT]],
+            "server": ready[0]["name"],
+        }
 
     # -- journal ------------------------------------------------------------ #
     def journal_append(self, kind: str, task: str, summary: str,
@@ -2373,6 +2797,16 @@ def _cmd_query(args: argparse.Namespace, mem: DevMemory) -> int:
                 raise ValueError(f"unknown session command {cmd!r}")
         except Exception as e:  # noqa: BLE001 - CLI boundary reports honestly
             out = {"ok": False, "error": f"{type(e).__name__}: {e}"}
+    elif cmd.startswith("symbol-"):
+        # `symbol-impact` is the LSP verb; the symbol-graph one is
+        # `symbol-graph-impact`.
+        op = cmd.split("-", 1)[1]
+        if op == "graph-impact":
+            op = "impact"
+        out = mem.symbol_graph(op, args.symbol,
+                               depth=getattr(args, "depth", None),
+                               min_confidence=getattr(args, "min_confidence", 0.0),
+                               precise=getattr(args, "precise", False))
     elif cmd == "edit":
         if args.script:
             script = json.loads(Path(args.script).read_text(encoding="utf-8"))
@@ -2383,7 +2817,8 @@ def _cmd_query(args: argparse.Namespace, mem: DevMemory) -> int:
         script["file"] = args.file
         if args.apply:
             script["apply"] = True
-        out = mem.edit(script, task=args.task)
+        out = mem.edit(script, task=args.task,
+                       diagnostics=args.diagnostics)
     elif cmd == "stats":
         out = mem.stats()
     elif cmd == "changed":
@@ -2421,10 +2856,19 @@ def main(argv: list[str] | None = None) -> int:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--pretty", action="store_true",
                         help="indent JSON output")
+    # The checkout the query tools act on. Same default as the MCP server.
+    common.add_argument("--root", default=(
+        os.environ.get("OCELOT_DEV_ROOT") or str(ROOT)),
+        help="checkout the tools act on (default: OCELOT_DEV_ROOT or this repo)")
+    # `build` has its own --root (the tree to index), so it does not get the
+    # query-side option.
+    build_common = argparse.ArgumentParser(add_help=False)
+    build_common.add_argument("--pretty", action="store_true",
+                              help="indent JSON output")
     sub = p.add_subparsers(dest="command", required=True)
 
     b = sub.add_parser("build", help="build/refresh the snapshot",
-                       parents=[common])
+                       parents=[build_common])
     b.add_argument("--root", default=str(ROOT))
     b.add_argument("--out", default=None)
     b.add_argument("--docs", choices=("features", "all", "none"),
@@ -2529,6 +2973,22 @@ def main(argv: list[str] | None = None) -> int:
         _p.add_argument("--language", default=None)
         _p.set_defaults(func=_cmd_query, needs_mem=True)
 
+    for _name in ("symbol-callers", "symbol-callees", "symbol-graph-impact",
+                  "symbol-resolve"):
+        _p = sub.add_parser(_name, parents=[common],
+                            help=f"symbol graph {_name.split('-', 1)[1]} "
+                                 "(syntactic; lines 1-based)")
+        _p.add_argument("symbol",
+                        help='"path::qualname", a qualname, or a bare name')
+        if _name != "symbol-resolve":
+            _p.add_argument("--depth", type=int, default=None,
+                            help="hops (callers/callees 1, impact 3)")
+            _p.add_argument("--min-confidence", type=float, default=0.0)
+        if _name in ("symbol-callers", "symbol-graph-impact"):
+            _p.add_argument("--precise", action="store_true",
+                            help="confirm direct callers with LSP references")
+        _p.set_defaults(func=_cmd_query, needs_mem=True)
+
     rme = sub.add_parser("repo-map-eval", parents=[common],
                          help="deterministic repo-map retrieval evaluation")
     rme.add_argument("--tasks", dest="tasks_path", default=None)
@@ -2584,6 +3044,8 @@ def main(argv: list[str] | None = None) -> int:
     ed.add_argument("--apply", action="store_true")
     ed.add_argument("--task", default=None,
                     help="journal task label")
+    ed.add_argument("--diagnostics", action="store_true",
+                    help="after --apply, wait up to 8 s for LSP diagnostics")
     ed.set_defaults(func=_cmd_query, needs_mem=True)
 
     st = sub.add_parser("stats", help="snapshot histograms", parents=[common])
@@ -2659,7 +3121,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if not getattr(args, "needs_mem", True):
             return args.func(args)
-        mem = DevMemory(Path(args.dump), Path(args.journal))
+        mem = DevMemory(Path(args.dump), Path(args.journal),
+                        root=Path(args.root))
         return args.func(args, mem)
     finally:
         try:

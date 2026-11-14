@@ -1,0 +1,11 @@
+--- a/scripts/ocelot_architecture.py
++++ b/scripts/ocelot_architecture.py
+@@ -108,8 +108,6 @@
+     contain unused code, but its lack of inbound references is expected.
+     """
+     if _is_test_file(path):
+-        return True
+-    if path.startswith(_ENTRYPOINT_PREFIXES):
+         return True
+     name = path.split("/")[-1]
+     if name in _ENTRYPOINT_NAMES:

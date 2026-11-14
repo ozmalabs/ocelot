@@ -1,0 +1,11 @@
+--- a/scripts/ocelot_dev_memory.py
++++ b/scripts/ocelot_dev_memory.py
+@@ -970,7 +970,7 @@
+         return value
+     if isinstance(value, str) and value.lower() in ("true", "false"):
+         return value.lower() == "true"
+-    raise ValueError(f"{name} must be a boolean")
++    return bool(value)
+ 
+ 
+ def _tree_digest(root: Path) -> tuple[str | None, str | None]:
