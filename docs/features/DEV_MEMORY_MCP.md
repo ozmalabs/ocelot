@@ -59,9 +59,13 @@ the snapshot with the checkout now. It is stale when the root differs, when
 `git rev-parse HEAD` moved, or when the working tree changed since the build.
 The working tree check is `tree_changed`: a sha256 over `git diff HEAD` and the
 names of untracked files under the indexed source dirs, recorded at build time
-as the `tree_digest` repo attribute. Snapshots without a digest are not judged
-on the tree. Limit: editing the content of an untracked file is not detected,
-only its appearance or removal.
+as the `tree_digest` repo attribute. Each untracked file also contributes its
+path, size and sha256, so editing an untracked file's content marks the
+snapshot stale. Untracked files over 2 MiB contribute path, size and mtime
+instead of a hash. Unreadable untracked files contribute their path and an "unreadable" marker.
+Snapshots without a digest are not judged on the tree. Snapshots built before
+this change carry a different digest, so they report `tree_changed` until
+rebuilt.
 
 What is indexed:
 
@@ -734,8 +738,8 @@ layer is honest: semantic targets in, lossless CST out, diff as a view.
   has no symbols in the graph. The tag cache is the exception for Python: since
   tag schema v3 its stdlib AST path drops one leading BOM, so Python tags match
   with or without it. The snapshot's own Python parse (`_python_parse`, which
-  makes the Symbol nodes) still rejects a BOM, so a BOM-prefixed Python file has
-  no Symbol nodes in the snapshot.
+  makes the Symbol nodes) also drops one leading BOM, so a BOM-prefixed Python
+  file has the same Symbol nodes as the same file without one.
 - **Precise mode is only as complete as the language server.** See the note in
   *Symbol graph and precise mode*.
 - **Symbol graph CLI verbs.** `symbol-callers`, `symbol-callees`,

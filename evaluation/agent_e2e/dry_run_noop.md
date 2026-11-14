@@ -1,7 +1,7 @@
 # Agent end-to-end evaluation
 
 - Driver: `noop`
-- Base: `a6df57f0d4b594564d993495d6d38a1b1be3170f`
+- Base: `aef842ba6bc06acb1bab6ee74e879b9bbc81dc53`
 - Arms: baseline
 - Repeats per task and arm: 1
 - Tasks: 7

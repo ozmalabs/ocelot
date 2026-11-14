@@ -755,3 +755,61 @@ def test_snapshot_without_git_records_digest_error(tmp_path: Path) -> None:
     assert repo["attrs"]["tree_digest_error"]
     mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
     assert mem.staleness()["tree_changed"] is False
+
+
+_BOM_SRC = '''"""Bom domain."""
+
+
+class Gadget:
+    def spin(self) -> int:
+        return 1
+
+
+def twist(n: int) -> int:
+    return n
+'''
+
+
+def _symbol_keys(out: Path) -> list[tuple[str, str, int]]:
+    nodes = json.loads(out.read_text(encoding="utf-8"))["nodes"]
+    return sorted((n["attrs"]["qualname"], n["attrs"]["kind"],
+                   n["attrs"]["start_line"])
+                  for n in nodes if n["type"] == "Symbol")
+
+
+def test_bom_prefixed_python_yields_same_symbols(tmp_path: Path) -> None:
+    plain = tmp_path / "plain"
+    bommed = tmp_path / "bommed"
+    _write(plain / "domains" / "bom_mod.py", _BOM_SRC)
+    _write(bommed / "domains" / "bom_mod.py", "\ufeff" + _BOM_SRC)
+    kwargs = dict(include_docs="none", include_git=False,
+                  include_scripts=False)
+    build_index(plain, plain / "var" / "g.json", **kwargs)
+    build_index(bommed, bommed / "var" / "g.json", **kwargs)
+    expected = _symbol_keys(plain / "var" / "g.json")
+    assert any(q == "Gadget.spin" for q, _k, _l in expected)
+    assert _symbol_keys(bommed / "var" / "g.json") == expected
+
+
+def test_staleness_sees_untracked_file_content_edit(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _commit_all(tmp_path)
+    scratch = tmp_path / "domains" / "scratch.py"
+    _write(scratch, "x = 1\n")
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+    fresh = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert fresh["stale"] is False
+    assert fresh["tree_changed"] is False
+
+    _write(scratch, "x = 2\n")
+    edited = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert edited["stale"] is True
+    assert edited["tree_changed"] is True
+
+    _write(scratch, "x = 1\n")
+    restored = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert restored["stale"] is False
+    assert restored["tree_changed"] is False

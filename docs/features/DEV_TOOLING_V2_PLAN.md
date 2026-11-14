@@ -231,7 +231,7 @@ favours lexical arms; treat this as directional (30 tasks, one run).
 but no hosted-model run has been made. A pilot is 7 tasks × 2 arms = 14
 sessions and needs explicit approval and a cost ceiling.
 
-**Open items:** live agent pilot; `_python_parse` (snapshot Symbol nodes)
-still rejects BOM files; untracked-file content changes are not part of the
-staleness digest; the agent-eval task base is `a6df57f0` (an ancestor of
-`dt/v2`).
+**Open items:** live agent pilot. Fixed in `dt-w5-fixes`: `_python_parse`
+strips a leading BOM (snapshot Symbol nodes exist for BOM files); untracked
+source-file content is part of the staleness digest; the agent-eval task base
+is `aef842ba` (was `a6df57f0`).
