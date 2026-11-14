@@ -26,18 +26,28 @@ are not scope-resolved and they never edit code.
 from __future__ import annotations
 
 import ast
+import hashlib
 import importlib
+import json
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, NamedTuple
 
 __all__ = [
     "LANGUAGES",
+    "TAGS_SCHEMA_VERSION",
     "language_for",
     "extract_tags",
+    "extract_tags_status",
+    "extractor_fingerprint",
     "available_languages",
     "backend_status",
 ]
+
+# Bump whenever extraction output changes for any suffix. Tag caches key on
+# extractor_fingerprint(), which includes this number, so a bump invalidates
+# every cached entry.
+TAGS_SCHEMA_VERSION = 1
 
 # Every grammar package inspected for this registry keeps its upstream tag
 # query at <package>/queries/tags.scm.
@@ -151,10 +161,10 @@ def _load_tree_sitter_backend(module_name: str, factory_name: str,
 def _python_tags(source: str) -> list[dict[str, Any]]:
     """Python tags via the stdlib AST fast path.
 
-    This is intentionally the same extraction as
-    ``ocelot_repo_map._python_tags``: class/function definitions plus loaded
-    names and attributes. It avoids paying a tree-sitter parse per Python file
-    while the repo map indexes thousands of them.
+    This is the only Python extractor in the tree; ``ocelot_repo_map`` delegates
+    here. It returns class/function definitions plus loaded names and
+    attributes. It avoids paying a tree-sitter parse per Python file while the
+    repo map indexes thousands of them.
     """
     try:
         tree = ast.parse(source)
@@ -180,23 +190,20 @@ def _python_tags(source: str) -> list[dict[str, Any]]:
     return out
 
 
-def extract_tags(path: str | Path, source: str) -> list[dict[str, Any]]:
-    """Definitions and references for one file.
+def extract_tags_status(path: str | Path,
+                        source: str) -> tuple[list[dict[str, Any]], str | None]:
+    """Tags for one file plus an explicit backend error, if any.
 
-    Returns ``[{name, kind: "def"|"ref", detail, line}]`` where ``detail`` is
-    the query capture (for example ``definition.function`` or
-    ``reference.call``) and ``line`` is 1-based.
-
-    Unknown suffixes, missing grammars, missing/uncompilable tag queries and
-    malformed source all return ``[]``: one bad file must not kill a repo-wide
-    index. Use :func:`backend_status` to distinguish "no tags here" from
-    "backend unavailable".
+    Returns ``(tags, None)`` on success, including a genuine "no tags" answer:
+    an unknown suffix, or Python source that does not parse. Returns
+    ``([], error_text)`` when the grammar import, query compile or parse
+    raised. Callers that cache results must not store the error case.
     """
     entry = language_for(path)
     if entry is None:
-        return []
+        return [], None
     if entry["backend"] == "python-ast":
-        return _python_tags(source)
+        return _python_tags(source), None
     try:
         from tree_sitter import Parser, QueryCursor
 
@@ -226,11 +233,87 @@ def extract_tags(path: str | Path, source: str) -> list[dict[str, Any]]:
                     "detail": kind_capture,
                     "line": int(node.start_point[0]) + 1,
                 })
-        return out
+        return out, None
+    except Exception as exc:
+        return [], f"{type(exc).__name__}: {exc}"
+
+
+def extract_tags(path: str | Path, source: str) -> list[dict[str, Any]]:
+    """Definitions and references for one file.
+
+    Returns ``[{name, kind: "def"|"ref", detail, line}]`` where ``detail`` is
+    the query capture (for example ``definition.function`` or
+    ``reference.call``) and ``line`` is 1-based.
+
+    Unknown suffixes, missing grammars, missing/uncompilable tag queries and
+    malformed source all return ``[]``: one bad file must not kill a repo-wide
+    index. Use :func:`backend_status` to distinguish "no tags here" from
+    "backend unavailable", or :func:`extract_tags_status` for the error text.
+    """
+    tags, _error = extract_tags_status(path, source)
+    return tags
+
+
+def _suffix_key(path_or_suffix: str | Path) -> str:
+    """Lower-case suffix for a path, or a suffix string passed through.
+
+    ``Path(".py").suffix`` is empty (a dotfile name), so a bare suffix is
+    detected by its leading dot before falling back to ``Path.suffix``.
+    """
+    text = str(path_or_suffix)
+    if text.startswith(".") and "/" not in text and "\\" not in text:
+        return text.lower()
+    return Path(text).suffix.lower()
+
+
+def _distribution_version(module: str) -> str | None:
+    """Installed grammar distribution version, trying both package spellings."""
+    from importlib.metadata import PackageNotFoundError, version
+
+    for name in (module, module.replace("_", "-")):
+        try:
+            return version(name)
+        except PackageNotFoundError:
+            continue
+    return None
+
+
+def _tags_query_sha(module: str, tags_query: str) -> str | None:
+    """sha256 of the grammar's tags.scm bytes, or None if it cannot be read."""
+    try:
+        package = importlib.import_module(module)
+        return hashlib.sha256(
+            _query_path(package, tags_query).read_bytes()).hexdigest()
     except Exception:
-        # A grammar/query failure on one file must not kill the map; the file
-        # contributes no tags (honest absence). backend_status carries the why.
-        return []
+        return None
+
+
+@lru_cache(maxsize=None)
+def _fingerprint_for_suffix(suffix: str) -> str:
+    entry = LANGUAGES.get(suffix)
+    if entry is None:
+        payload: list[Any] = [TAGS_SCHEMA_VERSION, None]
+    else:
+        backend = entry["backend"]
+        module = entry["module"]
+        query_sha = (None if backend == "python-ast"
+                     else _tags_query_sha(module, entry["tags_query"]))
+        payload = [TAGS_SCHEMA_VERSION, backend, module,
+                   _distribution_version(module), query_sha,
+                   entry["language"]]
+    return hashlib.sha256(json.dumps(payload).encode("utf-8")).hexdigest()
+
+
+def extractor_fingerprint(path_or_suffix: str | Path) -> str:
+    """Stable sha256 identifying the extractor that produces tags for a suffix.
+
+    Covers the schema version, backend, grammar module, grammar distribution
+    version and the tags.scm bytes. Unknown suffixes get a fingerprint of the
+    schema version alone. Memoised per suffix; clear with
+    ``_fingerprint_for_suffix.cache_clear()`` after changing the schema
+    constant in a test.
+    """
+    return _fingerprint_for_suffix(_suffix_key(path_or_suffix))
 
 
 def available_languages() -> list[str]:

@@ -6,8 +6,14 @@ render inside a token budget. The tag cache is content-hash incremental.
 """
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
+import time
 from pathlib import Path
 
+from scripts import ocelot_repo_map as repo_map_module
 from scripts.ocelot_repo_map import (
     extract_tags,
     impact,
@@ -91,3 +97,202 @@ def test_impact(tmp_path: Path) -> None:
     assert r["ok"] is True
     assert [x["path"] for x in r["impacted"]] == ["b.py"]
     assert r["impacted"][0]["depth"] == 1
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_same_second_same_size_edit_is_not_served_stale(tmp_path: Path) -> None:
+    # R1: same length, same second, same mtime_ns: only the content hash can
+    # tell the two versions apart.
+    a = tmp_path / "a.py"
+    a.write_text("def foo():\n    return 1\n", encoding="utf-8")
+    cache_path = tmp_path / "var" / "tags.json"
+    pinned = a.stat().st_mtime_ns
+    update_tag_cache(tmp_path, cache_path=cache_path, files=["a.py"])
+    a.write_text("def bar():\n    return 1\n", encoding="utf-8")
+    os.utime(a, ns=(pinned, pinned))
+    cache, stats = update_tag_cache(tmp_path, cache_path=cache_path,
+                                    files=["a.py"])
+    names = {t["name"] for t in cache["files"]["a.py"]["tags"]}
+    assert "bar" in names and "foo" not in names
+    assert stats["parsed"] == 1
+
+
+def test_backend_failure_is_not_cached(tmp_path: Path, monkeypatch) -> None:
+    (tmp_path / "a.py").write_text("def alpha():\n    return 1\n",
+                                   encoding="utf-8")
+    cache_path = tmp_path / "var" / "tags.json"
+    real = repo_map_module.extract_tags_status
+    calls = {"n": 0}
+
+    def flaky(path, source):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return [], "boom"
+        return real(path, source)
+
+    monkeypatch.setattr(repo_map_module, "extract_tags_status", flaky)
+    cache, first = update_tag_cache(tmp_path, cache_path=cache_path,
+                                    files=["a.py"])
+    assert first["failed"] == 1 and first["parsed"] == 0
+    assert first["errors"] == ["a.py: boom"]
+    assert "a.py" not in cache["files"]
+    if cache_path.exists():
+        assert "a.py" not in json.loads(cache_path.read_text())["files"]
+    cache, second = update_tag_cache(tmp_path, cache_path=cache_path,
+                                     files=["a.py"])
+    assert second["parsed"] == 1 and second["failed"] == 0
+    assert any(t["name"] == "alpha" for t in cache["files"]["a.py"]["tags"])
+
+
+def test_fingerprint_change_forces_reextract(tmp_path: Path,
+                                             monkeypatch) -> None:
+    _fixture(tmp_path)
+    cache_path = tmp_path / "var" / "tags.json"
+    update_tag_cache(tmp_path, cache_path=cache_path, files=["a.py"])
+    _cache, same = update_tag_cache(tmp_path, cache_path=cache_path,
+                                    files=["a.py"])
+    assert same["parsed"] == 0 and same["reused"] == 1
+    monkeypatch.setattr(repo_map_module, "extractor_fingerprint",
+                        lambda _path: "fingerprint-changed")
+    _cache, changed = update_tag_cache(tmp_path, cache_path=cache_path,
+                                       files=["a.py"])
+    assert changed["parsed"] == 1
+
+
+def test_subset_call_does_not_shrink_cache(tmp_path: Path, monkeypatch) -> None:
+    _fixture(tmp_path)
+    (tmp_path / "c.py").write_text("def gamma():\n    return 3\n",
+                                   encoding="utf-8")
+    cache_path = tmp_path / "var" / "tags.json"
+    # Point the full scan at the fixture root instead of the repo's dirs.
+    monkeypatch.setattr(repo_map_module, "SOURCE_DIRS", (".",))
+    full, _ = update_tag_cache(tmp_path, cache_path=cache_path)
+    assert set(full["files"]) == {"a.py", "b.py", "c.py"}
+    subset, stats = update_tag_cache(tmp_path, cache_path=cache_path,
+                                     files=["a.py"])
+    on_disk = json.loads(cache_path.read_text(encoding="utf-8"))
+    assert len(on_disk["files"]) == 3
+    assert set(subset["files"]) == {"a.py"}
+    assert subset["root_hash"] != full["root_hash"]
+    assert stats["reused"] == 1 and stats["parsed"] == 0
+
+
+def test_mtime_refresh_is_saved_and_then_uses_fast_path(
+        tmp_path: Path, monkeypatch) -> None:
+    _fixture(tmp_path)
+    a = tmp_path / "a.py"
+    cache_path = tmp_path / "var" / "tags.json"
+    base = time.time_ns()
+    clock = {"now": base}
+    monkeypatch.setattr(repo_map_module.time, "time_ns", lambda: clock["now"])
+    os.utime(a, ns=(base, base))
+    update_tag_cache(tmp_path, cache_path=cache_path, files=["a.py"])
+    # Same content, new mtime, one second later. The content is re-hashed,
+    # the refreshed mtime is written to disk.
+    touched = base - 5_000_000_000
+    os.utime(a, ns=(touched, touched))
+    clock["now"] = base + 1_000_000_000
+    _cache, refresh = update_tag_cache(tmp_path, cache_path=cache_path,
+                                       files=["a.py"])
+    assert refresh["reused"] == 1 and refresh["parsed"] == 0
+    on_disk = json.loads(cache_path.read_text(encoding="utf-8"))
+    assert on_disk["files"]["a.py"]["mtime_ns"] == touched
+    # Outside the racy window (checked - mtime >= RACY_NS) the next call must
+    # not read or hash the file.
+
+    def no_hash(_text: str) -> str:
+        raise AssertionError("fast path must not hash the file")
+
+    monkeypatch.setattr(repo_map_module, "_sha256", no_hash)
+    clock["now"] = base + 2_000_000_000
+    _cache, fast = update_tag_cache(tmp_path, cache_path=cache_path,
+                                    files=["a.py"])
+    assert fast["reused"] == 1
+
+
+def test_racy_entry_is_rehashed_before_window_elapses(
+        tmp_path: Path, monkeypatch) -> None:
+    _fixture(tmp_path)
+    a = tmp_path / "a.py"
+    cache_path = tmp_path / "var" / "tags.json"
+    base = time.time_ns()
+    clock = {"now": base}
+    monkeypatch.setattr(repo_map_module.time, "time_ns", lambda: clock["now"])
+    os.utime(a, ns=(base, base))
+    update_tag_cache(tmp_path, cache_path=cache_path, files=["a.py"])
+    clock["now"] = base + 1_000_000_000
+    hashed = {"n": 0}
+    real_hash = repo_map_module._sha256
+
+    def counting(text: str) -> str:
+        hashed["n"] += 1
+        return real_hash(text)
+
+    monkeypatch.setattr(repo_map_module, "_sha256", counting)
+    # Same mtime and size as the entry, but checked 1 s after the mtime: the
+    # racy rule forces a hash even though the stat looks unchanged.
+    _cache, racy = update_tag_cache(tmp_path, cache_path=cache_path,
+                                    files=["a.py"])
+    assert hashed["n"] == 1 and racy["reused"] == 1
+
+
+def _write_graph_fixture(root: Path) -> None:
+    (root / "base.py").write_text(
+        "def shared_compute(value):\n    return value\n", encoding="utf-8")
+    for i in range(8):
+        (root / f"mod{i}.py").write_text(
+            "from base import shared_compute\n\n"
+            f"def job_{i}(value):\n"
+            f"    return shared_compute(value) + helper_{i % 3}()\n\n"
+            f"def helper_{i % 3}():\n"
+            "    return Widget()\n\n"
+            "class Widget:\n"
+            f"    def run(self):\n        return job_{i}(1)\n",
+            encoding="utf-8")
+
+
+_DETERMINISM_SCRIPT = """
+import json, sys
+sys.path.insert(0, sys.argv[1])
+from scripts.ocelot_repo_map import repo_map
+root, cache, files = sys.argv[2], sys.argv[3], json.loads(sys.argv[4])
+result = repo_map(root, task="shared compute widget job", budget_tokens=800,
+                  cache_path=cache, files=files)
+print(json.dumps({"files": result["files"], "markdown": result["markdown"],
+                  "graph": result["graph"]}, sort_keys=True))
+"""
+
+
+def test_repo_map_output_is_identical_across_hash_seeds(tmp_path: Path) -> None:
+    _write_graph_fixture(tmp_path)
+    files = sorted(p.name for p in tmp_path.glob("*.py"))
+    outputs = []
+    for seed in ("1", "2"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run(
+            [sys.executable, "-c", _DETERMINISM_SCRIPT, str(REPO_ROOT),
+             str(tmp_path), str(tmp_path / f"tags_{seed}.json"),
+             json.dumps(files)],
+            cwd=str(REPO_ROOT), env=env, capture_output=True, text=True,
+            check=False)
+        assert proc.returncode == 0, proc.stderr
+        outputs.append(proc.stdout)
+    assert outputs[0] == outputs[1]
+    assert json.loads(outputs[0])["files"]
+
+
+def test_pagerank_ranks_sum_to_one_with_dangling_node() -> None:
+    graph = {
+        "defines": {}, "references": {}, "definitions": {},
+        "edges": [
+            {"src": "a.py", "tgt": "b.py", "weight": 1.0},
+            {"src": "b.py", "tgt": "c.py", "weight": 1.0},
+            {"src": "d.py", "tgt": "c.py", "weight": 2.0},
+        ],
+    }
+    for task in ("", "alpha pagerank"):
+        ranks = repo_map_module.personalized_pagerank(graph, task=task)
+        assert set(ranks) == {"a.py", "b.py", "c.py", "d.py"}
+        assert abs(sum(ranks.values()) - 1.0) < 1e-9
