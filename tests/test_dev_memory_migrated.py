@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.ocelot_dev_memory import DevMemory, build_index
 from scripts.ocelot_dev_memory_mcp import DevMemoryServer
 
@@ -537,3 +539,111 @@ def test_mcp_protocol(tmp_path: Path) -> None:
     })
     entries = json.loads(recent["result"]["content"][0]["text"])["entries"]
     assert entries[-1]["task"] == "touch demo"
+
+
+def _git(root: Path, *args: str) -> None:
+    import subprocess
+    subprocess.run(["git", "-C", str(root), *args], check=True,
+                   capture_output=True, text=True)
+
+
+def test_process_root_override_acts_on_that_checkout(tmp_path: Path) -> None:
+    snap = tmp_path / "snap"
+    _fixture(snap)
+    out = snap / "var" / "dev_graph.json"
+    build_index(snap, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    other = tmp_path / "other"
+    _fixture(other)
+    _write(other / "domains" / "only_here.py", "def only_here():\n    return 1\n")
+    snap_foo = (snap / "domains" / "foo.py").read_text(encoding="utf-8")
+
+    mem = DevMemory(out, tmp_path / "journal.jsonl", root=other)
+    assert mem.raw_repo_root == str(other.resolve())
+    assert mem.ast("domains/only_here.py")["ok"] is True
+    with pytest.raises(ValueError, match="not a Python file"):
+        DevMemory(out, tmp_path / "journal2.jsonl").ast("domains/only_here.py")
+
+    res = mem.edit({**ADD_EDIT_OPS, "apply": True})
+    assert res["applied"] is True
+    assert "return a + b + 1" in (other / "domains" / "foo.py").read_text(
+        encoding="utf-8")
+    assert (snap / "domains" / "foo.py").read_text(encoding="utf-8") == snap_foo
+
+    _git(other, "init", "-q")
+    _git(other, "add", "-A")
+    _git(other, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "base")
+    _write(other / "domains" / "new_module.py", "x = 1\n")
+    changed = mem.changed(limit=50)
+    assert changed["ok"] is True
+    assert "domains/new_module.py" in [f["path"] for f in changed["files"]]
+    assert "snapshot" in changed
+
+
+ADD_EDIT_OPS = {"file": "domains/foo.py",
+                "ops": [{"op": "replace_body", "symbol": "add",
+                         "text": "return a + b + 1"}]}
+
+
+def test_edit_rejects_non_boolean_apply(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    with pytest.raises(ValueError, match="apply must be a boolean"):
+        mem.edit({**ADD_EDIT_OPS, "apply": "maybe"})
+    assert "return a + b + 1" not in (tmp_path / "domains" / "foo.py").read_text(
+        encoding="utf-8")
+
+
+def test_staleness_reports_moved_head(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "one")
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+
+    fresh = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert fresh["stale"] is False
+    assert fresh["snapshot_head"] is not None
+    assert fresh["snapshot_head"] == fresh["head"]
+
+    _write(tmp_path / "NOTES.md", "second commit\n")
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "two")
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    stale = mem.staleness()
+    assert stale["stale"] is True
+    assert stale["snapshot_head"] != stale["head"]
+    assert "snapshot" in mem.brief()
+    assert "WARNING: snapshot is stale" in mem.brief()["markdown"]
+
+
+def test_read_returns_new_content_after_file_changes(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    assert "def add" in mem._read("domains/foo.py")
+    first = mem._read("domains/foo.py")
+    _write(tmp_path / "domains" / "foo.py", first + "\n\nVALUE = 42\n")
+    assert "VALUE = 42" in mem._read("domains/foo.py")
+
+
+def test_scip_path_must_stay_inside_repo(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    with pytest.raises(ValueError, match="scip_path escapes the repo root"):
+        mem.impact("domains/bar.py", scip_path="../x.json")
+    with pytest.raises(ValueError, match="no such SCIP index"):
+        mem.impact("domains/bar.py", scip_path="missing.scip.json")

@@ -574,6 +574,11 @@ class LSPClient:
         self._stderr_reader: threading.Thread | None = None
         self._write_lock = threading.Lock()
         self._state_lock = threading.RLock()
+        # Held across "decide the didOpen/didChange and record it" plus the
+        # write, so notifications for one document reach the server in order.
+        # The reader thread never takes it, and `_state_lock` is never held
+        # while a write to the pipe is in progress.
+        self._doc_send_lock = threading.Lock()
         self._start_lock = threading.Lock()
 
         self._next_id = 0
@@ -1073,7 +1078,10 @@ class LSPClient:
         p = Path(path)
         if not p.is_absolute():
             p = self.root / p
-        return p.resolve()
+        resolved = p.resolve()
+        if not resolved.is_relative_to(self.root):
+            raise LSPError(f"path escapes the workspace root: {path}")
+        return resolved
 
     def _language_id(self, path: Path) -> str:
         return _LANGUAGE_IDS_BY_SUFFIX.get(path.suffix.lower(), self.language)
@@ -1090,38 +1098,45 @@ class LSPClient:
         uri = p.as_uri()
         display = _display_path(p, self.root)
         self._ensure_started()
-        with self._state_lock:
-            record = self._docs.get(uri)
-            if record is None:
-                version = 1
-                record = {
-                    "uri": uri,
-                    "path": display,
-                    "version": version,
-                    "sha256": digest,
-                }
-                self._docs[uri] = record
-                self._diagnostics.pop(uri, None)
-                self._doc_events[uri] = threading.Event()
-                self._send_notification("textDocument/didOpen", {
-                    "textDocument": {
+        with self._doc_send_lock:
+            notice: tuple[str, dict[str, Any]] | None = None
+            with self._state_lock:
+                record = self._docs.get(uri)
+                if record is None:
+                    version = 1
+                    record = {
                         "uri": uri,
-                        "languageId": self._language_id(p),
+                        "path": display,
                         "version": version,
-                        "text": text,
-                    },
-                })
-            elif record.get("sha256") != digest:
-                version = int(record.get("version") or 1) + 1
-                record["version"] = version
-                record["sha256"] = digest
-                self._diagnostics.pop(uri, None)
-                self._doc_events[uri] = threading.Event()
-                self._send_notification("textDocument/didChange", {
-                    "textDocument": {"uri": uri, "version": version},
-                    "contentChanges": [{"text": text}],
-                })
-            return dict(record)
+                        "sha256": digest,
+                    }
+                    self._docs[uri] = record
+                    self._diagnostics.pop(uri, None)
+                    self._doc_events[uri] = threading.Event()
+                    notice = ("textDocument/didOpen", {
+                        "textDocument": {
+                            "uri": uri,
+                            "languageId": self._language_id(p),
+                            "version": version,
+                            "text": text,
+                        },
+                    })
+                elif record.get("sha256") != digest:
+                    version = int(record.get("version") or 1) + 1
+                    record["version"] = version
+                    record["sha256"] = digest
+                    self._diagnostics.pop(uri, None)
+                    self._doc_events[uri] = threading.Event()
+                    notice = ("textDocument/didChange", {
+                        "textDocument": {"uri": uri, "version": version},
+                        "contentChanges": [{"text": text}],
+                    })
+                snapshot = dict(record)
+            # Written after `_state_lock` is released; `_doc_send_lock` keeps
+            # the order of notices for this client.
+            if notice is not None:
+                self._send_notification(notice[0], notice[1])
+            return snapshot
 
     # -- queries ----------------------------------------------------------- #
     def definition(self, path: str | Path, line: int, character: int, *,

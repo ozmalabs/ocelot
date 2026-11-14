@@ -915,6 +915,16 @@ def _histogram(values: Iterable[str]) -> dict[str, int]:
     return dict(Counter(values).most_common())
 
 
+def _strict_bool(value: Any, name: str) -> bool:
+    """A boolean from a script dict. Accepts bools and the strings "true" or
+    "false" (case-insensitive). Anything else is an error, not a truthy value."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str) and value.lower() in ("true", "false"):
+        return value.lower() == "true"
+    raise ValueError(f"{name} must be a boolean")
+
+
 # --------------------------------------------------------------------------- #
 # query layer
 # --------------------------------------------------------------------------- #
@@ -922,10 +932,16 @@ def _histogram(values: Iterable[str]) -> dict[str, int]:
 class DevMemory:
     dump: Path = DEFAULT_DUMP
     journal: Path = DEFAULT_JOURNAL
+    # Process root the tools act on. None means the root recorded in the
+    # snapshot. Set it when the server runs in a worktree other than the one
+    # the snapshot was built from.
+    root: Path | None = None
 
     def __post_init__(self) -> None:
         self.dump = Path(self.dump)
         self.journal = Path(self.journal)
+        if self.root is not None:
+            self.root = Path(self.root)
         if not self.dump.exists():
             raise FileNotFoundError(
                 f"no dev-memory snapshot at {self.dump}; run "
@@ -939,7 +955,10 @@ class DevMemory:
             s, t = int(e["src"]), int(e["tgt"])
             self._out.setdefault(s, []).append(e)
             self._in.setdefault(t, []).append(e)
-        self._text_cache: dict[str, str] = {}
+        # Keyed by (rel, st_mtime_ns, st_size) so a file changed on disk is
+        # read again.
+        self._text_cache: dict[tuple[str, int, int], str] = {}
+        self._staleness_memo: tuple[float, dict[str, Any]] | None = None
         self._gi = None
         # Token document frequency over labels, used only to weight a search
         # hit by how distinctive its matched words are. This is a mechanical
@@ -1084,13 +1103,27 @@ class DevMemory:
 
     # -- snippets ----------------------------------------------------------- #
     def _read(self, rel: str) -> str:
-        if rel not in self._text_cache:
-            p = Path(self.raw_repo_root) / rel
-            self._text_cache[rel] = _read_text(p, limit=1_000_000) or ""
-        return self._text_cache[rel]
+        p = Path(self.raw_repo_root) / rel
+        try:
+            st = p.stat()
+        except OSError:
+            return ""
+        key = (rel, st.st_mtime_ns, st.st_size)
+        if key not in self._text_cache:
+            # Drop older versions of this file before caching the new one.
+            for old in [k for k in self._text_cache if k[0] == rel]:
+                del self._text_cache[old]
+            self._text_cache[key] = _read_text(p, limit=1_000_000) or ""
+        return self._text_cache[key]
+
+    def _drop_cached(self, rel: str) -> None:
+        for k in [k for k in self._text_cache if k[0] == rel]:
+            del self._text_cache[k]
 
     @property
     def raw_repo_root(self) -> str:
+        if self.root is not None:
+            return str(Path(self.root).resolve())
         for nid in self._nodes_of("Repo"):
             return str(self.nodes[nid]["attrs"].get("root") or ".")
         return "."
@@ -1776,7 +1809,8 @@ class DevMemory:
                 "budget": {"mode": mode, "budget_tokens": int(budget_tokens),
                            "estimated_tokens": total_tokens,
                            "items": len(picked)},
-                "journal": self.journal_recent(5)}
+                "journal": self.journal_recent(5),
+                "snapshot": self.staleness()}
 
     def _build_commands(self) -> list[str]:
         """Mechanical extraction of build/test commands from the root docs."""
@@ -1872,6 +1906,13 @@ class DevMemory:
         lines = ["# Ocelot repo brief", ""]
         lines.append(f"repo: {repo.get('name', '?')}  head: {repo.get('head', '?')[:12]}  "
                      f"snapshot: {repo.get('generated_at', '?')}")
+        snapshot = self.staleness()
+        if snapshot["stale"]:
+            lines.append(
+                f"WARNING: snapshot is stale (snapshot "
+                f"{(snapshot['snapshot_head'] or '?')[:12]} vs HEAD "
+                f"{(snapshot['head'] or '?')[:12]}); rebuild with "
+                f"`python -m scripts.ocelot_dev_memory build`")
         lines.append(f"files: {repo.get('files', '?')}  symbols: {repo.get('symbols', '?')}  "
                      f"tests: {repo.get('tests', '?')}  seeds: {repo.get('seeds', '?')}")
         lines.append("")
@@ -1935,6 +1976,7 @@ class DevMemory:
                 "commands": commands,
                 "key_docs": key_docs,
                 "changed": changed_files,
+                "snapshot": snapshot,
                 "estimated_tokens": self._estimate_tokens(text)}
 
     def stats(self) -> dict[str, Any]:
@@ -1960,10 +2002,12 @@ class DevMemory:
                 ["git", "-C", root, "status", "--porcelain", "-uall"],
                 capture_output=True, text=True, timeout=30, check=False)
         except (OSError, subprocess.SubprocessError) as e:
-            return {"ok": False, "error": str(e)}
+            return {"ok": False, "error": str(e),
+                    "snapshot": self.staleness()}
         if proc.returncode != 0:
             return {"ok": False,
-                    "error": (proc.stderr or "git status failed").strip()}
+                    "error": (proc.stderr or "git status failed").strip(),
+                    "snapshot": self.staleness()}
         files = []
         for line in (proc.stdout or "").splitlines():
             if len(line) < 4:
@@ -1989,7 +2033,51 @@ class DevMemory:
             if len(files) >= int(limit):
                 break
         return {"ok": True, "files": files, "n": len(files),
-                "include_all": include_all, "limit": int(limit)}
+                "include_all": include_all, "limit": int(limit),
+                "snapshot": self.staleness()}
+
+    _STALENESS_TTL_S = 5.0
+
+    def staleness(self) -> dict[str, Any]:
+        """Whether the snapshot still describes this checkout.
+
+        Compares the snapshot's recorded root and HEAD with the process root
+        and `git rev-parse HEAD` now. One git call; memoised for a few seconds.
+        """
+        now = time.monotonic()
+        memo = self._staleness_memo
+        if memo is not None and now - memo[0] < self._STALENESS_TTL_S:
+            return dict(memo[1])
+        repo: dict[str, Any] = {}
+        for nid in self._nodes_of("Repo"):
+            repo = (self.node(nid) or {}).get("attrs", {})
+        snapshot_root = repo.get("root")
+        root = self.raw_repo_root
+        root_mismatch = bool(snapshot_root) and (
+            Path(str(snapshot_root)).resolve() != Path(root).resolve())
+        head: str | None = None
+        try:
+            proc = subprocess.run(
+                ["git", "-C", root, "rev-parse", "HEAD"],
+                capture_output=True, text=True, timeout=10, check=False)
+            if proc.returncode == 0 and proc.stdout.strip():
+                head = proc.stdout.strip()
+        except (OSError, subprocess.SubprocessError):
+            head = None
+        snapshot_head = repo.get("head") or None
+        stale = bool(root_mismatch or (
+            snapshot_head and head and snapshot_head != head))
+        result: dict[str, Any] = {
+            "snapshot_root": snapshot_root,
+            "root": root,
+            "root_mismatch": root_mismatch,
+            "snapshot_head": snapshot_head,
+            "head": head,
+            "stale": stale,
+            "generated_at": repo.get("generated_at"),
+        }
+        self._staleness_memo = (now, result)
+        return dict(result)
 
     def repo_map(self, task: str = "", *, budget_tokens: int = 1500,
                  focus_files: Iterable[str] | None = None,
@@ -2033,13 +2121,29 @@ class DevMemory:
                          budget_tokens=budget_tokens,
                          focus_files=focus,
                          force_refresh=force_refresh,
-                         scip_path=scip_path)
+                         scip_path=self._scip_arg(scip_path))
+
+    def _scip_arg(self, scip_path: str | None) -> str | None:
+        """Resolve a SCIP export relative to the repo root and require it to
+        stay inside that root."""
+        if not scip_path:
+            return None
+        root = Path(self.raw_repo_root).resolve()
+        p = Path(scip_path)
+        if not p.is_absolute():
+            p = root / p
+        p = p.resolve()
+        if not p.is_relative_to(root):
+            raise ValueError("scip_path escapes the repo root")
+        if not p.is_file():
+            raise ValueError(f"no such SCIP index: {scip_path}")
+        return str(p)
 
     def impact(self, file: str, *, depth: int = 2,
                scip_path: str | None = None) -> dict[str, Any]:
         from scripts.ocelot_repo_map import impact as _impact
         return _impact(self.raw_repo_root, file=file, depth=depth,
-                       scip_path=scip_path)
+                       scip_path=self._scip_arg(scip_path))
 
     # -- LSP bridge (compiler-accurate; lazy server) ---------------------- #
     def _lsp_client(self, file: str, language: str | None = None,
@@ -2173,9 +2277,10 @@ class DevMemory:
         The script is the canonical change; `diff_view` is only a rendering.
         A raw diff/patch input is refused by the edit layer."""
         from scripts.ocelot_edit import apply_edit_script
-        result = apply_edit_script(self.raw_repo_root, script,
-                                   write=bool(script.get("apply", False)))
+        write = _strict_bool(script.get("apply", False), "apply")
+        result = apply_edit_script(self.raw_repo_root, script, write=write)
         if result.get("applied"):
+            self._drop_cached(str(script.get("file", result.get("file", ""))))
             entry = self.journal_append(
                 "edit",
                 task or f"edit {result.get('file', '?')}",
