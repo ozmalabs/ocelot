@@ -10,6 +10,7 @@ asserts the refusal.
 """
 from __future__ import annotations
 
+import copy
 import json
 import os
 import subprocess
@@ -271,3 +272,16 @@ def test_symbol_query_end_to_end_and_cli(tmp_path: Path, capsys) -> None:
     out = capsys.readouterr().out
     assert code == 0
     assert json.loads(out)["results"][0]["id"] == "scripts/b_use.py::wrap_fn"
+
+
+def test_memo_key_includes_extractor_fingerprints(tmp_path: Path) -> None:
+    rels = _write_fixture(tmp_path)
+    cache, _ = update_tag_cache(tmp_path, cache_path=tmp_path / "t.json",
+                                files=rels)
+    first = sg.build_symbol_graph(cache)
+    changed = copy.deepcopy(cache)
+    rel = sorted(changed["files"])[0]
+    changed["files"][rel]["fp"] = "other-extractor-fingerprint"
+    assert changed["root_hash"] == cache["root_hash"]
+    assert sg.build_symbol_graph(changed) is not first
+    assert sg.build_symbol_graph(cache) is first

@@ -50,6 +50,8 @@ _E_INVALID_REQUEST = -32600
 _E_METHOD_NOT_FOUND = -32601
 _E_INVALID_PARAMS = -32602
 _E_INTERNAL = -32603
+# Largest Content-Length framed message the stdio reader accepts.
+MAX_MESSAGE_BYTES = 64 * 1024 * 1024
 
 
 # --------------------------------------------------------------------------- #
@@ -249,8 +251,8 @@ _TOOLS: list[dict[str, Any]] = [
                           "description": "Optional synthetic/post-parsed CstNode graph for .rs/.lua when tree-sitter is unavailable."},
             "task": {"type": "string",
                      "description": "Optional journal task label."},
-            "diagnostics": {"type": "boolean", "default": True,
-                            "description": "After an applied write, wait for the LSP server's diagnostics on the file (skipped when no server is available). Ignored in preview."},
+            "diagnostics": {"type": "boolean", "default": False,
+                            "description": "set diagnostics=true to wait up to 8 s for language-server diagnostics on the edited file. Only after an applied write; skipped when no server is available. Ignored in preview."},
         }, ["file", "ops"]),
     },
     {
@@ -732,7 +734,7 @@ class DevMemoryServer:
         if a.get("cst_graph") is not None:
             script["cst_graph"] = a["cst_graph"]
         return self.mem.edit(script, task=a.get("task"),
-                             diagnostics=a.get("diagnostics", True))
+                             diagnostics=a.get("diagnostics", False))
 
     def _symbol_callers(self, a: dict[str, Any]) -> Any:
         return self.mem.symbol_graph("callers", str(a["symbol"]),
@@ -1040,6 +1042,12 @@ def _read_message(stream) -> tuple[Any, str]:
                 h = stream.readline()
                 if not h or h in (b"\r\n", b"\n"):
                     break
+            # A negative length would make stream.read block until EOF, and an
+            # oversized one would buffer without limit. The body is not read.
+            if length < 0 or length > MAX_MESSAGE_BYTES:
+                raise _ParseFailure(
+                    "content-length",
+                    f"Content-Length {length} outside 0..{MAX_MESSAGE_BYTES}")
             body = stream.read(length)
             try:
                 return json.loads(body.decode("utf-8")), "content-length"

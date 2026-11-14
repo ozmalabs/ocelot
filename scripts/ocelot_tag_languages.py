@@ -46,8 +46,9 @@ __all__ = [
 
 # Bump whenever extraction output changes for any suffix. Tag caches key on
 # extractor_fingerprint(), which includes this number, so a bump invalidates
-# every cached entry.
-TAGS_SCHEMA_VERSION = 2
+# every cached entry. v3: Python sources with a leading UTF-8 BOM now produce
+# tags (v2 returned none, and the empty result was cached).
+TAGS_SCHEMA_VERSION = 3
 
 # Every grammar package inspected for this registry keeps its upstream tag
 # query at <package>/queries/tags.scm.
@@ -204,6 +205,10 @@ def _python_tags(source: str) -> list[dict[str, Any]]:
     an explicit stack, so deeply nested expressions cannot hit the recursion
     limit, and the output is in source (pre-order) order.
     """
+    # ast.parse rejects U+FEFF as a non-printable character. One leading BOM
+    # is dropped; line numbers are unchanged because it sits on line 1.
+    if source.startswith("\ufeff"):
+        source = source[1:]
     try:
         tree = ast.parse(source)
     except (SyntaxError, ValueError):

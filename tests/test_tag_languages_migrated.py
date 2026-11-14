@@ -583,3 +583,11 @@ def test_tree_sitter_tags_are_in_source_order_and_deterministic() -> None:
     lines = [t["line"] for t in first]
     assert lines == sorted(lines)
     assert all(t.get("end_line", t["line"]) >= t["line"] for t in first)
+
+
+def test_python_bom_source_yields_the_same_tags() -> None:
+    source = "import os\n\ndef alpha(x):\n    return helper(x)\n"
+    plain = extract_tags("x.py", source)
+    assert plain
+    assert extract_tags("x.py", "\ufeff" + source) == plain
+    assert tag_languages.TAGS_SCHEMA_VERSION == 3

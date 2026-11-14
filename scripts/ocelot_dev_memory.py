@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import json
 import math
 import os
@@ -935,6 +936,11 @@ def build_index(root: str | Path = ROOT, out: str | Path = DEFAULT_DUMP,
         "commits": b.count("Commit"),
         "failures": b.count("Failure"),
     })
+    digest, digest_err = _tree_digest(root)
+    if digest is not None:
+        b.nodes[repo]["attrs"]["tree_digest"] = digest
+    else:
+        b.nodes[repo]["attrs"]["tree_digest_error"] = digest_err or "unknown"
 
     graph = b.to_dict()
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -965,6 +971,35 @@ def _strict_bool(value: Any, name: str) -> bool:
     if isinstance(value, str) and value.lower() in ("true", "false"):
         return value.lower() == "true"
     raise ValueError(f"{name} must be a boolean")
+
+
+def _tree_digest(root: Path) -> tuple[str | None, str | None]:
+    """(digest, error) for the working tree under `root`.
+
+    The digest is sha256 over `git diff HEAD` (tracked content changes) and a
+    NUL and the names of untracked files under SOURCE_DIRS. Untracked file
+    content is not hashed, so an edit to an untracked file is not seen.
+    """
+    try:
+        diff = subprocess.run(
+            ["git", "-C", str(root), "diff", "HEAD", "--no-color",
+             "--no-ext-diff"],
+            capture_output=True, timeout=60, check=False)
+        untracked = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "--others",
+             "--exclude-standard", "--", *SOURCE_DIRS],
+            capture_output=True, timeout=60, check=False)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, str(e)
+    if diff.returncode != 0 or untracked.returncode != 0:
+        err = (diff.stderr or untracked.stderr or b"git failed").decode(
+            "utf-8", errors="replace").strip()
+        return None, err
+    h = hashlib.sha256()
+    h.update(diff.stdout)
+    h.update(b"\0")
+    h.update(untracked.stdout)
+    return h.hexdigest(), None
 
 
 # --------------------------------------------------------------------------- #
@@ -2109,18 +2144,31 @@ class DevMemory:
         snapshot_head = repo.get("head") or None
         # A checkout with a known HEAD and a snapshot without one cannot be
         # verified, so it counts as stale (`snapshot_head != head`).
-        stale = bool(root_mismatch or (head and snapshot_head != head))
+        # The working tree is compared by digest (see `_tree_digest`). Older
+        # snapshots without a digest are not judged on it.
+        snapshot_tree = repo.get("tree_digest") or None
+        tree_now, _tree_err = _tree_digest(Path(root))
+        tree_changed = bool(snapshot_tree and tree_now
+                            and snapshot_tree != tree_now)
+        stale = bool(root_mismatch or (head and snapshot_head != head)
+                     or tree_changed)
         result: dict[str, Any] = {
             "snapshot_root": snapshot_root,
             "root": root,
             "root_mismatch": root_mismatch,
             "snapshot_head": snapshot_head,
             "head": head,
+            "tree_changed": tree_changed,
             "stale": stale,
             "generated_at": repo.get("generated_at"),
         }
         self._staleness_memo = (now, result)
         return dict(result)
+
+    def _tag_cache(self) -> Path:
+        """The tag cache under the process root. Index tools pass this so a
+        worktree does not write into the script checkout's `var/`."""
+        return Path(self.raw_repo_root).resolve() / "var" / "ocelot_dev_tags.json"
 
     def repo_map(self, task: str = "", *, budget_tokens: int = 1500,
                  focus_files: Iterable[str] | None = None,
@@ -2164,6 +2212,7 @@ class DevMemory:
                          budget_tokens=budget_tokens,
                          focus_files=focus,
                          force_refresh=force_refresh,
+                         cache_path=self._tag_cache(),
                          scip_path=self._scip_arg(scip_path))
 
     def _scip_arg(self, scip_path: str | None) -> str | None:
@@ -2186,6 +2235,7 @@ class DevMemory:
                scip_path: str | None = None) -> dict[str, Any]:
         from scripts.ocelot_repo_map import impact as _impact
         return _impact(self.raw_repo_root, file=file, depth=depth,
+                       cache_path=self._tag_cache(),
                        scip_path=self._scip_arg(scip_path))
 
     # -- symbol graph (syntactic; optional LSP refinement) ----------------- #
@@ -2413,6 +2463,7 @@ class DevMemory:
                     include_snippet: bool = True) -> dict[str, Any]:
         from scripts.ocelot_code_search import code_search as _search
         return _search(self.raw_repo_root, query, limit=limit,
+                       cache_path=self._tag_cache(),
                        include_snippet=include_snippet)
 
     def scip(self, path: str, *, summary_only: bool = False) -> dict[str, Any]:
@@ -2434,7 +2485,8 @@ class DevMemory:
 
     def architecture(self, *, top: int = 15) -> dict[str, Any]:
         from scripts.ocelot_architecture import architecture_report
-        return architecture_report(self.raw_repo_root, top=top)
+        return architecture_report(self.raw_repo_root, top=top,
+                                   cache_path=self._tag_cache())
 
     def ast(self, file: str, *, node: str | None = None,
             max_nodes: int = 200) -> dict[str, Any]:
@@ -2460,21 +2512,21 @@ class DevMemory:
 
     def edit(self, script: dict[str, Any], *,
              task: str | None = None,
-             diagnostics: bool = True) -> dict[str, Any]:
+             diagnostics: bool = False) -> dict[str, Any]:
         """Apply a graph-addressed edit script and journal the transaction.
 
         The script is the canonical change; `diff_view` is only a rendering.
         A raw diff/patch input is refused by the edit layer. After an applied
-        write, `diagnostics=True` waits for the LSP server's push diagnostics
-        on the edited file and attaches them under `result["diagnostics"]`."""
+        write, `diagnostics=True` waits up to POST_EDIT_DIAG_TIMEOUT seconds for
+        the LSP server's push diagnostics on the edited file and attaches them
+        under `result["diagnostics"]`. The journal entry is written before that
+        wait and records `"diagnostics": "requested"` or `"skipped"`."""
         from scripts.ocelot_edit import apply_edit_script
         write = _strict_bool(script.get("apply", False), "apply")
         result = apply_edit_script(self.raw_repo_root, script, write=write)
         if result.get("applied"):
             file_rel = str(script.get("file", result.get("file", "")))
             self._drop_cached(file_rel)
-            diag = self._post_edit_diagnostics(file_rel, enabled=diagnostics)
-            result["diagnostics"] = diag
             entry = self.journal_append(
                 "edit",
                 task or f"edit {result.get('file', '?')}",
@@ -2486,9 +2538,11 @@ class DevMemory:
                 base_sha256=result.get("base_sha256"),
                 new_sha256=result.get("new_sha256"),
                 backup=result.get("backup"),
-                diagnostics={k: v for k, v in diag.items() if k != "items"},
+                diagnostics="requested" if diagnostics else "skipped",
             )
             result["journaled"] = entry
+            result["diagnostics"] = self._post_edit_diagnostics(
+                file_rel, enabled=diagnostics)
         return result
 
     def _post_edit_diagnostics(self, file: str, *,
@@ -2515,12 +2569,25 @@ class DevMemory:
         if not res.get("ok"):
             return {"error": str(res.get("error") or "diagnostics failed")}
         items = res.get("diagnostics") or []
+        errors = sum(1 for d in items if d.get("severity") == 1)
+        published = bool(res.get("published"))
+        # "unknown": the wait ended without a publish, so nothing is known.
+        # "warnings" covers any published non-error item (severity 2-4).
+        if errors:
+            verdict = "errors"
+        elif not published:
+            verdict = "unknown"
+        elif not items:
+            verdict = "clean"
+        else:
+            verdict = "warnings"
         return {
             "ok": True,
+            "verdict": verdict,
             "count": len(items),
-            "errors": sum(1 for d in items if d.get("severity") == 1),
+            "errors": errors,
             "warnings": sum(1 for d in items if d.get("severity") == 2),
-            "published": bool(res.get("published")),
+            "published": published,
             "items": [{**d, "line1": int(d.get("line") or 0) + 1}
                       for d in items[:DIAG_ITEM_LIMIT]],
             "server": ready[0]["name"],
@@ -2728,7 +2795,8 @@ def _cmd_query(args: argparse.Namespace, mem: DevMemory) -> int:
         script["file"] = args.file
         if args.apply:
             script["apply"] = True
-        out = mem.edit(script, task=args.task)
+        out = mem.edit(script, task=args.task,
+                       diagnostics=args.diagnostics)
     elif cmd == "stats":
         out = mem.stats()
     elif cmd == "changed":
@@ -2766,10 +2834,19 @@ def main(argv: list[str] | None = None) -> int:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--pretty", action="store_true",
                         help="indent JSON output")
+    # The checkout the query tools act on. Same default as the MCP server.
+    common.add_argument("--root", default=(
+        os.environ.get("OCELOT_DEV_ROOT") or str(ROOT)),
+        help="checkout the tools act on (default: OCELOT_DEV_ROOT or this repo)")
+    # `build` has its own --root (the tree to index), so it does not get the
+    # query-side option.
+    build_common = argparse.ArgumentParser(add_help=False)
+    build_common.add_argument("--pretty", action="store_true",
+                              help="indent JSON output")
     sub = p.add_subparsers(dest="command", required=True)
 
     b = sub.add_parser("build", help="build/refresh the snapshot",
-                       parents=[common])
+                       parents=[build_common])
     b.add_argument("--root", default=str(ROOT))
     b.add_argument("--out", default=None)
     b.add_argument("--docs", choices=("features", "all", "none"),
@@ -2945,6 +3022,8 @@ def main(argv: list[str] | None = None) -> int:
     ed.add_argument("--apply", action="store_true")
     ed.add_argument("--task", default=None,
                     help="journal task label")
+    ed.add_argument("--diagnostics", action="store_true",
+                    help="after --apply, wait up to 8 s for LSP diagnostics")
     ed.set_defaults(func=_cmd_query, needs_mem=True)
 
     st = sub.add_parser("stats", help="snapshot histograms", parents=[common])
@@ -3020,7 +3099,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if not getattr(args, "needs_mem", True):
             return args.func(args)
-        mem = DevMemory(Path(args.dump), Path(args.journal))
+        mem = DevMemory(Path(args.dump), Path(args.journal),
+                        root=Path(args.root))
         return args.func(args, mem)
     finally:
         try:

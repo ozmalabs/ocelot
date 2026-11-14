@@ -363,10 +363,12 @@ def test_post_edit_diagnostics_reflect_the_new_content(
 
     res = mem.edit({"file": "domains/edit_me.py", "apply": True,
                     "ops": [{"op": "replace_body", "symbol": "tweak",
-                             "text": "return 'BROKEN'"}]})
+                             "text": "return 'BROKEN'"}]},
+                   diagnostics=True)
     assert res["applied"] is True
     diag = res["diagnostics"]
     assert diag["ok"] is True
+    assert diag["verdict"] == "errors"
     assert diag["count"] == 1 and diag["errors"] == 1 and diag["warnings"] == 0
     assert diag["published"] is True
     assert diag["items"][0]["line1"] == 1
@@ -377,10 +379,10 @@ def test_post_edit_diagnostics_reflect_the_new_content(
     assert changes and changes[-1]["params"]["textDocument"]["version"] == 2
     assert "BROKEN" in changes[-1]["params"]["contentChanges"][0]["text"]
 
+    # The journal is written before the diagnostics wait, so it records the
+    # request only.
     entry = mem.journal_recent(1)[0]
-    assert entry["diagnostics"]["errors"] == 1
-    assert entry["diagnostics"]["count"] == 1
-    assert "items" not in entry["diagnostics"]
+    assert entry["diagnostics"] == "requested"
 
 
 def test_post_edit_diagnostics_can_be_turned_off(
@@ -392,8 +394,7 @@ def test_post_edit_diagnostics_can_be_turned_off(
                              "text": "return 2"}]}, diagnostics=False)
     assert res["applied"] is True
     assert res["diagnostics"] == {"skipped": "diagnostics=false"}
-    assert mem.journal_recent(1)[0]["diagnostics"] == {
-        "skipped": "diagnostics=false"}
+    assert mem.journal_recent(1)[0]["diagnostics"] == "skipped"
 
 
 def test_preview_does_not_run_diagnostics(
@@ -414,11 +415,10 @@ def test_edit_succeeds_and_records_skip_when_no_server(
     mem = _memory(repo)
     res = mem.edit({"file": "domains/edit_me.py", "apply": True,
                     "ops": [{"op": "replace_body", "symbol": "tweak",
-                             "text": "return 4"}]})
+                             "text": "return 4"}]}, diagnostics=True)
     assert res["applied"] is True
     assert res["diagnostics"]["skipped"].startswith("unavailable: ")
-    assert mem.journal_recent(1)[0]["diagnostics"]["skipped"].startswith(
-        "unavailable: ")
+    assert mem.journal_recent(1)[0]["diagnostics"] == "requested"
 
 
 # --------------------------------------------------------------------------- #
@@ -483,3 +483,62 @@ def test_mcp_symbol_resolve_and_impact_round_trip(repo: Path) -> None:
                                {"symbol": TARGET, "depth": "2"}))
     payload = json.loads(resp["result"]["content"][0]["text"])
     assert payload["ok"] is True and payload["depth"] == 2
+
+
+# --------------------------------------------------------------------------- #
+# post-edit diagnostics: default, verdict, journal order
+# --------------------------------------------------------------------------- #
+def _fake_ready_server(monkeypatch: pytest.MonkeyPatch, diag_fn) -> None:
+    import scripts.ocelot_lsp as lsp
+    monkeypatch.setattr(lsp, "detect_language", lambda file: "python")
+    monkeypatch.setattr(lsp, "server_candidates",
+                        lambda lang, root: [{"available": True,
+                                             "name": "fake"}])
+    monkeypatch.setattr(DevMemory, "lsp_diagnostics", diag_fn)
+
+
+def test_diagnostics_are_off_unless_requested(repo: Path) -> None:
+    mem = _memory(repo)
+    res = mem.edit({"file": "domains/edit_me.py", "apply": True,
+                    "ops": [{"op": "replace_body", "symbol": "tweak",
+                             "text": "return 5"}]})
+    assert res["applied"] is True
+    assert res["diagnostics"] == {"skipped": "diagnostics=false"}
+    assert mem.journal_recent(1)[0]["diagnostics"] == "skipped"
+
+
+@pytest.mark.parametrize("res,verdict", [
+    ({"ok": True, "diagnostics": [], "published": False}, "unknown"),
+    ({"ok": True, "diagnostics": [], "published": True}, "clean"),
+    ({"ok": True, "published": True,
+      "diagnostics": [{"severity": 1, "message": "x", "line": 0}]}, "errors"),
+    ({"ok": True, "published": True,
+      "diagnostics": [{"severity": 2, "message": "w", "line": 0}]},
+     "warnings"),
+])
+def test_diagnostics_verdict(repo: Path, monkeypatch: pytest.MonkeyPatch,
+                             res: dict, verdict: str) -> None:
+    _fake_ready_server(monkeypatch, lambda self, file, timeout=8.0: res)
+    out = _memory(repo).edit({"file": "domains/edit_me.py", "apply": True,
+                              "ops": [{"op": "replace_body", "symbol": "tweak",
+                                       "text": "return 7"}]},
+                             diagnostics=True)
+    assert out["diagnostics"]["verdict"] == verdict
+
+
+def test_journal_entry_exists_before_the_diagnostics_wait(
+        repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, Any] = {}
+
+    def fake(self, file, timeout=8.0):
+        seen["kind"] = self.journal_recent(1)[0]["kind"]
+        seen["task"] = self.journal_recent(1)[0]["task"]
+        return {"ok": True, "diagnostics": [], "published": True}
+
+    _fake_ready_server(monkeypatch, fake)
+    out = _memory(repo).edit({"file": "domains/edit_me.py", "apply": True,
+                              "ops": [{"op": "replace_body", "symbol": "tweak",
+                                       "text": "return 8"}]},
+                             task="order check", diagnostics=True)
+    assert seen == {"kind": "edit", "task": "order check"}
+    assert out["diagnostics"]["verdict"] == "clean"

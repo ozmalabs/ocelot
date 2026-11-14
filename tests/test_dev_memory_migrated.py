@@ -647,3 +647,111 @@ def test_scip_path_must_stay_inside_repo(tmp_path: Path) -> None:
         mem.impact("domains/bar.py", scip_path="../x.json")
     with pytest.raises(ValueError, match="no such SCIP index"):
         mem.impact("domains/bar.py", scip_path="missing.scip.json")
+
+
+def _stamp(p: Path) -> tuple[int, int] | None:
+    if not p.exists():
+        return None
+    st = p.stat()
+    return (st.st_size, st.st_mtime_ns)
+
+
+def test_index_tools_write_cache_under_process_root(tmp_path: Path) -> None:
+    from scripts.ocelot_dev_memory import ROOT
+    real_cache = ROOT / "var" / "ocelot_dev_tags.json"
+    before = _stamp(real_cache)
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl", root=tmp_path)
+    mem.repo_map("add")
+    mem.impact("domains/bar.py")
+    mem.code_search("helper")
+    mem.architecture()
+    assert (tmp_path / "var" / "ocelot_dev_tags.json").is_file()
+    assert _stamp(real_cache) == before
+
+
+def test_cli_root_flag_selects_the_checkout_that_is_edited(
+        tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    from scripts.ocelot_dev_memory import main as dev_memory_main
+    snap_root = tmp_path / "a"
+    _fixture(snap_root)
+    out = snap_root / "var" / "dev_graph.json"
+    build_index(snap_root, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    target = tmp_path / "b"
+    _fixture(target)
+    a_before = (snap_root / "domains" / "foo.py").read_text(encoding="utf-8")
+    ops = json.dumps([{"op": "replace_body", "symbol": "add",
+                       "text": "return a + b + 1"}])
+    rc = dev_memory_main(["--dump", str(out),
+                          "--journal", str(tmp_path / "journal.jsonl"),
+                          "edit", "--file", "domains/foo.py",
+                          "--ops-json", ops, "--apply",
+                          "--root", str(target)])
+    assert rc == 0
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["applied"] is True
+    assert "return a + b + 1" in (target / "domains" / "foo.py").read_text(
+        encoding="utf-8")
+    assert (snap_root / "domains" / "foo.py").read_text(
+        encoding="utf-8") == a_before
+
+
+def _commit_all(root: Path) -> None:
+    _git(root, "add", "-A")
+    _git(root, "-c", "user.name=t", "-c", "user.email=t@t",
+         "commit", "-q", "-m", "base")
+
+
+def test_staleness_follows_the_working_tree(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _commit_all(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    journal = tmp_path / "var" / "journal.jsonl"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+    fresh = DevMemory(out, journal).staleness()
+    assert fresh["stale"] is False
+    assert fresh["tree_changed"] is False
+
+    foo = tmp_path / "domains" / "foo.py"
+    _write(foo, foo.read_text(encoding="utf-8") + "\n# local edit\n")
+    edited = DevMemory(out, journal).staleness()
+    assert edited["stale"] is True
+    assert edited["tree_changed"] is True
+    assert edited["snapshot_head"] == edited["head"]
+
+    _git(tmp_path, "checkout", "--", "domains/foo.py")
+    restored = DevMemory(out, journal).staleness()
+    assert restored["stale"] is False
+    assert restored["tree_changed"] is False
+
+
+def test_staleness_sees_new_untracked_source_file(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _commit_all(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=True, include_scripts=False)
+    _write(tmp_path / "domains" / "new_module.py", "x = 1\n")
+    stale = DevMemory(out, tmp_path / "var" / "journal.jsonl").staleness()
+    assert stale["tree_changed"] is True
+    assert stale["stale"] is True
+
+
+def test_snapshot_without_git_records_digest_error(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    out = tmp_path / "var" / "dev_graph.json"
+    build_index(tmp_path, out, include_docs="none",
+                include_git=False, include_scripts=False)
+    repo = next(n for n in json.loads(out.read_text(encoding="utf-8"))["nodes"]
+                if n["type"] == "Repo")
+    assert "tree_digest" not in repo["attrs"]
+    assert repo["attrs"]["tree_digest_error"]
+    mem = DevMemory(out, tmp_path / "var" / "journal.jsonl")
+    assert mem.staleness()["tree_changed"] is False

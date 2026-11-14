@@ -10,10 +10,12 @@ this function, what does it call, and what breaks transitively if it changes.
 It reads the tag cache that the repo map already maintains, so it adds no
 parser and no new dependency.
 
-## Tag schema v2 (`scripts/ocelot_tag_languages.py`)
+## Tag schema v3 (`scripts/ocelot_tag_languages.py`)
 
-`TAGS_SCHEMA_VERSION = 2`. The bump changes the extractor fingerprint, so every
-cached tag entry is re-extracted once.
+`TAGS_SCHEMA_VERSION = 3`. The bump changes the extractor fingerprint, so every
+cached tag entry is re-extracted once. v2 to v3 changes one behaviour: a Python
+source with a leading UTF-8 BOM now yields its tags. Before, `ast.parse`
+rejected the BOM and the empty result was cached. Line numbers do not move.
 
 | kind | keys |
 |---|---|
@@ -43,8 +45,11 @@ cached tag entry is re-extracted once.
 - Symbol id: `"<rel path>::<qualname>"`. Module-level code uses
   `"<rel path>::<module>"`.
 - `build_symbol_graph(cache)` takes a tag-cache view and returns
-  `{root_hash, nodes, edges, stats}`. The result is memoised in process by
-  `root_hash` (last 4 graphs).
+  `{root_hash, nodes, edges, stats}`. The result is memoised in process by the
+  repo-map graph key (`_graph_key`: `root_hash` plus a digest of each file's
+  extractor fingerprint), for the last 4 graphs. A view with the same
+  `root_hash` but a changed fingerprint on any entry is rebuilt. A view without
+  a `root_hash` is never memoised.
 - Each edge is `{src, tgt, resolution, confidence, count}`. `count` is the
   number of references that produced the edge. Self edges are dropped.
 
