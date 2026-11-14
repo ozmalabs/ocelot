@@ -265,3 +265,98 @@ def test_path_escape_refused(tmp_path: Path) -> None:
             "ops": [{"op": "replace_body", "symbol": "add",
                      "text": "return 0"}],
         })
+
+
+# --------------------------------------------------------------------------- #
+# edit transaction: CRLF, BOM and encoding (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+_CRLF_MOD = (
+    '"""Demo module."""\r\n'
+    "import os\r\n"
+    "\r\n"
+    "def f(a):\r\n"
+    "    x = 1\r\n"
+    "    return a\r\n"
+)
+
+
+def test_crlf_replace_body_matches_lf_result_and_stays_crlf(tmp_path: Path) -> None:
+    import re
+    crlf = tmp_path / "crlf_mod.py"
+    lf = tmp_path / "lf_mod.py"
+    crlf.write_bytes(_CRLF_MOD.encode("utf-8"))
+    lf.write_bytes(_CRLF_MOD.replace("\r\n", "\n").encode("utf-8"))
+    ops = [{"op": "replace_body", "symbol": "f", "text": "y = 2\nreturn a"}]
+    r_crlf = apply_edit_script(tmp_path, {"file": "crlf_mod.py", "ops": ops},
+                               write=True)
+    apply_edit_script(tmp_path, {"file": "lf_mod.py", "ops": ops}, write=True)
+    data = crlf.read_bytes()
+    assert r_crlf["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == lf.read_text(encoding="utf-8").replace(
+        "\n", "\r\n")
+    assert "    y = 2\r\n    return a\r\n" in data.decode("utf-8")
+
+
+def test_crlf_insert_import_inserts_crlf_lines(tmp_path: Path) -> None:
+    import re
+    p = tmp_path / "mod.py"
+    p.write_bytes(_CRLF_MOD.encode("utf-8"))
+    apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "insert_import", "module": "math", "names": ["sqrt"]}]},
+        write=True)
+    data = p.read_bytes()
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert b"from math import sqrt\r\n" in data
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "insert_import adds an extra blank line on CRLF files: the blank-line test "
+    "in _apply_ops compares the next character with '\\n' only, so a CRLF "
+    "line end counts as content. Open finding for the supervisor; the op "
+    "semantics are owned by the next wave."))
+def test_crlf_insert_import_adds_no_extra_blank_line(tmp_path: Path) -> None:
+    p = tmp_path / "mod.py"
+    p.write_bytes(_CRLF_MOD.encode("utf-8"))
+    apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "insert_import", "module": "math", "names": ["sqrt"]}]},
+        write=True)
+    assert p.read_bytes() == _CRLF_MOD.replace(
+        "import os\r\n", "import os\r\nfrom math import sqrt\r\n").encode("utf-8")
+
+
+def test_bom_py_keeps_bom_and_edits(tmp_path: Path) -> None:
+    p = tmp_path / "mod.py"
+    p.write_bytes(b"\xef\xbb\xbf" + b"import os\nx = 1\n")
+    r = apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "replace_span", "start_line": 1, "start_col": 0,
+         "end_line": 2, "end_col": 0, "text": "import sys\n"}]}, write=True)
+    assert r["bom"] is True
+    assert p.read_bytes() == b"\xef\xbb\xbf" + b"import sys\nx = 1\n"
+
+
+def test_latin1_py_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    (tmp_path / "mod.py").write_bytes(b"x = '\xe9'\n")
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+            {"op": "replace_span", "start_line": 1, "start_col": 0,
+             "end_line": 2, "end_col": 0, "text": "x = 2\n"}]})
+
+
+def test_declared_latin1_py_is_refused(tmp_path: Path) -> None:
+    (tmp_path / "mod.py").write_bytes(b"# -*- coding: latin-1 -*-\nx = 1\n")
+    with pytest.raises(CodeEditError, match="declares encoding"):
+        apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+            {"op": "replace_span", "start_line": 2, "start_col": 0,
+             "end_line": 3, "end_col": 0, "text": "x = 2\n"}]})
+
+
+def test_lf_base_sha_is_hash_of_file_bytes(tmp_path: Path) -> None:
+    import hashlib
+    p = tmp_path / "mod.py"
+    p.write_bytes(b"import os\nx = 1\n")
+    r = apply_edit_script(tmp_path, {"file": "mod.py", "ops": [
+        {"op": "replace_span", "start_line": 2, "start_col": 0,
+         "end_line": 3, "end_col": 0, "text": "x = 2\n"}]})
+    assert r["base_sha256"] == hashlib.sha256(p.read_bytes()).hexdigest()
+    assert r["newline"] == "lf" and r["bom"] is False

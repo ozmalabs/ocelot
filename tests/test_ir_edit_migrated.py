@@ -505,3 +505,30 @@ def test_fallback_check_is_read_only(tmp_path: Path) -> None:
         apply_ir_edit_script(tmp_path, _script({
             "op": "fallback_check", "target": "body[1]",
         }), write=True)
+
+
+# --------------------------------------------------------------------------- #
+#  Edit transaction: CRLF and encoding (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+def test_crlf_replace_body_ir_matches_lf_result_and_stays_crlf(tmp_path: Path) -> None:
+    import re
+    crlf = tmp_path / "crlf_mod.py"
+    lf = tmp_path / "lf_mod.py"
+    crlf.write_bytes(FIXTURE.replace("\n", "\r\n").encode("utf-8"))
+    lf.write_bytes(FIXTURE.encode("utf-8"))
+    ops = [{"op": "replace_body_ir", "target": "body[1]", "stmts": RETURN_TOTAL}]
+    r = apply_ir_edit_script(tmp_path, {"file": "crlf_mod.py", "ops": ops},
+                             write=True)
+    apply_ir_edit_script(tmp_path, {"file": "lf_mod.py", "ops": ops}, write=True)
+    data = crlf.read_bytes()
+    assert r["ok"] is True and r["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == lf.read_text(encoding="utf-8").replace(
+        "\n", "\r\n")
+
+
+def test_latin1_ir_source_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    (tmp_path / "mod.py").write_bytes(b"x = '\xe9'\n")
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        apply_ir_edit_script(tmp_path, _script({
+            "op": "replace_body_ir", "target": "body[0]", "stmts": []}))

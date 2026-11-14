@@ -33,19 +33,27 @@ import ast
 import difflib
 import hashlib
 import json
-import os
 import re
-import shutil
 import textwrap
-import time
 import tokenize
 from dataclasses import dataclass
 from io import StringIO
 from pathlib import Path
 from typing import Any
 
+from scripts.ocelot_edit_txn import (
+    check_base,
+    encode_text,
+    normalize_newlines,
+    read_source,
+    sha256_bytes,
+    write_source,
+)
+from scripts.ocelot_lossless import python_roundtrip
+
 MAX_SOURCE_BYTES = 2 * 1024 * 1024
 FORBIDDEN_SCRIPT_KEYS = ("diff", "patch", "unified_diff", "hunk")
+_NEWLINE_NAMES = {"\n": "lf", "\r\n": "crlf", "\r": "cr"}
 
 
 class CodeEditError(ValueError):
@@ -353,7 +361,8 @@ def _rename_edits(source: str, old: str, new: str) -> tuple[list[tuple[int, int,
     return edits, len(edits)
 
 
-def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+def _apply_ops(source: str, ops: list[dict[str, Any]],
+               newline: str = "\n") -> tuple[str, list[dict[str, Any]]]:
     tree = ast.parse(source)
     symbols = symbol_table(source)
     offsets = _line_offsets(source)
@@ -597,7 +606,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[s
     from scripts.ocelot_lossless import LosslessText
     doc = LosslessText.from_python(source)
     for start, end, text, _op in edits:
-        doc.replace(start, end, text)
+        doc.replace(start, end, normalize_newlines(text, newline))
     return doc.render(), changes
 
 
@@ -629,28 +638,22 @@ def apply_edit_script(root: str | Path, script: dict[str, Any], *,
     if path.suffix != ".py":
         raise CodeEditError("v0 edits Python (.py) only; the Rust path uses "
                             "the hub-IR/tree-sitter readers")
-    if not path.is_file():
-        raise CodeEditError(f"no such file: {file}")
-    if path.stat().st_size > MAX_SOURCE_BYTES:
-        raise CodeEditError(f"file exceeds {MAX_SOURCE_BYTES} bytes")
-
-    source = path.read_text(encoding="utf-8")
-    base_sha = sha256_text(source)
-    expected = script.get("base_sha256")
-    if expected and str(expected) != base_sha:
-        raise CodeEditError(
-            f"stale base: file sha256 is {base_sha}, script expected {expected}")
+    src = read_source(root, file, suffixes=(".py",),
+                      max_bytes=MAX_SOURCE_BYTES, error_cls=CodeEditError)
+    source = src.text
+    base_sha = src.sha256
+    check_base(src, script.get("base_sha256"), CodeEditError)
     ops = script.get("ops")
     if not isinstance(ops, list) or not ops:
         raise CodeEditError("edit script needs a non-empty ops list")
 
-    new_source, changes = _apply_ops(source, ops)
+    new_source, changes = _apply_ops(source, ops, newline=src.newline)
     try:
         ast.parse(new_source)
         compile(new_source, str(path), "exec")
     except (SyntaxError, ValueError) as e:
         raise CodeEditError(f"edit would not parse: {e}") from e
-    new_sha = sha256_text(new_source)
+    new_sha = sha256_bytes(encode_text(src, new_source))
 
     diff_lines = list(difflib.unified_diff(
         source.splitlines(keepends=True),
@@ -661,22 +664,7 @@ def apply_edit_script(root: str | Path, script: dict[str, Any], *,
     applied = False
     backup = None
     if write:
-        backup_dir = root / "var" / "ocelot_dev_edits" / "backups"
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        backup = backup_dir / (
-            f"{time.strftime('%Y%m%d-%H%M%S')}_{base_sha[:12]}_{path.name}")
-        shutil.copy2(path, backup)
-        tmp = path.with_name(path.name + ".ocelot_tmp")
-        tmp.write_text(new_source, encoding="utf-8")
-        try:
-            os.chmod(tmp, path.stat().st_mode)
-            os.replace(tmp, path)
-        finally:
-            if tmp.exists():
-                try:
-                    tmp.unlink()
-                except OSError:
-                    pass
+        backup = write_source(root, src, new_source, error_cls=CodeEditError)
         applied = True
 
     return {
@@ -693,7 +681,10 @@ def apply_edit_script(root: str | Path, script: dict[str, Any], *,
         "diff_note": ("a unified diff is a rendered view for humans; the "
                       "canonical record is the op list above"),
         "backup": str(backup) if backup else None,
-        "lossless": {"python_cst": True, "roundtrip": True},
+        "newline": _NEWLINE_NAMES[src.newline],
+        "bom": src.bom,
+        "lossless": {"python_cst": True,
+                     "roundtrip": python_roundtrip(source)},
         "graph_stale": bool(applied),
     }
 
