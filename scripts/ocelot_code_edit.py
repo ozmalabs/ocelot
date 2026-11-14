@@ -391,20 +391,27 @@ def _alias_text(alias: ast.alias) -> str:
     return alias.name + (f" as {alias.asname}" if alias.asname else "")
 
 
-def _missing_import_text(source: str, text: str) -> str:
-    """The part of `text` (one import statement) that `source` does not already
-    bind at module level. Empty when everything is present.
+def _present_import_keys(source: str) -> set[tuple[Any, ...]]:
+    """Keys of every module-level import binding in `source` (AST, not text)."""
+    present: set[tuple[Any, ...]] = set()
+    for stmt in ast.parse(source).body:
+        if isinstance(stmt, (ast.Import, ast.ImportFrom)):
+            present.update(_import_key(stmt, a) for a in stmt.names)
+    return present
 
-    Presence is decided on the AST, so comments and substrings do not count.
+
+def _missing_import_text(text: str, present: set[tuple[Any, ...]]) -> str:
+    """The part of `text` (one import statement) whose bindings are not in
+    `present`. Empty when everything is present.
+
+    `present` is updated in place, so two ops in one script that import the
+    same name insert it once. Presence is decided on the AST, so comments and
+    substrings do not count.
     """
     try:
         wanted = ast.parse(text).body
     except SyntaxError as e:
         raise CodeEditError(f"insert_import text does not parse: {e}") from e
-    present = set()
-    for stmt in ast.parse(source).body:
-        if isinstance(stmt, (ast.Import, ast.ImportFrom)):
-            present.update(_import_key(stmt, a) for a in stmt.names)
     lines: list[str] = []
     for stmt in wanted:
         if not isinstance(stmt, (ast.Import, ast.ImportFrom)):
@@ -446,25 +453,316 @@ def _replace_span(source: str, start: int, end: int, text: str) -> str:
     return source[:start] + text + source[end:]
 
 
-def _rename_edits(source: str, old: str, new: str
-                  ) -> tuple[list[tuple[int, int, str]], list[list[int]]]:
-    """Lexical NAME-token rename edits within one file. Deliberately reported
-    as lexical; scope-aware rename is a later graph pass. Returns the edits and
-    the `[line, col]` of each occurrence (col is a 0-based character column)."""
+_FUNC_NODES = (ast.FunctionDef, ast.AsyncFunctionDef)
+_COMP_NODES = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+
+
+class _Scope:
+    """One Python name scope: module, class body, function/lambda or comprehension.
+
+    `bound` holds names the scope binds locally. `globals_` and `nonlocals`
+    hold names declared with those statements; `local` is what the scope
+    binds for itself.
+    """
+
+    def __init__(self, kind: str, node: ast.AST | None, parent: "_Scope | None"):
+        self.kind = kind
+        self.node = node
+        self.parent = parent
+        self.bound: set[str] = set()
+        self.globals_: set[str] = set()
+        self.nonlocals: set[str] = set()
+        self.local: set[str] = set()
+        self.first_param: str | None = None
+
+
+class _ScopeIndex:
+    """Scopes of one module tree, and the scope each name-like node sits in.
+
+    Resolution follows Python rules in the simple form: a name is looked up
+    innermost scope first; class bodies are visible only to themselves, not to
+    the functions nested in them; `global` sends a name to the module scope.
+    """
+
+    def __init__(self, tree: ast.Module):
+        self.module = _Scope("module", tree, None)
+        self.home: dict[int, _Scope] = {}           # def/class node -> scope holding it
+        self.own: dict[int, _Scope] = {}            # def/class node -> its own scope
+        self.names: list[tuple[ast.Name, _Scope]] = []
+        self.attrs: list[tuple[ast.Attribute, _Scope]] = []
+        self.keywords: list[tuple[ast.keyword, _Scope]] = []
+        self.args: list[tuple[ast.arg, bool]] = []  # (arg, is keyword-only)
+        self.decls: list[tuple[ast.stmt, _Scope]] = []  # global / nonlocal
+        self.scopes: list[_Scope] = [self.module]
+        for stmt in tree.body:
+            self._visit(stmt, self.module)
+        for scope in self.scopes:
+            scope.local = scope.bound - scope.globals_ - scope.nonlocals
+
+    def _new(self, kind: str, node: ast.AST, parent: _Scope) -> _Scope:
+        scope = _Scope(kind, node, parent)
+        self.scopes.append(scope)
+        self.own[id(node)] = scope
+        return scope
+
+    def _bind_args(self, args: ast.arguments, scope: _Scope) -> None:
+        positional = list(args.posonlyargs) + list(args.args)
+        scope.first_param = positional[0].arg if positional else None
+        kwonly = {id(a) for a in args.kwonlyargs}
+        extra = [a for a in (args.vararg, args.kwarg) if a is not None]
+        for a in positional + list(args.kwonlyargs) + extra:
+            scope.bound.add(a.arg)
+            self.args.append((a, id(a) in kwonly))
+
+    def _visit_outer_parts(self, args: ast.arguments, scope: _Scope) -> None:
+        all_args = (list(args.posonlyargs) + list(args.args) + list(args.kwonlyargs)
+                    + [a for a in (args.vararg, args.kwarg) if a is not None])
+        parts = [d for d in list(args.defaults) + list(args.kw_defaults) if d is not None]
+        parts += [a.annotation for a in all_args if a.annotation is not None]
+        for part in parts:
+            self._visit(part, scope)
+
+    def _visit(self, node: ast.AST, scope: _Scope) -> None:
+        if isinstance(node, _FUNC_NODES):
+            scope.bound.add(node.name)
+            self.home[id(node)] = scope
+            for dec in node.decorator_list:
+                self._visit(dec, scope)
+            self._visit_outer_parts(node.args, scope)
+            if node.returns is not None:
+                self._visit(node.returns, scope)
+            inner = self._new("function", node, scope)
+            self._bind_args(node.args, inner)
+            for stmt in node.body:
+                self._visit(stmt, inner)
+            return
+        if isinstance(node, ast.Lambda):
+            self._visit_outer_parts(node.args, scope)
+            inner = self._new("function", node, scope)
+            self._bind_args(node.args, inner)
+            self._visit(node.body, inner)
+            return
+        if isinstance(node, ast.ClassDef):
+            scope.bound.add(node.name)
+            self.home[id(node)] = scope
+            for dec in node.decorator_list:
+                self._visit(dec, scope)
+            for base in node.bases:
+                self._visit(base, scope)
+            for kw in node.keywords:
+                self._visit(kw, scope)
+            inner = self._new("class", node, scope)
+            for stmt in node.body:
+                self._visit(stmt, inner)
+            return
+        if isinstance(node, _COMP_NODES):
+            gens = node.generators
+            self._visit(gens[0].iter, scope)
+            inner = self._new("comp", node, scope)
+            for i, gen in enumerate(gens):
+                if i:
+                    self._visit(gen.iter, inner)
+                self._visit(gen.target, inner)
+                for cond in gen.ifs:
+                    self._visit(cond, inner)
+            if isinstance(node, ast.DictComp):
+                self._visit(node.key, inner)
+                self._visit(node.value, inner)
+            else:
+                self._visit(node.elt, inner)
+            return
+        if isinstance(node, ast.Name):
+            self.names.append((node, scope))
+            if isinstance(node.ctx, (ast.Store, ast.Del)):
+                scope.bound.add(node.id)
+            return
+        if isinstance(node, ast.NamedExpr):
+            self._visit(node.value, scope)
+            target_scope = scope
+            while target_scope.kind == "comp" and target_scope.parent is not None:
+                target_scope = target_scope.parent
+            target_scope.bound.add(node.target.id)
+            self.names.append((node.target, target_scope))
+            return
+        if isinstance(node, ast.Attribute):
+            self.attrs.append((node, scope))
+            self._visit(node.value, scope)
+            return
+        if isinstance(node, ast.keyword):
+            self.keywords.append((node, scope))
+            self._visit(node.value, scope)
+            return
+        if isinstance(node, (ast.Global, ast.Nonlocal)):
+            if isinstance(node, ast.Global):
+                scope.globals_.update(node.names)
+            else:
+                scope.nonlocals.update(node.names)
+            self.decls.append((node, scope))
+            return
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                bound = alias.asname or alias.name.split(".")[0]
+                if bound != "*":
+                    scope.bound.add(bound)
+            return
+        if isinstance(node, ast.ExceptHandler) and node.name:
+            scope.bound.add(node.name)
+        kind = type(node).__name__
+        if kind in ("MatchAs", "MatchStar") and getattr(node, "name", None):
+            scope.bound.add(node.name)
+        if kind == "MatchMapping" and getattr(node, "rest", None):
+            scope.bound.add(node.rest)
+        for child in ast.iter_child_nodes(node):
+            self._visit(child, scope)
+
+    def resolve(self, name: str, scope: _Scope) -> _Scope | None:
+        """The scope whose binding `name` refers to when used in `scope`."""
+        s: _Scope | None = scope
+        first = True
+        while s is not None:
+            if first or s.kind != "class":
+                if name in s.globals_:
+                    return self.module
+                if name in s.local:
+                    return s
+            first = False
+            s = s.parent
+        return None
+
+
+def _rename_edits(source: str, tree: ast.Module, old: str, new: str,
+                  def_line: int
+                  ) -> tuple[list[tuple[int, int, str]], list[list[int]], list[dict[str, Any]]]:
+    """Scope-aware rename of the definition at `def_line` named `old`.
+
+    Renames the definition's name token, every name that resolves to the
+    definition's binding scope, and for a method also `self.f` / `cls.f` inside
+    its class and `A.f` where `A` is the class. Other attributes, keyword
+    arguments, parameters and names bound elsewhere are left alone and listed in
+    `skipped`. Returns the edits, the `[line, col]` of each renamed token, and
+    the skipped tokens (col is a 0-based character column).
+    """
     if not old.isidentifier() or not new.isidentifier():
         raise CodeEditError("rename needs identifier names")
-    edits: list[tuple[int, int, str]] = []
-    where: list[list[int]] = []
+    target = None
+    for node in ast.walk(tree):
+        if isinstance(node, _FUNC_NODES + (ast.ClassDef,)) and node.name == old \
+                and node.lineno == def_line:
+            target = node
+            break
+    if target is None:
+        raise CodeEditError(f"rename_symbol: no definition of {old!r} at line {def_line}")
     offsets = _line_offsets(source)
     try:
-        for tok in tokenize.generate_tokens(StringIO(source).readline):
-            if tok.type == tokenize.NAME and tok.string == old:
-                edits.append((_offset(offsets, tok.start[0], tok.start[1]),
-                              _offset(offsets, tok.end[0], tok.end[1]), new))
-                where.append([tok.start[0], tok.start[1]])
+        toks = list(tokenize.generate_tokens(StringIO(source).readline))
     except (tokenize.TokenError, IndentationError) as e:
         raise CodeEditError(f"cannot tokenize source: {e}") from e
-    return edits, where
+    name_at: dict[int, tokenize.TokenInfo] = {}   # start offset -> NAME token
+    end_to_start: dict[int, int] = {}              # end offset -> start offset
+    for tok in toks:
+        if tok.type == tokenize.NAME:
+            start = _offset(offsets, tok.start[0], tok.start[1])
+            name_at[start] = tok
+            end_to_start[_offset(offsets, tok.end[0], tok.end[1])] = start
+
+    def name_token(start: int, end: int | None = None, where: str = "") -> int:
+        """Start offset of the NAME token named `old` at `start` (or ending at
+        `end`). Refuses when the AST position has no matching token, so a
+        rename never leaves a stale reference behind."""
+        if end is not None:
+            start = end_to_start.get(end, -1)
+        tok = name_at.get(start)
+        if tok is None or tok.string != old:
+            line = source.count("\n", 0, start) + 1
+            raise CodeEditError(
+                f"rename_symbol: {where or 'occurrence'} at line {line} has no "
+                f"matching NAME token; refusing rather than leave a stale reference")
+        return start
+
+    idx = _ScopeIndex(tree)
+    home = idx.home.get(id(target))
+    if home is None:
+        raise CodeEditError(f"rename_symbol: cannot find the scope of {old!r}")
+
+    renamed: dict[int, None] = {}
+    reasons: dict[int, str] = {}
+
+    # (a) the definition's own name: the NAME token right after `def`/`class`.
+    keyword_seen = False
+    for i, tok in enumerate(toks):
+        if tok.type == tokenize.NAME and tok.string in ("def", "class") \
+                and tok.start[0] == def_line:
+            nxt = toks[i + 1]
+            if nxt.type == tokenize.NAME and nxt.string == old:
+                renamed[_offset(offsets, nxt.start[0], nxt.start[1])] = None
+                keyword_seen = True
+            break
+    if not keyword_seen:
+        raise CodeEditError(f"rename_symbol: cannot find the name token of {old!r}")
+
+    # (b) names that resolve to the definition's binding scope.
+    for node, scope in idx.names:
+        if node.id != old:
+            continue
+        if idx.resolve(old, scope) is home:
+            start, _end = _node_span(source, offsets, node)
+            renamed[name_token(start, where="name")] = None
+
+    # (c) methods: self.f / cls.f in the class, and A.f for the class A.
+    is_method = home.kind == "class"
+    for node, scope in idx.attrs:
+        if node.attr != old:
+            continue
+        _start, end = _node_span(source, offsets, node)
+        attr_start = end_to_start.get(end, -1)
+        hit = False
+        if is_method and isinstance(node.value, ast.Name):
+            base = node.value.id
+            if base == home.node.name:
+                hit = idx.resolve(base, scope) is home.parent
+            else:
+                owner = idx.resolve(base, scope)
+                hit = (owner is not None and owner.kind == "function"
+                       and owner.parent is home and owner.first_param == base)
+        if hit:
+            renamed[name_token(attr_start, where="attribute")] = None
+        else:
+            reasons[attr_start] = "attribute"
+
+    # Keyword arguments and parameters named `old`.
+    for node, _scope in idx.keywords:
+        if node.arg == old:
+            reasons[_node_span(source, offsets, node)[0]] = "keyword"
+    for arg, kwonly in idx.args:
+        if arg.arg == old:
+            reasons[_node_span(source, offsets, arg)[0]] = (
+                "keyword" if kwonly else "shadowed")
+
+    # global / nonlocal declarations that name the target.
+    for stmt, scope in idx.decls:
+        if isinstance(stmt, ast.Global):
+            target_scope = idx.module
+        else:
+            target_scope = idx.resolve(old, scope.parent) if scope.parent else None
+        s_start, s_end = _node_span(source, offsets, stmt)
+        for start, tok in name_at.items():
+            if s_start <= start < s_end and tok.string == old and target_scope is home:
+                renamed[name_token(start, where="declaration")] = None
+
+    edits: list[tuple[int, int, str]] = []
+    where: list[list[int]] = []
+    for start in sorted(renamed):
+        tok = name_at[start]
+        edits.append((start, _offset(offsets, tok.end[0], tok.end[1]), new))
+        where.append([tok.start[0], tok.start[1]])
+    skipped: list[dict[str, Any]] = []
+    for start in sorted(name_at):
+        tok = name_at[start]
+        if tok.string != old or start in renamed:
+            continue
+        skipped.append({"line": tok.start[0], "col": tok.start[1],
+                        "reason": reasons.get(start, "shadowed")})
+    return edits, where, skipped
 
 
 def _owns_its_lines(source: str, offsets: list[int], rec: AstSpan) -> bool:
@@ -528,6 +826,9 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
     edits: list[tuple[int, int, str, dict[str, Any]]] = []
     changes: list[dict[str, Any]] = []
     ast_table: dict[str, AstSpan] | None = None
+    # Bindings already present, updated as each insert_import is accepted, so
+    # two ops in one script that import the same name insert it once.
+    present_imports = _present_import_keys(source)
 
     def ast_at(op: dict[str, Any]) -> AstSpan:
         nonlocal ast_table
@@ -613,7 +914,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                             "summary": "replace function/class body"})
         elif kind == "insert_import":
             text = _import_text(op)
-            missing = _missing_import_text(source, text)
+            missing = _missing_import_text(text, present_imports)
             if not missing:
                 changes.append({"op": kind, "summary": "already present; skipped"})
                 continue
@@ -766,13 +1067,16 @@ def _apply_ops(source: str, ops: list[dict[str, Any]],
                     f"in this file ({', '.join(same_name)}); a lexical rename "
                     f"would change all of them. Use dev_rename_preview (LSP) or "
                     f"rename one with replace_symbol")
-            rename_edits, where = _rename_edits(source, s.name, new)
+            rename_edits, where, skipped = _rename_edits(
+                source, tree, s.name, new, s.start_line)
             for st, en, txt in rename_edits:
                 edits.append((st, en, txt, op))
             changes.append({"op": kind, "symbol": s.qualname,
-                            "occurrences": where,
+                            "occurrences": where, "skipped": skipped,
                             "summary": f"renamed {s.name!r} -> {new!r} "
-                                       f"({len(where)} lexical NAME occurrences)"})
+                                       f"({len(where)} occurrences in scope; "
+                                       f"{len(skipped)} same-name tokens left "
+                                       f"unchanged)"})
         else:
             raise CodeEditError(
                 f"unknown op {kind!r}; supported: replace_symbol, "

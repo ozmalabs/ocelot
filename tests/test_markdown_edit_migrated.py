@@ -208,3 +208,14 @@ def test_frontmatter_closed_only_by_four_dashes_is_refused(tmp_path: Path) -> No
     with pytest.raises(CodeEditError, match="not closed"):
         apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
             {"op": "replace_frontmatter", "text": "title: New"}]})
+
+
+def test_cookie_text_in_heading_does_not_block_markdown_edit(tmp_path: Path) -> None:
+    # dt-w4-fixes-b review 5: only Python files carry PEP 263 cookies.
+    (tmp_path / "doc.md").write_bytes(b"# Secure coding: rules\n\n## Alpha\n\nold\n")
+    r = apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+        {"op": "replace_section_body", "section": "Alpha", "text": "new"}]},
+        write=True)
+    assert r["applied"] is True
+    assert (tmp_path / "doc.md").read_text(encoding="utf-8").startswith(
+        "# Secure coding: rules")

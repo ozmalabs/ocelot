@@ -7,6 +7,7 @@ called. The live drivers are only checked for refusal, never executed.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -203,7 +204,9 @@ def test_dev_memory_arm_writes_mcp_config_into_workdir(tmp_path):
     server = claude["mcpServers"][ae.MCP_SERVER_NAME]
     assert server["args"] == ["-m", "scripts.ocelot_dev_memory_mcp"]
     assert server["env"]["OCELOT_DEV_ROOT"] == str(tmp_path)
-    assert server["env"]["OCELOT_DEV_AUTOBUILD"] == "1"
+    # The snapshot is prepared before the driver starts, so the server must not
+    # rebuild it inside the timed session.
+    assert server["env"]["OCELOT_DEV_AUTOBUILD"] == "0"
     assert server["env"]["OCELOT_DEV_DUMP"] == str(log / "dev_graph.json")
     opencode = json.loads((tmp_path / ae.MCP_CONFIG_OPENCODE).read_text(encoding="utf-8"))
     assert ae.MCP_SERVER_NAME in opencode["mcp"]
@@ -367,3 +370,173 @@ def test_agent_eval_has_no_substrate_or_rule_engine_calls():
 def _python() -> str:
     import sys
     return sys.executable
+
+
+# ===================================================================================== #
+# dt-w4-fixes-b (review 11): scoped cleanup, process groups, shared refs, prep timing
+# ===================================================================================== #
+def _pid_gone(pid: int) -> bool:
+    import os
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    except PermissionError:
+        return False
+    return False
+
+
+def _listed(repo: Path) -> set[str]:
+    return {str(Path(p).resolve()) for p in _worktrees(repo)}
+
+
+def test_cleanup_does_not_prune_an_unrelated_missing_worktree(fixture, tmp_path):
+    import shutil
+    repo, base = fixture["repo"], fixture["base"]
+    other = tmp_path / "unrelated-wt"
+    _git(repo, "worktree", "add", "--detach", str(other), base)
+    shutil.rmtree(other)  # directory vanishes out of band; admin entry stays
+    assert str(other.resolve()) in _listed(repo)
+    run_eval(repo, [fixture["sign"]], ["baseline"], FakeDriver(), base,
+             tasks_dir=fixture["tdir"], python=_python(),
+             run_root=fixture["run_root"])
+    assert str(other.resolve()) in _listed(repo)
+    assert not any((fixture["run_root"] / "work").glob("*"))
+
+
+def test_partial_cleanup_is_reported_and_removes_only_its_own_entry(fixture):
+    repo, base, run_root = fixture["repo"], fixture["base"], fixture["run_root"]
+    wd = ae.make_workdir(repo, base, run_root, "locked-1")
+    _git(repo, "worktree", "lock", str(wd))
+    warnings = ae.remove_workdir(repo, wd, run_root)
+    assert warnings and warnings[0].startswith("git worktree remove --force failed")
+    assert not wd.exists()
+    assert str(wd.resolve()) not in _listed(repo)
+    assert str(repo.resolve()) in _listed(repo)
+
+
+def test_clean_cleanup_reports_no_warnings(fixture):
+    repo, base, run_root = fixture["repo"], fixture["base"], fixture["run_root"]
+    wd = ae.make_workdir(repo, base, run_root, "clean-1")
+    assert ae.remove_workdir(repo, wd, run_root) == []
+    assert not wd.exists()
+
+
+_VICTIM = (
+    "import os, subprocess, sys, time\n"
+    "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'])\n"
+    "with open(sys.argv[1], 'w') as fh:\n"
+    "    fh.write(f'{os.getpid()} {child.pid}')\n"
+    "time.sleep(600)\n"
+)
+
+
+def test_run_check_timeout_kills_driver_and_its_child(tmp_path):
+    victim = tmp_path / "victim.py"
+    victim.write_text(_VICTIM, encoding="utf-8")
+    pidfile = tmp_path / "pids.txt"
+    res = ae.run_check(tmp_path, {"argv": [str(victim), str(pidfile)], "timeout_s": 3},
+                       _python(), tmp_path / "check.log")
+    assert res["timed_out"] is True and res["passed"] is False
+    parent, child = (int(x) for x in pidfile.read_text(encoding="utf-8").split())
+    assert _pid_gone(parent)
+    assert _pid_gone(child)
+
+
+class _StubCommandDriver(CommandDriver):
+    """Test-only. Shares CommandDriver's group runner, with an argv set by the test.
+
+    Not in LIVE_DRIVERS, never returned by make_driver, and it does not call
+    _require_live_env because it never reaches a model."""
+
+    def __init__(self, argv: list[str]) -> None:
+        self.name = "stub-command"
+        self.max_budget_usd = None
+        self.spec = {"argv": [], "arm_argv": {}, "mcp_config_file": "none",
+                     "parse": lambda stdout: {"transcript": stdout}}
+        self._stub_argv = argv
+
+    def run(self, workdir, prompt, arm, timeout_s, log_dir, *, patch_path=None):
+        res = ae.spawn_group(self._stub_argv, cwd=workdir, env=dict(os.environ),
+                             timeout_s=timeout_s)
+        return ae._empty_result(exit_code=res["returncode"], wall_s=res["seconds"],
+                                timed_out=res["timed_out"], transcript=res["stdout"])
+
+
+def test_driver_timeout_kills_the_driver_tree_and_is_recorded(fixture, tmp_path):
+    victim = tmp_path / "victim.py"
+    victim.write_text(_VICTIM, encoding="utf-8")
+    pidfile = tmp_path / "pids.txt"
+    driver = _StubCommandDriver([_python(), str(victim), str(pidfile)])
+    rec = ae.run_one(fixture["repo"], fixture["sign"], "baseline", 1, driver,
+                     fixture["base"], tasks_dir=fixture["tdir"], python=_python(),
+                     run_root=fixture["run_root"], timeout_s=3, keep=False)
+    assert rec["timed_out"] is True
+    assert rec["success"] is False
+    parent, child = (int(x) for x in pidfile.read_text(encoding="utf-8").split())
+    assert _pid_gone(parent)
+    assert _pid_gone(child)
+    assert rec["cleanup_warnings"] == []
+
+
+def test_stub_driver_is_not_a_live_driver_and_make_driver_still_refuses():
+    assert "stub-command" not in ae.LIVE_DRIVERS
+    with pytest.raises(LiveRunNotApproved):
+        make_driver("claude", live=True)
+
+
+def test_claude_disallows_shared_ref_moving_git_commands():
+    argv = CommandDriver("claude")._argv("p", "baseline", None)
+    i = argv.index("--disallowedTools")
+    tokens = argv[i + 1].split(",")
+    expected = ["Bash(git commit:*)", "Bash(git push:*)", "Bash(git stash:*)",
+                "Bash(git branch:*)", "Bash(git checkout:*)", "Bash(git switch:*)",
+                "Bash(git reset:*)", "Bash(git rebase:*)", "Bash(git merge:*)",
+                "Bash(git tag:*)", "Bash(git worktree:*)"]
+    assert tokens == expected
+    assert argv[i + 2].startswith("--")  # the next token is a flag, so parsing stops
+
+
+def test_snapshot_ignores_gitignored_var_dir(tmp_path):
+    repo, _base = _repo(tmp_path)
+    (repo / ".gitignore").write_text("var/\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "ignore var")
+    base = _git(repo, "rev-parse", "HEAD")
+    wd = ae.make_workdir(repo, base, tmp_path / "runs", "snap-1")
+    (wd / "var").mkdir()
+    (wd / "var" / "ocelot_dev_tags.json").write_text("{}", encoding="utf-8")
+    assert "var/ocelot_dev_tags.json" not in ae._snapshot(wd)
+    ae.remove_workdir(repo, wd, tmp_path / "runs")
+
+
+def test_prep_failure_is_recorded_and_the_run_still_scored(fixture, tmp_path):
+    prep = ae.prepare_dev_memory(fixture["repo"], _python(), tmp_path / "log")
+    assert prep["prep_ok"] is False
+    assert prep["prep_error"]
+    assert (tmp_path / "log" / "prep.log").is_file()
+    runs = run_eval(fixture["repo"], [fixture["sign"]], ARMS, FakeDriver(),
+                    fixture["base"], tasks_dir=fixture["tdir"], python=_python(),
+                    run_root=fixture["run_root"])["runs"]
+    by_arm = {r["arm"]: r for r in runs}
+    assert by_arm["baseline"]["prep_s"] == 0.0
+    assert by_arm["baseline"]["prep_ok"] is None
+    assert by_arm["dev_memory"]["prep_ok"] is False
+    assert by_arm["dev_memory"]["prep_error"]
+    assert by_arm["dev_memory"]["success"] is True
+
+
+def test_aggregate_reports_mean_prep_and_prep_failures():
+    runs = [
+        {"task": "t1", "arm": "baseline", "repeat": 1, "success": True,
+         "prep_s": 0.0, "prep_ok": None},
+        {"task": "t1", "arm": "dev_memory", "repeat": 1, "success": True,
+         "prep_s": 10.0, "prep_ok": True},
+        {"task": "t2", "arm": "dev_memory", "repeat": 1, "success": False,
+         "prep_s": 2.0, "prep_ok": False},
+    ]
+    rows = {r["arm"]: r for r in aggregate(runs, ["baseline", "dev_memory"])}
+    assert rows["baseline"]["mean_prep_s"] == 0.0
+    assert rows["dev_memory"]["mean_prep_s"] == pytest.approx(6.0)
+    assert rows["dev_memory"]["prep_failures"] == 1
+    assert rows["baseline"]["prep_failures"] == 0

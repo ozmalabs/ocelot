@@ -506,3 +506,136 @@ def test_crlf_delete_symbol_consumes_one_blank_line_and_stays_crlf(
     data = p.read_bytes()
     assert re.search(rb"(?<!\r)\n", data) is None
     assert data == b"import os\r\n\r\ndef g():\r\n    return 1\r\n"
+
+
+# --------------------------------------------------------------------------- #
+# dt-w4-fixes-b: scope-aware rename (review 4) and per-script import dedup (9)
+# --------------------------------------------------------------------------- #
+def test_rename_leaves_attributes_keywords_and_params_alone() -> None:
+    # Review 4 probe: only the definition name and its module-level uses move.
+    src = ("import subprocess\n"
+           "def run(cmd):\n"
+           "    return subprocess.run(cmd, check=False)\n"
+           "def other(obj, run=None):\n"
+           "    obj.run()\n"
+           "    return run\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "run", "new_name": "execute"}])
+    assert new == ("import subprocess\n"
+                   "def execute(cmd):\n"
+                   "    return subprocess.run(cmd, check=False)\n"
+                   "def other(obj, run=None):\n"
+                   "    obj.run()\n"
+                   "    return run\n")
+    assert changes[0]["occurrences"] == [[2, 4]]
+    assert sorted((s["line"], s["col"], s["reason"])
+                  for s in changes[0]["skipped"]) == [
+        (3, 22, "attribute"), (4, 15, "shadowed"),
+        (5, 8, "attribute"), (6, 11, "shadowed")]
+
+
+def test_rename_keyword_argument_name_is_skipped() -> None:
+    src = ("def run(x):\n    return x\n"
+           "print(run(run=1))\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "run", "new_name": "go"}])
+    assert new == "def go(x):\n    return x\nprint(go(run=1))\n"
+    assert changes[0]["skipped"] == [{"line": 3, "col": 10, "reason": "keyword"}]
+
+
+def test_module_function_used_inside_unshadowed_function_is_renamed() -> None:
+    src = ("def add(a):\n    return a\n\n"
+           "def use():\n    return add(1)\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert new == ("def plus(a):\n    return a\n\n"
+                   "def use():\n    return plus(1)\n")
+    assert changes[0]["occurrences"] == [[1, 4], [5, 11]]
+
+
+def test_local_binding_shadowing_the_function_is_not_renamed() -> None:
+    src = ("def add(a):\n    return a\n\n"
+           "def shadow():\n    add = 3\n    return add\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert "def shadow():\n    add = 3\n    return add\n" in new
+    assert sorted((s["line"], s["reason"]) for s in changes[0]["skipped"]) == [
+        (5, "shadowed"), (6, "shadowed")]
+
+
+def test_global_declaration_follows_the_module_binding() -> None:
+    src = ("def add(a):\n    return a\n\n"
+           "def use():\n    global add\n    return add(1)\n")
+    new, _ = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "add", "new_name": "plus"}])
+    assert new == ("def plus(a):\n    return a\n\n"
+                   "def use():\n    global plus\n    return plus(1)\n")
+
+
+def test_method_rename_updates_self_and_class_refs_only() -> None:
+    src = ("class A:\n"
+           "    def f(self):\n"
+           "        return 1\n"
+           "\n"
+           "    def g(this):\n"
+           "        return this.f() + A.f(this)\n"
+           "\n"
+           "def h(b):\n"
+           "    return b.f()\n")
+    new, changes = _apply_ops(src, [
+        {"op": "rename_symbol", "symbol": "A.f", "new_name": "k"}])
+    assert new == ("class A:\n"
+                   "    def k(self):\n"
+                   "        return 1\n"
+                   "\n"
+                   "    def g(this):\n"
+                   "        return this.k() + A.k(this)\n"
+                   "\n"
+                   "def h(b):\n"
+                   "    return b.f()\n")
+    assert changes[0]["skipped"] == [{"line": 9, "col": 13, "reason": "attribute"}]
+
+
+def test_method_rename_ignores_self_of_other_class() -> None:
+    src = ("class A:\n"
+           "    def f(self):\n"
+           "        return 1\n"
+           "class B:\n"
+           "    def f(self):\n"
+           "        return 2\n")
+    with pytest.raises(CodeEditError, match="defined 2 times"):
+        _apply_ops(src, [{"op": "rename_symbol", "symbol": "A.f",
+                          "new_name": "k"}])
+    src2 = ("class A:\n"
+            "    def f(self):\n"
+            "        return self.f\n"
+            "class B:\n"
+            "    def g(self):\n"
+            "        return self.f\n")
+    new, _ = _apply_ops(src2, [
+        {"op": "rename_symbol", "symbol": "A.f", "new_name": "k"}])
+    assert new == ("class A:\n"
+                   "    def k(self):\n"
+                   "        return self.k\n"
+                   "class B:\n"
+                   "    def g(self):\n"
+                   "        return self.f\n")
+
+
+def test_insert_import_twice_in_one_script_inserts_once() -> None:
+    src = "import os\n\nx = 1\n"
+    new, changes = _apply_ops(src, [
+        {"op": "insert_import", "module": "sys"},
+        {"op": "insert_import", "module": "sys"}])
+    assert new.count("import sys") == 1
+    summaries = [c["summary"] for c in changes]
+    assert summaries[1] == "already present; skipped"
+
+
+def test_insert_import_names_dedup_across_ops() -> None:
+    src = "x = 1\n"
+    new, changes = _apply_ops(src, [
+        {"op": "insert_import", "module": "math", "names": ["sqrt", "pi"]},
+        {"op": "insert_import", "module": "math", "names": ["pi"]}])
+    assert new.count("from math import") == 1
+    assert changes[1]["summary"] == "already present; skipped"

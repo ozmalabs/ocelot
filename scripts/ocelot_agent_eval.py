@@ -47,6 +47,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -166,14 +167,49 @@ def make_workdir(repo: str | Path, base: str, run_root: Path, name: str) -> Path
     return path
 
 
-def remove_workdir(repo: str | Path, path: Path, run_root: Path) -> None:
-    """Remove a worktree the harness created under run_root/work."""
+def _worktree_admin_dir(path: Path) -> Path | None:
+    """The admin dir a linked worktree points at, read from its `.git` file."""
+    try:
+        text = (path / ".git").read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not text.startswith("gitdir:"):
+        return None
+    admin = Path(text.split(":", 1)[1].strip())
+    return admin if admin.is_absolute() else (path / admin).resolve()
+
+
+def remove_workdir(repo: str | Path, path: Path, run_root: Path) -> list[str]:
+    """Remove a worktree the harness created under run_root/work.
+
+    Only this worktree is touched. There is no repo-wide `git worktree prune`,
+    because that would also drop the admin entries of unrelated worktrees whose
+    directories are missing. If `git worktree remove --force` fails, the
+    directory is deleted and this worktree's own admin dir (under
+    `<common git dir>/worktrees/`) is deleted too. Returns warnings; an empty
+    list means the cleanup was complete.
+    """
     owned = (run_root.resolve() / "work").resolve()
     if owned not in path.resolve().parents:
         raise HarnessError(f"refusing to remove a path the harness did not create: {path}")
-    _git(["worktree", "remove", "--force", str(path)], repo, check=False)
+    admin = _worktree_admin_dir(path)
+    proc = _git(["worktree", "remove", "--force", str(path)], repo, check=False)
+    warnings: list[str] = []
+    if proc.returncode == 0 and not path.exists():
+        return warnings
+    warnings.append("git worktree remove --force failed: "
+                    + (proc.stderr.strip() or f"exit {proc.returncode}"))
     shutil.rmtree(path, ignore_errors=True)
-    _git(["worktree", "prune"], repo, check=False)
+    if path.exists():
+        warnings.append(f"directory still present after cleanup: {path}")
+    common = _git(["rev-parse", "--git-common-dir"], repo, check=False)
+    if admin is not None and common.returncode == 0:
+        common_dir = (Path(repo) / common.stdout.strip()).resolve()
+        worktrees_dir = (common_dir / "worktrees").resolve()
+        if worktrees_dir in admin.resolve().parents and admin.exists():
+            shutil.rmtree(admin, ignore_errors=True)
+            warnings.append(f"removed admin entry {admin.name} by hand")
+    return warnings
 
 
 def apply_patch(workdir: Path, patch: Path, *, reverse: bool = False) -> dict[str, Any]:
@@ -212,6 +248,62 @@ def _tail(text: str, lines: int = 30) -> str:
     return "\n".join(text.splitlines()[-lines:])
 
 
+KILL_GRACE_S = 5.0
+
+
+def _group_alive(pgid: int) -> bool:
+    try:
+        os.killpg(pgid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def spawn_group(argv: list[str], *, cwd: str | Path, env: dict[str, str],
+                timeout_s: float) -> dict[str, Any]:
+    """Run argv in its own session and process group, with a time limit.
+
+    On timeout the whole group gets SIGTERM, the harness waits up to
+    KILL_GRACE_S for it to exit, and then SIGKILL is sent to the group. The
+    driver's children (an MCP server, a language server, a sleeping shell) are
+    killed with it, so they do not outlive the run.
+    """
+    started = time.monotonic()
+    proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, text=True, encoding="utf-8",
+                            errors="replace", start_new_session=True)
+    timed_out = False
+    try:
+        out, err = proc.communicate(timeout=timeout_s)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        pgid = proc.pid
+        try:
+            os.killpg(pgid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        deadline = time.monotonic() + KILL_GRACE_S
+        while time.monotonic() < deadline:
+            proc.poll()  # reaps the leader so only real survivors keep the group
+            if not _group_alive(pgid):
+                break
+            time.sleep(0.05)
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            out, err = proc.communicate(timeout=KILL_GRACE_S)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            out, err = "", ""
+    return {"returncode": None if timed_out else proc.returncode,
+            "stdout": out or "", "stderr": err or "", "timed_out": timed_out,
+            "seconds": round(time.monotonic() - started, 3)}
+
+
 def run_check(workdir: Path, check: dict[str, Any], python: str,
               log_path: Path) -> dict[str, Any]:
     argv = [a.replace("{workdir}", str(workdir)) for a in check["argv"]]
@@ -220,19 +312,10 @@ def run_check(workdir: Path, check: dict[str, Any], python: str,
     # No .pyc files: a break that keeps the byte length (a + b -> a - b) within the
     # same mtime second would otherwise run stale bytecode from the base check.
     env = dict(os.environ, COLUMNS="250", PYTHONDONTWRITEBYTECODE="1")
-    started = time.monotonic()
-    timed_out = False
-    try:
-        proc = subprocess.run(cmd, cwd=str(workdir), capture_output=True,
-                              text=True, encoding="utf-8", errors="replace",
-                              timeout=timeout, env=env)
-        returncode, out, err = proc.returncode, proc.stdout, proc.stderr
-    except subprocess.TimeoutExpired as exc:
-        timed_out = True
-        returncode = None
-        out = exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
-        err = exc.stderr.decode("utf-8", "replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
-    seconds = round(time.monotonic() - started, 3)
+    res = spawn_group(cmd, cwd=workdir, env=env, timeout_s=timeout)
+    out, err = res["stdout"], res["stderr"]
+    returncode, timed_out = res["returncode"], res["timed_out"]
+    seconds = res["seconds"]
     log_path.parent.mkdir(parents=True, exist_ok=True)
     log_path.write_text(f"$ {' '.join(cmd)}\n\n{out}\n--- stderr ---\n{err}\n",
                         encoding="utf-8")
@@ -255,6 +338,7 @@ def validate_task(repo: str | Path, task: dict[str, Any], base: str, *,
     tid = task["id"]
     started = time.monotonic()
     workdir = make_workdir(repo, base, run_root, f"validate-{tid}")
+    cleanup: list[str] = []
     try:
         base_check = run_check(workdir, task["check"], python,
                                log_dir / f"validate-{tid}-base.log")
@@ -279,13 +363,13 @@ def validate_task(repo: str | Path, task: dict[str, Any], base: str, *,
         result = {"id": tid, "ok": ok, "pass_on_base": pass_on_base,
                   "fail_after_break": fail_after_break,
                   "seconds": round(time.monotonic() - started, 3),
-                  "details": details}
+                  "details": details, "cleanup_warnings": cleanup}
         if keep:
             result["workdir"] = str(workdir)
         return result
     finally:
         if not keep:
-            remove_workdir(repo, workdir, run_root)
+            cleanup.extend(remove_workdir(repo, workdir, run_root))
 
 
 def _validation_reason(pass_on_base: bool, applied: bool, fail_after_break: bool) -> str:
@@ -365,11 +449,24 @@ def _parse_claude_json(stdout: str) -> dict[str, Any]:
 
 
 # argv templates. "{prompt}" and "{mcp_config}" are replaced as whole tokens.
+# Git subcommands that move or rewrite shared refs. Bash stays allowed for the
+# rest. Residual risk: a pattern matches the command's text, so `git -C dir
+# commit` or `git --git-dir=... push` gets past it. See AGENT_E2E_EVAL.md.
+DISALLOWED_GIT_TOOLS = (
+    "Bash(git commit:*)", "Bash(git push:*)", "Bash(git stash:*)",
+    "Bash(git branch:*)", "Bash(git checkout:*)", "Bash(git switch:*)",
+    "Bash(git reset:*)", "Bash(git rebase:*)", "Bash(git merge:*)",
+    "Bash(git tag:*)", "Bash(git worktree:*)",
+)
 DRIVERS: dict[str, dict[str, Any]] = {
     "claude": {
         "argv": ["claude", "-p", "{prompt}", "--output-format", "json",
                  "--permission-mode", "acceptEdits", "--no-session-persistence",
-                 "--allowedTools", "Read,Edit,Write,Glob,Grep,Bash"],
+                 "--allowedTools", "Read,Edit,Write,Glob,Grep,Bash",
+                 # Refs are shared with the canonical checkout (detached worktrees
+                 # share refs and stash), so the agent may not move them.
+                 # Comma-joined: one token, and the next token is a flag.
+                 "--disallowedTools", ",".join(DISALLOWED_GIT_TOOLS)],
         "arm_argv": {
             "baseline": ["--strict-mcp-config"],
             "dev_memory": ["--strict-mcp-config", "--mcp-config", "{mcp_config}"],
@@ -421,19 +518,9 @@ class CommandDriver:
             env[key] = value.replace("{mcp_config}", str(mcp))
         argv = self._argv(prompt, arm, mcp)
         log_dir.mkdir(parents=True, exist_ok=True)
-        started = time.monotonic()
-        timed_out = False
-        try:
-            proc = subprocess.run(argv, cwd=str(workdir), capture_output=True,
-                                  text=True, encoding="utf-8", errors="replace",
-                                  timeout=timeout_s, env=env)
-            code, out, err = proc.returncode, proc.stdout, proc.stderr
-        except subprocess.TimeoutExpired as exc:
-            timed_out = True
-            code = None
-            out = exc.stdout.decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
-            err = exc.stderr.decode("utf-8", "replace") if isinstance(exc.stderr, bytes) else (exc.stderr or "")
-        wall = round(time.monotonic() - started, 3)
+        res = spawn_group(argv, cwd=workdir, env=env, timeout_s=timeout_s)
+        code, out, err = res["returncode"], res["stdout"], res["stderr"]
+        timed_out, wall = res["timed_out"], res["seconds"]
         (log_dir / "driver.stdout.txt").write_text(out, encoding="utf-8")
         (log_dir / "driver.stderr.txt").write_text(err, encoding="utf-8")
         parsed = self.spec["parse"](out)
@@ -479,7 +566,9 @@ def write_arm_config(workdir: Path, arm: str, python: str, log_dir: Path) -> lis
         "OCELOT_DEV_ROOT": str(workdir),
         "OCELOT_DEV_DUMP": str(log_dir / "dev_graph.json"),
         "OCELOT_DEV_JOURNAL": str(log_dir / "journal.jsonl"),
-        "OCELOT_DEV_AUTOBUILD": "1",
+        # The snapshot is built by prepare_dev_memory before the driver starts,
+        # so the server never builds it inside the timed agent session.
+        "OCELOT_DEV_AUTOBUILD": "0",
     }
     log_dir.mkdir(parents=True, exist_ok=True)
     claude_doc = {"mcpServers": {MCP_SERVER_NAME: {
@@ -496,6 +585,45 @@ def write_arm_config(workdir: Path, arm: str, python: str, log_dir: Path) -> lis
 # --------------------------------------------------------------------------- #
 # run loop
 # --------------------------------------------------------------------------- #
+PREP_TIMEOUT_S = 900
+_PREP_CODE = (
+    "import sys\n"
+    "from pathlib import Path\n"
+    "from scripts.ocelot_dev_memory import build_index\n"
+    "from scripts.ocelot_repo_map import update_tag_cache\n"
+    "work = Path(sys.argv[1])\n"
+    "build_index(work, Path(sys.argv[2]))\n"
+    "update_tag_cache(work, cache_path=work / 'var' / 'ocelot_dev_tags.json')\n"
+)
+
+
+def prepare_dev_memory(workdir: Path, python: str, log_dir: Path) -> dict[str, Any]:
+    """Build the dev-memory snapshot and warm the tag cache, outside the timer.
+
+    Runs in a subprocess with the run's python and PYTHONPATH=workdir, so the
+    snapshot describes the broken worktree. The graph dump goes to log_dir and
+    the tag cache to workdir/var, which is gitignored and so not an agent edit.
+    A failed prep is recorded in the run; the driver still runs and the check
+    still decides, so a broken index shows up as a result, not a silent skip.
+    """
+    log_dir.mkdir(parents=True, exist_ok=True)
+    env = dict(os.environ, PYTHONPATH=str(workdir), PYTHONDONTWRITEBYTECODE="1",
+               COLUMNS="250")
+    res = spawn_group([python, "-c", _PREP_CODE, str(workdir),
+                       str(log_dir / "dev_graph.json")],
+                      cwd=workdir, env=env, timeout_s=PREP_TIMEOUT_S)
+    ok = res["returncode"] == 0 and not res["timed_out"]
+    (log_dir / "prep.log").write_text(
+        f"{res['stdout']}\n--- stderr ---\n{res['stderr']}\n", encoding="utf-8")
+    if ok:
+        error = None
+    elif res["timed_out"]:
+        error = f"prep timed out after {PREP_TIMEOUT_S} s"
+    else:
+        error = _tail(res["stderr"], 12) or f"exit {res['returncode']}"
+    return {"prep_s": res["seconds"], "prep_ok": ok, "prep_error": error}
+
+
 def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
             driver: Any, base: str, *, tasks_dir: str | Path, python: str,
             run_root: Path, timeout_s: int, keep: bool) -> dict[str, Any]:
@@ -503,8 +631,11 @@ def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
     name = f"{tid}-{arm}-r{repeat}"
     log_dir = run_root / "logs" / name
     workdir = make_workdir(repo, base, run_root, name)
+    cleanup: list[str] = []
     record: dict[str, Any] = {"task": tid, "arm": arm, "repeat": repeat,
-                              "driver": driver.name}
+                              "driver": driver.name, "prep_s": 0.0,
+                              "prep_ok": None, "prep_error": None,
+                              "cleanup_warnings": cleanup}
     try:
         patch = Path(tasks_dir) / task["break_patch"]
         applied = apply_patch(workdir, patch)
@@ -513,6 +644,10 @@ def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
                           files_changed=[], localized=False, wall_s=0.0)
             return record
         write_arm_config(workdir, arm, python, log_dir)
+        if arm == "dev_memory":
+            prep = prepare_dev_memory(workdir, python, log_dir)
+            record.update(prep_s=prep["prep_s"], prep_ok=prep["prep_ok"],
+                          prep_error=prep["prep_error"])
         before = _snapshot(workdir)
         result = driver.run(workdir, task["prompt"], arm, timeout_s, log_dir,
                             patch_path=patch)
@@ -540,7 +675,7 @@ def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
         return record
     finally:
         if not keep:
-            remove_workdir(repo, workdir, run_root)
+            cleanup.extend(remove_workdir(repo, workdir, run_root))
         else:
             record["workdir"] = str(workdir)
 
@@ -595,6 +730,8 @@ def aggregate(runs: list[dict[str, Any]], arms: Iterable[str]) -> list[dict[str,
             "successes": successes,
             "success_rate": round(successes / n, 4) if n else None,
             "mean_wall_s": _mean(r.get("wall_s") for r in mine),
+            "mean_prep_s": _mean((r.get("prep_s") for r in mine), 1),
+            "prep_failures": sum(1 for r in mine if r.get("prep_ok") is False),
             "tokens_known_runs": sum(1 for r in mine if r.get("tokens_in") is not None),
             "mean_tokens_in": _mean((r.get("tokens_in") for r in mine), 1),
             "mean_tokens_out": _mean((r.get("tokens_out") for r in mine), 1),
@@ -636,16 +773,20 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "## Per arm",
         "",
-        "| arm | runs | success | success rate | mean wall s | mean tokens in | "
+        "| arm | runs | success | success rate | mean wall s | mean prep s | "
+        "prep failures | mean tokens in | "
         "mean tokens out | mean cost USD | localization rate |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for row in report["summary"]:
         lines.append("| " + " | ".join(_cell(v) for v in (
             row["arm"], row["runs"], row["successes"], row["success_rate"],
-            row["mean_wall_s"], row["mean_tokens_in"], row["mean_tokens_out"],
+            row["mean_wall_s"], row["mean_prep_s"], row["prep_failures"],
+            row["mean_tokens_in"], row["mean_tokens_out"],
             row["mean_cost_usd"], row["localization_rate"])) + " |")
-    lines += ["", "Token and cost columns are blank where the driver reports no value.",
+    lines += ["", "Token and cost columns are blank where the driver reports no value. "
+              "Prep (dev_memory snapshot and tag cache) runs before the driver timer; "
+              "mean prep s is 0 for baseline.",
               "", "## Per task (paired)", ""]
     header = "| task | " + " | ".join(report["arms"]) + " |"
     lines += [header, "|---" * (len(report["arms"]) + 1) + "|"]

@@ -8,11 +8,11 @@
 
 ## Per arm
 
-| arm | runs | success | success rate | mean wall s | mean tokens in | mean tokens out | mean cost USD | localization rate |
-|---|---|---|---|---|---|---|---|---|
-| baseline | 7 | 0 | 0.0 | 0.0 |  |  |  | 0.0 |
+| arm | runs | success | success rate | mean wall s | mean prep s | prep failures | mean tokens in | mean tokens out | mean cost USD | localization rate |
+|---|---|---|---|---|---|---|---|---|---|---|
+| baseline | 7 | 0 | 0.0 | 0.0 | 0.0 | 0 |  |  |  | 0.0 |
 
-Token and cost columns are blank where the driver reports no value.
+Token and cost columns are blank where the driver reports no value. Prep (dev_memory snapshot and tag cache) runs before the driver timer; mean prep s is 0 for baseline.
 
 ## Per task (paired)
 
