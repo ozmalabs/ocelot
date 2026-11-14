@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "base": "a6df57f0d4b594564d993495d6d38a1b1be3170f",
+  "tasks": [
+    {
+      "id": "repo-map-baseline-budget",
+      "prompt": "The baseline file listing in the repo-map evaluation can go over the token budget it is given. It should stay a prefix of the sorted file list and fit inside the budget. The test tests/test_repo_map_eval_migrated.py::test_baseline_listing_is_a_budgeted_path_prefix is failing. Find the cause and fix it.",
+      "area": "scripts",
+      "break_patch": "patches/repo-map-baseline-budget.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_repo_map_eval_migrated.py::test_baseline_listing_is_a_budgeted_path_prefix"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "scripts/ocelot_repo_map_eval.py"
+      ],
+      "notes": "Break: the budget check in baseline_listing allows 4x the budget."
+    },
+    {
+      "id": "repo-map-context-truncated",
+      "prompt": "The context arm of the repo-map evaluation reports only one file, even when the dev-memory context returns several. Every file in the context should count toward its file set, in order. The test tests/test_repo_map_eval_migrated.py::test_context_files_uses_item_and_snippet_paths is failing. Find the cause and fix it.",
+      "area": "scripts",
+      "break_patch": "patches/repo-map-context-truncated.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_repo_map_eval_migrated.py::test_context_files_uses_item_and_snippet_paths"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "scripts/ocelot_repo_map_eval.py"
+      ],
+      "notes": "Break: context_files returns only the first unique file."
+    },
+    {
+      "id": "dev-memory-strict-bool",
+      "prompt": "The dev-memory edit tool accepts a non-boolean apply flag such as 'maybe' and treats it as true, when it should reject it with 'apply must be a boolean'. The test tests/test_dev_memory_migrated.py::test_edit_rejects_non_boolean_apply is failing. Fix it.",
+      "area": "scripts",
+      "break_patch": "patches/dev-memory-strict-bool.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_dev_memory_migrated.py::test_edit_rejects_non_boolean_apply"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "scripts/ocelot_dev_memory.py"
+      ],
+      "notes": "Break: the boolean coercion helper returns bool(value) instead of raising for non-boolean input."
+    },
+    {
+      "id": "architecture-entrypoint-exclusion",
+      "prompt": "The architecture report flags a helper script under scripts/ as dead code. Entry-point scripts under scripts/ should never be listed as dead-code candidates. The test tests/test_architecture_migrated.py::test_dead_code_excludes_scripts_entrypoints_and_tests is failing. Fix it.",
+      "area": "scripts",
+      "break_patch": "patches/architecture-entrypoint-exclusion.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_architecture_migrated.py::test_dead_code_excludes_scripts_entrypoints_and_tests"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "notes": "Break: the scripts/ and tools/ prefix exclusion is removed from _excluded_from_dead_code."
+    },
+    {
+      "id": "architecture-hub-order",
+      "prompt": "The hub ranking in the architecture report lists the least central files first, not the most central. The test tests/test_architecture_migrated.py::test_hub_ordering_uses_pagerank_then_in_degree is failing. Fix the ordering.",
+      "area": "scripts",
+      "break_patch": "patches/architecture-hub-order.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_architecture_migrated.py::test_hub_ordering_uses_pagerank_then_in_degree"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "notes": "Break: the PageRank sort key loses its negation, so the hub order is ascending."
+    },
+    {
+      "id": "seed-loader-engine-rules",
+      "prompt": "When a seed manifest is prepared for the Rust loader, the declarative if/then principles are still in the engine rule list. Only rules with a match array should reach the loader. The test tests/test_seed_loader_quiet_boot_migrated.py::test_engine_rules_only_strips_declarative_principles is failing. Fix it.",
+      "area": "substrate",
+      "break_patch": "patches/seed-loader-engine-rules.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_seed_loader_quiet_boot_migrated.py::test_engine_rules_only_strips_declarative_principles"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "substrate/seed_loader.py"
+      ],
+      "notes": "Break: engine_rules_only returns the original rule list instead of filtering out principles."
+    },
+    {
+      "id": "py-cst-token-last-char",
+      "prompt": "Flattening the Python concrete-syntax leaves no longer reproduces the source text. The last character of each token is missing from its leaf text. The test tests/test_py_cst_ingest_migrated.py::test_python_cst_is_byte_exact is failing. Find the cause and fix it.",
+      "area": "domains",
+      "break_patch": "patches/py-cst-token-last-char.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_py_cst_ingest_migrated.py::test_python_cst_is_byte_exact"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "domains/py_cst_ingest.py"
+      ],
+      "notes": "Break: the token text slice drops its final character."
+    }
+  ]
+}

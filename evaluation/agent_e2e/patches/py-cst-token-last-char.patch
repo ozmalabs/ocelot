@@ -1,0 +1,11 @@
+--- a/domains/py_cst_ingest.py
++++ b/domains/py_cst_ingest.py
+@@ -62,7 +62,7 @@
+                 "line": tok.start[0], "col": tok.start[1],
+                 "named": False, "field": "", "child_index": len(leaves),
+             })
+-        text = source[start:end]
++        text = source[start:max(start, end - 1)]
+         if text:
+             leaves.append({
+                 "kind": tokenize.tok_name[tok.type],

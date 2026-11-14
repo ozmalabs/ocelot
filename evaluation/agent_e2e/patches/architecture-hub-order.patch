@@ -1,0 +1,11 @@
+--- a/scripts/ocelot_architecture.py
++++ b/scripts/ocelot_architecture.py
+@@ -282,7 +282,7 @@
+     rank = _pagerank(nodes, edges)
+     hub_order = sorted(
+         nodes,
+-        key=lambda node: (-rank.get(node, 0.0), -in_degree[node], node))
++        key=lambda node: (rank.get(node, 0.0), -in_degree[node], node))
+     hubs = [
+         {"rank": position, "path": node,
+          "pagerank": round(rank.get(node, 0.0), 8),
