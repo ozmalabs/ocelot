@@ -63,7 +63,9 @@ agent make a failing test pass again?
 
 For each task and arm, `run_eval` does the following:
 
-1. Creates a detached worktree at `base` under `<run_root>/work/<task>-<arm>-r<n>`.
+1. Creates a workdir at `base` under `<run_root>/work/<task>-<arm>-r<n>`: a detached
+   linked worktree for the local drivers, an isolated clone for live drivers (see
+   Isolation).
 2. Applies the break patch.
 3. Writes the arm's MCP config into the workdir, if the arm needs one.
 4. For dev_memory, runs prep (see Arms). Prep time is recorded as `prep_s`.
@@ -74,11 +76,11 @@ For each task and arm, `run_eval` does the following:
    The break itself does not count as an agent edit.
 8. Runs the check. `success` means the check passed.
 9. `localized` is true if any `expected_files` entry is in `files_changed`.
-10. Removes the worktree, unless `--keep`. Cleanup problems are listed in
+10. Removes the workdir, unless `--keep`. Cleanup problems are listed in
     `cleanup_warnings` on the run record.
 
 Logs (driver stdout and stderr, check output, transcripts, the dev-memory snapshot and
-journal) stay in `<run_root>/logs/`. Only worktrees are removed.
+journal) stay in `<run_root>/logs/`. Only workdirs are removed.
 
 `validate` runs check, then break, then check on a worktree at `base`. It reports
 `ok` only when the check passes on base, the patch applies, and the check fails
@@ -91,13 +93,71 @@ after the break.
 | `noop` | Does nothing. Negative control. Expected success 0%. | no |
 | `fake` | Reverts the break with `git apply -R`. Expected success 100%. Checks the harness only. | no |
 | `claude` | `claude -p <prompt> --output-format json --permission-mode acceptEdits --no-session-persistence --allowedTools Read,Edit,Write,Glob,Grep,Bash --disallowedTools "Bash(git commit:*),Bash(git push:*),Bash(git stash:*),Bash(git branch:*),Bash(git checkout:*),Bash(git switch:*),Bash(git reset:*),Bash(git rebase:*),Bash(git merge:*),Bash(git tag:*),Bash(git worktree:*)"`, run in the workdir. | **untested live** |
-| `opencode` | `opencode run --format json --auto <prompt>`, run in the workdir. No git restriction (see Shared refs). | **untested live** |
+| `opencode` | `opencode run --standalone --format json --auto --archived [-m <model>] <prompt>`, run in the workdir with a generated `OPENCODE_CONFIG` (see OpenCode). | yes |
 
-Token and cost fields come from the Claude JSON output (`usage.input_tokens`,
+Token and cost fields for `claude` come from its JSON output (`usage.input_tokens`,
 `usage.output_tokens`, `total_cost_usd`, `result`). Those names were confirmed in the
 installed binary (claude 2.1.322), not in a live run. `usage.input_tokens` may
-exclude cache-read tokens. OpenCode's JSON event stream is recorded as raw transcript
-only, so its token and cost fields are `None`.
+exclude cache-read tokens. For `opencode` they are summed over the `step_finish`
+events of the JSON event stream (`cost`, `tokens.input`, `tokens.output`), and
+`tool_calls` counts `tool_use` events. An `error` event, or a stream with no finished
+step, is recorded as `driver_error`. Confirmed against opencode 2.3.0.
+
+`tool_calls` and `tools_by_name` count OpenCode's tool events. `mcp_calls` counts calls
+to the Ocelot server. OpenCode 2.3 runs MCP tools through Code Mode: the agent calls a
+single `execute` tool whose code calls `tools["ocelot-dev-memory"].<tool>(...)`, so
+`mcp_calls` counts those calls inside the code (and any tool named
+`ocelot-dev-memory*`). The report gives mean tool calls and mean MCP calls per arm.
+A dev_memory session that makes no MCP call is a session where the server was
+available and unused.
+
+### Selecting the backend
+
+`--driver` picks the backend. Without it, the harness reads
+`OCELOT_AGENT_EVAL_DRIVER`, so `OCELOT_AGENT_EVAL_DRIVER=opencode` switches every run
+in a shell. With neither, the CLI refuses. `--model` passes a model through
+(`-m provider/model` for opencode, `--model` for claude). Without `--model`, each CLI
+uses its own default. For opencode that is the `model` key of
+`~/.config/opencode/opencode.json`, which the report records. The report and the
+Markdown summary carry a `Backend` line (driver and model) and the run's total cost.
+
+Before the first workdir is made, the driver runs a preflight that makes no model
+call. `claude` checks `claude auth status` (or an API key in the environment) and
+refuses when logged out. `opencode` runs `opencode models` and, with `--model`,
+refuses a model it does not list. During a run, an authentication error from the
+driver stops the run.
+
+### OpenCode
+
+- `--standalone` starts a private server for each session, so a background OpenCode
+  service and its cached project state are not used.
+- `OPENCODE_CONFIG` points at `<log_dir>/opencode_config.json`, written per session.
+  Both arms get `permission.bash` with `"*": "allow"` and `deny` for the ref-moving
+  git commands (`git commit*`, `push*`, `stash*`, `branch*`, `checkout*`, `switch*`,
+  `reset*`, `rebase*`, `merge*`, `tag*`, `worktree*`). The dev_memory arm also gets
+  the Ocelot MCP server, copied from the workdir's `.ocelot_agent_eval_opencode.json`.
+  The arms differ only in that server.
+- The user's global OpenCode config still loads (providers, the default model, any
+  global MCP servers). The baseline is "the operator's OpenCode without Ocelot", not a
+  bare agent.
+
+### Isolation
+
+Live drivers run in a clone made with `git clone --shared --no-checkout`, then
+`git checkout --detach <base>` and `git remote remove origin`. On this repository a
+clone takes about 11 s and 3.4 GB of working tree. A clone has its own refs and no
+remote, so a ref the agent moves is not a ref of the operator's repository, and
+OpenCode's worktree tools see no sibling worktrees. A shared clone still borrows
+objects from the source repository through `.git/objects/info/alternates`; the agent
+can read that history but cannot change it from the clone.
+
+The first two OpenCode smoke runs worked in the operator's checkout instead of the
+workdir and found the task's tests passing there. The cause was `$PWD`: OpenCode
+takes its project directory from `$PWD`, not from the process's working directory,
+and the harness passed the operator's `PWD` through. `spawn_group` now sets `PWD` to
+the child's cwd for every driver and check. The same runs found no `python` on
+`PATH`, so live drivers get `<log_dir>/bin` first on `PATH`, holding `python` and
+`python3` links to the run's `--python`.
 
 The `fake` and `noop` drivers ignore the arm. They do not start an MCP server.
 
@@ -133,30 +193,28 @@ harness deletes the directory. It then reads `<path>/.git` before deletion. If t
 admin directory it points to is under `<common git dir>/worktrees/`, the harness
 deletes only that directory. Each partial step is recorded in `cleanup_warnings`.
 
-### Shared refs and the git restriction
+### The git restriction
 
-Detached worktrees share refs, stash and the object store with the canonical checkout,
-so an agent that runs `git commit`, `git stash` or `git branch` changes the user's
-repository. The `claude` driver therefore passes `--disallowedTools` for these Bash
-patterns: `git commit`, `push`, `stash`, `branch`, `checkout`, `switch`, `reset`,
-`rebase`, `merge`, `tag` and `worktree`. Other Bash commands stay allowed.
+Live drivers work in clones (see Isolation), so moving a ref no longer reaches the
+operator's repository. The ref-moving git commands are still denied, so both
+backends work under the same rules and an agent cannot hide its fix in a commit or a
+stash. The `claude` driver passes `--disallowedTools` for these Bash patterns:
+`git commit`, `push`, `stash`, `branch`, `checkout`, `switch`, `reset`, `rebase`,
+`merge`, `tag` and `worktree`. The `opencode` driver denies the same commands through
+its permission config. Other shell commands stay allowed.
 
 Residual risk for `claude`: the patterns match the start of a Bash command. A command
 such as `git -C <dir> commit`, `git --git-dir=... push`, `sh -c 'git commit'`, a full
-path to git, or a script that runs git can get past them. The restriction limits
-accidents. It is not a sandbox.
-
-Residual risk for `opencode`: the harness passes no tool restriction, and `--auto`
-allows every tool. An OpenCode agent can run any git command in the shared repository.
-Do not run the opencode driver on a repository with work you cannot afford to lose,
-until it has a sandbox or a tool policy.
+path to git, or a script that runs git can get past them. OpenCode's patterns are
+also prefix globs and have the same gaps. The restriction limits accidents. It is not
+a sandbox: the agent runs as the operator and can reach any path by absolute name.
 
 ## Arms
 
 | arm | configuration |
 |---|---|
-| `baseline` | No Ocelot MCP server. Claude Code runs with `--strict-mcp-config`, which ignores the user's MCP servers. OpenCode gets no override, so a user's global MCP servers can still load. This is a known gap for the OpenCode baseline. |
-| `dev_memory` | The workdir gets `.ocelot_agent_eval_mcp.json` (Claude Code, passed with `--mcp-config`) and `.ocelot_agent_eval_opencode.json` (OpenCode, selected with the `OPENCODE_CONFIG` environment variable). Both start `<python> -m scripts.ocelot_dev_memory_mcp` with `PYTHONPATH` and `OCELOT_DEV_ROOT` set to the workdir. The snapshot and journal go under the run's log directory. `OCELOT_DEV_AUTOBUILD=0`, because the harness builds the snapshot before the driver starts (see Prep). |
+| `baseline` | No Ocelot MCP server. Claude Code runs with `--strict-mcp-config`, which ignores the user's MCP servers. OpenCode gets the generated config without the Ocelot server; a user's global MCP servers can still load in both arms. |
+| `dev_memory` | The workdir gets `.ocelot_agent_eval_mcp.json` (Claude Code, passed with `--mcp-config`) and `.ocelot_agent_eval_opencode.json` (OpenCode, whose `mcp` block is copied into the generated `OPENCODE_CONFIG`). Both start `<python> -m scripts.ocelot_dev_memory_mcp` with `PYTHONPATH` and `OCELOT_DEV_ROOT` set to the workdir. The snapshot and journal go under the run's log directory. `OCELOT_DEV_AUTOBUILD=0`, because the harness builds the snapshot before the driver starts (see Prep). |
 
 The two config files are untracked and are written before the snapshot. They are
 not counted as agent edits. The agent can still see them with `git status`.
@@ -207,11 +265,14 @@ and states the exact command, the number of sessions and the cost ceiling. The
 command only runs after approval:
 
 ```
-OCELOT_AGENT_EVAL_LIVE=1 $PY -m scripts.ocelot_agent_eval run \
-    --driver claude --live --arms baseline,dev_memory --repeats 1 \
-    --max-budget-usd <USD ceiling> --timeout-s 900 --python $PY \
-    --out-json <out>.json --out-md <out>.md
+OCELOT_AGENT_EVAL_DRIVER=opencode OCELOT_AGENT_EVAL_LIVE=1 \
+  $PY -m scripts.ocelot_agent_eval run --live --arms baseline,dev_memory \
+    --repeats 1 --max-total-usd <USD ceiling> --timeout-s 900 --python $PY \
+    [--model provider/model] --out-json <out>.json --out-md <out>.md
 ```
+
+For Claude Code, use `--driver claude` (or `OCELOT_AGENT_EVAL_DRIVER=claude`) and add
+`--max-budget-usd <USD per session>`.
 
 Size: sessions = tasks × arms × repeats. The shipped set has 7 tasks, so a pilot with
 1 repeat and both arms is 14 sessions.
@@ -223,15 +284,19 @@ Size: sessions = tasks × arms × repeats. The shipped set has 7 tasks, so a pil
 - `--arms`: run one arm at a time.
 - `--timeout-s`: wall-clock limit per session. A timed-out session scores as a
   failure, with `timed_out` recorded.
-- `--max-budget-usd`: passed to `claude --max-budget-usd`. OpenCode has no equivalent
-  flag in this harness, so set a budget there outside the harness.
+- `--max-budget-usd`: passed to `claude --max-budget-usd`, a per-session cap. Claude
+  only.
+- `--max-total-usd`: a run-wide cap for any backend. After each session the harness
+  adds up the reported `cost_usd`; once the total exceeds the cap, no further session
+  starts, and the report records `stopped`. It is a soft cap: the session that crosses
+  it finishes. A backend that reports no cost counts as $0.
 
 ## Limits
 
 - The break patches are authored by the task author. A break can be easier or harder
   than a real bug. The task set is small, so it does not measure general task success.
 - Drivers' network access and tool permissions are not restricted by the harness. The
-  agent runs as the operator with a worktree as its working directory.
+  agent runs as the operator with the workdir as its working directory.
 - The checks use the Python passed in with `--python`, and the agent can run any shell
   command through `Bash`. A `Bash` call can change files outside the workdir.
 - `PYTHONDONTWRITEBYTECODE=1` is set for checks and drivers. Without it, a break that

@@ -22,7 +22,7 @@ Drivers:
   fake    reverts the break patch with `git apply -R`. Expected success 100%.
           Validates the harness, not any agent.
   claude  Claude Code CLI in print mode. LIVE ONLY, untested live.
-  opencode  OpenCode CLI in `run` mode. LIVE ONLY, untested live.
+  opencode  OpenCode CLI in `run` mode. LIVE ONLY.
 
 Arms:
   baseline    no Ocelot MCP server. Claude Code runs with --strict-mcp-config.
@@ -162,11 +162,27 @@ def new_run_root(base_dir: str | Path = DEFAULT_RUN_ROOT) -> Path:
     return run_root
 
 
-def make_workdir(repo: str | Path, base: str, run_root: Path, name: str) -> Path:
-    """A detached worktree at `base` under run_root/work/<name>."""
+def make_workdir(repo: str | Path, base: str, run_root: Path, name: str, *,
+                 isolation: str = "worktree") -> Path:
+    """A checkout of `base` under run_root/work/<name>.
+
+    `worktree` is a detached linked worktree: fast, and fine for the local
+    drivers. `clone` is a shared local clone with its `origin` removed. Live
+    agents get a clone: it has its own refs, so a ref the agent moves is not a
+    ref of the main repository, and the agent's worktree tools see no sibling
+    checkouts of the main repository.
+    """
     path = run_root / "work" / name
     path.parent.mkdir(parents=True, exist_ok=True)
-    _git(["worktree", "add", "--detach", str(path), base], repo)
+    if isolation == "worktree":
+        _git(["worktree", "add", "--detach", str(path), base], repo)
+    elif isolation == "clone":
+        _git(["clone", "--quiet", "--shared", "--no-checkout",
+              str(Path(repo).resolve()), str(path)], repo)
+        _git(["checkout", "--quiet", "--detach", base], path)
+        _git(["remote", "remove", "origin"], path)
+    else:
+        raise HarnessError(f"unknown isolation: {isolation}")
     return path
 
 
@@ -195,9 +211,16 @@ def remove_workdir(repo: str | Path, path: Path, run_root: Path) -> list[str]:
     owned = (run_root.resolve() / "work").resolve()
     if owned not in path.resolve().parents:
         raise HarnessError(f"refusing to remove a path the harness did not create: {path}")
+    warnings: list[str] = []
+    if (path / ".git").is_dir():
+        # A clone made by make_workdir(isolation="clone"): nothing in the
+        # source repository refers to it, so deleting the directory is enough.
+        shutil.rmtree(path, ignore_errors=True)
+        if path.exists():
+            warnings.append(f"directory still present after cleanup: {path}")
+        return warnings
     admin = _worktree_admin_dir(path)
     proc = _git(["worktree", "remove", "--force", str(path)], repo, check=False)
-    warnings: list[str] = []
     if proc.returncode == 0 and not path.exists():
         return warnings
     warnings.append("git worktree remove --force failed: "
@@ -274,6 +297,9 @@ def spawn_group(argv: list[str], *, cwd: str | Path, env: dict[str, str],
     killed with it, so they do not outlive the run.
     """
     started = time.monotonic()
+    # PWD must match cwd: OpenCode takes its project directory from $PWD, so an
+    # inherited PWD would point the agent at the operator's checkout.
+    env = dict(env, PWD=str(Path(cwd).resolve()))
     proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
                             text=True, encoding="utf-8",
@@ -402,6 +428,7 @@ def validate_all(repo: str | Path, tasks: list[dict[str, Any]], base: str, *,
 def _empty_result(**fields: Any) -> dict[str, Any]:
     out = {"exit_code": None, "wall_s": 0.0, "tokens_in": None,
            "tokens_out": None, "cost_usd": None, "tool_calls": None,
+           "mcp_calls": None, "tools_by_name": None,
            "transcript": "", "timed_out": False, "driver_error": None}
     out.update(fields)
     return out
@@ -483,28 +510,124 @@ DRIVERS: dict[str, dict[str, Any]] = {
         "parse": _parse_claude_json,
     },
     "opencode": {
-        "argv": ["opencode", "run", "--format", "json", "--auto", "{prompt}"],
+        # --standalone: a private server, so the user's background service and
+        # its cached project config do not leak into the run. --archived keeps
+        # eval sessions out of the user's session list.
+        "argv": ["opencode", "run", "--standalone", "--format", "json", "--auto",
+                 "--archived", "{prompt}"],
         "arm_argv": {"baseline": [], "dev_memory": []},
-        "arm_env": {"baseline": {}, "dev_memory": {"OPENCODE_CONFIG": "{mcp_config}"}},
+        # Both arms get a generated config (git denylist; MCP only for
+        # dev_memory). See CommandDriver._opencode_config.
+        "arm_env": {"baseline": {"OPENCODE_CONFIG": "{driver_config}"},
+                    "dev_memory": {"OPENCODE_CONFIG": "{driver_config}"}},
         "mcp_config_file": MCP_CONFIG_OPENCODE,
-        "parse": lambda stdout: {"transcript": stdout},
+        "model_flag": "-m",
+        "parse": lambda stdout: _parse_opencode_events(stdout),
     },
 }
 
+# Same refs-protection intent as DISALLOWED_GIT_TOOLS, in OpenCode's
+# permission syntax (glob over the bash command text, last match wins).
+OPENCODE_GIT_DENY = (
+    "git commit*", "git push*", "git stash*", "git branch*", "git checkout*",
+    "git switch*", "git reset*", "git rebase*", "git merge*", "git tag*",
+    "git worktree*",
+)
+DRIVERS["claude"]["model_flag"] = "--model"
+DRIVER_ENV = "OCELOT_AGENT_EVAL_DRIVER"
+
+
+# OpenCode 2.3 Code Mode runs MCP tools inside its `execute` tool, as
+# `tools["ocelot-dev-memory"].dev_code_search(...)`. Each such call is one MCP call.
+_MCP_CODE_CALL_RE = re.compile(r"""tools\[\s*["']""" + re.escape(MCP_SERVER_NAME)
+                               + r"""["']\s*\]\s*\.\s*\w+\s*\(""")
+
+
+def _parse_opencode_events(stdout: str) -> dict[str, Any]:
+    """Totals from `opencode run --format json` (one JSON event per line).
+
+    Confirmed against opencode 2.3.0 output: `step_finish` parts carry `cost`
+    and `tokens.{input,output}`, `tool_use` events mark tool calls, `text`
+    parts carry the reply. An `error` event, or no finished step at all, is a
+    driver error.
+    """
+    cost = 0.0
+    tokens_in = tokens_out = 0
+    tools = steps = 0
+    by_name: dict[str, int] = {}
+    mcp = 0
+    texts: list[str] = []
+    error: str | None = None
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line.startswith("{"):
+            continue
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        kind = event.get("type")
+        part = event.get("part") if isinstance(event.get("part"), dict) else {}
+        if kind == "step_finish":
+            steps += 1
+            if isinstance(part.get("cost"), (int, float)):
+                cost += float(part["cost"])
+            tok = part.get("tokens") if isinstance(part.get("tokens"), dict) else {}
+            tokens_in += int(tok.get("input") or 0)
+            tokens_out += int(tok.get("output") or 0)
+        elif kind == "tool_use":
+            tools += 1
+            tool = str(part.get("tool") or "?")
+            by_name[tool] = by_name.get(tool, 0) + 1
+            if tool.startswith(MCP_SERVER_NAME):
+                mcp += 1
+            else:
+                state = part.get("state") if isinstance(part.get("state"), dict) else {}
+                inp = state.get("input") if isinstance(state.get("input"), dict) else {}
+                mcp += len(_MCP_CODE_CALL_RE.findall(str(inp.get("code") or "")))
+        elif kind == "text" and isinstance(part.get("text"), str):
+            texts.append(part["text"])
+        elif kind == "error":
+            detail = event.get("error") or part.get("error") or event
+            error = json.dumps(detail)[:500] if not isinstance(detail, str) else detail[:500]
+    if error is None and steps == 0:
+        error = "opencode produced no finished step"
+    return {"tokens_in": tokens_in if steps else None,
+            "tokens_out": tokens_out if steps else None,
+            "cost_usd": round(cost, 6) if steps else None,
+            "tool_calls": tools, "driver_error": error,
+            "mcp_calls": mcp,
+            "tools_by_name": dict(sorted(by_name.items())),
+            "transcript": "\n".join(texts) or stdout}
+
 
 class CommandDriver:
-    """A live CLI agent. Built only through make_driver, which enforces approval."""
+    """A live CLI agent. Built only through make_driver, which enforces approval.
 
-    def __init__(self, name: str, *, max_budget_usd: float | None = None) -> None:
+    Live agents get a clone workdir (see make_workdir). `python` is the run's
+    interpreter; run_eval sets it, and its bin dir goes first on the agent's
+    PATH so `python` resolves to the venv the checks use.
+    """
+
+    isolation = "clone"
+
+    def __init__(self, name: str, *, max_budget_usd: float | None = None,
+                 model: str | None = None) -> None:
         self.name = name
         self.spec = DRIVERS[name]
         self.max_budget_usd = max_budget_usd
+        self.model = model
+        self.python: str | None = None
 
     def _argv(self, prompt: str, arm: str, mcp_config: Path | None) -> list[str]:
         argv = list(self.spec["argv"])
         argv.extend(self.spec["arm_argv"].get(arm, []))
         if self.max_budget_usd is not None and self.name == "claude":
             argv.extend(["--max-budget-usd", str(self.max_budget_usd)])
+        if self.model:
+            # Before the prompt token, so a prompt never swallows the flag.
+            at = argv.index("{prompt}")
+            argv[at:at] = [self.spec["model_flag"], self.model]
         out = []
         for token in argv:
             if token == "{prompt}":
@@ -522,10 +645,16 @@ class CommandDriver:
         _require_live_env(self.name)
         mcp = workdir / self.spec["mcp_config_file"] if arm == "dev_memory" else None
         env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
-        for key, value in self.spec.get("arm_env", {}).get(arm, {}).items():
-            env[key] = value.replace("{mcp_config}", str(mcp))
-        argv = self._argv(prompt, arm, mcp)
         log_dir.mkdir(parents=True, exist_ok=True)
+        if self.python:
+            env["PATH"] = os.pathsep.join(
+                [str(self._python_shim(log_dir)), env.get("PATH", "")])
+        driver_config = (self._opencode_config(arm, mcp, log_dir)
+                         if self.name == "opencode" else None)
+        for key, value in self.spec.get("arm_env", {}).get(arm, {}).items():
+            env[key] = (value.replace("{mcp_config}", str(mcp))
+                        .replace("{driver_config}", str(driver_config)))
+        argv = self._argv(prompt, arm, mcp)
         res = spawn_group(argv, cwd=workdir, env=env, timeout_s=timeout_s)
         code, out, err = res["returncode"], res["stdout"], res["stderr"]
         timed_out, wall = res["timed_out"], res["seconds"]
@@ -536,8 +665,46 @@ class CommandDriver:
                              tokens_in=parsed.get("tokens_in"),
                              tokens_out=parsed.get("tokens_out"),
                              cost_usd=parsed.get("cost_usd"),
+                             tool_calls=parsed.get("tool_calls"),
+                             mcp_calls=parsed.get("mcp_calls"),
+                             tools_by_name=parsed.get("tools_by_name"),
                              driver_error=parsed.get("driver_error"),
                              transcript=parsed.get("transcript", out))
+
+    def _python_shim(self, log_dir: Path) -> Path:
+        """A bin dir under log_dir whose `python` and `python3` are the run's
+        interpreter. The interpreter's own dir is not enough: a resolved venv
+        python lives in a base install that may have no `python` name."""
+        shim = log_dir / "bin"
+        shim.mkdir(parents=True, exist_ok=True)
+        for name in ("python", "python3"):
+            link = shim / name
+            if link.is_symlink() or link.exists():
+                link.unlink()
+            link.symlink_to(self.python)
+        return shim
+
+    def _opencode_config(self, arm: str, mcp: Path | None, log_dir: Path) -> Path:
+        """The OPENCODE_CONFIG for one session, written under log_dir.
+
+        Both arms deny the ref-moving git commands. Only dev_memory adds the
+        Ocelot MCP server (copied from the arm config in the workdir), so the
+        arms differ only in that server.
+        """
+        doc: dict[str, Any] = {
+            "$schema": "https://opencode.ai/config.json",
+            "permission": {"bash": {"*": "allow",
+                                    **{p: "deny" for p in OPENCODE_GIT_DENY}}},
+        }
+        if arm == "dev_memory":
+            if mcp is None or not mcp.is_file():
+                raise HarnessError("dev_memory arm needs the generated MCP config")
+            doc["mcp"] = json.loads(mcp.read_text(encoding="utf-8"))["mcp"]
+        path = log_dir / "opencode_config.json"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8")
+        return path
 
     def preflight(self) -> None:
         """Refuse before any worktree is made when the CLI cannot authenticate.
@@ -545,6 +712,9 @@ class CommandDriver:
         `claude auth status` makes no model call. An API key in the
         environment also counts as credentials.
         """
+        if self.name == "opencode":
+            self._opencode_preflight()
+            return
         if self.name != "claude":
             return
         if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get(
@@ -561,6 +731,48 @@ class CommandDriver:
                 "claude is not logged in (claude auth status: loggedIn=false). "
                 "Run `claude` and /login, or set ANTHROPIC_API_KEY, then retry.")
 
+    def _opencode_preflight(self) -> None:
+        """The CLI runs, and the requested model (if any) is one it lists.
+
+        `opencode models` makes no model call.
+        """
+        try:
+            proc = subprocess.run(["opencode", "models"], capture_output=True,
+                                  text=True, timeout=120, stdin=subprocess.DEVNULL)
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise HarnessError(f"opencode is not usable: {exc}") from exc
+        if proc.returncode != 0:
+            raise HarnessError(
+                f"opencode models failed: {(proc.stderr or proc.stdout).strip()[:300]}")
+        if self.model:
+            listed = {line.strip() for line in proc.stdout.splitlines()}
+            if self.model.split("#", 1)[0] not in listed:
+                raise HarnessError(
+                    f"opencode does not list model {self.model!r}; "
+                    "see `opencode models`")
+
+    def describe(self) -> dict[str, Any]:
+        """Backend identity for the report."""
+        model = self.model
+        if model is None and self.name == "opencode":
+            model = _opencode_default_model()
+        return {"backend": self.name, "model": model or "cli default"}
+
+
+def _opencode_default_model() -> str | None:
+    """The `model` key of the user's opencode config, for the report only."""
+    for name in ("opencode.json", "opencode.jsonc", "config.json"):
+        path = Path.home() / ".config" / "opencode" / name
+        try:
+            text = re.sub(r"^\s*//.*$", "", path.read_text(encoding="utf-8"),
+                          flags=re.M)
+            model = json.loads(text).get("model")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(model, str) and model:
+            return f"{model} (opencode config default)"
+    return None
+
 
 def _require_live_env(name: str) -> None:
     if os.environ.get(LIVE_ENV) != "1":
@@ -568,8 +780,15 @@ def _require_live_env(name: str) -> None:
             f"driver {name!r} makes hosted-model calls. Set {LIVE_ENV}=1 and pass --live.")
 
 
-def make_driver(name: str, *, live: bool = False,
-                max_budget_usd: float | None = None) -> Any:
+def make_driver(name: str | None, *, live: bool = False,
+                max_budget_usd: float | None = None,
+                model: str | None = None) -> Any:
+    """Build a driver. `name` None means $OCELOT_AGENT_EVAL_DRIVER."""
+    name = name or os.environ.get(DRIVER_ENV) or ""
+    if not name:
+        raise HarnessError(
+            f"no driver: pass --driver or set {DRIVER_ENV} "
+            f"(one of {', '.join(sorted(LOCAL_DRIVERS + LIVE_DRIVERS))})")
     if name in LOCAL_DRIVERS:
         return {"noop": NoopDriver, "fake": FakeDriver}[name]()
     if name in LIVE_DRIVERS:
@@ -577,7 +796,7 @@ def make_driver(name: str, *, live: bool = False,
             raise LiveRunNotApproved(
                 f"driver {name!r} makes hosted-model calls and needs both --live "
                 f"and {LIVE_ENV}=1. Get user approval first.")
-        return CommandDriver(name, max_budget_usd=max_budget_usd)
+        return CommandDriver(name, max_budget_usd=max_budget_usd, model=model)
     raise HarnessError(f"unknown driver: {name}")
 
 
@@ -657,11 +876,12 @@ def prepare_dev_memory(workdir: Path, python: str, log_dir: Path) -> dict[str, A
 
 def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
             driver: Any, base: str, *, tasks_dir: str | Path, python: str,
-            run_root: Path, timeout_s: int, keep: bool) -> dict[str, Any]:
+            run_root: Path, timeout_s: int, keep: bool,
+            isolation: str = "worktree") -> dict[str, Any]:
     tid = task["id"]
     name = f"{tid}-{arm}-r{repeat}"
     log_dir = run_root / "logs" / name
-    workdir = make_workdir(repo, base, run_root, name)
+    workdir = make_workdir(repo, base, run_root, name, isolation=isolation)
     cleanup: list[str] = []
     record: dict[str, Any] = {"task": tid, "arm": arm, "repeat": repeat,
                               "driver": driver.name, "prep_s": 0.0,
@@ -697,6 +917,8 @@ def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
             tokens_out=result["tokens_out"],
             cost_usd=result["cost_usd"],
             tool_calls=result["tool_calls"],
+            mcp_calls=result.get("mcp_calls"),
+            tools_by_name=result.get("tools_by_name"),
             driver_error=result.get("driver_error"),
             files_changed=files_changed,
             localized=any(f in files_changed for f in expected),
@@ -715,7 +937,11 @@ def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
 def run_eval(repo: str | Path, tasks: list[dict[str, Any]], arms: Iterable[str],
              driver: Any, base: str, *, tasks_dir: str | Path = DEFAULT_TASKS.parent,
              repeats: int = 1, python: str | None = None, run_root: Path | None = None,
-             keep: bool = False, timeout_s: int = 900) -> dict[str, Any]:
+             keep: bool = False, timeout_s: int = 900,
+             max_total_usd: float | None = None) -> dict[str, Any]:
+    """Run every task × arm × repeat. `max_total_usd` stops the run once the
+    reported cost of finished sessions exceeds it (a soft cap: the session
+    that crosses it still completes)."""
     arms = list(arms)
     unknown = [a for a in arms if a not in ARMS]
     if unknown:
@@ -726,22 +952,39 @@ def run_eval(repo: str | Path, tasks: list[dict[str, Any]], arms: Iterable[str],
     run_root = run_root or new_run_root()
     ordered_arms = [a for a in ARMS if a in arms]
     runs: list[dict[str, Any]] = []
+    isolation = getattr(driver, "isolation", "worktree")
+    if hasattr(driver, "python"):
+        driver.python = python
     preflight = getattr(driver, "preflight", None)
     if callable(preflight):
         preflight()
+    stopped: str | None = None
     for task in sorted(tasks, key=lambda t: t["id"]):
         for arm in ordered_arms:
             for repeat in range(1, repeats + 1):
+                if stopped:
+                    break
                 record = run_one(repo, task, arm, repeat, driver, base,
                                  tasks_dir=tasks_dir, python=python,
                                  run_root=run_root, timeout_s=timeout_s,
-                                 keep=keep)
+                                 keep=keep, isolation=isolation)
                 runs.append(record)
                 if _AUTH_ERROR_RE.search(str(record.get("driver_error") or "")):
                     raise HarnessError(
                         f"driver cannot authenticate ({record['driver_error']}); "
                         f"stopped after {len(runs)} run(s). Logs: {run_root}")
+                spent = sum(float(r.get("cost_usd") or 0) for r in runs)
+                if max_total_usd is not None and spent > max_total_usd:
+                    stopped = (f"cost cap reached: ${spent:.4f} > "
+                               f"${max_total_usd:.2f} after {len(runs)} run(s)")
+    describe = getattr(driver, "describe", None)
+    backend = describe() if callable(describe) else {"backend": driver.name,
+                                                     "model": None}
     return {"version": 1, "base": base, "driver": driver.name,
+            "backend": backend,
+            "total_cost_usd": round(sum(float(r.get("cost_usd") or 0)
+                                        for r in runs), 6),
+            "stopped": stopped,
             "arms": ordered_arms, "repeats": repeats,
             "tasks": [t["id"] for t in sorted(tasks, key=lambda t: t["id"])],
             "run_root": str(run_root),
@@ -777,6 +1020,8 @@ def aggregate(runs: list[dict[str, Any]], arms: Iterable[str]) -> list[dict[str,
             "mean_tokens_in": _mean((r.get("tokens_in") for r in mine), 1),
             "mean_tokens_out": _mean((r.get("tokens_out") for r in mine), 1),
             "mean_cost_usd": _mean((r.get("cost_usd") for r in mine), 4),
+            "mean_tool_calls": _mean((r.get("tool_calls") for r in mine), 1),
+            "mean_mcp_calls": _mean((r.get("mcp_calls") for r in mine), 1),
             "localization_rate": round(sum(1 for r in mine if r.get("localized")) / n, 4)
             if n else None,
         })
@@ -805,8 +1050,13 @@ def render_markdown(report: dict[str, Any]) -> str:
         "# Agent end-to-end evaluation",
         "",
         f"- Driver: `{report['driver']}`"
-        + (" (untested live: see docs/features/AGENT_E2E_EVAL.md)"
+        + ((" (live backend; see docs/features/AGENT_E2E_EVAL.md"
+            + (", untested live)" if report["driver"] == "claude" else ")"))
            if report["driver"] in LIVE_DRIVERS else ""),
+        f"- Backend: `{(report.get('backend') or {}).get('backend', report['driver'])}`, "
+        f"model `{(report.get('backend') or {}).get('model')}`",
+        f"- Total reported cost: ${report.get('total_cost_usd', 0)}"
+        + (f" ({report['stopped']})" if report.get("stopped") else ""),
         f"- Base: `{report['base']}`",
         f"- Arms: {', '.join(report['arms'])}",
         f"- Repeats per task and arm: {report['repeats']}",
@@ -816,8 +1066,9 @@ def render_markdown(report: dict[str, Any]) -> str:
         "",
         "| arm | runs | success | success rate | mean wall s | mean prep s | "
         "prep failures | driver errors | mean tokens in | "
-        "mean tokens out | mean cost USD | localization rate |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "mean tokens out | mean cost USD | mean tool calls | mean MCP calls | "
+        "localization rate |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for row in report["summary"]:
         lines.append("| " + " | ".join(_cell(v) for v in (
@@ -825,8 +1076,10 @@ def render_markdown(report: dict[str, Any]) -> str:
             row["mean_wall_s"], row["mean_prep_s"], row["prep_failures"],
             row.get("driver_errors", 0),
             row["mean_tokens_in"], row["mean_tokens_out"],
-            row["mean_cost_usd"], row["localization_rate"])) + " |")
-    lines += ["", "Token and cost columns are blank where the driver reports no value. "
+            row["mean_cost_usd"], row.get("mean_tool_calls"),
+            row.get("mean_mcp_calls"), row["localization_rate"])) + " |")
+    lines += ["", "Token, cost and tool columns are blank where the driver reports no "
+              "value. MCP calls count calls to the Ocelot dev-memory server. "
               "Prep (dev_memory snapshot and tag cache) runs before the driver timer; "
               "mean prep s is 0 for baseline.",
               "", "## Per task (paired)", ""]
@@ -885,11 +1138,12 @@ def _cmd_run(args: argparse.Namespace) -> int:
     arms = _split(args.arms) or list(ARMS)
     tasks = select_tasks(spec["tasks"], _split(args.task_ids))
     driver = make_driver(args.driver, live=args.live,
-                         max_budget_usd=args.max_budget_usd)
+                         max_budget_usd=args.max_budget_usd, model=args.model)
     report = run_eval(args.repo, tasks, arms, driver, base,
                       tasks_dir=spec["dir"], repeats=args.repeats,
                       python=args.python, run_root=_run_root(args),
-                      keep=args.keep, timeout_s=args.timeout_s)
+                      keep=args.keep, timeout_s=args.timeout_s,
+                      max_total_usd=args.max_total_usd)
     _write(args.out_json, json.dumps(report, indent=2, sort_keys=True) + "\n")
     _write(args.out_md, render_markdown(report))
     for row in report["summary"]:
@@ -920,8 +1174,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     r = sub.add_parser("run", help="run drivers over tasks and arms")
     common(r)
-    r.add_argument("--driver", required=True,
-                   choices=sorted(LOCAL_DRIVERS + LIVE_DRIVERS))
+    r.add_argument("--driver", default=None,
+                   choices=sorted(LOCAL_DRIVERS + LIVE_DRIVERS),
+                   help=f"agent backend (default: ${DRIVER_ENV})")
+    r.add_argument("--model", default=None,
+                   help="backend model, e.g. vllm/qwen3.8-27b for opencode "
+                        "(default: the backend's own configured default)")
     r.add_argument("--arms", default=",".join(ARMS))
     r.add_argument("--repeats", type=int, default=1)
     r.add_argument("--timeout-s", type=int, default=900,
@@ -929,7 +1187,9 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--live", action="store_true",
                    help="required, with OCELOT_AGENT_EVAL_LIVE=1, for claude and opencode")
     r.add_argument("--max-budget-usd", type=float, default=None,
-                   help="claude only: passed as --max-budget-usd")
+                   help="claude only: passed as --max-budget-usd (per session)")
+    r.add_argument("--max-total-usd", type=float, default=None,
+                   help="any backend: stop once reported session cost exceeds this")
     r.add_argument("--out-md", default=None)
     r.set_defaults(func=_cmd_run)
     return p

@@ -591,3 +591,182 @@ def test_aggregate_reports_mean_prep_and_prep_failures():
     assert rows["dev_memory"]["mean_prep_s"] == pytest.approx(6.0)
     assert rows["dev_memory"]["prep_failures"] == 1
     assert rows["baseline"]["prep_failures"] == 0
+
+
+# ===================================================================================== #
+# selectable backends (opencode)
+# ===================================================================================== #
+_OPENCODE_EVENTS = "\n".join(json.dumps(e) for e in [
+    {"type": "step_start", "part": {"type": "step-start"}},
+    {"type": "tool_use", "part": {"type": "tool", "tool": "bash"}},
+    {"type": "step_finish", "part": {"cost": 0.01,
+                                     "tokens": {"input": 100, "output": 5}}},
+    {"type": "text", "part": {"type": "text", "text": "fixed"}},
+    {"type": "step_finish", "part": {"cost": 0.02,
+                                     "tokens": {"input": 50, "output": 7}}},
+])
+
+
+def test_opencode_event_parser_sums_steps():
+    parsed = ae._parse_opencode_events(_OPENCODE_EVENTS)
+    assert parsed["tokens_in"] == 150 and parsed["tokens_out"] == 12
+    assert parsed["cost_usd"] == pytest.approx(0.03)
+    assert parsed["tool_calls"] == 1
+    assert parsed["driver_error"] is None
+    assert parsed["transcript"] == "fixed"
+    empty = ae._parse_opencode_events("")
+    assert empty["driver_error"] == "opencode produced no finished step"
+    err = ae._parse_opencode_events(json.dumps(
+        {"type": "error", "error": "provider down"}))
+    assert err["driver_error"] == "provider down"
+
+
+def test_opencode_argv_and_per_arm_config(tmp_path, monkeypatch):
+    monkeypatch.setenv(LIVE_ENV, "1")
+    driver = make_driver("opencode", live=True, model="vllm/qwen3.8-27b")
+    argv = driver._argv("fix it", "baseline", None)
+    assert argv[:3] == ["opencode", "run", "--standalone"]
+    assert argv[argv.index("-m") + 1] == "vllm/qwen3.8-27b"
+    assert argv[-1] == "fix it"
+
+    base_cfg = json.loads(driver._opencode_config(
+        "baseline", None, tmp_path / "b").read_text(encoding="utf-8"))
+    assert "mcp" not in base_cfg
+    assert base_cfg["permission"]["bash"]["git commit*"] == "deny"
+    assert base_cfg["permission"]["bash"]["*"] == "allow"
+
+    work = tmp_path / "work"
+    work.mkdir()
+    write_arm_config(work, "dev_memory", "/usr/bin/python3", tmp_path / "log")
+    dm_cfg = json.loads(driver._opencode_config(
+        "dev_memory", work / ae.MCP_CONFIG_OPENCODE, tmp_path / "d").read_text(
+            encoding="utf-8"))
+    assert ae.MCP_SERVER_NAME in dm_cfg["mcp"]
+    assert dm_cfg["permission"] == base_cfg["permission"]
+
+
+def test_driver_defaults_to_environment_selection(monkeypatch):
+    monkeypatch.setenv(ae.DRIVER_ENV, "fake")
+    assert isinstance(make_driver(None), FakeDriver)
+    monkeypatch.delenv(ae.DRIVER_ENV)
+    with pytest.raises(HarnessError, match="no driver"):
+        make_driver(None)
+
+
+def test_opencode_preflight_checks_the_model(monkeypatch):
+    monkeypatch.setenv(LIVE_ENV, "1")
+
+    class Done:
+        returncode = 0
+        stdout = "vllm/qwen3.8-27b\nopenai/gpt-x\n"
+        stderr = ""
+
+    monkeypatch.setattr(ae.subprocess, "run", lambda *a, **k: Done())
+    make_driver("opencode", live=True, model="vllm/qwen3.8-27b").preflight()
+    with pytest.raises(HarnessError, match="does not list model"):
+        make_driver("opencode", live=True, model="nope/model").preflight()
+
+
+def test_total_cost_cap_stops_the_run(fixture):
+    class CostlyDriver(NoopDriver):
+        name = "costly"
+
+        def run(self, *a, **k):
+            out = super().run(*a, **k)
+            out["cost_usd"] = 0.6
+            return out
+
+    other = _task("add-sign-b", BREAK_SIGN)
+    (fixture["tdir"] / other["break_patch"]).write_text(BREAK_SIGN, encoding="utf-8")
+    report = run_eval(fixture["repo"], [fixture["sign"], other], ["baseline"],
+                      CostlyDriver(), fixture["base"], tasks_dir=fixture["tdir"],
+                      python=_python(), run_root=fixture["run_root"],
+                      max_total_usd=0.5)
+    assert len(report["runs"]) == 1
+    assert report["stopped"].startswith("cost cap reached")
+    assert report["total_cost_usd"] == pytest.approx(0.6)
+
+
+def test_clone_workdir_is_isolated_and_removed(fixture):
+    path = ae.make_workdir(fixture["repo"], fixture["base"], fixture["run_root"],
+                           "iso", isolation="clone")
+    assert (path / ".git").is_dir()
+    assert len(_worktrees(fixture["repo"])) == 1
+    remotes = subprocess.run(["git", "remote"], cwd=path, capture_output=True,
+                             text=True, check=True).stdout.split()
+    assert remotes == []
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=path, capture_output=True,
+                          text=True, check=True).stdout.strip()
+    assert head == fixture["base"]
+    top = subprocess.run(["git", "rev-parse", "--show-toplevel"], cwd=path,
+                         capture_output=True, text=True, check=True).stdout.strip()
+    assert Path(top).resolve() == path.resolve()
+    assert ae.remove_workdir(fixture["repo"], path, fixture["run_root"]) == []
+    assert not path.exists()
+
+
+def test_run_uses_the_driver_isolation(fixture):
+    seen = []
+
+    class CloneFake(FakeDriver):
+        isolation = "clone"
+
+        def run(self, workdir, *a, **k):
+            seen.append((workdir / ".git").is_dir())
+            return super().run(workdir, *a, **k)
+
+    report = run_eval(fixture["repo"], [fixture["sign"]], ["baseline"], CloneFake(),
+                      fixture["base"], tasks_dir=fixture["tdir"], python=_python(),
+                      run_root=fixture["run_root"])
+    assert seen == [True]
+    assert report["runs"][0]["success"] is True
+    assert len(_worktrees(fixture["repo"])) == 1
+    assert not any((fixture["run_root"] / "work").glob("*"))
+
+
+def test_command_driver_puts_the_run_python_first_on_path(tmp_path, monkeypatch):
+    monkeypatch.setenv(LIVE_ENV, "1")
+    driver = make_driver("opencode", live=True)
+    assert driver.isolation == "clone"
+    driver.python = _python()
+    captured = {}
+
+    def fake_spawn(argv, *, cwd, env, timeout_s):
+        captured["env"] = env
+        return {"returncode": 0, "stdout": "", "stderr": "", "timed_out": False,
+                "seconds": 0.0}
+
+    monkeypatch.setattr(ae, "spawn_group", fake_spawn)
+    driver.run(tmp_path, "fix it", "baseline", 5, tmp_path / "log")
+    first = Path(captured["env"]["PATH"].split(os.pathsep)[0])
+    assert first == tmp_path / "log" / "bin"
+    assert os.path.realpath(first / "python") == os.path.realpath(_python())
+    assert os.path.realpath(first / "python3") == os.path.realpath(_python())
+
+
+def test_spawned_commands_see_pwd_equal_to_cwd(tmp_path, monkeypatch):
+    monkeypatch.setenv("PWD", "/somewhere/else")
+    res = ae.spawn_group(["sh", "-c", 'printf %s "$PWD"'], cwd=tmp_path,
+                         env=dict(os.environ), timeout_s=10)
+    assert res["stdout"] == str(tmp_path.resolve())
+
+
+def test_opencode_parser_counts_code_mode_mcp_calls():
+    def tool(name, code=None):
+        state = {"input": {"code": code}} if code is not None else {"input": {}}
+        return json.dumps({"type": "tool_use", "part": {"tool": name, "state": state}})
+
+    stream = "\n".join([
+        tool("read"),
+        tool("execute", 'return await tools.opencode.list_mcp_resources();'),
+        tool("execute", 'const a = await tools["ocelot-dev-memory"].dev_code_search({q: 1});\n'
+                        "return tools['ocelot-dev-memory'].dev_impact({});"),
+        tool("ocelot-dev-memory_dev_context"),
+        json.dumps({"type": "step_finish", "part": {"cost": 0, "tokens": {"input": 1,
+                                                                        "output": 1}}}),
+    ])
+    out = ae._parse_opencode_events(stream)
+    assert out["tool_calls"] == 4
+    assert out["mcp_calls"] == 3
+    assert out["tools_by_name"] == {"execute": 2, "ocelot-dev-memory_dev_context": 1,
+                                    "read": 1}
