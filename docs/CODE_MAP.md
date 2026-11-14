@@ -63,6 +63,11 @@ kinds of file:
    Python" section these are legal because they hold no agent state and make
    no decisions, only expose primitives.
 
+`py_cst_ingest.py` is the Python twin of `ts_ingest.py`: token + trivia
+`CstNode` leaves whose `flat_text` is byte-for-byte the source (comments
+included). `ts_ingest.py` is the Rust/Lua tree-sitter equivalent;
+`ast_to_term.py` remains the semantic AST overlay (now with spans).
+
 `reflective_faculty.py` and `question_driver.py` also live here; per
 CLAUDE.md (2026-07-02 migration) they are now thin shims over `ShapeDecode`
 and the seeded rule loops, not where the reasoning happens.
@@ -155,6 +160,18 @@ project's own gates/audits (`seed_claim.py`, `seed_audit.py`,
 `seed_ledger_audit.py`, `failure_baseline.py`) and the `jabberwock_*.py`
 family of scripts that run a specific measured session (e.g.
 `jabberwock_daemon.py`, the long-running checkpointed agent process).
+`ocelot_dev_memory.py` + `ocelot_dev_memory_mcp.py` are the dev-memory
+index/MCP surface for external coding agents (see
+[`features/DEV_MEMORY_MCP.md`](features/DEV_MEMORY_MCP.md)); they build a
+separate repo snapshot and never touch the agent runtime. The edit adapters
+(`ocelot_edit.py`, `ocelot_code_edit.py`, `ocelot_ir_edit.py`,
+`ocelot_cst_edit.py`, `ocelot_markdown_edit.py`, `ocelot_json_edit.py`,
+`ocelot_lossless.py`, `ocelot_repo_map.py`, `ocelot_architecture.py`,
+`ocelot_scip_import.py`, `ocelot_code_search.py`, `ocelot_lsp.py`) are
+the graph-addressed edit transaction; a diff is only their output view.
+`ocelot_ir_edit.py` renders authored `Prog*` terms through
+`domains/render_python` and splices them into the lossless CST;
+`ocelot_cst_edit.py` edits Rust/Lua `CstNode` subtrees.
 
 ## `tools/` — seed-authoring / emitter scripts
 

@@ -56,7 +56,14 @@ from typing import Any, Dict, List, Optional, Tuple
 # ===========================================================================
 
 # the scalar (leaf-value) ast fields we copy onto the substrate node verbatim.
-_SCALAR_FIELDS = ("value", "id", "arg", "name", "n", "s", "attr")
+_SCALAR_FIELDS = (
+    "value", "id", "arg", "name", "n", "s", "attr",
+    # Additive (2026-11-14): source spans make the AST overlay addressable on
+    # the lossless CstNode graph (py_cst_ingest) without changing the
+    # AST->Term correspondence. `col_offset` is a UTF-8 byte offset, as Python
+    # defines it; the CST leaves carry character offsets.
+    "lineno", "col_offset", "end_lineno", "end_col_offset",
+)
 
 
 def open_ast_productions(substrate) -> int:

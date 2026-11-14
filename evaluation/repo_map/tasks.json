@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "description": "Fixed repository-navigation tasks for the deterministic repo-map evaluation harness. Ground truth is the explicit expected_files list below; the harness never derives it from seeds, symbols, or source text at evaluation time.",
+  "ground_truth_policy": "Each expected_files entry was curated from repository facts at authoring time (module docstrings, literal seeds/<id>.json references found with ripgrep, and the matching migrated tests). Paths are repository-relative POSIX paths.",
+  "budgets": [500, 900, 1500],
+  "tasks": [
+    {
+      "id": "repo-map-three-tier-render",
+      "task": "Change the repo map renderer so the hottest files get full outlines, the middle tier gets public symbols, and the tail stays a file listing inside the token budget.",
+      "expected_files": [
+        "scripts/ocelot_repo_map.py"
+      ],
+      "notes": "Three-tier render and token budget live in repo_map() in scripts/ocelot_repo_map.py."
+    },
+    {
+      "id": "repo-map-tag-cache",
+      "task": "Make the repo-map tag cache reuse unchanged files and reparse only changed content using content hashes.",
+      "expected_files": [
+        "scripts/ocelot_repo_map.py",
+        "tests/test_repo_map_migrated.py"
+      ],
+      "notes": "update_tag_cache() implements the mtime/size fast path and sha256 fallback; test_incremental_cache asserts parsed/reused counts."
+    },
+    {
+      "id": "repo-map-reference-pagerank",
+      "task": "Fix personalized PageRank scoring in the repo map so task-named files surface through the definer/referencer graph.",
+      "expected_files": [
+        "scripts/ocelot_repo_map.py"
+      ],
+      "notes": "build_reference_graph(), _task_relevance(), and personalized_pagerank() are in scripts/ocelot_repo_map.py."
+    },
+    {
+      "id": "dev-memory-mcp-repo-map",
+      "task": "Expose the repo map, impact, and dev context as MCP tools in the dev-memory stdio server.",
+      "expected_files": [
+        "scripts/ocelot_dev_memory_mcp.py",
+        "scripts/ocelot_dev_memory.py"
+      ],
+      "notes": "Tool declarations and dispatch are in scripts/ocelot_dev_memory_mcp.py; DevMemory.context/repo_map/impact are in scripts/ocelot_dev_memory.py."
+    },
+    {
+      "id": "dev-context-pack",
+      "task": "Adjust dev_context so a task naming a seed expands the seed's rules and a task naming a file expands its public symbols.",
+      "expected_files": [
+        "scripts/ocelot_dev_memory.py",
+        "tests/test_dev_memory_migrated.py"
+      ],
+      "notes": "Context pack assembly is DevMemory.context(); tests/test_dev_memory_migrated.py covers anchors, snippets, and budget trimming."
+    },
+    {
+      "id": "code-edit-op-list",
+      "task": "Update the canonical semantic code-edit transaction and its diff preview without writing through text patches.",
+      "expected_files": [
+        "scripts/ocelot_code_edit.py",
+        "scripts/ocelot_edit.py",
+        "tests/test_code_edit_migrated.py"
+      ],
+      "notes": "scripts/ocelot_code_edit.py owns the semantic op list; scripts/ocelot_edit.py is the format-dispatching transaction entry point; test_code_edit_migrated.py is the gate."
+    },
+    {
+      "id": "ir-edit-render-python",
+      "task": "Change how hub-IR authored replacements are rendered into Python source and spliced into the lossless CST.",
+      "expected_files": [
+        "scripts/ocelot_ir_edit.py",
+        "domains/render_python.py",
+        "tests/test_ir_edit_migrated.py"
+      ],
+      "notes": "The IR adapter is scripts/ocelot_ir_edit.py, the render rules/walker are domains/render_python.py, and tests/test_ir_edit_migrated.py gates the splice."
+    },
+    {
+      "id": "rust-cst-trivia",
+      "task": "Preserve explicit trivia leaves in the Rust and Lua CST so flat_text is byte-for-byte the source.",
+      "expected_files": [
+        "domains/ts_ingest.py",
+        "scripts/ocelot_cst_edit.py",
+        "tests/test_cst_edit_migrated.py"
+      ],
+      "notes": "domains/ts_ingest.py builds the CstNode graph with optional trivia; scripts/ocelot_cst_edit.py edits it; test_cst_edit_migrated.py asserts losslessness."
+    },
+    {
+      "id": "python-cst-lossless",
+      "task": "Make the Python CST ingest keep token and trivia leaves lossless so edits preserve comments and whitespace.",
+      "expected_files": [
+        "domains/py_cst_ingest.py",
+        "scripts/ocelot_lossless.py",
+        "tests/test_py_cst_ingest_migrated.py"
+      ],
+      "notes": "Python token/trivia ingest is domains/py_cst_ingest.py, its editing/render helper is scripts/ocelot_lossless.py, and the gate is tests/test_py_cst_ingest_migrated.py."
+    },
+    {
+      "id": "markdown-section-edit",
+      "task": "Add a Markdown section lookup and replacement path for feature docs.",
+      "expected_files": [
+        "scripts/ocelot_markdown_edit.py",
+        "tests/test_markdown_edit_migrated.py"
+      ],
+      "notes": "Section operations live in scripts/ocelot_markdown_edit.py and are covered by tests/test_markdown_edit_migrated.py."
+    },
+    {
+      "id": "json-path-edit",
+      "task": "Add a deterministic JSON path lookup and edit operation for seed manifests.",
+      "expected_files": [
+        "scripts/ocelot_json_edit.py",
+        "tests/test_json_edit_migrated.py"
+      ],
+      "notes": "Span-preserving JSON path operations live in scripts/ocelot_json_edit.py and are covered by tests/test_json_edit_migrated.py."
+    },
+    {
+      "id": "pyo3-one-line-handoffs",
+      "task": "Audit the PyO3 binding surface so py.rs stays one-line handoffs into substrate.rs and never holds logic.",
+      "expected_files": [
+        "runners/dsl/src/py.rs",
+        "runners/dsl/src/substrate.rs"
+      ],
+      "notes": "CLAUDE.md's binding rule names runners/dsl/src/py.rs as the handoff surface; the implementation calls live in runners/dsl/src/substrate.rs."
+    },
+    {
+      "id": "term-variant-grammar",
+      "task": "Add a Term DSL variant and keep the grammar and checker accepting the new constructor.",
+      "expected_files": [
+        "runners/dsl/src/term.rs",
+        "runners/dsl/src/grammar.rs",
+        "runners/dsl/src/checker.rs"
+      ],
+      "notes": "Term variants are defined in term.rs and parsed/checked by grammar.rs and checker.rs."
+    },
+    {
+      "id": "rule-fixpoint-rewrite",
+      "task": "Change the run_rules fixpoint engine and its rewrite matching in the Rust substrate.",
+      "expected_files": [
+        "runners/dsl/src/rewrite.rs",
+        "runners/dsl/src/graph_rules.rs"
+      ],
+      "notes": "The fixpoint loop is runners/dsl/src/rewrite.rs; rule matching/application is runners/dsl/src/graph_rules.rs."
+    },
+    {
+      "id": "seed-loader-topological",
+      "task": "Resolve seed depends_on closures topologically before installing concepts, rules, and reflexes.",
+      "expected_files": [
+        "substrate/seed_loader.py",
+        "tests/test_seed_loader_quiet_boot_migrated.py"
+      ],
+      "notes": "substrate/seed_loader.py resolves the manifest dependency closure; tests/test_seed_loader_quiet_boot_migrated.py covers quiet boot/loading behavior."
+    },
+    {
+      "id": "gap-awareness-unhandled-instruction",
+      "task": "Change the gap_awareness rule that records an unhandled instruction gap and surfaces it to solver dispatch.",
+      "expected_files": [
+        "substrate/world_adapter.py",
+        "domains/rule_signature.py",
+        "domains/solver_dispatch.py",
+        "tests/test_instruction_gap_migrated.py"
+      ],
+      "notes": "These source files contain literal seeds/gap_awareness.json references (rg -n 'seeds/gap_awareness\\.json' on scripts/tools/substrate/tests/domains): world_adapter.py, rule_signature.py, solver_dispatch.py, and the instruction-gap gate."
+    },
+    {
+      "id": "shape-decode-reading-collapse",
+      "task": "Change how reading collapse uses the shape_decode_loop sd_decode and sd_mint_quantum rules.",
+      "expected_files": [
+        "domains/reading_collapse.py",
+        "domains/trope_theme.py",
+        "tests/test_sd_gen_rearm_tie_parity_migrated.py"
+      ],
+      "notes": "domains/reading_collapse.py and domains/trope_theme.py cite seeds/shape_decode_loop.json in their docstrings; the sd re-arm parity gate covers the sd loop behavior."
+    },
+    {
+      "id": "core-emotions-weighted-contribution",
+      "task": "Change the em_weighted_contribution rule that turns core_emotions appraisals into an integer weighted contribution.",
+      "expected_files": [
+        "domains/core_emotions_weight.py",
+        "substrate/boot_profiles.py",
+        "tests/test_core_emotions_migrated.py"
+      ],
+      "notes": "domains/core_emotions_weight.py is the shared quantization helper for seeds/core_emotions.json; substrate/boot_profiles.py lists core_emotions in the boot profile; test_core_emotions_migrated.py is the integer gate."
+    },
+    {
+      "id": "conversation-action-goal-binding",
+      "task": "Fix conversation action goal binding so an accepted action is bound to the current goal before execution.",
+      "expected_files": [
+        "domains/conversation_action.py",
+        "tests/test_conversation_action_goal_binding.py"
+      ],
+      "notes": "domains/conversation_action.py translates comprehension into an ACT/ASK-BACK and mints the Goal; the named gate asserts the binding."
+    },
+    {
+      "id": "dev-session-replay",
+      "task": "Replay a dev-session graph from its checkpointed state and expose the next-step transitions.",
+      "expected_files": [
+        "scripts/ocelot_dev_session.py",
+        "tests/test_dev_session_migrated.py"
+      ],
+      "notes": "scripts/ocelot_dev_session.py owns the replayable dev-session graph; tests/test_dev_session_migrated.py covers checkpoint/replay transitions."
+    },
+    {
+      "id": "frozen-core-boot-invariant",
+      "task": "Check the frozen core seed manifest invariants during boot and refuse a skip that would hide a frozen dependency.",
+      "expected_files": [
+        "substrate/boot_all.py",
+        "domains/frozen_core.py",
+        "tests/test_frozen_core_invariant.py"
+      ],
+      "notes": "substrate/boot_all.py enforces the frozen-seed refusal, domains/frozen_core.py defines the frozen set/closure, and tests/test_frozen_core_invariant.py is the gate."
+    }
+  ]
+}

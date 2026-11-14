@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "name": "ocelot-dev-session",
+  "description": "Declarative transition table for the dev-session graph. The evaluator is a mechanical first-match lookup over recorded facts; it never executes edits or tests and never decides what is worth doing.",
+  "actions": [
+    "orient",
+    "plan_step",
+    "act",
+    "verify",
+    "diagnose",
+    "blocked",
+    "finish",
+    "wait",
+    "approve",
+    "done"
+  ],
+  "node_types": [
+    "Session",
+    "Task",
+    "Plan",
+    "Step",
+    "Attempt",
+    "Edit",
+    "Verification",
+    "Decision"
+  ],
+  "edge_types": [
+    "has_task",
+    "has_plan",
+    "has_step",
+    "attempt",
+    "edit",
+    "verification",
+    "next",
+    "decision"
+  ],
+  "record_types": {
+    "plan": "Plan",
+    "step": "Step",
+    "attempt": "Attempt",
+    "edit": "Edit",
+    "verification": "Verification",
+    "decision": "Decision"
+  },
+  "rules": [
+    {
+      "id": "closed",
+      "when": {
+        "closed": true
+      },
+      "action": "done",
+      "reason": "session is closed with outcome {outcome}",
+      "include_step": false
+    },
+    {
+      "id": "unknown_status",
+      "when": {
+        "status_known": false
+      },
+      "action": "blocked",
+      "reason": "unknown session status {status}; refusing to guess a transition",
+      "include_step": true
+    },
+    {
+      "id": "gate_wait",
+      "when": {
+        "gate": "wait"
+      },
+      "action": "wait",
+      "reason": "a human gate is set to wait; record a decision with gate=clear or choice=resume to continue",
+      "include_step": false
+    },
+    {
+      "id": "gate_approve",
+      "when": {
+        "gate": "approve"
+      },
+      "action": "approve",
+      "reason": "a human approval gate is pending; record a decision with gate=clear or choice=approved to continue",
+      "include_step": false
+    },
+    {
+      "id": "orient",
+      "when": {
+        "plan_count": 0
+      },
+      "action": "orient",
+      "reason": "no plan recorded; orient the task, then record a plan",
+      "include_step": false
+    },
+    {
+      "id": "plan_step",
+      "when": {
+        "step_count": 0
+      },
+      "action": "plan_step",
+      "reason": "plan recorded ({completed_steps}/{plan_steps} planned steps completed); record the next step",
+      "include_step": false
+    },
+    {
+      "id": "act",
+      "when": {
+        "step_count": {
+          "gt": 0
+        },
+        "current_step_has_edit": false
+      },
+      "action": "act",
+      "reason": "step {current_step_id} ({current_step_title}) has no edit yet; record the edit",
+      "include_step": true
+    },
+    {
+      "id": "verify",
+      "when": {
+        "step_count": {
+          "gt": 0
+        },
+        "current_step_has_edit": true,
+        "current_step_has_verification": false
+      },
+      "action": "verify",
+      "reason": "step {current_step_id} has an edit but no verification; run the scoped gate and record the result",
+      "include_step": true
+    },
+    {
+      "id": "diagnose",
+      "when": {
+        "step_count": {
+          "gt": 0
+        },
+        "last_verification_passed": false,
+        "attempts_remaining": {
+          "gt": 0
+        }
+      },
+      "action": "diagnose",
+      "reason": "verification failed on step {current_step_id}; {failed_attempts}/{max_attempts} attempts failed, {attempts_remaining} remain; diagnose, then record an attempt",
+      "include_step": true
+    },
+    {
+      "id": "blocked",
+      "when": {
+        "step_count": {
+          "gt": 0
+        },
+        "last_verification_passed": false,
+        "attempts_remaining": 0
+      },
+      "action": "blocked",
+      "reason": "verification failed on step {current_step_id} and all {max_attempts} attempts are used; finish(blocked) or record a decision",
+      "include_step": true
+    },
+    {
+      "id": "more_steps",
+      "when": {
+        "last_verification_passed": true,
+        "steps_remaining": {
+          "gt": 0
+        }
+      },
+      "action": "plan_step",
+      "reason": "step {current_step_id} passed; {steps_remaining} planned step(s) remain (next: {next_step_title})",
+      "include_step": false
+    },
+    {
+      "id": "finish",
+      "when": {
+        "last_verification_passed": true,
+        "steps_remaining": 0
+      },
+      "action": "finish",
+      "reason": "step {current_step_id} passed and no planned steps remain; finish the session",
+      "include_step": false
+    }
+  ],
+  "fallback": {
+    "id": "unknown",
+    "action": "blocked",
+    "reason": "no workflow rule matched this state (unknown transition); inspect state() and record the missing fact or finish(blocked)",
+    "include_step": true
+  }
+}

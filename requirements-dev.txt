@@ -1,0 +1,19 @@
+# Dev-memory / graph-edit tooling (install into the repo venv).
+#
+#   .venv/bin/pip install -r requirements-dev.txt
+#
+# Tree-sitter powers the lossless Rust/Lua CST and the repo-map tag extraction.
+# Python uses the stdlib AST for tags; the Python grammar is optional but kept
+# for symmetry and future CST work.
+tree-sitter>=0.26,<0.27
+tree-sitter-python>=0.25,<0.26
+tree-sitter-rust>=0.24,<0.25
+tree-sitter-lua>=0.5,<0.6
+tree-sitter-typescript>=0.23,<0.24
+tree-sitter-go>=0.25,<0.26
+tree-sitter-java>=0.23,<0.24
+tree-sitter-c>=0.24,<0.25
+tree-sitter-cpp>=0.23,<0.24
+
+# Python language server for the LSP bridge (the package ships the binary).
+pyright>=1.1,<2

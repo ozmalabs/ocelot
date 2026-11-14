@@ -89,41 +89,86 @@ def open_cst_productions(substrate) -> int:
 
 
 def ingest_source(substrate, source: str, language: str, *,
-                  root_label: str = "") -> Dict[str, Any]:
+                  root_label: str = "",
+                  include_trivia: bool = False) -> Dict[str, Any]:
     """WORLD ADAPTER: parse `source` with the `language` grammar and ingest
     the full CST as typed CstNode graph nodes under `child` edges. Returns
     {"root": NodeID, "n_nodes": int, "language": str}. Pure mechanical
     translation — every CST node (named and anonymous) is dumped verbatim;
-    nothing is interpreted here."""
+    nothing is interpreted here.
+
+    `include_trivia=True` adds explicit `trivia` leaves for the byte gaps
+    between tree-sitter nodes (whitespace, newlines, and any byte tree-sitter
+    does not cover). That makes `flat_text(root)` byte-for-byte the source,
+    which the lossless CST edit path requires. The default stays False so the
+    existing correspondence walkers keep their exact child-index structure.
+    """
     from tree_sitter import Parser
 
+    source_bytes = source.encode("utf-8")
     parser = Parser(_language(language))
-    tree = parser.parse(source.encode("utf-8"))
+    tree = parser.parse(source_bytes)
     inner = getattr(substrate, "_inner", substrate)
     n_nodes = 0
 
-    def _ingest(node, field: str, child_index: int):
+    def _node(kind: str, field: str, child_index: int, named: bool,
+              text: str | None = None) -> Any:
         nonlocal n_nodes
         attrs: Dict[str, Any] = {
-            "kind": node.type,
+            "kind": kind,
             "field": field or "",
             "child_index": child_index,
-            "named": bool(node.is_named),
+            "named": bool(named),
             "origin": "world_adapter_ts",
             "language": language,
         }
         if root_label:
             attrs["module"] = root_label
-        if node.child_count == 0:
-            attrs["text"] = node.text.decode("utf-8", errors="replace")
+        if text is not None:
+            attrs["text"] = text
         nid = substrate.add_node("CstNode", attrs)
         n_nodes += 1
-        for i, child in enumerate(node.children):
-            cid = _ingest(child, node.field_name_for_child(i), i)
-            inner.add_edge_unchecked(nid, "child", cid)
         return nid
 
-    root = _ingest(tree.root_node, "", -1)
+    def _ingest(node, field: str, child_index: int, *, root: bool = False):
+        attrs_text = None
+        if node.child_count == 0:
+            attrs_text = node.text.decode("utf-8", errors="replace")
+        nid = _node(node.type, field, child_index, bool(node.is_named),
+                    attrs_text)
+        if not include_trivia or node.child_count == 0:
+            for i, child in enumerate(node.children):
+                cid = _ingest(child, node.field_name_for_child(i), i)
+                inner.add_edge_unchecked(nid, "child", cid)
+            return nid
+        # Lossless mode: insert trivia leaves for the byte gaps between the
+        # tree-sitter children (and around the root).
+        cursor = 0 if root else int(node.start_byte)
+        end = len(source_bytes) if root else int(node.end_byte)
+        parts: list[tuple[str, Any, str]] = []
+        for i, child in enumerate(node.children):
+            cstart = int(child.start_byte)
+            if cstart > cursor:
+                parts.append(("trivia", None,
+                              source_bytes[cursor:cstart].decode(
+                                  "utf-8", errors="replace")))
+                cursor = cstart
+            parts.append(("child", child, node.field_name_for_child(i)))
+            cursor = max(cursor, int(child.end_byte))
+        if end > cursor:
+            parts.append(("trivia", None,
+                          source_bytes[cursor:end].decode(
+                              "utf-8", errors="replace")))
+        for j, (kind, child, fld) in enumerate(parts):
+            if kind == "trivia":
+                tid = _node("trivia", "", j, False, fld)
+                inner.add_edge_unchecked(nid, "child", tid)
+            else:
+                cid = _ingest(child, fld, j)
+                inner.add_edge_unchecked(nid, "child", cid)
+        return nid
+
+    root = _ingest(tree.root_node, "", -1, root=True)
     return {"root": root, "n_nodes": n_nodes, "language": language}
 
 
