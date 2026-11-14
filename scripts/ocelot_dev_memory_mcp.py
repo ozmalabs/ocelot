@@ -249,6 +249,8 @@ _TOOLS: list[dict[str, Any]] = [
                           "description": "Optional synthetic/post-parsed CstNode graph for .rs/.lua when tree-sitter is unavailable."},
             "task": {"type": "string",
                      "description": "Optional journal task label."},
+            "diagnostics": {"type": "boolean", "default": True,
+                            "description": "After an applied write, wait for the LSP server's diagnostics on the file (skipped when no server is available). Ignored in preview."},
         }, ["file", "ops"]),
     },
     {
@@ -435,32 +437,32 @@ _TOOLS.extend([
     },
     {
         "name": "dev_definition",
-        "description": "Compiler-accurate definition at a position via LSP.",
+        "description": "Compiler-accurate definition at a position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_references",
-        "description": "Compiler-accurate references at a position via LSP.",
+        "description": "Compiler-accurate references at a position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_callers",
-        "description": "Incoming calls (callers) at a symbol position via LSP.",
+        "description": "Incoming calls (callers) at a symbol position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_callees",
-        "description": "Outgoing calls (callees) at a symbol position via LSP.",
+        "description": "Outgoing calls (callees) at a symbol position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_symbol_impact",
-        "description": "Resolved references grouped by file for a symbol position via LSP.",
+        "description": "Resolved references grouped by file for a symbol position via LSP. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
         "name": "dev_rename_preview",
-        "description": "LSP rename preview (review-only; never writes).",
+        "description": "LSP rename preview (review-only; never writes). Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(new_name=True),
     },
     {
@@ -473,7 +475,7 @@ _TOOLS.extend([
     },
     {
         "name": "dev_hover",
-        "description": "LSP hover/type/documentation at a position.",
+        "description": "LSP hover/type/documentation at a position. Positions are 0-based LSP (line and character); dev_symbol and dev_file report 1-based lines, so subtract 1.",
         "inputSchema": _lsp_pos_schema(),
     },
     {
@@ -483,6 +485,72 @@ _TOOLS.extend([
             "file": {"type": "string"},
             "language": {"type": "string"},
         }, ["file"]),
+    },
+])
+
+
+_SYMBOL_SYNTAX_NOTE = (
+    "symbol accepts \"path::qualname\", a qualname (\"Class.method\"), or a "
+    "bare name. A bare or qualname that matches several definitions returns "
+    "the candidate ids (under \"ambiguous\", or \"matches\" for "
+    "dev_symbol_resolve). Line numbers (lsp_only rows) are 1-based.")
+
+_TOOLS.extend([
+    {
+        "name": "dev_symbol_callers",
+        "description": (
+            "Symbol callers from the syntactic symbol graph (local, import and "
+            "name resolution, each edge with a confidence). " + _SYMBOL_SYNTAX_NOTE +
+            " Use precise=true to confirm direct callers with LSP references; "
+            "rows then carry lsp_confirmed and LSP-only references are listed "
+            "under lsp_only."),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+            "depth": {"type": "integer", "default": 1},
+            "min_confidence": {"type": "number", "default": 0},
+            "precise": {"type": "boolean", "default": False,
+                        "description": "Confirm depth-1 callers with LSP references (requires a language server)."},
+        }, ["symbol"]),
+    },
+    {
+        "name": "dev_symbol_callees",
+        "description": (
+            "Symbols that a symbol calls or references, from the syntactic "
+            "symbol graph (local, import and name resolution, each edge with a "
+            "confidence). " + _SYMBOL_SYNTAX_NOTE),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+            "depth": {"type": "integer", "default": 1},
+            "min_confidence": {"type": "number", "default": 0},
+        }, ["symbol"]),
+    },
+    {
+        "name": "dev_symbol_graph_impact",
+        "description": (
+            "Transitive callers of a symbol (what breaks if it changes), grouped "
+            "by file, from the syntactic symbol graph with per-edge confidences. "
+            + _SYMBOL_SYNTAX_NOTE + " Use precise=true to confirm depth-1 "
+            "callers with LSP references."),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+            "depth": {"type": "integer", "default": 3},
+            "min_confidence": {"type": "number", "default": 0},
+            "precise": {"type": "boolean", "default": False,
+                        "description": "Confirm depth-1 callers with LSP references (requires a language server)."},
+        }, ["symbol"]),
+    },
+    {
+        "name": "dev_symbol_resolve",
+        "description": (
+            "Resolve a symbol query to its definition ids without walking the "
+            "graph. " + _SYMBOL_SYNTAX_NOTE),
+        "inputSchema": _schema({
+            "symbol": {"type": "string",
+                       "description": "\"path::qualname\", qualname, or bare name."},
+        }, ["symbol"]),
     },
 ])
 
@@ -592,6 +660,10 @@ class DevMemoryServer:
             "dev_session_finish": self._session_finish,
             "dev_session_list": self._session_list,
             "dev_recent": self._recent,
+            "dev_symbol_callers": self._symbol_callers,
+            "dev_symbol_callees": self._symbol_callees,
+            "dev_symbol_graph_impact": self._symbol_graph_impact,
+            "dev_symbol_resolve": self._symbol_resolve,
         }
 
     # -- tool implementations --------------------------------------------- #
@@ -659,7 +731,28 @@ class DevMemoryServer:
             script["base_sha256"] = a["base_sha256"]
         if a.get("cst_graph") is not None:
             script["cst_graph"] = a["cst_graph"]
-        return self.mem.edit(script, task=a.get("task"))
+        return self.mem.edit(script, task=a.get("task"),
+                             diagnostics=a.get("diagnostics", True))
+
+    def _symbol_callers(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("callers", str(a["symbol"]),
+                                     depth=a.get("depth", 1),
+                                     min_confidence=a.get("min_confidence", 0),
+                                     precise=a.get("precise", False))
+
+    def _symbol_callees(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("callees", str(a["symbol"]),
+                                     depth=a.get("depth", 1),
+                                     min_confidence=a.get("min_confidence", 0))
+
+    def _symbol_graph_impact(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("impact", str(a["symbol"]),
+                                     depth=a.get("depth", 3),
+                                     min_confidence=a.get("min_confidence", 0),
+                                     precise=a.get("precise", False))
+
+    def _symbol_resolve(self, a: dict[str, Any]) -> Any:
+        return self.mem.symbol_graph("resolve", str(a["symbol"]))
 
     def _tests(self, a: dict[str, Any]) -> Any:
         return self.mem.tests_for(str(a["target"]))

@@ -126,6 +126,32 @@ _PATH_RE = re.compile(
 _SEED_PATH_RE = re.compile(r"seeds/([A-Za-z0-9_.-]+)\.json")
 _TEST_NAME_RE = re.compile(r"^test_[A-Za-z0-9_]+$")
 
+# LSP wait for `symbol_graph(precise=True)` reference queries, in seconds.
+PRECISE_TIMEOUT = 20.0
+# LSP wait for the push diagnostics that follow an applied `edit`, in seconds.
+POST_EDIT_DIAG_TIMEOUT = 8.0
+# Diagnostic items kept in the post-edit result. The counts cover all of them.
+DIAG_ITEM_LIMIT = 20
+_DEF_KEYWORD_RE = re.compile(r"\b(?:def|class)\b")
+
+
+def _utf16_col(line_text: str, char_index: int) -> int:
+    """LSP character offset (UTF-16 code units) of a Python str index."""
+    return len(line_text[:char_index].encode("utf-16-le")) // 2
+
+
+def _name_utf16_col(line_text: str, name: str) -> int | None:
+    """UTF-16 column of the definition name on a def/class line.
+
+    The search starts at the ``def``/``class`` keyword when the line has one,
+    so a name that also appears earlier on the line is not picked.
+    """
+    kw = _DEF_KEYWORD_RE.search(line_text)
+    start = kw.end() if kw else 0
+    hit = re.compile(rf"(?<![A-Za-z0-9_]){re.escape(name)}(?![A-Za-z0-9_])"
+                     ).search(line_text, start)
+    return None if hit is None else _utf16_col(line_text, hit.start())
+
 
 def _read_text(path: Path, *, limit: int = MAX_PARSE_BYTES) -> str | None:
     try:
@@ -2145,6 +2171,148 @@ class DevMemory:
         return _impact(self.raw_repo_root, file=file, depth=depth,
                        scip_path=self._scip_arg(scip_path))
 
+    # -- symbol graph (syntactic; optional LSP refinement) ----------------- #
+    def symbol_graph(self, op: str, symbol: str, *, depth: int | None = None,
+                     min_confidence: float = 0.0,
+                     precise: bool = False) -> dict[str, Any]:
+        """Symbol callers, callees, impact or resolve over the tag cache.
+
+        Rows come from `scripts.ocelot_symbol_graph` and are syntactic (see
+        docs/features/SYMBOL_GRAPH.md). With `precise=True` and op `callers`
+        or `impact`, the target's LSP references refine the depth-1 rows and
+        list references the syntactic graph missed. Lines in the result are
+        1-based.
+        """
+        from scripts.ocelot_repo_map import update_tag_cache
+        from scripts.ocelot_symbol_graph import (
+            DEFAULT_DEPTH, OPS, build_symbol_graph, callers, callees,
+            resolve_symbol, symbol_impact)
+        if op not in OPS:
+            return {"ok": False, "error": f"unknown op: {op}"}
+        root = Path(self.raw_repo_root).resolve()
+        cache_file = root / "var" / "ocelot_dev_tags.json"
+        # The same steps as `symbol_query`, kept in one process so the target
+        # definition is available for the LSP position without a second load
+        # of the tag cache.
+        t0 = time.perf_counter()
+        cache, tag_stats = update_tag_cache(root, cache_path=cache_file)
+        t1 = time.perf_counter()
+        graph = build_symbol_graph(cache)
+        t2 = time.perf_counter()
+        hops = DEFAULT_DEPTH.get(op) if depth is None else depth
+        if op == "resolve":
+            matches = resolve_symbol(graph, symbol)
+            result: dict[str, Any] = (
+                {"ok": True, "op": "resolve", "symbol": symbol,
+                 "matches": matches} if matches
+                else {"ok": False, "error": f"unknown symbol: {symbol}"})
+        elif op == "callers":
+            result = callers(graph, symbol, hops, min_confidence)
+        elif op == "callees":
+            result = callees(graph, symbol, hops, min_confidence)
+        else:
+            result = symbol_impact(graph, symbol, hops, min_confidence)
+        t3 = time.perf_counter()
+        result.update({
+            "root": str(root),
+            "cache": str(cache_file),
+            "stats": graph["stats"],
+            "tag_cache": {key: tag_stats[key] for key in
+                          ("files", "parsed", "reused", "failed", "errors",
+                           "cached_files")},
+            "timings": {"update_seconds": round(t1 - t0, 4),
+                        "build_seconds": round(t2 - t1, 4),
+                        "query_seconds": round(t3 - t2, 4)},
+        })
+        if precise:
+            if op not in ("callers", "impact"):
+                result["precision"] = {
+                    "lsp": f"not applicable: precise applies to callers and impact, not {op}"}
+            elif not result.get("ok"):
+                result["precision"] = {
+                    "lsp": "not run: symbol did not resolve to one definition"}
+            else:
+                self._refine_with_lsp(result, graph, root)
+        return result
+
+    def _refine_with_lsp(self, result: dict[str, Any], graph: dict[str, Any],
+                         root: Path) -> None:
+        """Mark depth-1 rows with LSP-confirmed references (in place)."""
+        from scripts.ocelot_lsp import detect_language, server_candidates
+        target = graph["nodes"][result["symbol"]]
+        rel = target["file"]
+        lang = detect_language(rel)
+        if lang is None:
+            result["precision"] = {
+                "lsp": f"unavailable: no LSP language for {rel!r}"}
+            return
+        candidates = server_candidates(lang, root)
+        ready = [c for c in candidates if c["available"]]
+        if not ready:
+            tried = ", ".join(c["name"] for c in candidates) or "none registered"
+            result["precision"] = {
+                "lsp": f"unavailable: no {lang} language server found "
+                       f"(tried: {tried})"}
+            return
+        server = ready[0]["name"]
+        lines = self._read(rel).split("\n")
+        def_line = lines[target["line"] - 1] if 0 < target["line"] <= len(lines) else ""
+        character = _name_utf16_col(def_line, target["name"])
+        if character is None:
+            result["precision"] = {
+                "lsp": "error: definition name not found on its line"}
+            return
+        refs = self.lsp_references(rel, target["line"] - 1, character,
+                                   timeout=PRECISE_TIMEOUT)
+        if not refs.get("ok"):
+            result["precision"] = {
+                "lsp": f"error: {refs.get('error') or 'references failed'}"}
+            return
+        # (path, 1-based line) for each LSP reference.
+        locations = [(str(loc.get("path") or ""), int(loc.get("line") or 0) + 1)
+                     for loc in refs.get("locations") or []]
+        by_file: dict[str, list[tuple[str, dict[str, Any]]]] = {}
+        for nid, node in graph["nodes"].items():
+            by_file.setdefault(node["file"], []).append((nid, node))
+
+        def innermost(path: str, line1: int) -> tuple[str, str]:
+            spans = [(nid, node) for nid, node in by_file.get(path, [])
+                     if node["line"] <= line1 <= node["end_line"]]
+            if not spans:
+                return f"{path}::<module>", "<module>"
+            nid, node = max(spans, key=lambda s: (
+                s[1]["line"], -(s[1]["end_line"] - s[1]["line"])))
+            return nid, node["qualname"]
+
+        depth1 = [row for row in result["results"] if row["depth"] == 1]
+        covered: set[tuple[str, int]] = set()
+        for row in result["results"]:
+            if row["depth"] != 1:
+                row["lsp_confirmed"] = None
+                continue
+            node = graph["nodes"][row["id"]]
+            inside = {loc for loc in locations if loc[0] == row["file"]
+                      and node["line"] <= loc[1] <= node["end_line"]}
+            covered |= inside
+            row["lsp_confirmed"] = bool(inside)
+        only: dict[tuple[str, str, int], dict[str, Any]] = {}
+        for path, line1 in sorted(set(locations)):
+            if (path, line1) in covered:
+                continue
+            nid, qualname = innermost(path, line1)
+            only[(nid, path, line1)] = {"id": nid, "file": path,
+                                        "line": line1, "qualname": qualname}
+        lsp_only = [only[key] for key in sorted(only)]
+        confirmed = sum(1 for row in depth1 if row["lsp_confirmed"])
+        result["lsp_only"] = lsp_only
+        result["precision"] = {
+            "lsp": "used", "server": server,
+            "references": len(locations),
+            "confirmed": confirmed,
+            "unconfirmed": len(depth1) - confirmed,
+            "lsp_only": len(lsp_only),
+        }
+
     # -- LSP bridge (compiler-accurate; lazy server) ---------------------- #
     def _lsp_client(self, file: str, language: str | None = None,
                     command: str | None = None):
@@ -2167,14 +2335,17 @@ class DevMemory:
 
     def lsp_references(self, file: str, line: int, character: int,
                        *, language: str | None = None,
-                       command: str | None = None) -> dict[str, Any]:
+                       command: str | None = None,
+                       timeout: float | None = None) -> dict[str, Any]:
         client, err = self._lsp_client(file, language, command)
-        return err or client.references(file, line, character)
+        return err or client.references(file, line, character,
+                                        timeout=timeout)
 
     def lsp_diagnostics(self, file: str, *, language: str | None = None,
-                        command: str | None = None) -> dict[str, Any]:
+                        command: str | None = None,
+                        timeout: float | None = None) -> dict[str, Any]:
         client, err = self._lsp_client(file, language, command)
-        return err or client.diagnostics(file)
+        return err or client.diagnostics(file, timeout=timeout)
 
     def lsp_callers(self, file: str, line: int, character: int,
                     *, language: str | None = None,
@@ -2271,16 +2442,22 @@ class DevMemory:
         return {"ok": True, **out}
 
     def edit(self, script: dict[str, Any], *,
-             task: str | None = None) -> dict[str, Any]:
+             task: str | None = None,
+             diagnostics: bool = True) -> dict[str, Any]:
         """Apply a graph-addressed edit script and journal the transaction.
 
         The script is the canonical change; `diff_view` is only a rendering.
-        A raw diff/patch input is refused by the edit layer."""
+        A raw diff/patch input is refused by the edit layer. After an applied
+        write, `diagnostics=True` waits for the LSP server's push diagnostics
+        on the edited file and attaches them under `result["diagnostics"]`."""
         from scripts.ocelot_edit import apply_edit_script
         write = _strict_bool(script.get("apply", False), "apply")
         result = apply_edit_script(self.raw_repo_root, script, write=write)
         if result.get("applied"):
-            self._drop_cached(str(script.get("file", result.get("file", ""))))
+            file_rel = str(script.get("file", result.get("file", "")))
+            self._drop_cached(file_rel)
+            diag = self._post_edit_diagnostics(file_rel, enabled=diagnostics)
+            result["diagnostics"] = diag
             entry = self.journal_append(
                 "edit",
                 task or f"edit {result.get('file', '?')}",
@@ -2292,9 +2469,45 @@ class DevMemory:
                 base_sha256=result.get("base_sha256"),
                 new_sha256=result.get("new_sha256"),
                 backup=result.get("backup"),
+                diagnostics={k: v for k, v in diag.items() if k != "items"},
             )
             result["journaled"] = entry
         return result
+
+    def _post_edit_diagnostics(self, file: str, *,
+                               enabled: bool) -> dict[str, Any]:
+        """Push diagnostics for a just-written file, or why there are none.
+
+        The LSP client sends didChange when the file's sha differs from the
+        last one it saw, then waits for the server's publish. Failures are
+        recorded here and never raised, so they cannot fail the edit."""
+        if not enabled:
+            return {"skipped": "diagnostics=false"}
+        from scripts.ocelot_lsp import detect_language, server_candidates
+        try:
+            lang = detect_language(file)
+            if not lang:
+                return {"skipped": f"no LSP language for {file!r}"}
+            ready = [c for c in server_candidates(lang, self.raw_repo_root)
+                     if c["available"]]
+            if not ready:
+                return {"skipped": f"unavailable: no {lang} language server found"}
+            res = self.lsp_diagnostics(file, timeout=POST_EDIT_DIAG_TIMEOUT)
+        except Exception as e:  # noqa: BLE001 - recorded, not raised
+            return {"error": f"{type(e).__name__}: {e}"}
+        if not res.get("ok"):
+            return {"error": str(res.get("error") or "diagnostics failed")}
+        items = res.get("diagnostics") or []
+        return {
+            "ok": True,
+            "count": len(items),
+            "errors": sum(1 for d in items if d.get("severity") == 1),
+            "warnings": sum(1 for d in items if d.get("severity") == 2),
+            "published": bool(res.get("published")),
+            "items": [{**d, "line1": int(d.get("line") or 0) + 1}
+                      for d in items[:DIAG_ITEM_LIMIT]],
+            "server": ready[0]["name"],
+        }
 
     # -- journal ------------------------------------------------------------ #
     def journal_append(self, kind: str, task: str, summary: str,
@@ -2478,6 +2691,11 @@ def _cmd_query(args: argparse.Namespace, mem: DevMemory) -> int:
                 raise ValueError(f"unknown session command {cmd!r}")
         except Exception as e:  # noqa: BLE001 - CLI boundary reports honestly
             out = {"ok": False, "error": f"{type(e).__name__}: {e}"}
+    elif cmd.startswith("symbol-"):
+        out = mem.symbol_graph(cmd.split("-", 1)[1], args.symbol,
+                               depth=getattr(args, "depth", None),
+                               min_confidence=getattr(args, "min_confidence", 0.0),
+                               precise=getattr(args, "precise", False))
     elif cmd == "edit":
         if args.script:
             script = json.loads(Path(args.script).read_text(encoding="utf-8"))
@@ -2632,6 +2850,21 @@ def main(argv: list[str] | None = None) -> int:
                             help=f"LSP {_name} for FILE")
         _p.add_argument("file")
         _p.add_argument("--language", default=None)
+        _p.set_defaults(func=_cmd_query, needs_mem=True)
+
+    for _name in ("symbol-callers", "symbol-callees", "symbol-resolve"):
+        _p = sub.add_parser(_name, parents=[common],
+                            help=f"symbol graph {_name.split('-', 1)[1]} "
+                                 "(syntactic; lines 1-based)")
+        _p.add_argument("symbol",
+                        help='"path::qualname", a qualname, or a bare name')
+        if _name != "symbol-resolve":
+            _p.add_argument("--depth", type=int, default=None,
+                            help="hops (callers/callees 1)")
+            _p.add_argument("--min-confidence", type=float, default=0.0)
+        if _name == "symbol-callers":
+            _p.add_argument("--precise", action="store_true",
+                            help="confirm direct callers with LSP references")
         _p.set_defaults(func=_cmd_query, needs_mem=True)
 
     rme = sub.add_parser("repo-map-eval", parents=[common],
