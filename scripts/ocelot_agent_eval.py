@@ -67,6 +67,9 @@ MCP_CONFIG_OPENCODE = ".ocelot_agent_eval_opencode.json"
 TASK_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 LIVE_DRIVERS = ("claude", "opencode")
 LOCAL_DRIVERS = ("noop", "fake")
+# A driver error that means no session can succeed; the run stops at once.
+_AUTH_ERROR_RE = re.compile(r"authenticat|not logged in|invalid api key|oauth",
+                            re.IGNORECASE)
 
 
 class HarnessError(RuntimeError):
@@ -272,7 +275,8 @@ def spawn_group(argv: list[str], *, cwd: str | Path, env: dict[str, str],
     """
     started = time.monotonic()
     proc = subprocess.Popen(argv, cwd=str(cwd), env=env, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, text=True, encoding="utf-8",
+                            stderr=subprocess.PIPE, stdin=subprocess.DEVNULL,
+                            text=True, encoding="utf-8",
                             errors="replace", start_new_session=True)
     timed_out = False
     try:
@@ -398,7 +402,7 @@ def validate_all(repo: str | Path, tasks: list[dict[str, Any]], base: str, *,
 def _empty_result(**fields: Any) -> dict[str, Any]:
     out = {"exit_code": None, "wall_s": 0.0, "tokens_in": None,
            "tokens_out": None, "cost_usd": None, "tool_calls": None,
-           "transcript": "", "timed_out": False}
+           "transcript": "", "timed_out": False, "driver_error": None}
     out.update(fields)
     return out
 
@@ -442,9 +446,13 @@ def _parse_claude_json(stdout: str) -> dict[str, Any]:
     def number(value: Any) -> Any:
         return value if isinstance(value, (int, float)) and not isinstance(value, bool) else None
 
+    error = None
+    if doc.get("is_error") or doc.get("terminal_reason") == "api_error":
+        error = str(doc.get("result") or doc.get("terminal_reason") or "error")
     return {"tokens_in": number(usage.get("input_tokens")),
             "tokens_out": number(usage.get("output_tokens")),
             "cost_usd": number(doc.get("total_cost_usd")),
+            "driver_error": error,
             "transcript": doc["result"] if isinstance(doc.get("result"), str) else stdout}
 
 
@@ -528,7 +536,30 @@ class CommandDriver:
                              tokens_in=parsed.get("tokens_in"),
                              tokens_out=parsed.get("tokens_out"),
                              cost_usd=parsed.get("cost_usd"),
+                             driver_error=parsed.get("driver_error"),
                              transcript=parsed.get("transcript", out))
+
+    def preflight(self) -> None:
+        """Refuse before any worktree is made when the CLI cannot authenticate.
+
+        `claude auth status` makes no model call. An API key in the
+        environment also counts as credentials.
+        """
+        if self.name != "claude":
+            return
+        if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get(
+                "CLAUDE_CODE_OAUTH_TOKEN"):
+            return
+        try:
+            proc = subprocess.run(["claude", "auth", "status"], capture_output=True,
+                                  text=True, timeout=30, stdin=subprocess.DEVNULL)
+            status = json.loads(proc.stdout or "{}")
+        except (OSError, subprocess.SubprocessError, ValueError) as exc:
+            raise HarnessError(f"claude auth status failed: {exc}") from exc
+        if not status.get("loggedIn"):
+            raise HarnessError(
+                "claude is not logged in (claude auth status: loggedIn=false). "
+                "Run `claude` and /login, or set ANTHROPIC_API_KEY, then retry.")
 
 
 def _require_live_env(name: str) -> None:
@@ -666,6 +697,7 @@ def run_one(repo: str | Path, task: dict[str, Any], arm: str, repeat: int,
             tokens_out=result["tokens_out"],
             cost_usd=result["cost_usd"],
             tool_calls=result["tool_calls"],
+            driver_error=result.get("driver_error"),
             files_changed=files_changed,
             localized=any(f in files_changed for f in expected),
             diff_vs_base=_git(["diff", "--name-only", base], workdir).stdout.split(),
@@ -694,13 +726,21 @@ def run_eval(repo: str | Path, tasks: list[dict[str, Any]], arms: Iterable[str],
     run_root = run_root or new_run_root()
     ordered_arms = [a for a in ARMS if a in arms]
     runs: list[dict[str, Any]] = []
+    preflight = getattr(driver, "preflight", None)
+    if callable(preflight):
+        preflight()
     for task in sorted(tasks, key=lambda t: t["id"]):
         for arm in ordered_arms:
             for repeat in range(1, repeats + 1):
-                runs.append(run_one(repo, task, arm, repeat, driver, base,
-                                    tasks_dir=tasks_dir, python=python,
-                                    run_root=run_root, timeout_s=timeout_s,
-                                    keep=keep))
+                record = run_one(repo, task, arm, repeat, driver, base,
+                                 tasks_dir=tasks_dir, python=python,
+                                 run_root=run_root, timeout_s=timeout_s,
+                                 keep=keep)
+                runs.append(record)
+                if _AUTH_ERROR_RE.search(str(record.get("driver_error") or "")):
+                    raise HarnessError(
+                        f"driver cannot authenticate ({record['driver_error']}); "
+                        f"stopped after {len(runs)} run(s). Logs: {run_root}")
     return {"version": 1, "base": base, "driver": driver.name,
             "arms": ordered_arms, "repeats": repeats,
             "tasks": [t["id"] for t in sorted(tasks, key=lambda t: t["id"])],
@@ -732,6 +772,7 @@ def aggregate(runs: list[dict[str, Any]], arms: Iterable[str]) -> list[dict[str,
             "mean_wall_s": _mean(r.get("wall_s") for r in mine),
             "mean_prep_s": _mean((r.get("prep_s") for r in mine), 1),
             "prep_failures": sum(1 for r in mine if r.get("prep_ok") is False),
+            "driver_errors": sum(1 for r in mine if r.get("driver_error")),
             "tokens_known_runs": sum(1 for r in mine if r.get("tokens_in") is not None),
             "mean_tokens_in": _mean((r.get("tokens_in") for r in mine), 1),
             "mean_tokens_out": _mean((r.get("tokens_out") for r in mine), 1),
@@ -774,14 +815,15 @@ def render_markdown(report: dict[str, Any]) -> str:
         "## Per arm",
         "",
         "| arm | runs | success | success rate | mean wall s | mean prep s | "
-        "prep failures | mean tokens in | "
+        "prep failures | driver errors | mean tokens in | "
         "mean tokens out | mean cost USD | localization rate |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for row in report["summary"]:
         lines.append("| " + " | ".join(_cell(v) for v in (
             row["arm"], row["runs"], row["successes"], row["success_rate"],
             row["mean_wall_s"], row["mean_prep_s"], row["prep_failures"],
+            row.get("driver_errors", 0),
             row["mean_tokens_in"], row["mean_tokens_out"],
             row["mean_cost_usd"], row["localization_rate"])) + " |")
     lines += ["", "Token and cost columns are blank where the driver reports no value. "

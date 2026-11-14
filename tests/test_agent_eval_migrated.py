@@ -233,8 +233,59 @@ def test_claude_json_parser_reads_result_cost_and_usage():
                       "usage": {"input_tokens": 120, "output_tokens": 30}})
     parsed = ae._parse_claude_json(doc)
     assert parsed == {"tokens_in": 120, "tokens_out": 30, "cost_usd": 0.25,
-                      "transcript": "done"}
+                      "driver_error": None, "transcript": "done"}
     assert ae._parse_claude_json("not json") == {}
+
+
+def test_claude_json_parser_reports_api_error():
+    # Shape of the real output when the CLI is not logged in (no tokens spent).
+    doc = json.dumps({"is_error": True, "terminal_reason": "api_error",
+                      "result": "Failed to authenticate: OAuth session expired",
+                      "total_cost_usd": 0, "usage": {"input_tokens": 0,
+                                                     "output_tokens": 0}})
+    parsed = ae._parse_claude_json(doc)
+    assert parsed["driver_error"].startswith("Failed to authenticate")
+    assert ae._AUTH_ERROR_RE.search(parsed["driver_error"])
+
+
+def test_preflight_refuses_when_claude_is_logged_out(monkeypatch):
+    monkeypatch.setenv(LIVE_ENV, "1")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("CLAUDE_CODE_OAUTH_TOKEN", raising=False)
+
+    class Done:
+        stdout = json.dumps({"loggedIn": False})
+
+    monkeypatch.setattr(ae.subprocess, "run", lambda *a, **k: Done())
+    with pytest.raises(HarnessError, match="not logged in"):
+        make_driver("claude", live=True).preflight()
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "x")
+    make_driver("claude", live=True).preflight()
+
+
+def test_run_stops_on_an_authentication_error(fixture):
+    class AuthFailDriver(NoopDriver):
+        name = "authfail"
+
+        def run(self, *a, **k):
+            out = super().run(*a, **k)
+            out["driver_error"] = "Failed to authenticate: OAuth session expired"
+            return out
+
+    other = _task("add-sign-b", BREAK_SIGN)
+    (fixture["tdir"] / other["break_patch"]).write_text(BREAK_SIGN, encoding="utf-8")
+    with pytest.raises(HarnessError, match="cannot authenticate"):
+        run_eval(fixture["repo"], [fixture["sign"], other], ["baseline"],
+                 AuthFailDriver(), fixture["base"], tasks_dir=fixture["tdir"],
+                 python=_python(), run_root=fixture["run_root"])
+    assert len(_worktrees(fixture["repo"])) == 1
+
+
+def test_spawned_commands_get_a_closed_stdin(tmp_path):
+    res = ae.spawn_group([_python(), "-c", "import sys; print(repr(sys.stdin.read()))"],
+                         cwd=tmp_path, env=dict(__import__("os").environ),
+                         timeout_s=20)
+    assert res["stdout"].strip() == "''"
 
 
 # ===================================================================================== #
