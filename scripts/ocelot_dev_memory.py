@@ -828,6 +828,22 @@ def build_index(root: str | Path = ROOT, out: str | Path = DEFAULT_DUMP,
             if seed_nid is not None:
                 b.edge(did, "documents", seed_nid)
 
+    # -- checkout head ------------------------------------------------------ #
+    # Recorded on its own (not only from the history walk below) so the
+    # snapshot can always be checked for staleness, and a git failure is
+    # recorded instead of being swallowed.
+    try:
+        rev = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
+                             capture_output=True, text=True, timeout=30,
+                             check=False)
+        if rev.returncode == 0 and rev.stdout.strip():
+            b.nodes[repo]["attrs"]["head"] = rev.stdout.strip()
+        else:
+            b.nodes[repo]["attrs"]["head_error"] = (
+                rev.stderr.strip()[:300] or f"git exited {rev.returncode}")
+    except (OSError, subprocess.SubprocessError) as exc:
+        b.nodes[repo]["attrs"]["head_error"] = f"{type(exc).__name__}: {exc}"[:300]
+
     # -- git history -------------------------------------------------------- #
     if include_git:
         try:
@@ -863,7 +879,7 @@ def build_index(root: str | Path = ROOT, out: str | Path = DEFAULT_DUMP,
                     fid = file_node(rel, indexed=False)
                     b.edge(cid, "changes", fid)
             if commits:
-                b.nodes[repo]["attrs"]["head"] = commits[0]["hash"]
+                b.nodes[repo]["attrs"].setdefault("head", commits[0]["hash"])
                 b.nodes[repo]["attrs"]["head_date"] = commits[0]["date"]
                 b.edge(repo, "head", b._by_key[("commit", commits[0]["hash"])])
         except (OSError, subprocess.SubprocessError):
@@ -2091,8 +2107,9 @@ class DevMemory:
         except (OSError, subprocess.SubprocessError):
             head = None
         snapshot_head = repo.get("head") or None
-        stale = bool(root_mismatch or (
-            snapshot_head and head and snapshot_head != head))
+        # A checkout with a known HEAD and a snapshot without one cannot be
+        # verified, so it counts as stale (`snapshot_head != head`).
+        stale = bool(root_mismatch or (head and snapshot_head != head))
         result: dict[str, Any] = {
             "snapshot_root": snapshot_root,
             "root": root,
@@ -2692,7 +2709,12 @@ def _cmd_query(args: argparse.Namespace, mem: DevMemory) -> int:
         except Exception as e:  # noqa: BLE001 - CLI boundary reports honestly
             out = {"ok": False, "error": f"{type(e).__name__}: {e}"}
     elif cmd.startswith("symbol-"):
-        out = mem.symbol_graph(cmd.split("-", 1)[1], args.symbol,
+        # `symbol-impact` is the LSP verb; the symbol-graph one is
+        # `symbol-graph-impact`.
+        op = cmd.split("-", 1)[1]
+        if op == "graph-impact":
+            op = "impact"
+        out = mem.symbol_graph(op, args.symbol,
                                depth=getattr(args, "depth", None),
                                min_confidence=getattr(args, "min_confidence", 0.0),
                                precise=getattr(args, "precise", False))
@@ -2852,7 +2874,8 @@ def main(argv: list[str] | None = None) -> int:
         _p.add_argument("--language", default=None)
         _p.set_defaults(func=_cmd_query, needs_mem=True)
 
-    for _name in ("symbol-callers", "symbol-callees", "symbol-resolve"):
+    for _name in ("symbol-callers", "symbol-callees", "symbol-graph-impact",
+                  "symbol-resolve"):
         _p = sub.add_parser(_name, parents=[common],
                             help=f"symbol graph {_name.split('-', 1)[1]} "
                                  "(syntactic; lines 1-based)")
@@ -2860,9 +2883,9 @@ def main(argv: list[str] | None = None) -> int:
                         help='"path::qualname", a qualname, or a bare name')
         if _name != "symbol-resolve":
             _p.add_argument("--depth", type=int, default=None,
-                            help="hops (callers/callees 1)")
+                            help="hops (callers/callees 1, impact 3)")
             _p.add_argument("--min-confidence", type=float, default=0.0)
-        if _name == "symbol-callers":
+        if _name in ("symbol-callers", "symbol-graph-impact"):
             _p.add_argument("--precise", action="store_true",
                             help="confirm direct callers with LSP references")
         _p.set_defaults(func=_cmd_query, needs_mem=True)
