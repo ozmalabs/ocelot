@@ -172,6 +172,11 @@ the graph-addressed edit transaction; a diff is only their output view.
 `ocelot_ir_edit.py` renders authored `Prog*` terms through
 `domains/render_python` and splices them into the lossless CST;
 `ocelot_cst_edit.py` edits Rust/Lua `CstNode` subtrees.
+Dev-tooling modules added with the v2 plan: `ocelot_edit_txn.py` (shared
+read, hash and atomic-write transaction for the edit adapters),
+`ocelot_symbol_graph.py` (symbol-level callers, callees and impact over the tag
+cache; see [`features/SYMBOL_GRAPH.md`](features/SYMBOL_GRAPH.md)), and
+`ocelot_index_bench.py` (timing bench for the warm repo index).
 
 ## `tools/` — seed-authoring / emitter scripts
 
