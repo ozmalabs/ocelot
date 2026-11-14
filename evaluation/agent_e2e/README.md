@@ -9,6 +9,8 @@ Files:
 - `validation.json`: output of `validate` against the base. Every task must be `ok`.
 - `dry_run_fake.{json,md}`: the fake driver (expected 100% success). Validates the harness.
 - `dry_run_noop.{json,md}`: the noop driver (expected 0% success). Negative control.
+- `pilot_opencode.{json,md}`: the live pilot, OpenCode with the local `vllm/qwen3.8-27b`
+  model, both arms, 1 repeat. 7/7 in both arms.
 
 Commands (from the repo root, with the venv Python):
 

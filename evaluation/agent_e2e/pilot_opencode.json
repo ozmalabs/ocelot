@@ -1,0 +1,668 @@
+{
+  "arms": [
+    "baseline",
+    "dev_memory"
+  ],
+  "backend": {
+    "backend": "opencode",
+    "model": "vllm/qwen3.8-27b (opencode config default)"
+  },
+  "base": "aef842ba6bc06acb1bab6ee74e879b9bbc81dc53",
+  "driver": "opencode",
+  "per_task": {
+    "architecture-entrypoint-exclusion": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    },
+    "architecture-hub-order": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    },
+    "dev-memory-strict-bool": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    },
+    "py-cst-token-last-char": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    },
+    "repo-map-baseline-budget": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    },
+    "repo-map-context-truncated": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    },
+    "seed-loader-engine-rules": {
+      "baseline": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      },
+      "dev_memory": {
+        "outcomes": [
+          true
+        ],
+        "repeats": 1,
+        "successes": 1
+      }
+    }
+  },
+  "repeats": 1,
+  "run_root": "/tmp/ocelot_pilot/oc_full",
+  "runs": [
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 0.701,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/architecture-entrypoint-exclusion-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "architecture-entrypoint-exclusion",
+      "timed_out": false,
+      "tokens_in": 25090,
+      "tokens_out": 792,
+      "tool_calls": 6,
+      "tools_by_name": {
+        "edit": 1,
+        "execute": 1,
+        "read": 2,
+        "shell": 2
+      },
+      "wall_s": 31.728
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.453,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/architecture-entrypoint-exclusion-dev_memory-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 69.688,
+      "repeat": 1,
+      "success": true,
+      "task": "architecture-entrypoint-exclusion",
+      "timed_out": false,
+      "tokens_in": 31219,
+      "tokens_out": 649,
+      "tool_calls": 6,
+      "tools_by_name": {
+        "edit": 1,
+        "read": 2,
+        "shell": 2,
+        "skill": 1
+      },
+      "wall_s": 31.031
+    },
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 0.525,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/architecture-hub-order-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "architecture-hub-order",
+      "timed_out": false,
+      "tokens_in": 35688,
+      "tokens_out": 917,
+      "tool_calls": 8,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 1,
+        "read": 3,
+        "shell": 2,
+        "skill": 1
+      },
+      "wall_s": 32.802
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.453,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_architecture.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/architecture-hub-order-dev_memory-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 59.367,
+      "repeat": 1,
+      "success": true,
+      "task": "architecture-hub-order",
+      "timed_out": false,
+      "tokens_in": 34719,
+      "tokens_out": 779,
+      "tool_calls": 9,
+      "tools_by_name": {
+        "edit": 1,
+        "read": 2,
+        "shell": 5,
+        "skill": 1
+      },
+      "wall_s": 30.785
+    },
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 0.563,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_dev_memory.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/dev-memory-strict-bool-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "dev-memory-strict-bool",
+      "timed_out": false,
+      "tokens_in": 30357,
+      "tokens_out": 1367,
+      "tool_calls": 14,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 7,
+        "read": 3,
+        "shell": 2,
+        "skill": 1
+      },
+      "wall_s": 36.38
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.563,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [
+        "scripts/ocelot_dev_memory.py"
+      ],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_dev_memory.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/dev-memory-strict-bool-dev_memory-r1",
+      "mcp_calls": 2,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 66.007,
+      "repeat": 1,
+      "success": true,
+      "task": "dev-memory-strict-bool",
+      "timed_out": false,
+      "tokens_in": 36365,
+      "tokens_out": 1742,
+      "tool_calls": 14,
+      "tools_by_name": {
+        "edit": 1,
+        "execute": 3,
+        "grep": 4,
+        "read": 4,
+        "shell": 2
+      },
+      "wall_s": 46.484
+    },
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 0.447,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "domains/py_cst_ingest.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/py-cst-token-last-char-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "py-cst-token-last-char",
+      "timed_out": false,
+      "tokens_in": 28317,
+      "tokens_out": 1258,
+      "tool_calls": 11,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 4,
+        "read": 3,
+        "shell": 3
+      },
+      "wall_s": 36.769
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.449,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "domains/py_cst_ingest.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/py-cst-token-last-char-dev_memory-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 64.723,
+      "repeat": 1,
+      "success": true,
+      "task": "py-cst-token-last-char",
+      "timed_out": false,
+      "tokens_in": 21145,
+      "tokens_out": 461,
+      "tool_calls": 6,
+      "tools_by_name": {
+        "edit": 1,
+        "read": 1,
+        "shell": 4
+      },
+      "wall_s": 21.382
+    },
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 1.107,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_repo_map_eval.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/repo-map-baseline-budget-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "repo-map-baseline-budget",
+      "timed_out": false,
+      "tokens_in": 15170,
+      "tokens_out": 522,
+      "tool_calls": 6,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 2,
+        "read": 1,
+        "shell": 2
+      },
+      "wall_s": 34.384
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.498,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_repo_map_eval.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/repo-map-baseline-budget-dev_memory-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 56.771,
+      "repeat": 1,
+      "success": true,
+      "task": "repo-map-baseline-budget",
+      "timed_out": false,
+      "tokens_in": 34080,
+      "tokens_out": 1404,
+      "tool_calls": 11,
+      "tools_by_name": {
+        "edit": 1,
+        "glob": 1,
+        "grep": 3,
+        "read": 4,
+        "shell": 2
+      },
+      "wall_s": 36.678
+    },
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 0.498,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_repo_map_eval.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/repo-map-context-truncated-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "repo-map-context-truncated",
+      "timed_out": false,
+      "tokens_in": 25377,
+      "tokens_out": 811,
+      "tool_calls": 11,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 3,
+        "read": 4,
+        "shell": 3
+      },
+      "wall_s": 39.074
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.506,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "scripts/ocelot_repo_map_eval.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/repo-map-context-truncated-dev_memory-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 70.388,
+      "repeat": 1,
+      "success": true,
+      "task": "repo-map-context-truncated",
+      "timed_out": false,
+      "tokens_in": 23420,
+      "tokens_out": 601,
+      "tool_calls": 8,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 2,
+        "read": 3,
+        "shell": 1,
+        "skill": 1
+      },
+      "wall_s": 23.001
+    },
+    {
+      "arm": "baseline",
+      "check_returncode": 0,
+      "check_s": 0.903,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [
+        "substrate/seed_loader.py"
+      ],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "substrate/seed_loader.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/seed-loader-engine-rules-baseline-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": null,
+      "prep_s": 0.0,
+      "repeat": 1,
+      "success": true,
+      "task": "seed-loader-engine-rules",
+      "timed_out": false,
+      "tokens_in": 32530,
+      "tokens_out": 869,
+      "tool_calls": 6,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 1,
+        "read": 1,
+        "shell": 3
+      },
+      "wall_s": 69.882
+    },
+    {
+      "arm": "dev_memory",
+      "check_returncode": 0,
+      "check_s": 0.901,
+      "cleanup_warnings": [],
+      "cost_usd": 0.0,
+      "diff_vs_base": [
+        "substrate/seed_loader.py"
+      ],
+      "driver": "opencode",
+      "driver_error": null,
+      "exit_code": 0,
+      "files_changed": [
+        "substrate/seed_loader.py"
+      ],
+      "localized": true,
+      "log_dir": "/tmp/ocelot_pilot/oc_full/logs/seed-loader-engine-rules-dev_memory-r1",
+      "mcp_calls": 0,
+      "prep_error": null,
+      "prep_ok": true,
+      "prep_s": 63.364,
+      "repeat": 1,
+      "success": true,
+      "task": "seed-loader-engine-rules",
+      "timed_out": false,
+      "tokens_in": 45857,
+      "tokens_out": 713,
+      "tool_calls": 8,
+      "tools_by_name": {
+        "edit": 1,
+        "grep": 2,
+        "read": 2,
+        "shell": 3
+      },
+      "wall_s": 79.691
+    }
+  ],
+  "stopped": null,
+  "summary": [
+    {
+      "arm": "baseline",
+      "driver_errors": 0,
+      "localization_rate": 1.0,
+      "mean_cost_usd": 0.0,
+      "mean_mcp_calls": 0.0,
+      "mean_prep_s": 0.0,
+      "mean_tokens_in": 27504.1,
+      "mean_tokens_out": 933.7,
+      "mean_tool_calls": 8.9,
+      "mean_wall_s": 40.146,
+      "prep_failures": 0,
+      "runs": 7,
+      "success_rate": 1.0,
+      "successes": 7,
+      "tokens_known_runs": 7
+    },
+    {
+      "arm": "dev_memory",
+      "driver_errors": 0,
+      "localization_rate": 1.0,
+      "mean_cost_usd": 0.0,
+      "mean_mcp_calls": 0.3,
+      "mean_prep_s": 64.3,
+      "mean_tokens_in": 32400.7,
+      "mean_tokens_out": 907.0,
+      "mean_tool_calls": 8.9,
+      "mean_wall_s": 38.436,
+      "prep_failures": 0,
+      "runs": 7,
+      "success_rate": 1.0,
+      "successes": 7,
+      "tokens_known_runs": 7
+    }
+  ],
+  "tasks": [
+    "architecture-entrypoint-exclusion",
+    "architecture-hub-order",
+    "dev-memory-strict-bool",
+    "py-cst-token-last-char",
+    "repo-map-baseline-budget",
+    "repo-map-context-truncated",
+    "seed-loader-engine-rules"
+  ],
+  "total_cost_usd": 0.0,
+  "version": 1
+}

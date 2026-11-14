@@ -227,11 +227,24 @@ The repo map does not win once task text stops naming files; `code_search`
 shows code. The tasks were written after reading the target code, which
 favours lexical arms; treat this as directional (30 tasks, one run).
 
-**End-to-end:** the break/fix harness is validated (fake driver 7/7, noop 0/7)
-but no hosted-model run has been made. A pilot is 7 tasks × 2 arms = 14
-sessions and needs explicit approval and a cost ceiling.
+**End-to-end:** the break/fix harness is validated (fake driver 7/7, noop 0/7).
+The live pilot ran on OpenCode 2.3.0 with the local `vllm/qwen3.8-27b` model
+(Claude Code was logged out), 7 tasks × 2 arms × 1 repeat, $0
+(`evaluation/agent_e2e/pilot_opencode.{json,md}`):
 
-**Open items:** live agent pilot. Fixed in `dt-w5-fixes`: `_python_parse`
+| arm | success | localized | mean wall s | mean tokens in | mean tool calls | mean MCP calls |
+|---|---|---|---|---|---|---|
+| baseline | 7/7 | 7/7 | 40.1 | 27 504 | 8.9 | 0 |
+| dev_memory | 7/7 | 7/7 | 38.4 (+64 s untimed prep) | 32 401 | 8.9 | 0.3 |
+
+Both arms solved every task, so the pilot cannot separate them. The dev_memory
+agent called the Ocelot server in 1 of 7 sessions (2 calls) and otherwise used
+its built-in grep/read/shell tools; the server's tool descriptions add about
+5k input tokens per session. Telling the arms apart needs harder tasks (the
+current breaks are one-function fixes with a named failing test), repeats, or
+a prompt that does not name the test.
+
+**Open items:** harder agent tasks and repeats. Fixed in `dt-w5-fixes`: `_python_parse`
 strips a leading BOM (snapshot Symbol nodes exist for BOM files); untracked
 source-file content is part of the staleness digest; the agent-eval task base
 is `aef842ba` (was `a6df57f0`).

@@ -1,6 +1,7 @@
 # Agent end-to-end evaluation (W3-C)
 
-Status: harness shipped; **live drivers are untested live**. No hosted-model run has been made.
+Status: harness shipped. The `opencode` driver has run live (the 14-session pilot in
+`evaluation/agent_e2e/pilot_opencode.md`). The `claude` driver is untested live.
 
 Code: `scripts/ocelot_agent_eval.py`. Tasks: `evaluation/agent_e2e/tasks.json`.
 Tests: `tests/test_agent_eval_migrated.py`. Plan: `docs/features/DEV_TOOLING_V2_PLAN.md`, item V6.
