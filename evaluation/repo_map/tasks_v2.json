@@ -1,0 +1,617 @@
+{
+  "version": 2,
+  "description": "Repo-map retrieval tasks, v2. Each task has a style (symptom or identifier), an area, expected files, and the evidence commands and matches recorded while curating. The task text never names an expected file.",
+  "ground_truth_policy": "Expected files were chosen by reading the code that does the work. Each evidence entry is the verbatim output of the recorded rg command at the base commit a6df57f0. The harness never derives expected files.",
+  "budgets": [
+    500,
+    900,
+    1500
+  ],
+  "tasks": [
+    {
+      "id": "repo-map-same-second-tag-cache",
+      "style": "symptom",
+      "area": "dev_tooling",
+      "task": "The tag cache can keep an old entry for a file that changed in the same second it was last hashed, when the new contents are the same length as the old ones.",
+      "expected_files": [
+        "scripts/ocelot_repo_map.py"
+      ],
+      "notes": "Freshness check for cached tags and the racy-timestamp window.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"racy|same second|_entry_is_fresh\" scripts/ocelot_repo_map.py",
+          "matches": [
+            "scripts/ocelot_repo_map.py:44: # change again without a visible size or mtime change at the same second",
+            "scripts/ocelot_repo_map.py:45: # (racy-git rule). Such entries are re-hashed instead of trusted by mtime.",
+            "scripts/ocelot_repo_map.py:210: def _entry_is_fresh(old: Any, st: os.stat_result, fingerprint: str) -> bool:",
+            "scripts/ocelot_repo_map.py:211: \"\"\"True when mtime and size match and the entry is outside the racy window.\"\"\"",
+            "scripts/ocelot_repo_map.py:274: if not force and _entry_is_fresh(old, st, fingerprint):"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "json-manifest-value-edit",
+      "style": "symptom",
+      "area": "dev_tooling",
+      "task": "After one value inside a JSON seed manifest is replaced, the key order, indentation and surrounding formatting of the rest of the document should be left exactly as they were.",
+      "expected_files": [
+        "scripts/ocelot_json_edit.py"
+      ],
+      "notes": "Span-preserving JSON value replacement.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"key order|span\" scripts/ocelot_json_edit.py",
+          "matches": [
+            "scripts/ocelot_json_edit.py:1: \"\"\"ocelot_json_edit — span-preserving, graph-addressed edits for JSON documents.",
+            "scripts/ocelot_json_edit.py:4: \"attrs\", \"name\"]`) and the adapter replaces only that value's span. The rest of",
+            "scripts/ocelot_json_edit.py:5: the file — key order, indentation, long descriptions, surrounding formatting —",
+            "scripts/ocelot_json_edit.py:11: for a one-value change. This adapter parses JSON with spans, so the edit is",
+            "scripts/ocelot_json_edit.py:19: replace_span start_line,start_col,end_line,end_col,text"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "markdown-section-replace",
+      "style": "symptom",
+      "area": "dev_tooling",
+      "task": "Replacing one section of a Markdown feature doc should change that section's heading and body only, and the heading of the section after it should stay byte for byte the same.",
+      "expected_files": [
+        "scripts/ocelot_markdown_edit.py"
+      ],
+      "notes": "Section replacement operations on Markdown blocks.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"replace_section\" scripts/ocelot_markdown_edit.py",
+          "matches": [
+            "scripts/ocelot_markdown_edit.py:20: replace_section        replace heading + body + nested subsections",
+            "scripts/ocelot_markdown_edit.py:21: replace_section_body   replace direct body, keep the heading",
+            "scripts/ocelot_markdown_edit.py:232: if kind == \"replace_section\":",
+            "scripts/ocelot_markdown_edit.py:237: \"replace_section text must include the heading (start with #); \"",
+            "scripts/ocelot_markdown_edit.py:238: \"use replace_section_body to keep the heading\")"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dev-context-budget-stop",
+      "style": "identifier",
+      "area": "dev_tooling",
+      "task": "DevMemory.context stops adding items at the first item that would overflow budget_tokens. A later, smaller item that still fits should be considered instead of being dropped.",
+      "expected_files": [
+        "scripts/ocelot_dev_memory.py"
+      ],
+      "notes": "Budget loop of the context pack.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"def context|total_tokens \\+ est > budget_tokens\" scripts/ocelot_dev_memory.py",
+          "matches": [
+            "scripts/ocelot_dev_memory.py:1681: def context(self, task: str, *, max_items: int = 8,",
+            "scripts/ocelot_dev_memory.py:1789: if picked and total_tokens + est > budget_tokens:"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pagerank-tie-order",
+      "style": "identifier",
+      "area": "dev_tooling",
+      "task": "personalized_pagerank should break rank ties by file path, so two runs over the same graph return files in the same order.",
+      "expected_files": [
+        "scripts/ocelot_repo_map.py"
+      ],
+      "notes": "Personalized PageRank over the candidate subgraph.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"def personalized_pagerank|iterations: int\" scripts/ocelot_repo_map.py",
+          "matches": [
+            "scripts/ocelot_repo_map.py:587: def personalized_pagerank(graph: dict[str, Any], *,",
+            "scripts/ocelot_repo_map.py:591: iterations: int = PPR_MAX_ITERATIONS,"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "code-search-matched-terms",
+      "style": "identifier",
+      "area": "dev_tooling",
+      "task": "code_search should list, for each result, the query terms that matched that file, so a caller can see why the file ranked where it did.",
+      "expected_files": [
+        "scripts/ocelot_code_search.py"
+      ],
+      "notes": "BM25 plus PageRank fusion and result rendering.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"def code_search|_matched_symbols\" scripts/ocelot_code_search.py",
+          "matches": [
+            "scripts/ocelot_code_search.py:229: def _matched_symbols(symbols: list[dict[str, Any]], terms: list[str],",
+            "scripts/ocelot_code_search.py:322: def code_search(root: str | Path, query: str, *, limit: int = 20,",
+            "scripts/ocelot_code_search.py:417: \"symbols\": _matched_symbols(index[\"symbols\"].get(rel, []),"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dev-session-replay",
+      "style": "symptom",
+      "area": "dev_tooling",
+      "task": "A saved working session should reload and replay from its last checkpoint, so steps that already ran are not run again.",
+      "expected_files": [
+        "scripts/ocelot_dev_session.py"
+      ],
+      "notes": "Replayable dev-session state graph.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"replayable|reloaded, replayed\" scripts/ocelot_dev_session.py",
+          "matches": [
+            "scripts/ocelot_dev_session.py:1: \"\"\"ocelot_dev_session — a replayable dev-session state graph (LangGraph-like).",
+            "scripts/ocelot_dev_session.py:29: session can be reloaded, replayed and diffed."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "symbol-graph-import-resolution",
+      "style": "symptom",
+      "area": "dev_tooling",
+      "task": "A call to a function that another file imports by name should resolve to the definition in the file it was imported from, not to a same-named function elsewhere in the repo.",
+      "expected_files": [
+        "scripts/ocelot_symbol_graph.py"
+      ],
+      "notes": "Import-aware symbol resolution levels.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"binds the name with\" scripts/ocelot_symbol_graph.py",
+          "matches": [
+            "scripts/ocelot_symbol_graph.py:13: * ``import``: the file binds the name with ``from X import name``, where ``X``"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cow-branch-isolation",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "After a snapshot branch is forked, a write on one branch must never change what the other branch reads, even when both branches write into the same leaf page.",
+      "expected_files": [
+        "runners/dsl/src/cow_paged_vec.rs"
+      ],
+      "notes": "Copy-on-write paged vector for snapshot forks.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"A fork clones one|A write makes\" runners/dsl/src/cow_paged_vec.rs",
+          "matches": [
+            "runners/dsl/src/cow_paged_vec.rs:3: //! A fork clones one `Arc` root. A write makes the radix path private and"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rule-run-stopping-point",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "A rule set whose matches keep firing on every pass should still reach a stopping point, rather than looping over the same rules indefinitely.",
+      "expected_files": [
+        "runners/dsl/src/rewrite.rs"
+      ],
+      "notes": "Fixed-point runner over rule passes.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"Apply rules to a fixed point\" runners/dsl/src/rewrite.rs",
+          "matches": [
+            "runners/dsl/src/rewrite.rs:3640: /// Apply rules to a fixed point. Each pass walks the rule list in"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "edge-refusal-reason",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "An edge that no production admits must be refused before it is written. The refusal should say whether the cause is a missing vocabulary entry or a production that did not match.",
+      "expected_files": [
+        "runners/dsl/src/checker.rs"
+      ],
+      "notes": "Type-1 and Type-2 failure modes of the admissibility check.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"Type-1|Type-2\" runners/dsl/src/checker.rs",
+          "matches": [
+            "runners/dsl/src/checker.rs:6: //! - Type-1: vocabulary present, but no production admits the triple",
+            "runners/dsl/src/checker.rs:10: //! - Type-2: at least one constituent type is absent from N ∪ E — the",
+            "runners/dsl/src/checker.rs:25: /// Type-1: all three types are in N ∪ E but no production admits.",
+            "runners/dsl/src/checker.rs:31: /// Type-2: one or more types isn't even in the vocabulary.",
+            "runners/dsl/src/checker.rs:67: // Type-2 takes precedence — produce a missing-vocabulary error"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reflex-skip-report",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "A reflex entry in a seed file that points at a seed which is not installed should appear in the load summary with its reason. It should not disappear from the summary.",
+      "expected_files": [
+        "runners/dsl/src/seed_manifest.rs"
+      ],
+      "notes": "Load summary counts and skipped-reflex reasons.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"reflexes_skipped\" runners/dsl/src/seed_manifest.rs",
+          "matches": [
+            "runners/dsl/src/seed_manifest.rs:25: pub reflexes_skipped: Vec<String>,",
+            "runners/dsl/src/seed_manifest.rs:334: summary.reflexes_skipped.push(format!(\"{}: {}\", nm, e));"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "residual-decoder-parity",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "The residual decoder should reproduce its Python reference field for field, including the order in which tied candidate parts are ranked.",
+      "expected_files": [
+        "runners/dsl/src/shape_decode.rs"
+      ],
+      "notes": "Parity contract with the Python composer and its tie-break.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"reproduce that Python|tie-break\" runners/dsl/src/shape_decode.rs",
+          "matches": [
+            "runners/dsl/src/shape_decode.rs:6: //! algorithm here must reproduce that Python function EXACTLY — parity",
+            "runners/dsl/src/shape_decode.rs:572: /// check and the ranking tie-break (see `eval_dim_infer`) without",
+            "runners/dsl/src/shape_decode.rs:3107: /// generator's human name (for the ranking tie-break and the composite",
+            "runners/dsl/src/shape_decode.rs:3499: // committed single-generator behaviour. A generator-NAME tie-break was",
+            "runners/dsl/src/shape_decode.rs:10784: /// tie-break by construction (position-aligned with `goal[0:2]`), but"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "run-rules-report-cycle-flag",
+      "style": "identifier",
+      "area": "rust_engine",
+      "task": "run_rules_report should say whether a cycle was seen when detect_cycles is set, and should not report a cycle when the rules simply reached a fixed point.",
+      "expected_files": [
+        "runners/dsl/src/substrate.rs"
+      ],
+      "notes": "Rule-run report with cycle detection.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"pub fn run_rules_report\" runners/dsl/src/substrate.rs",
+          "matches": [
+            "runners/dsl/src/substrate.rs:6368: pub fn run_rules_report(&mut self, max_steps: usize, detect_cycles: bool) -> RuleRunReport {"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eq-variant-operands",
+      "style": "identifier",
+      "area": "rust_engine",
+      "task": "The Eq variant should compare its two operands after evaluating both of them.",
+      "expected_files": [
+        "runners/dsl/src/term.rs"
+      ],
+      "notes": "Evaluator arm for the equality node.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"TermNode::Eq \\{ a, b \\} => \\{\" runners/dsl/src/term.rs",
+          "matches": [
+            "runners/dsl/src/term.rs:8653: TermNode::Eq { a, b } => {"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "persist-value-roundtrip",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "A graph value that is written to disk and read back should come back equal to the original, including references to other nodes.",
+      "expected_files": [
+        "runners/dsl/src/persist.rs"
+      ],
+      "notes": "Value encoding and decoding for saved graphs.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"fn encode_value|fn decode_value\" runners/dsl/src/persist.rs",
+          "matches": [
+            "runners/dsl/src/persist.rs:25: pub fn encode_value(v: &Value, interner: &Interner) -> J {",
+            "runners/dsl/src/persist.rs:145: pub fn decode_value(v: &J, interner: &mut Interner) -> Value {"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rule-json-roundtrip",
+      "style": "symptom",
+      "area": "rust_engine",
+      "task": "A rewrite rule that is saved and then loaded again should keep the same match edges and effects it had before saving.",
+      "expected_files": [
+        "runners/dsl/src/rule_json.rs"
+      ],
+      "notes": "Rule wire format serialisation and parsing.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"pub fn rule_to_json|pub fn parse_rule_json\" runners/dsl/src/rule_json.rs",
+          "matches": [
+            "runners/dsl/src/rule_json.rs:20: pub fn parse_rule_json_pub(",
+            "runners/dsl/src/rule_json.rs:37: pub fn parse_rule_json(",
+            "runners/dsl/src/rule_json.rs:202: pub fn rule_to_json("
+          ]
+        }
+      ]
+    },
+    {
+      "id": "boot-dependency-order",
+      "style": "symptom",
+      "area": "seeds_boot",
+      "task": "Booting from the seed files should install each seed only after the seeds it depends on, reading every dependency list from the seed file itself.",
+      "expected_files": [
+        "substrate/boot_all.py"
+      ],
+      "notes": "Dependency ordering of the full seed boot.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"depends_on\" substrate/boot_all.py",
+          "matches": [
+            "substrate/boot_all.py:4: resolves each seed's ``depends_on`` FROM THE JSON ITSELF (not",
+            "substrate/boot_all.py:37: \"depends_on\", \"group_keys\", \"content_keys\", \"named_content_refs\",",
+            "substrate/boot_all.py:107: # unaffected. Nothing depends_on these, so skipping is topo-safe.",
+            "substrate/boot_all.py:389: \"depends_on\": manifest.get(\"depends_on\") or [],",
+            "substrate/boot_all.py:469: dependency for dependency in meta[\"depends_on\"]"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frozen-core-manifest-check",
+      "style": "symptom",
+      "area": "seeds_boot",
+      "task": "The list of seeds that must never be edited should be checked against the pinned manifest file, and a mismatch should be reported instead of being accepted silently.",
+      "expected_files": [
+        "domains/frozen_core.py"
+      ],
+      "notes": "Safety-invariant frozen set cross-checked with a pinned manifest.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"frozen_core_set|pinned\" domains/frozen_core.py",
+          "matches": [
+            "domains/frozen_core.py:15: 1. `frozen_core_set(agent=None)` -- enumerate the frozen core as data,",
+            "domains/frozen_core.py:16: cross-checked against `seeds/frozen_core_manifest.json` (the pinned,",
+            "domains/frozen_core.py:73: def frozen_core_set(agent=None) -> dict[str, Any]:",
+            "domains/frozen_core.py:251: neither of which was itself in the pinned denylist) become frozen-BY-",
+            "domains/frozen_core.py:352: \"disjointness in frozen_core_set)\")"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "boot-profile-closure",
+      "style": "symptom",
+      "area": "seeds_boot",
+      "task": "A selected group of seeds that leaves one of their dependencies unresolved should be rejected before anything is written to the graph.",
+      "expected_files": [
+        "substrate/boot_profiles.py"
+      ],
+      "notes": "Connected-seed profiles and closure validation.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"incomplete selection is rejected\" substrate/boot_profiles.py",
+          "matches": [
+            "substrate/boot_profiles.py:204: incomplete selection is rejected before graph mutation by ``load_all_seeds``."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "core-emotions-integer-contribution",
+      "style": "symptom",
+      "area": "domains",
+      "task": "An appraisal's weighted contribution should be stored as a stepped integer before it reaches the graph, so the same input gives the same integer on every platform.",
+      "expected_files": [
+        "domains/core_emotions_weight.py"
+      ],
+      "notes": "Integer lattice quantisation for the core emotions rule.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"INTEGER-NATIVE|stepped integer\" domains/core_emotions_weight.py",
+          "matches": [
+            "domains/core_emotions_weight.py:4: That seed is INTEGER-NATIVE ONLY (tests/test_core_emotions_migrated.py's",
+            "domains/core_emotions_weight.py:6: must be rendered as a stepped integer BEFORE it enters the graph (CLAUDE.md's"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conversation-action-goal-binding",
+      "style": "symptom",
+      "area": "domains",
+      "task": "An action the agent accepts should be tied to a goal it has already minted, so an accepted action never runs without a goal behind it.",
+      "expected_files": [
+        "domains/conversation_action.py"
+      ],
+      "notes": "Turns an accepted conversational intent into a minted goal.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"Goal minting|mint a Goal\" domains/conversation_action.py",
+          "matches": [
+            "domains/conversation_action.py:2: into an ACT (mint a Goal + fire the agent's OWN faculty) or an ASK-BACK (a repair",
+            "domains/conversation_action.py:10: • ACT — `act_on_instruction`: mint a Goal node (graph-resident record that the",
+            "domains/conversation_action.py:287: # --- Goal minting (mechanical graph ingest — the \"action happened\" record) ----"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "solver-exhausted-gap",
+      "style": "symptom",
+      "area": "domains",
+      "task": "When a solve attempt uses up its options without an answer, the agent should record that as a gap it can later raise a concern about.",
+      "expected_files": [
+        "domains/solver_dispatch.py"
+      ],
+      "notes": "Solver outcomes recorded as gap keys.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"gap_key|note_solve_exhausted_gap\" domains/solver_dispatch.py",
+          "matches": [
+            "domains/solver_dispatch.py:55: ALSO writes a `gap_key` attr via the `_wall` helper -- a stable identity for",
+            "domains/solver_dispatch.py:61: whether a wall IS a gap. `seeds/gap_awareness.json::note_solve_exhausted_gap`",
+            "domains/solver_dispatch.py:62: is the Rule that reads `status==\"walled\"` + `gap_key` and decides to file a",
+            "domains/solver_dispatch.py:63: `SelfConcern{kind:\"solve_failure\"}`, content-deduped on `gap_key`.",
+            "domains/solver_dispatch.py:123: def _wall(sub, goal_node, gap_key: str, note, **extra) -> None:"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reading-mints-quantum-rules",
+      "style": "symptom",
+      "area": "domains",
+      "task": "When reading mints a quantum, it should follow the same decode rules the sd loop uses, so the same parts give the same answer on either path.",
+      "expected_files": [
+        "domains/reading_collapse.py"
+      ],
+      "notes": "Reading collapse onto the sd loop rules.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"sd_decode|sd_mint_quantum\" domains/reading_collapse.py",
+          "matches": [
+            "domains/reading_collapse.py:42: sd loop (`seeds/shape_decode_loop.json`: `sd_decode`/`sd_mint_quantum`) — the"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "term-variant-regeneration",
+      "style": "symptom",
+      "area": "worlds_or_tools",
+      "task": "After a new kind of DSL expression node is added to the enum, the generated index and name table go out of date and the build should catch it. Regenerate them from the enum body.",
+      "expected_files": [
+        "tools/gen_term_variants.py",
+        "runners/dsl/src/term_variants.rs"
+      ],
+      "notes": "Generator and generated index for the TermNode enum.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"Re-run after any variant\" tools/gen_term_variants.py",
+          "matches": [
+            "tools/gen_term_variants.py:6: ORDER. Emitted as a Rust source block for term.rs. Re-run after any variant is"
+          ]
+        },
+        {
+          "command": "rg -n -H \"GENERATED\" runners/dsl/src/term_variants.rs",
+          "matches": [
+            "runners/dsl/src/term_variants.rs:1: //! GENERATED — do not hand-edit."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ts-trivia-leaves",
+      "style": "symptom",
+      "area": "domains",
+      "task": "A tree-sitter parse of a source file should keep whitespace and comment gaps as explicit leaves, so joining the leaves gives back the exact source bytes.",
+      "expected_files": [
+        "domains/ts_ingest.py"
+      ],
+      "notes": "Lossless mode inserts trivia leaves for byte gaps.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"include_trivia\" domains/ts_ingest.py",
+          "matches": [
+            "domains/ts_ingest.py:93: include_trivia: bool = False) -> Dict[str, Any]:",
+            "domains/ts_ingest.py:100: `include_trivia=True` adds explicit `trivia` leaves for the byte gaps",
+            "domains/ts_ingest.py:139: if not include_trivia or node.child_count == 0:"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "python-cst-lossless-leaves",
+      "style": "symptom",
+      "area": "domains",
+      "task": "A Python source file should be read into leaves that keep every comment, blank line and trailing space, so that rendering the leaves reproduces the file exactly.",
+      "expected_files": [
+        "domains/py_cst_ingest.py",
+        "scripts/ocelot_lossless.py"
+      ],
+      "notes": "Token and trivia leaves under every format.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"trivia\" domains/py_cst_ingest.py",
+          "matches": [
+            "domains/py_cst_ingest.py:11: `trivia` leaves. The root is a `module` node whose children are those leaves in",
+            "domains/py_cst_ingest.py:46: \"\"\"Token + trivia leaves in document order. Rendering the `text` fields in",
+            "domains/py_cst_ingest.py:60: \"kind\": \"trivia\", \"text\": source[prev_end:start],",
+            "domains/py_cst_ingest.py:79: \"kind\": \"trivia\", \"text\": source[prev_end:],"
+          ]
+        },
+        {
+          "command": "rg -n -H \"byte-for-byte\" scripts/ocelot_lossless.py",
+          "matches": [
+            "scripts/ocelot_lossless.py:1: \"\"\"ocelot_lossless — the byte-for-byte leaf structure under every format."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "persistence-node-ids",
+      "style": "symptom",
+      "area": "substrate",
+      "task": "Saving the agent's graph and loading it back should keep every node id that other indexes hold valid, with no re-keying afterwards.",
+      "expected_files": [
+        "substrate/persistence.py"
+      ],
+      "notes": "Graph save and load that preserves node ids.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"PRESERVING node ids\" substrate/persistence.py",
+          "matches": [
+            "substrate/persistence.py:15: faithfully, PRESERVING node ids — so every NodeID held in the agent's index",
+            "substrate/persistence.py:85: \"\"\"Rebuild a TypedGraph from :func:`graph_to_dict`, PRESERVING node ids (the"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "admissibility-check-no-bypass",
+      "style": "symptom",
+      "area": "substrate",
+      "task": "An edge that the admissibility grammar does not admit should be refused before the graph changes, and no caller should be able to skip that check.",
+      "expected_files": [
+        "substrate/checker.py"
+      ],
+      "notes": "Consistency checker in front of every edge write.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"only path|no bypass\" substrate/checker.py",
+          "matches": [
+            "substrate/checker.py:3: C.check is the only path through which the application learns whether a",
+            "substrate/checker.py:5: mutation — there is no bypass."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grid-game-frames-to-cells",
+      "style": "symptom",
+      "area": "worlds_or_tools",
+      "task": "Each frame from the grid-game API should become graph nodes, one per non-empty cell, and any change between frames should be recorded as a value transition.",
+      "expected_files": [
+        "worlds/arc.py"
+      ],
+      "notes": "Frame to substrate mutation adapter for the grid game.",
+      "evidence": [
+        {
+          "command": "rg -n -H \"non-empty cell|value transitions\" worlds/arc.py",
+          "matches": [
+            "worlds/arc.py:4: ``CellC<v>`` per non-empty cell + per-cell value transitions) and applies the"
+          ]
+        }
+      ]
+    }
+  ]
+}

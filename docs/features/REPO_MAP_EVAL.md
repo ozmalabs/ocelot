@@ -15,7 +15,157 @@ do they recover? It does not run an LLM, call the network, or edit source.
 It is not an end-to-end coding benchmark. File recall is a prerequisite for a
 coding agent, not evidence that the agent completes the change correctly.
 
-## Task set
+## v2: what changed, and the results
+
+The v2 task set, arms, and tier-aware recall live beside the v1 set. v1 stays
+as the historical record (its sections follow this one).
+
+**Files:** `evaluation/repo_map/tasks_v2.json` (30 tasks with evidence),
+`evaluation/repo_map/RESULTS_V2.md` and `results_v2.json` (the run below),
+`scripts/ocelot_repo_map_eval.py`, `tests/test_repo_map_eval_migrated.py`.
+
+### Why v2 (findings V1 to V5)
+
+| Finding | Problem in v1 | v2 change |
+|---|---|---|
+| V1 | 13 of 21 prompts named an expected file's stem | `leakage(task)` rejects a task that names an expected file's basename, stem, spaced stem, or a directory longer than three characters. The test runs it over the shipped file. |
+| V2 | 8 of 21 tasks were about the dev tooling itself | 8 of 30 tasks are `dev_tooling` (27%, capped at 30%). The rest span `rust_engine` (9), `domains`, `substrate`, `seeds_boot`, and `worlds_or_tools`. |
+| V3 | The dev_context arm ran on a snapshot that did not match the checkout | Before any dev_context or both run, `DevMemory.staleness()` is checked. A stale snapshot raises unless `--allow-stale` is set. The report records the staleness dict. |
+| V4 | The baseline was the only control, and code_search was not an arm | Two arms added: `grep` (lexical) and `code_search`. |
+| V5 | A listing-tier path counted as a hit, whatever the tier | Each selected file has a tier. `recall_content` counts only content-tier hits. |
+
+### Task-set rules
+
+- 30 tasks. Each has `style` (`symptom`: describes behaviour, names no
+  function, class, or file; `identifier`: may name a function or class, never
+  a file), `area`, 1 to 4 `expected_files` under the repo-map source
+  directories, and `evidence`.
+- `evidence` lists the exact `rg` command used while curating and up to five
+  real matches per command (`path:line: text`). Every expected file appears in
+  at least one match.
+- Shipped-set test: no task triggers `leakage()`; at least 12 `symptom`
+  tasks; `dev_tooling` at most 30%; at least 5 `rust_engine` tasks, all under
+  `runners/dsl/src`.
+- The `symptom` check is a token heuristic (no underscores, parentheses,
+  dotted names, or file extensions). It is not a proof that no function name
+  is hidden in a plain word.
+- Ground truth stays frozen in the JSON. The harness never derives it.
+
+### Arms
+
+| Arm | Selected files | Tier |
+|---|---|---|
+| `baseline` | Sorted path listing, budgeted | listing |
+| `grep` | Every source file ranked by distinct task terms found in its text (case-insensitive substring), then total occurrences, then path. Terms are words of length 4 or more, minus `GREP_STOPWORDS`. Each file is read once per run. | listing |
+| `code_search` | `code_search(root, task, limit=50)` results, rendered as `path:line: snippet` in result order | content if a snippet is shown, else listing |
+| `dev_context` | Files from `DevMemory.context` items | content if the item carries snippet text |
+| `dev_repo_map` | Files from `repo_map`, same budget | content for `full` and `outline` tiers, listing otherwise |
+| `both` | Union of dev_context and dev_repo_map | content if either side is content |
+
+`baseline` and the `dev_context`/`dev_repo_map`/`both` arms behave as in v1.
+The v1 arms reproduce exactly: the rewritten module and the base-commit module
+produce identical file lists, token counts, and recall on all 189 v1
+dev_context/dev_repo_map/both runs of the same tree and snapshot.
+
+### Tier-aware recall
+
+`recall` counts a hit at any tier. `recall_content` counts only hits whose
+file the arm showed as code. A listing-tier hit says a path exists, not what it
+contains. Run records also carry `content_files`, and the aggregates report
+`mean_content_files`.
+
+### Headline numbers (verified run)
+
+Run on the worktree at base `a6df57f0`, snapshot built from that HEAD and
+verified fresh by the gate (`snapshot_head` = `head`). Fingerprint
+`c745f6d2fdee953bcc472cb1ada8b031141469e979596a347f5a41ea34e786d8`, identical
+with `PYTHONHASHSEED=7`. 30 tasks, 540 runs, 6,805 indexed source files.
+Cell format: `recall / recall_content`.
+
+| Arm | 500 tokens | 900 tokens | 1500 tokens |
+|---|---:|---:|---:|
+| baseline | 0.000 / 0.000 | 0.000 / 0.000 | 0.067 / 0.000 |
+| dev_context | 0.017 / 0.017 | 0.083 / 0.083 | 0.083 / 0.083 |
+| dev_repo_map | 0.283 / 0.283 | 0.250 / 0.250 | 0.467 / 0.383 |
+| both | 0.283 / 0.283 | 0.283 / 0.283 | 0.467 / 0.383 |
+| grep | 0.700 / 0.000 | 0.833 / 0.000 | 0.900 / 0.000 |
+| code_search | 0.717 / 0.717 | 0.817 / 0.817 | 0.933 / 0.933 |
+
+Mean precision per arm at 500 / 900 / 1500 tokens: dev_repo_map 0.079 / 0.059 /
+0.026, code_search 0.045 / 0.028 / 0.020, grep 0.012 / 0.008 / 0.005,
+dev_context 0.008 / 0.018 / 0.016, both 0.052 / 0.038 / 0.022.
+
+To reproduce, build a snapshot of the same checkout and run every arm:
+
+```bash
+.venv/bin/python -m scripts.ocelot_dev_memory build --root . --out /tmp/dev_graph.json
+.venv/bin/python -m scripts.ocelot_repo_map_eval \
+  --tasks evaluation/repo_map/tasks_v2.json \
+  --arms baseline,dev_context,dev_repo_map,both,grep,code_search \
+  --budgets 500,900,1500 --memory /tmp/dev_graph.json \
+  --out-json evaluation/repo_map/results_v2.json \
+  --out-md evaluation/repo_map/RESULTS_V2.md
+```
+
+The run refuses a stale snapshot. Pass `--allow-stale` only to read a
+deliberately stale result, and the report records that it did.
+
+### Reading these results
+
+- **The repo map does not win this set.** On recall, grep and code_search are
+  above `dev_repo_map` at every budget. On content-tier recall, which is the
+  one that matters when an agent reads the selected files, code_search is
+  above the map at every budget. Per task, code_search has the higher
+  content recall on 15, 18, and 17 tasks at 500, 900, and 1500 tokens. The map
+  has the higher content recall on one task at 500 tokens (`dev-session-replay`)
+  and on none at 900 or 1500.
+- **grep's recall is a long list.** Its 0.70 to 0.90 recall comes from listing
+  62 to 178 paths per task. It shows no code, and its precision is 0.5% to
+  1.2%. Read it as "the expected file's name is in a long list", not as a
+  usable retrieval.
+- **dev_context is weak here.** It selects 1.6 to 4.4 files, and most are not
+  expected files. Its recall stays at 0.02 to 0.08 at every budget.
+- **`both` adds little over the map.** At 500 tokens it equals the map. At 900
+  tokens it adds 0.03 recall (0.283 against 0.250). At 1500 tokens it adds
+  nothing: recall and content recall equal the map's.
+- **Two tasks get no content hit from any of dev_context, dev_repo_map, or
+  code_search at 1500 tokens:** `reflex-skip-report` and
+  `persist-value-roundtrip`. The map finds `reflex-skip-report` only as a
+  listing line, and grep finds `persist-value-roundtrip` only as a listing line.
+- **Compared with v1 on the same arms.** On the 21 v1 tasks, the verified v1
+  rerun gives dev_repo_map 0.385 / 0.385 / 0.647 (recall) and content recall
+  0.385 / 0.385 / 0.591; code_search 0.758 / 0.782 / 0.821; grep 0.790 /
+  0.837 / 0.901. The ranking is the same: code_search and grep are above the
+  map. The map's 1500-token recall fell from 0.647 to 0.467 on the v2 set. The
+  v1 prompts named file stems, and v2 does not. That is consistent with the
+  leakage helping the map, but the two sets differ in more than that, so this
+  is not a controlled comparison. The v1 rerun output is under
+  `/tmp/ocelot_dt-w3a-eval-v2/` and is not committed.
+
+### Limits of this v2 result
+
+- **Authorship bias.** The tasks were written after reading the code they
+  target, so their wording shares vocabulary with that code. That favours
+  lexical retrievers (grep, code_search). The leakage rule removes file names
+  only, not implementation vocabulary.
+- **Small set.** 30 tasks, one snapshot, one deterministic run. A difference of
+  two or three tasks is noise. No significance test was run.
+- **Symptom text is a retrieval query, not a bug report.** Some symptoms
+  describe a risk the code already partly handles (for example, the same-second
+  tag cache case).
+- **Latency is not a benchmark.** Within a task, `code_search` runs before
+  `dev_repo_map` and parses the shared tag cache, so the map's cache counters
+  read `parsed 0` in v2. Elapsed times also depend on in-process memos and on
+  arm order.
+- **Freshness gate limit.** The gate compares HEAD only when the snapshot
+  records one. The first snapshot built in this worktree recorded no head, and
+  the gate passed with `snapshot_head: null`. That run is superseded (see the
+  report). The gate was not changed.
+- **Not end-to-end.** Retrieval only. No edit, test, or agent step is scored.
+
+## v1 (history)
+
+### Task set
 
 `evaluation/repo_map/tasks.json` contains 21 tasks. Every entry has:
 
