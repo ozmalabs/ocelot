@@ -359,3 +359,41 @@ def test_missing_backend_degrades_honestly(monkeypatch) -> None:
     assert "rust" not in available_languages()
     # Python's AST path does not need a tree-sitter grammar.
     assert "python" in available_languages()
+
+
+def test_extract_tags_status_reports_backend_error(monkeypatch) -> None:
+    def broken_loader(*_args):
+        raise RuntimeError("no grammar")
+
+    monkeypatch.setattr(tag_languages, "_load_tree_sitter_backend",
+                        broken_loader)
+    tags, error = tag_languages.extract_tags_status("x.rs", "fn alpha() {}\n")
+    assert tags == []
+    assert error == "RuntimeError: no grammar"
+    assert tag_languages.extract_tags("x.rs", "fn alpha() {}\n") == []
+
+
+def test_extract_tags_status_distinguishes_genuine_empty_results() -> None:
+    assert tag_languages.extract_tags_status("x.py", "def broken(:\n") == ([],
+                                                                          None)
+    assert tag_languages.extract_tags_status("x.txt", "def a():\n") == ([],
+                                                                         None)
+
+
+def test_extractor_fingerprint_is_stable_and_tracks_schema(monkeypatch) -> None:
+    cache_clear = tag_languages._fingerprint_for_suffix.cache_clear
+    cache_clear()
+    try:
+        first = tag_languages.extractor_fingerprint("x.rs")
+        assert tag_languages.extractor_fingerprint("y/z.rs") == first
+        assert tag_languages.extractor_fingerprint(".rs") == first
+        assert tag_languages.extractor_fingerprint("x.rs") == first
+        assert tag_languages.extractor_fingerprint("x.py") != first
+        monkeypatch.setattr(tag_languages, "TAGS_SCHEMA_VERSION",
+                            tag_languages.TAGS_SCHEMA_VERSION + 1)
+        cache_clear()
+        assert tag_languages.extractor_fingerprint("x.rs") != first
+    finally:
+        monkeypatch.undo()
+        cache_clear()
+    assert tag_languages.extractor_fingerprint("x.rs") == first

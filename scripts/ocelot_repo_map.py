@@ -21,25 +21,28 @@ import hashlib
 import json
 import math
 import os
+import tempfile
 import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parent.parent
-CACHE_VERSION = 2
+CACHE_VERSION = 3
+# A file whose mtime is within this window of the moment it was hashed may
+# change again without a visible size or mtime change at the same second
+# (racy-git rule). Such entries are re-hashed instead of trusted by mtime.
+RACY_NS = 2_000_000_000
 DEFAULT_CACHE = ROOT / "var" / "ocelot_dev_tags.json"
-try:
-    from scripts.ocelot_tag_languages import LANGUAGES as _TAG_LANGUAGES
-    LANGUAGES = {suffix: entry["module"]
-                 for suffix, entry in _TAG_LANGUAGES.items()
-                 if entry.get("module")}
-except Exception:  # pragma: no cover - registry is part of the tree
-    LANGUAGES = {
-        ".py": "tree_sitter_python",
-        ".rs": "tree_sitter_rust",
-        ".lua": "tree_sitter_lua",
-    }
+from scripts.ocelot_tag_languages import (  # noqa: E402
+    LANGUAGES as _TAG_LANGUAGES,
+    extract_tags as _registry_extract_tags,
+    extract_tags_status,
+    extractor_fingerprint,
+)
+LANGUAGES = {suffix: entry["module"]
+             for suffix, entry in _TAG_LANGUAGES.items()
+             if entry.get("module")}
 SOURCE_DIRS = (
     "runners/dsl/src",
     "runners/dsl/tests",
@@ -120,57 +123,21 @@ _GENERIC_IDENTS = {
 }
 
 
-def _python_tags(source: str) -> list[dict[str, Any]]:
-    """Python tags via the stdlib AST: much faster than a tree-sitter query
-    across thousands of files, and precise enough for a definition/reference
-    graph."""
-    import ast
-    try:
-        tree = ast.parse(source)
-    except (SyntaxError, ValueError):
-        return []
-    out: list[dict[str, Any]] = []
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
-                             ast.ClassDef)):
-            out.append({"name": node.name, "kind": "def",
-                        "detail": ("definition.class"
-                                   if isinstance(node, ast.ClassDef)
-                                   else "definition.function"),
-                        "line": int(getattr(node, "lineno", 1))})
-        elif isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
-            out.append({"name": node.id, "kind": "ref",
-                        "detail": "reference.name",
-                        "line": int(getattr(node, "lineno", 1))})
-        elif isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
-            out.append({"name": node.attr, "kind": "ref",
-                        "detail": "reference.attribute",
-                        "line": int(getattr(node, "lineno", 1))})
-    return out
-
-
 def extract_tags(path: str | Path, source: str) -> list[dict[str, Any]]:
     """Definition/reference tags via the shared multi-language registry.
 
-    The registry keeps Python on the stdlib-AST fast path and uses each
-    grammar's own `queries/tags.scm` for Rust/Lua/TypeScript/Go/Java/C/C++.
+    The registry (`ocelot_tag_languages`) is the only extractor: Python on the
+    stdlib-AST fast path, other languages on each grammar's `queries/tags.scm`.
     A missing grammar yields an empty list for that file, never an exception.
     """
-    try:
-        from scripts.ocelot_tag_languages import extract_tags as _extract
-        return _extract(path, source)
-    except Exception:
-        # The registry is the supported path; this fallback keeps a damaged
-        # optional dependency from killing the whole map.
-        if Path(path).suffix.lower() == ".py":
-            return _python_tags(source)
-        return []
+    return _registry_extract_tags(path, source)
 
 
 def _load_cache(path: Path) -> dict[str, Any]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(data, dict) and data.get("version") == CACHE_VERSION:
+        if (isinstance(data, dict) and data.get("version") == CACHE_VERSION
+                and isinstance(data.get("files"), dict)):
             return data
     except (OSError, json.JSONDecodeError):
         pass
@@ -178,76 +145,143 @@ def _load_cache(path: Path) -> dict[str, Any]:
 
 
 def _save_cache(path: Path, data: dict[str, Any]) -> None:
+    """Atomic write: a unique temp file in the target directory, then rename."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(data, sort_keys=True), encoding="utf-8")
-    os.replace(tmp, path)
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent),
+                               prefix=path.name + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(json.dumps(data, separators=(",", ":")))
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
+
+def _root_hash(entries: dict[str, Any], rels: Iterable[str]) -> str:
+    text = "|".join(f"{rel}:{entries[rel].get('sha256', '')}"
+                    for rel in sorted(rels))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _entry_is_fresh(old: Any, st: os.stat_result, fingerprint: str) -> bool:
+    """True when mtime and size match and the entry is outside the racy window."""
+    if not isinstance(old, dict) or old.get("fp") != fingerprint:
+        return False
+    if old.get("mtime_ns") != st.st_mtime_ns or old.get("size") != st.st_size:
+        return False
+    try:
+        return int(old["checked_ns"]) - int(old["mtime_ns"]) >= RACY_NS
+    except (KeyError, TypeError, ValueError):
+        return False
 
 
 def update_tag_cache(root: str | Path = ROOT, *,
                      cache_path: str | Path = DEFAULT_CACHE,
                      files: Iterable[str] | None = None,
                      force: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Content-hash incremental tag cache. Returns (cache, stats)."""
+    """Content-hash incremental tag cache. Returns (cache, stats).
+
+    The on-disk document holds every entry. A full scan (``files`` is None)
+    also prunes entries for files that no longer exist; a subset call never
+    removes entries outside its subset. The returned ``cache`` is a view
+    restricted to the requested or scanned paths, with its own ``root_hash``.
+    """
     root = Path(root).resolve()
     cache_path = Path(cache_path)
+    existed = cache_path.exists()
     cache = _load_cache(cache_path)
-    entries: dict[str, Any] = cache.setdefault("files", {})
-    paths = list(files) if files is not None else _source_files(root)
-    stats = {"files": len(paths), "parsed": 0, "reused": 0, "failed": 0}
+    entries: dict[str, Any] = cache["files"]
+    full_scan = files is None
+    if full_scan:
+        paths = _source_files(root)
+    else:
+        paths = list(dict.fromkeys(
+            str(f).replace("\\", "/") for f in files))
+    stats: dict[str, Any] = {"files": len(paths), "parsed": 0, "reused": 0,
+                             "failed": 0, "errors": []}
+    dirty = False
+
+    def _fail(rel: str, message: str) -> None:
+        nonlocal dirty
+        stats["failed"] += 1
+        if len(stats["errors"]) < 5:
+            stats["errors"].append(f"{rel}: {message}")
+        if entries.pop(rel, None) is not None:
+            dirty = True
+
     for rel in paths:
         p = root / rel
         try:
             st = p.stat()
         except OSError:
-            stats["failed"] += 1
+            _fail(rel, "file not found")
             continue
+        fingerprint = extractor_fingerprint(rel)
         old = entries.get(rel)
-        # Cursor-style fast path: mtime+size match means reuse without reading
-        # or hashing. On a real edit, read + hash and reuse the tags if the
-        # content hash is unchanged (mtime-only touches stay cheap).
-        if (not force and isinstance(old, dict)
-                and old.get("mtime") == int(st.st_mtime)
-                and old.get("size") == st.st_size):
+        if not force and _entry_is_fresh(old, st, fingerprint):
             stats["reused"] += 1
             continue
         try:
             source = p.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            stats["failed"] += 1
+        except OSError as exc:
+            _fail(rel, f"read failed: {exc}")
             continue
         digest = _sha256(source)
+        now = time.time_ns()
         if (not force and isinstance(old, dict)
-                and old.get("sha256") == digest):
-            old["mtime"] = int(st.st_mtime)
-            old["size"] = st.st_size
+                and old.get("sha256") == digest
+                and old.get("fp") == fingerprint):
+            old.update(mtime_ns=st.st_mtime_ns, size=st.st_size,
+                       checked_ns=now)
             stats["reused"] += 1
+            dirty = True
             continue
-        tags = extract_tags(rel, source)
+        tags, error = extract_tags_status(rel, source)
+        if error is not None:
+            # Failures are never cached: the next call tries the file again.
+            _fail(rel, error)
+            continue
         entries[rel] = {
             "sha256": digest,
-            "mtime": int(st.st_mtime),
+            "mtime_ns": st.st_mtime_ns,
             "size": st.st_size,
+            "checked_ns": now,
+            "fp": fingerprint,
             "tags": tags,
         }
         stats["parsed"] += 1
-    # Drop entries for files that no longer exist in the scanned set.
-    known = set(paths)
-    for rel in list(entries):
-        if rel not in known:
-            entries.pop(rel, None)
-    cache["root_hash"] = _sha256("|".join(
-        f"{rel}:{entries[rel].get('sha256', '')}" for rel in sorted(entries)))
+        dirty = True
+    if full_scan:
+        known = set(paths)
+        for rel in list(entries):
+            if rel not in known:
+                entries.pop(rel, None)
+                dirty = True
+    view_rels = [rel for rel in dict.fromkeys(paths) if rel in entries]
+    view = {rel: entries[rel] for rel in view_rels}
+    view_hash = _root_hash(entries, view_rels)
+    stored_hash = _root_hash(entries, entries)
+    cache["root_hash"] = stored_hash
     cache["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")
-    if stats["parsed"] or force or not cache_path.exists():
+    if stats["parsed"] or dirty or force or not existed:
         _save_cache(cache_path, cache)
-    stats["root_hash"] = cache["root_hash"]
+    stats["root_hash"] = view_hash
     stats["cached_files"] = len(entries)
-    return cache, stats
+    result = {"version": CACHE_VERSION, "files": view,
+              "root_hash": view_hash}
+    return result, stats
 
 
 def build_reference_graph(cache: dict[str, Any]) -> dict[str, Any]:
-    """defines[name] -> files; references[name] -> files; edges referencer->definer."""
+    """defines[name] -> files; references[name] -> files; edges referencer->definer.
+
+    Iteration is over sorted names and files, and the returned edges are sorted
+    by (src, tgt), so the caps and the output do not depend on set order.
+    """
     defines: dict[str, set[str]] = defaultdict(set)
     references: dict[str, set[str]] = defaultdict(set)
     definitions: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
@@ -265,7 +299,7 @@ def build_reference_graph(cache: dict[str, Any]) -> dict[str, Any]:
     MAX_DEFINERS = 12
     MAX_REFERENCERS = 120
     MAX_EDGES = 250_000
-    for name in set(defines) & set(references):
+    for name in sorted(set(defines) & set(references)):
         if (name in _GENERIC_IDENTS or len(name) < 4
                 or len(defines[name]) > MAX_DEFINERS
                 or len(references[name]) > MAX_REFERENCERS):
@@ -282,15 +316,17 @@ def build_reference_graph(cache: dict[str, Any]) -> dict[str, Any]:
         if len(edges) >= MAX_EDGES:
             break
     # Self-edge for definitions with no references keeps isolated files alive.
-    for name, files in defines.items():
+    for name in sorted(defines):
         if name in references:
             continue
-        for f in files:
+        for f in sorted(defines[name]):
             edges[(f, f)] = max(edges.get((f, f), 0.0), 0.1)
+    ordered = sorted(edges.items())
     return {"defines": defines, "references": references,
             "definitions": definitions,
             "edges": [{"src": s, "tgt": t, "weight": w}
-                      for (s, t), w in edges.items()]}
+                      for (s, t), w in ordered]}
+
 
 
 def _task_terms(task: str) -> list[str]:
@@ -365,10 +401,12 @@ def _task_relevance(graph: dict[str, Any], task: str,
     if not scores:
         return {f: 1.0 for f in nodes}, nodes
     top = sorted(scores, key=lambda f: (-scores[f], f))[:30]
+    top_set = set(top)
     candidates = set(top)
-    for e in graph.get("edges") or []:
+    for e in sorted(graph.get("edges") or [],
+                    key=lambda e: (str(e["src"]), str(e["tgt"]))):
         src, tgt = str(e["src"]), str(e["tgt"])
-        if src not in top:
+        if src not in top_set:
             continue
         candidates.add(src)
         candidates.add(tgt)
@@ -377,22 +415,33 @@ def _task_relevance(graph: dict[str, Any], task: str,
     return scores, candidates
 
 
+PPR_TOLERANCE = 1e-10
+PPR_MAX_ITERATIONS = 100
+
+
 def personalized_pagerank(graph: dict[str, Any], *,
                           task: str = "",
                           focus_files: Iterable[str] = (),
                           damping: float | None = None,
-                          iterations: int = 30) -> dict[str, float]:
+                          iterations: int = PPR_MAX_ITERATIONS) -> dict[str, float]:
+    """Personalized PageRank over the candidate subgraph.
+
+    Mass at dangling nodes (no out-weight inside the subgraph) is handed back
+    through the personalization vector, so the ranks sum to 1. Iteration stops
+    when the L1 change drops below PPR_TOLERANCE or after `iterations` rounds.
+    """
     relevance, candidates = _task_relevance(graph, task, focus_files)
-    edges = [e for e in (graph.get("edges") or [])
-             if str(e["src"]) in candidates and str(e["tgt"]) in candidates]
-    nodes = set(candidates)
+    nodes = sorted(candidates)
     if not nodes:
         return {}
+    edges = sorted(
+        (e for e in (graph.get("edges") or [])
+         if str(e["src"]) in candidates and str(e["tgt"]) in candidates),
+        key=lambda e: (str(e["src"]), str(e["tgt"])))
     d = 0.30 if task.strip() else 0.85
     if damping is not None:
         d = float(damping)
     terms = _task_terms(task)
-    file_defs, _file_refs = _file_names(graph)
     personal: dict[str, float] = {}
     for n in nodes:
         w = 1.0 + 20.0 * relevance.get(n, 0.0)
@@ -402,20 +451,28 @@ def personalized_pagerank(graph: dict[str, Any], *,
         if n.startswith("tests/") and task.strip():
             w *= 0.5
         personal[n] = w
-    total = sum(personal.values()) or 1.0
-    rank = {n: personal[n] / total for n in nodes}
+    total = sum(personal[n] for n in nodes) or 1.0
+    teleport = {n: personal[n] / total for n in nodes}
+    rank = dict(teleport)
     out_weight: dict[str, float] = defaultdict(float)
     for e in edges:
         out_weight[str(e["src"])] += float(e.get("weight", 1.0))
-    for _ in range(iterations):
-        new = {n: (1.0 - d) * personal[n] / total for n in nodes}
+    dangling = [n for n in nodes if out_weight.get(n, 0.0) <= 0.0]
+    for _ in range(max(1, int(iterations))):
+        dangling_mass = sum(rank[n] for n in dangling)
+        new = {n: (1.0 - d) * teleport[n] + d * dangling_mass * teleport[n]
+               for n in nodes}
         for e in edges:
             src, tgt = str(e["src"]), str(e["tgt"])
             w = float(e.get("weight", 1.0))
             if out_weight.get(src, 0.0) > 0:
-                new[tgt] += d * rank.get(src, 0.0) * w / out_weight[src]
+                new[tgt] += d * rank[src] * w / out_weight[src]
+        delta = sum(abs(new[n] - rank[n]) for n in nodes)
         rank = new
+        if delta < PPR_TOLERANCE:
+            break
     return dict(sorted(rank.items(), key=lambda kv: (-kv[1], kv[0])))
+
 
 
 def _line_text(root: Path, rel: str, line: int) -> str:
