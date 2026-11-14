@@ -268,6 +268,10 @@ def _python_parse(path: Path) -> PyParse | None:
     src = _read_text(path)
     if src is None:
         return None
+    # A UTF-8 byte order mark is not Python source; ast.parse rejects it.
+    # Stripping it leaves every line number unchanged.
+    if src.startswith("\ufeff"):
+        src = src[1:]
     try:
         tree = ast.parse(src)
     except (SyntaxError, ValueError):
@@ -976,9 +980,11 @@ def _strict_bool(value: Any, name: str) -> bool:
 def _tree_digest(root: Path) -> tuple[str | None, str | None]:
     """(digest, error) for the working tree under `root`.
 
-    The digest is sha256 over `git diff HEAD` (tracked content changes) and a
-    NUL and the names of untracked files under SOURCE_DIRS. Untracked file
-    content is not hashed, so an edit to an untracked file is not seen.
+    The digest is sha256 over `git diff HEAD` (tracked content changes), a NUL,
+    and for each untracked file under SOURCE_DIRS (sorted by git): its path, a
+    NUL, then its size and sha256 of its bytes. Untracked files larger than
+    MAX_PARSE_BYTES contribute path, size and mtime_ns instead. Untracked files
+    that cannot be read contribute path and "unreadable".
     """
     try:
         diff = subprocess.run(
@@ -986,7 +992,7 @@ def _tree_digest(root: Path) -> tuple[str | None, str | None]:
              "--no-ext-diff"],
             capture_output=True, timeout=60, check=False)
         untracked = subprocess.run(
-            ["git", "-C", str(root), "ls-files", "--others",
+            ["git", "-C", str(root), "ls-files", "-z", "--others",
              "--exclude-standard", "--", *SOURCE_DIRS],
             capture_output=True, timeout=60, check=False)
     except (OSError, subprocess.SubprocessError) as e:
@@ -998,7 +1004,23 @@ def _tree_digest(root: Path) -> tuple[str | None, str | None]:
     h = hashlib.sha256()
     h.update(diff.stdout)
     h.update(b"\0")
-    h.update(untracked.stdout)
+    for raw in untracked.stdout.split(b"\0"):
+        if not raw:
+            continue
+        h.update(raw)
+        h.update(b"\0")
+        path = root / raw.decode("utf-8", errors="surrogateescape")
+        try:
+            st = path.stat()
+            if st.st_size > MAX_PARSE_BYTES:
+                h.update(f"big:{st.st_size}:{st.st_mtime_ns}".encode())
+            else:
+                data = path.read_bytes()
+                h.update(f"{len(data)}:".encode())
+                h.update(hashlib.sha256(data).hexdigest().encode())
+        except OSError:
+            h.update(b"unreadable")
+        h.update(b"\0")
     return h.hexdigest(), None
 
 

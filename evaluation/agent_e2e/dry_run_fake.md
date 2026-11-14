@@ -1,7 +1,7 @@
 # Agent end-to-end evaluation
 
 - Driver: `fake`
-- Base: `a6df57f0d4b594564d993495d6d38a1b1be3170f`
+- Base: `aef842ba6bc06acb1bab6ee74e879b9bbc81dc53`
 - Arms: baseline, dev_memory
 - Repeats per task and arm: 1
 - Tasks: 7
@@ -10,8 +10,8 @@
 
 | arm | runs | success | success rate | mean wall s | mean prep s | prep failures | mean tokens in | mean tokens out | mean cost USD | localization rate |
 |---|---|---|---|---|---|---|---|---|---|---|
-| baseline | 7 | 7 | 1.0 | 0.003 | 0.0 | 0 |  |  |  | 1.0 |
-| dev_memory | 7 | 7 | 1.0 | 0.038 | 70.6 | 0 |  |  |  | 1.0 |
+| baseline | 7 | 7 | 1.0 | 0.002 | 0.0 | 0 |  |  |  | 1.0 |
+| dev_memory | 7 | 7 | 1.0 | 0.019 | 53.5 | 0 |  |  |  | 1.0 |
 
 Token and cost columns are blank where the driver reports no value. Prep (dev_memory snapshot and tag cache) runs before the driver timer; mean prep s is 0 for baseline.
 
