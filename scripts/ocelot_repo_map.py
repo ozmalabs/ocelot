@@ -86,22 +86,71 @@ def _skipped(rel: str) -> bool:
 
 
 def _source_files(root: Path) -> list[str]:
+    """Repo-relative source files under SOURCE_DIRS, in the repo-map order.
+
+    Same result as the earlier ``sorted(base.rglob("*"))`` walk, without a
+    ``resolve()`` per file:
+
+    * directories are walked with ``os.scandir``; directory symlinks are not
+      followed, and directories named in SKIP_PARTS are not entered;
+    * entries within one SOURCE_DIR are ordered by their path parts, which is
+      the ordering ``Path`` comparison gives;
+    * a regular file's rel is the SOURCE_DIR's resolved prefix plus its walked
+      parts. That equals ``resolve()`` because no walked directory is a
+      symlink;
+    * a symlinked file is resolved, and kept only when its target is under
+      root. Its rel is the target's rel, as before.
+    """
+    root_real = Path(root).resolve()
     out: list[str] = []
     for d in SOURCE_DIRS:
-        base = root / d
+        base = Path(root) / d
         if not base.exists():
             continue
-        for p in sorted(base.rglob("*")):
-            if not p.is_file() or p.suffix not in LANGUAGES:
-                continue
+        try:
+            prefix: tuple[str, ...] | None = base.resolve().relative_to(
+                root_real).parts
+        except ValueError:
+            prefix = None
+        found: list[tuple[tuple[str, ...], str, bool]] = []
+        stack: list[tuple[str, tuple[str, ...]]] = [(str(base), ())]
+        while stack:
+            current, parts = stack.pop()
             try:
-                rel = _rel(root, p)
-            except ValueError:
+                with os.scandir(current) as it:
+                    entries = list(it)
+            except OSError:
                 continue
+            for entry in entries:
+                child_parts = parts + (entry.name,)
+                try:
+                    if entry.is_dir(follow_symlinks=False):
+                        if entry.name not in SKIP_PARTS:
+                            stack.append((entry.path, child_parts))
+                        continue
+                    if not entry.is_file():
+                        continue
+                except OSError:
+                    continue
+                if Path(entry.name).suffix not in LANGUAGES:
+                    continue
+                found.append((child_parts, entry.path, entry.is_symlink()))
+        found.sort(key=lambda item: item[0])
+        for child_parts, abs_path, is_link in found:
+            if is_link:
+                try:
+                    rel = Path(abs_path).resolve().relative_to(
+                        root_real).as_posix()
+                except (ValueError, OSError, RuntimeError):
+                    continue
+            elif prefix is None:
+                continue
+            else:
+                rel = "/".join(prefix + child_parts)
             if _skipped(rel):
                 continue
             try:
-                if p.stat().st_size > MAX_FILE_BYTES:
+                if os.stat(abs_path).st_size > MAX_FILE_BYTES:
                     continue
             except OSError:
                 continue

@@ -445,3 +445,79 @@ def test_pool_failure_falls_back_to_serial(tmp_path: Path,
     assert stats["parsed"] == len(files) and stats["failed"] == 0
     doc = json.loads(cache_path.read_text(encoding="utf-8"))
     assert set(doc["files"]) == set(files)
+
+
+SEARCH_BASE_COMMIT = "a6df57f0d4b594564d993495d6d38a1b1be3170f"
+
+
+def _load_module_at(commit: str, rel_path: str, directory: Path,
+                    module_name: str):
+    """A module as it existed at `commit`, imported under `module_name`."""
+    try:
+        source = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "show", f"{commit}:{rel_path}"],
+            capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip(f"commit {commit} is not available")
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f"{module_name}.py"
+    path.write_text(source, encoding="utf-8")
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _write_walk_fixture(root: Path) -> None:
+    def put(rel: str, text: str = "x = 1\n") -> None:
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+
+    put("pkg/a.py")
+    put("pkg/Upper.PY")
+    put("pkg/notes.txt")
+    put("pkg/sub/deep/b.rs", "fn b() {}\n")
+    put("pkg/sub/deep/z.py")
+    put("pkg/__pycache__/c.py")
+    put("pkg/build/d.py")
+    put("pkg/.hidden/e.py")
+    put("pkg/big.py", "x" * (2 * 1024 * 1024 + 1))
+    put("outside/x.py")
+    put("lib/lib1.py")
+    put("lib/lib2.py")
+    # Symlinks: a file pointing outside root, a file pointing inside root,
+    # a directory pointing inside root, and a dangling link.
+    os.symlink(root.parent / "outside" / "x.py", root / "pkg" / "escape.py")
+    os.symlink(root / "lib" / "lib1.py", root / "pkg" / "alias.py")
+    os.symlink(root / "lib", root / "pkg" / "linkdir")
+    os.symlink(root / "missing.py", root / "pkg" / "dangling.py")
+
+
+def test_source_files_matches_base_walk(tmp_path: Path, monkeypatch) -> None:
+    base = _load_module_at(SEARCH_BASE_COMMIT, "scripts/ocelot_repo_map.py",
+                           tmp_path / "base", "base_repo_map_a6")
+    root = tmp_path / "repo"
+    _write_walk_fixture(root)
+    for dirs in (("pkg", "lib"), (".",)):
+        monkeypatch.setattr(repo_map_module, "SOURCE_DIRS", dirs)
+        monkeypatch.setattr(base, "SOURCE_DIRS", dirs)
+        expected = base._source_files(root)
+        actual = repo_map_module._source_files(root)
+        assert actual == expected, dirs
+
+    monkeypatch.setattr(repo_map_module, "SOURCE_DIRS", ("pkg", "lib"))
+    files = repo_map_module._source_files(root)
+    assert "pkg/a.py" in files
+    assert "pkg/sub/deep/b.rs" in files
+    assert "pkg/sub/deep/z.py" in files
+    assert "lib/lib1.py" in files
+    # The alias resolves inside root, so it is listed under its target.
+    assert "lib/lib1.py" in files and "pkg/alias.py" not in files
+    assert "pkg/Upper.PY" not in files
+    assert "pkg/notes.txt" not in files
+    assert "pkg/big.py" not in files
+    assert "pkg/escape.py" not in files
+    assert "pkg/dangling.py" not in files
+    assert not any(f.startswith("pkg/linkdir/") for f in files)
+    assert not any("__pycache__" in f or "/build/" in f for f in files)

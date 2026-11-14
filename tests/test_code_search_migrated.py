@@ -5,9 +5,17 @@ repo-map PageRank by reciprocal rank fusion. No embeddings, network, or model.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
+import marshal
+import os
+import subprocess
 from pathlib import Path
 
+import pytest
+
+from scripts import ocelot_code_search as search_module
+from scripts import ocelot_repo_map as repo_map_module
 from scripts.ocelot_code_search import (
     BM25_B,
     BM25_K1,
@@ -16,6 +24,7 @@ from scripts.ocelot_code_search import (
     RRF_K,
     _competition_ranks,
     code_search,
+    search_side_cache_path,
 )
 
 
@@ -246,3 +255,192 @@ def test_bm25_defaults_and_configuration(tmp_path: Path) -> None:
     assert result["bm25"] == {"k1": 1.2, "b": 0.3}
     assert result["rrf_k"] == 10
     assert result["n"] >= 1
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+BASE_COMMIT = "a6df57f0d4b594564d993495d6d38a1b1be3170f"
+IDENTITY_QUERIES = ("alpha", "frobnicated retry", "needle", "widget compute",
+                    "gamma beta")
+
+
+def _load_base_search(directory: Path):
+    """code_search as it was at BASE_COMMIT, under its own module name."""
+    try:
+        source = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "show",
+             f"{BASE_COMMIT}:scripts/ocelot_code_search.py"],
+            capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip(f"base commit {BASE_COMMIT} is not available")
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / "base_ocelot_code_search.py"
+    path.write_text(source, encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("base_ocelot_code_search",
+                                                  path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _identity_fixture(root: Path) -> list[str]:
+    files = {}
+    for i in range(12):
+        body = (f"def widget_{i}_compute(x):\n"
+                f"    # widget compute step {i}\n"
+                f"    return helper_{i % 3}(x) + {i}\n")
+        files[f"mod{i:02d}.py"] = body
+    files["helpers.py"] = (
+        "def helper_0(x):\n    return x\n\n"
+        "def helper_1(x):\n    return alpha_fn(x)\n\n"
+        "def helper_2(x):\n    # needle in a comment\n    return x\n")
+    files["alpha.py"] = (
+        "def alpha_fn(x):\n"
+        '    """Frobnicated retry budget."""\n'
+        "    return x\n")
+    return _write(root, files)
+
+
+def _run_queries(module, root: Path, cache_path: Path,
+                 files: list[str]) -> list[dict]:
+    """Run every query with memos cleared, as separate sessions would."""
+    repo_map_module.clear_memos()
+    module._INDEX_CACHE.clear()
+    return [module.code_search(root, q, cache_path=cache_path, files=files)
+            for q in IDENTITY_QUERIES]
+
+
+def _side(cache_path: Path) -> Path:
+    return search_side_cache_path(cache_path)
+
+
+def test_search_matches_base_cold_warm_and_partially_stale(
+        tmp_path: Path) -> None:
+    base = _load_base_search(tmp_path / "base")
+    root = tmp_path / "repo"
+    files = _identity_fixture(root)
+    new_cache = root / "var" / "new_tags.json"
+    base_cache = root / "var" / "base_tags.json"
+
+    # Cold: no side file yet.
+    expected = _run_queries(base, root, base_cache, files)
+    actual = _run_queries(search_module, root, new_cache, files)
+    assert actual == expected
+    assert search_module.LAST_BUILD["side_cache"] == "absent"
+    assert _side(new_cache).exists()
+
+    # Warm: same tree, side file present, nothing tokenized.
+    repo_map_module.clear_memos()
+    search_module._INDEX_CACHE.clear()
+    warm = search_module.code_search(root, IDENTITY_QUERIES[0],
+                                     cache_path=new_cache, files=files)
+    assert search_module.LAST_BUILD["side_cache"] == "loaded"
+    assert search_module.LAST_BUILD["tokenized"] == 0
+    assert warm == expected[0]
+
+    # Partially stale: one file edited, the other side rows are reused.
+    (root / "helpers.py").write_text(
+        "def helper_0(x):\n    return x * 2\n\n"
+        "def helper_9(x):\n    return needle_extra(x)\n", encoding="utf-8")
+    expected = _run_queries(base, root, base_cache, files)
+    actual = _run_queries(search_module, root, new_cache, files)
+    assert actual == expected
+    assert search_module.LAST_BUILD["tokenized"] == 1
+    assert search_module.LAST_BUILD["reused"] == len(files) - 1
+
+
+def test_side_cache_version_key_and_corruption_are_ignored(
+        tmp_path: Path) -> None:
+    base = _load_base_search(tmp_path / "base")
+    root = tmp_path / "repo"
+    files = _identity_fixture(root)
+    cache = root / "var" / "tags.json"
+    expected = _run_queries(base, root, root / "var" / "base.json", files)
+    _run_queries(search_module, root, cache, files)
+    side = _side(cache)
+    good = marshal.loads(side.read_bytes())
+
+    cases = {
+        "version": {**good, "version": good["version"] + 1},
+        "key": {**good, "key": "0" * 64},
+    }
+    for name, doc in cases.items():
+        side.write_bytes(marshal.dumps(doc))
+        actual = _run_queries(search_module, root, cache, files)
+        assert actual == expected, name
+        assert search_module.LAST_BUILD["side_cache"] == (
+            "ignored: version or key mismatch"), name
+        assert search_module.LAST_BUILD["tokenized"] == len(files), name
+        # The rebuild rewrote a valid side file.
+        assert marshal.loads(side.read_bytes())["key"] == good["key"]
+
+    side.write_bytes(b"\x00not marshal data\xff")
+    actual = _run_queries(search_module, root, cache, files)
+    assert actual == expected
+    assert search_module.LAST_BUILD["side_cache"] == "ignored: unreadable"
+    assert search_module.LAST_BUILD["tokenized"] == len(files)
+
+
+def test_parallel_tokenization_matches_serial(tmp_path: Path,
+                                              monkeypatch) -> None:
+    root = tmp_path / "repo"
+    files = _identity_fixture(root)
+    monkeypatch.setenv("OCELOT_INDEX_WORKERS", "1")
+    serial_cache = root / "var" / "serial.json"
+    serial = _run_queries(search_module, root, serial_cache, files)
+    assert search_module.LAST_BUILD["parallel"] == 1
+
+    monkeypatch.setattr(search_module, "SEARCH_PARALLEL_MIN_FILES", 1)
+    monkeypatch.setattr(search_module, "SEARCH_PARALLEL_CHUNK", 4)
+    monkeypatch.setenv("OCELOT_INDEX_WORKERS", "2")
+    parallel_cache = root / "var" / "parallel.json"
+    parallel = _run_queries(search_module, root, parallel_cache, files)
+    assert search_module.LAST_BUILD["parallel"] == 2
+    assert search_module.LAST_BUILD["tokenized"] == len(files)
+    assert parallel == serial
+    assert (search_module._load_side(_side(parallel_cache))
+            == search_module._load_side(_side(serial_cache)))
+
+
+def test_pool_failure_falls_back_to_serial_for_search(tmp_path: Path,
+                                                      monkeypatch) -> None:
+    root = tmp_path / "repo"
+    files = _identity_fixture(root)
+    serial = _run_queries(search_module, root, root / "var" / "s.json", files)
+    monkeypatch.setattr(search_module, "SEARCH_PARALLEL_MIN_FILES", 1)
+    monkeypatch.setenv("OCELOT_INDEX_WORKERS", "2")
+
+    class BrokenPool:
+        def __init__(self, *args, **kwargs):
+            raise OSError("no processes for you")
+
+    monkeypatch.setattr(search_module.concurrent.futures,
+                        "ProcessPoolExecutor", BrokenPool)
+    fallback = _run_queries(search_module, root, root / "var" / "f.json",
+                            files)
+    assert search_module.LAST_BUILD["parallel"].startswith("fallback: OSError")
+    assert fallback == serial
+
+
+def test_full_scan_prunes_side_rows_for_removed_files(tmp_path: Path,
+                                                      monkeypatch) -> None:
+    root = tmp_path / "repo"
+    files = _identity_fixture(root)
+    cache = root / "var" / "tags.json"
+    monkeypatch.setattr(repo_map_module, "SOURCE_DIRS", (".",))
+    search_module.code_search(root, "alpha", cache_path=cache)
+    assert "helpers.py" in search_module._load_side(_side(cache))
+
+    # A subset call keeps rows for files outside its subset.
+    repo_map_module.clear_memos()
+    search_module.code_search(root, "alpha", cache_path=cache,
+                              files=["alpha.py"])
+    assert "helpers.py" in search_module._load_side(_side(cache))
+
+    # A full scan drops rows for files that no longer exist.
+    (root / "helpers.py").unlink()
+    repo_map_module.clear_memos()
+    search_module.code_search(root, "alpha", cache_path=cache)
+    rows = search_module._load_side(_side(cache))
+    assert "helpers.py" not in rows
+    assert "alpha.py" in rows
+    assert search_module.LAST_BUILD["side_cache"] == "loaded"

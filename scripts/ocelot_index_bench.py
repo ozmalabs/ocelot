@@ -22,12 +22,14 @@ import argparse
 import json
 import os
 import statistics
+import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Any, Callable
 
-from scripts.ocelot_code_search import code_search
+from scripts import ocelot_code_search as search_module
+from scripts.ocelot_code_search import code_search, search_side_cache_path
 from scripts.ocelot_repo_map import ROOT, impact, repo_map, update_tag_cache
 
 DEFAULT_CACHE = Path("/tmp/ocelot_index_bench/tags.json")
@@ -51,7 +53,40 @@ TARGETS = {
     "code_search_warm_s": 0.5,
     "impact_warm_s": 0.3,
     "cold_index_s": 30.0,
+    "code_search_new_process_s": 10.0,
+    "code_search_cold_first_s": 40.0,
 }
+
+# Runs one code_search in a fresh interpreter. Arguments: code dir, search
+# root, tag cache, query. Prints one JSON line.
+_CHILD = """
+import json, sys, time
+sys.path.insert(0, sys.argv[1])
+from scripts import ocelot_code_search as m
+root, cache, query = sys.argv[2], sys.argv[3], sys.argv[4]
+start = time.perf_counter()
+result = m.code_search(root, query, cache_path=cache)
+seconds = time.perf_counter() - start
+print(json.dumps({"seconds": round(seconds, 3), "n": result["n"],
+                  "build": dict(m.LAST_BUILD)}, sort_keys=True))
+"""
+
+
+def _new_process_search(cache: Path, root: Path) -> dict[str, Any]:
+    """First code_search in a new interpreter, with the side cache present."""
+    side = search_side_cache_path(cache)
+    before = side.stat().st_size if side.exists() else None
+    code_dir = str(Path(__file__).resolve().parents[1])
+    proc = subprocess.run(
+        [sys.executable, "-c", _CHILD, code_dir, str(root), str(cache),
+         SEARCH_QUERIES[0]],
+        capture_output=True, text=True, cwd=code_dir)
+    if proc.returncode != 0:
+        return {"error": proc.stderr.strip()[-500:], "side_bytes_before": before}
+    row = json.loads(proc.stdout.strip().splitlines()[-1])
+    row["side_bytes_before"] = before
+    row["side_bytes_after"] = side.stat().st_size if side.exists() else None
+    return row
 
 
 def _timed(fn: Callable[[], Any]) -> tuple[float, Any]:
@@ -83,6 +118,9 @@ def _target(value: float | None, limit: float) -> dict[str, Any]:
 def run(root: Path, cache: Path, cold: bool) -> dict[str, Any]:
     if cold and cache.exists():
         cache.unlink()
+    side = search_side_cache_path(cache)
+    if cold and side.exists():
+        side.unlink()
     update_s, (_view, update_stats) = _timed(
         lambda: update_tag_cache(root, cache_path=cache))
     update = {
@@ -109,12 +147,17 @@ def run(root: Path, cache: Path, cold: bool) -> dict[str, Any]:
         search_rows[query] = _twice(
             lambda query=query: code_search(root, query, cache_path=cache),
             lambda r: {"results": r["n"]})
+    search_build = dict(search_module.LAST_BUILD)
+    first_search_s = search_rows[SEARCH_QUERIES[0]]["first_s"]
 
     impact_rows: dict[str, dict[str, Any]] = {}
     for rel in IMPACT_FILES:
         impact_rows[rel] = _twice(
             lambda rel=rel: impact(root, file=rel, cache_path=cache),
             lambda r: {"ok": r["ok"], "impacted": r.get("n")})
+
+    new_process = _new_process_search(cache, root)
+    side_bytes = side.stat().st_size if side.exists() else None
 
     repo_second = _median(repo_rows)
     search_second = _median(search_rows)
@@ -128,16 +171,30 @@ def run(root: Path, cache: Path, cold: bool) -> dict[str, Any]:
                        "target_s": TARGETS["cold_index_s"],
                        "met": None if cold_value is None
                        else cold_value <= TARGETS["cold_index_s"]},
+        "code_search_new_process": {
+            "seconds": new_process.get("seconds"),
+            "target_s": TARGETS["code_search_new_process_s"],
+            "met": None if new_process.get("seconds") is None
+            else new_process["seconds"] <= TARGETS["code_search_new_process_s"]},
+        "code_search_cold_first": {
+            "seconds": first_search_s if cold else None,
+            "target_s": TARGETS["code_search_cold_first_s"],
+            "met": None if not cold
+            else first_search_s <= TARGETS["code_search_cold_first_s"]},
     }
     return {
         "root": str(root),
         "cache": str(cache),
+        "side_cache": str(side),
+        "side_cache_bytes": side_bytes,
         "mode": "cold" if cold else "warm",
         "workers_env": os.environ.get("OCELOT_INDEX_WORKERS"),
         "cpu_count": os.cpu_count(),
         "update": update,
         "repo_map": repo_rows,
         "code_search": search_rows,
+        "code_search_build": search_build,
+        "first_search_new_process_warm_side_cache": new_process,
         "impact": impact_rows,
         "targets": targets,
     }
