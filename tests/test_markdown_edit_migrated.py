@@ -139,3 +139,36 @@ def test_refusals(tmp_path: Path) -> None:
             "file": "doc.md",
             "ops": [{"op": "replace_section", "section": "Alpha",
                      "text": "x"}]})
+
+
+# --------------------------------------------------------------------------- #
+# edit transaction: CRLF and encoding (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+def test_crlf_section_replace_and_append_match_lf_result(tmp_path: Path) -> None:
+    import re
+    lf_src = SOURCE
+    crlf_src = SOURCE.replace("\n", "\r\n")
+    (tmp_path / "crlf.md").write_bytes(crlf_src.encode("utf-8"))
+    (tmp_path / "lf.md").write_bytes(lf_src.encode("utf-8"))
+    ops = [
+        {"op": "replace_section_body", "section": "Alpha", "text": "New alpha."},
+        {"op": "append_to_section", "section": "Gamma", "text": "Appended."},
+    ]
+    r = apply_markdown_edit_script(tmp_path, {"file": "crlf.md", "ops": ops},
+                                   write=True)
+    apply_markdown_edit_script(tmp_path, {"file": "lf.md", "ops": ops}, write=True)
+    data = (tmp_path / "crlf.md").read_bytes()
+    assert r["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == (tmp_path / "lf.md").read_text(
+        encoding="utf-8").replace("\n", "\r\n")
+    assert "Appended.\r\n" in data.decode("utf-8")
+
+
+def test_latin1_markdown_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    import pytest
+    from scripts.ocelot_code_edit import CodeEditError
+    (tmp_path / "doc.md").write_bytes(b"# T\n\xe9\n")
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        apply_markdown_edit_script(tmp_path, {"file": "doc.md", "ops": [
+            {"op": "replace_section_body", "section": "T", "text": "x"}]})

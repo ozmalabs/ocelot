@@ -574,3 +574,56 @@ def test_tree_sitter_backend_when_available(tmp_path: Path) -> None:
     assert result["lossless"]["reparse"]["checked"] is True
     assert result["lossless"]["reparse"]["ok"] is True
     assert "+    let x = 2;" in result["diff_view"]
+
+
+# --------------------------------------------------------------------------- #
+# edit transaction: CRLF, encoding and E13 (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+def _crlf_tree(node: dict) -> dict:
+    """The same synthetic tree with every leaf's line ends turned into CRLF."""
+    if "children" in node:
+        return {**node, "children": [_crlf_tree(c) for c in node["children"]]}
+    return {**node, "text": node["text"].replace("\n", "\r\n")}
+
+
+def test_crlf_rust_replace_node_matches_lf_result_and_stays_crlf(tmp_path: Path) -> None:
+    import re
+    lf_graph = cst_graph_from_nested(_rust_tree())
+    crlf_graph = cst_graph_from_nested(_crlf_tree(_rust_tree()))
+    (tmp_path / "lf_lib.rs").write_text(lf_graph.render(), encoding="utf-8")
+    (tmp_path / "crlf_lib.rs").write_bytes(crlf_graph.render().encode("utf-8"))
+    ops = [{"op": "replace_node", "path": INT_X, "text": "41"}]
+    r = _apply(tmp_path, crlf_graph, ops, write=True, file="crlf_lib.rs")
+    _apply(tmp_path, lf_graph, ops, write=True, file="lf_lib.rs")
+    data = (tmp_path / "crlf_lib.rs").read_bytes()
+    assert r["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == (tmp_path / "lf_lib.rs").read_text(
+        encoding="utf-8").replace("\n", "\r\n")
+
+
+def test_write_is_refused_when_reparse_is_unchecked(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import scripts.ocelot_cst_edit as cst_mod
+    monkeypatch.setattr(cst_mod, "_reparse_status", lambda source, language: {
+        "checked": False, "ok": None, "reason": "forced for test"})
+    path = _fixture(tmp_path)
+    graph = cst_graph_from_nested(_rust_tree())
+    ops = [{"op": "replace_node", "path": INT_X, "text": "41"}]
+    before = path.read_bytes()
+
+    preview = _apply(tmp_path, graph, ops, write=False)
+    assert preview["ok"] is True and preview["applied"] is False
+    assert preview["lossless"]["reparse"]["checked"] is False
+    assert path.read_bytes() == before
+
+    with pytest.raises(CodeEditError, match="cannot validate the edited source"):
+        _apply(tmp_path, graph, ops, write=True)
+    assert path.read_bytes() == before
+
+
+def test_latin1_rust_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    (tmp_path / "lib.rs").write_bytes(b"fn main() {}\n// \xe9\n")
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        _apply(tmp_path, cst_graph_from_nested(_rust_tree()), [
+            {"op": "replace_span", "start": 0, "end": 0, "text": ""}])

@@ -60,10 +60,7 @@ from __future__ import annotations
 
 import ast
 import difflib
-import os
 import re
-import shutil
-import time
 import tokenize
 from dataclasses import dataclass
 from functools import lru_cache
@@ -81,11 +78,22 @@ from scripts.ocelot_code_edit import (
     _line_offsets,
     _offset,
     ast_node_table,
-    sha256_text,
 )
-from scripts.ocelot_lossless import LosslessError, LosslessText
+from scripts.ocelot_edit_txn import (
+    SourceFile,
+    check_base,
+    detect_newline,
+    encode_text,
+    normalize_newlines,
+    read_source,
+    sha256_bytes,
+    write_source,
+)
+from scripts.ocelot_lossless import LosslessError, LosslessText, python_roundtrip
 
 __all__ = ["apply_ir_edit_script", "fallback_check", "SUPPORTED_OPS"]
+
+_NEWLINE_NAMES = {"\n": "lf", "\r\n": "crlf", "\r": "cr"}
 
 SUPPORTED_OPS = ("replace_expression_ir", "replace_body_ir",
                  "replace_function_ir", "fallback_check")
@@ -597,6 +605,7 @@ def _plan_expression(source: str, tree: ast.AST, table: Dict[str, Any],
     text, blockers = _render_expression(sub, term)
     if blockers:
         return [], blockers
+    text = normalize_newlines(text, detect_newline(source))
     change = {
         "op": "replace_expression_ir",
         "target": path,
@@ -625,7 +634,7 @@ def _plan_body(source: str, tree: ast.AST, table: Dict[str, Any], sub,
     if blockers:
         return [], blockers
     start, end, prefix = _body_edit_span(source, offsets, node)
-    text = prefix + rendered + "\n"
+    text = normalize_newlines(prefix + rendered + "\n", detect_newline(source))
     change = {
         "op": "replace_body_ir",
         "target": path,
@@ -678,8 +687,9 @@ def _plan_function(source: str, tree: ast.AST, table: Dict[str, Any], sub,
     start = offsets[node.lineno - 1]          # def line: decorators stay put
     end = _line_end_offset(offsets, int(getattr(node, "end_lineno",
                                                node.lineno)), len(source))
-    text = (f"{indent}def {node.name}({signature}){return_suffix}:\n"
-            f"{rendered}\n")
+    text = normalize_newlines(
+        f"{indent}def {node.name}({signature}){return_suffix}:\n"
+        f"{rendered}\n", detect_newline(source))
     change = {
         "op": "replace_function_ir",
         "target": path,
@@ -742,6 +752,7 @@ def _apply_lossless(source: str, edits: List[_Edit]) -> Tuple[str, dict]:
         raise CodeEditError(f"source cannot round-trip through the lossless "
                             f"CST: {e}") from e
     ordered = sorted(edits, key=lambda e: (e.start, e.end))
+    roundtrip = doc.render() == source
     previous_end = -1
     for edit in ordered:
         if edit.start < previous_end:
@@ -774,7 +785,7 @@ def _apply_lossless(source: str, edits: List[_Edit]) -> Tuple[str, dict]:
                             "target span")
     return new_source, {
         "python_cst": True,
-        "roundtrip": True,
+        "roundtrip": roundtrip,
         "outside_spans_unchanged": True,
         "spans": [[e.start, e.end] for e in ordered],
         "leaves": len(doc.leaves),
@@ -810,11 +821,13 @@ def _verify_structure(new_source: str, edits: List[_Edit], *,
 # --------------------------------------------------------------------------- #
 #  Result contract.
 # --------------------------------------------------------------------------- #
-def _base_result(file: str, source: str, base_sha: str, ops: List[dict],
+def _base_result(file: str, src: SourceFile, ops: List[dict],
                  *, ok: bool, new_source: str, applied: bool,
                  changes: List[dict], blockers: List[str],
                  backup: Optional[str], lossless: dict,
                  diff_view: str = "") -> Dict[str, Any]:
+    source = src.text
+    new_sha = sha256_bytes(encode_text(src, new_source))
     return {
         "ok": ok,
         "file": file,
@@ -822,29 +835,32 @@ def _base_result(file: str, source: str, base_sha: str, ops: List[dict],
         "format": "python",
         "engine": "hub_ir",
         "renderer": "domains.render_python",
-        "base_sha256": base_sha,
-        "new_sha256": sha256_text(new_source),
-        "before": {"lines": len(source.splitlines()), "sha256": base_sha},
+        "base_sha256": src.sha256,
+        "new_sha256": new_sha,
+        "before": {"lines": len(source.splitlines()), "sha256": src.sha256},
         "after": {"lines": len(new_source.splitlines()),
-                  "sha256": sha256_text(new_source)},
+                  "sha256": new_sha},
         "ops": ops,
         "changes": changes,
         "diff_view": diff_view,
         "diff_note": DIFF_NOTE,
         "backup": backup,
+        "newline": _NEWLINE_NAMES[src.newline],
+        "bom": src.bom,
         "lossless": lossless,
         "graph_stale": bool(applied),
         "blockers": blockers,
     }
 
 
-def _refused_result(file: str, source: str, base_sha: str,
-                    ops: List[dict], blockers: List[str]) -> Dict[str, Any]:
+def _refused_result(file: str, src: SourceFile, ops: List[dict],
+                    blockers: List[str]) -> Dict[str, Any]:
     return _base_result(
-        file, source, base_sha, ops,
-        ok=False, new_source=source, applied=False, changes=[],
+        file, src, ops,
+        ok=False, new_source=src.text, applied=False, changes=[],
         blockers=_dedupe(blockers), backup=None,
-        lossless={"python_cst": True, "roundtrip": True,
+        lossless={"python_cst": True,
+                  "roundtrip": python_roundtrip(src.text),
                   "outside_spans_unchanged": True, "spans": []},
         diff_view="")
 
@@ -969,7 +985,8 @@ def fallback_check(root: str | Path, script: Dict[str, Any]) -> Dict[str, Any]:
             "{'op': 'fallback_check', ...} op")
 
     root = Path(root).resolve()
-    file, path, source, base_sha = _load_python_file(root, script)
+    file, path, src = _load_python_file(root, script)
+    source = src.text
     tree, table = _parse_source(source)
     sub = _new_render_substrate()
     op = ops[0]
@@ -983,7 +1000,7 @@ def fallback_check(root: str | Path, script: Dict[str, Any]) -> Dict[str, Any]:
     blockers = _dedupe(blockers)
     ok = not blockers
     result = _base_result(
-        file, source, base_sha, ops,
+        file, src, ops,
         ok=ok, new_source=source, applied=False,
         changes=[{"op": "fallback_check",
                   "target": _normalise_target(
@@ -991,7 +1008,8 @@ def fallback_check(root: str | Path, script: Dict[str, Any]) -> Dict[str, Any]:
                   "summary": "IR-renderable" if ok else
                              "not IR-renderable; use the CST fallback"}],
         blockers=blockers, backup=None,
-        lossless={"python_cst": True, "roundtrip": True,
+        lossless={"python_cst": True,
+                  "roundtrip": python_roundtrip(source),
                   "outside_spans_unchanged": True, "spans": []},
         diff_view="")
     result.update({
@@ -1009,7 +1027,7 @@ def fallback_check(root: str | Path, script: Dict[str, Any]) -> Dict[str, Any]:
 #  Public entry point.
 # --------------------------------------------------------------------------- #
 def _load_python_file(root: Path, script: Dict[str, Any]) -> Tuple[
-        str, Path, str, str]:
+        str, Path, SourceFile]:
     file = str(script.get("file") or "").strip()
     if not file:
         raise CodeEditError("edit script needs file")
@@ -1021,23 +1039,10 @@ def _load_python_file(root: Path, script: Dict[str, Any]) -> Tuple[
     if path.suffix != ".py":
         raise CodeEditError("v0 IR edits are Python (.py) only; Rust/Lua use "
                             "the CST adapter and hub-IR readers")
-    if not path.is_file():
-        raise CodeEditError(f"no such file: {file}")
-    if path.stat().st_size > MAX_SOURCE_BYTES:
-        raise CodeEditError(f"file exceeds {MAX_SOURCE_BYTES} bytes")
-    # Read the exact bytes: a CRLF/trivia-preserving splice must not be
-    # normalised by text-mode newline translation.
-    try:
-        source = path.read_bytes().decode("utf-8")
-    except UnicodeDecodeError as e:
-        raise CodeEditError(f"file is not valid UTF-8: {e}") from e
-    base_sha = sha256_text(source)
-    expected = script.get("base_sha256")
-    if expected and str(expected) != base_sha:
-        raise CodeEditError(
-            f"stale base: file sha256 is {base_sha}, script expected "
-            f"{expected}")
-    return file, path, source, base_sha
+    src = read_source(root, file, suffixes=(".py",),
+                      max_bytes=MAX_SOURCE_BYTES, error_cls=CodeEditError)
+    check_base(src, script.get("base_sha256"), CodeEditError)
+    return file, path, src
 
 
 def _parse_source(source: str) -> Tuple[ast.AST, Dict[str, Any]]:
@@ -1046,27 +1051,6 @@ def _parse_source(source: str) -> Tuple[ast.AST, Dict[str, Any]]:
     except SyntaxError as e:
         raise CodeEditError(f"source does not parse: {e}") from e
     return tree, ast_node_table(source)
-
-
-def _write_atomic(root: Path, path: Path, new_source: str,
-                  base_sha: str) -> str:
-    backup_dir = root / "var" / "ocelot_dev_edits" / "backups"
-    backup_dir.mkdir(parents=True, exist_ok=True)
-    backup = backup_dir / (
-        f"{time.strftime('%Y%m%d-%H%M%S')}_{base_sha[:12]}_{path.name}")
-    shutil.copy2(path, backup)
-    tmp = path.with_name(path.name + ".ocelot_tmp")
-    tmp.write_bytes(new_source.encode("utf-8"))
-    try:
-        os.chmod(tmp, path.stat().st_mode)
-        os.replace(tmp, path)
-    finally:
-        if tmp.exists():
-            try:
-                tmp.unlink()
-            except OSError:
-                pass
-    return str(backup)
 
 
 def apply_ir_edit_script(root: str | Path, script: Dict[str, Any], *,
@@ -1100,11 +1084,12 @@ def apply_ir_edit_script(root: str | Path, script: Dict[str, Any], *,
         return fallback_check(root, script)
 
     root = Path(root).resolve()
-    file, path, source, base_sha = _load_python_file(root, script)
+    file, path, src = _load_python_file(root, script)
+    source = src.text
     tree, table = _parse_source(source)
     edits, blockers = _plan_ops(source, tree, table, ops)
     if blockers:
-        return _refused_result(file, source, base_sha, ops, blockers)
+        return _refused_result(file, src, ops, blockers)
 
     new_source, lossless = _apply_lossless(source, edits)
     _verify_structure(new_source, edits, name=str(path))
@@ -1117,11 +1102,11 @@ def apply_ir_edit_script(root: str | Path, script: Dict[str, Any], *,
     applied = False
     backup = None
     if write:
-        backup = _write_atomic(root, path, new_source, base_sha)
+        backup = write_source(root, src, new_source, error_cls=CodeEditError)
         applied = True
 
     return _base_result(
-        file, source, base_sha, ops,
+        file, src, ops,
         ok=True, new_source=new_source, applied=applied,
         changes=[e.change for e in sorted(edits, key=lambda e: e.start)],
         blockers=[], backup=backup, lossless=lossless,

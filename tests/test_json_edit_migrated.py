@@ -143,3 +143,45 @@ def test_refusals(tmp_path: Path) -> None:
         apply_json_edit_script(tmp_path, {
             "file": "seeds/demo.json",
             "ops": [{"op": "set", "path": ["missing"], "value": 1}]})
+
+
+# --------------------------------------------------------------------------- #
+# edit transaction: CRLF, BOM and encoding (dt-w1a-edit-txn)
+# --------------------------------------------------------------------------- #
+def test_crlf_set_and_merge_match_lf_result_and_stay_crlf(tmp_path: Path) -> None:
+    import re
+    crlf_src = SOURCE.replace("\n", "\r\n")
+    (tmp_path / "crlf.json").write_bytes(crlf_src.encode("utf-8"))
+    (tmp_path / "lf.json").write_bytes(SOURCE.encode("utf-8"))
+    ops = [
+        {"op": "set", "path": ["version"], "value": "2.0.0"},
+        {"op": "merge", "path": ["nodes", 1, "attrs"], "value": {"tag": "b"}},
+    ]
+    r = apply_json_edit_script(tmp_path, {"file": "crlf.json", "ops": ops},
+                               write=True)
+    apply_json_edit_script(tmp_path, {"file": "lf.json", "ops": ops}, write=True)
+    data = (tmp_path / "crlf.json").read_bytes()
+    assert r["newline"] == "crlf"
+    assert re.search(rb"(?<!\r)\n", data) is None
+    assert data.decode("utf-8") == (tmp_path / "lf.json").read_text(
+        encoding="utf-8").replace("\n", "\r\n")
+    assert '"tag": "b"' in data.decode("utf-8")
+
+
+def test_bom_json_keeps_bom_and_edits(tmp_path: Path) -> None:
+    p = tmp_path / "demo.json"
+    p.write_bytes(b"\xef\xbb\xbf" + SOURCE.encode("utf-8"))
+    r = apply_json_edit_script(tmp_path, {"file": "demo.json", "ops": [
+        {"op": "set", "path": ["version"], "value": "2.0.0"}]}, write=True)
+    assert r["bom"] is True
+    data = p.read_bytes()
+    assert data.startswith(b"\xef\xbb\xbf")
+    assert '"version": "2.0.0"' in data[3:].decode("utf-8")
+
+
+def test_latin1_json_is_refused_with_utf8_message(tmp_path: Path) -> None:
+    from scripts.ocelot_code_edit import CodeEditError
+    (tmp_path / "demo.json").write_bytes(b'{"id": "\xe9"}\n')
+    with pytest.raises(CodeEditError, match="not valid UTF-8"):
+        apply_json_edit_script(tmp_path, {"file": "demo.json", "ops": [
+            {"op": "set", "path": ["id"], "value": "x"}]})

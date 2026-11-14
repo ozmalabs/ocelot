@@ -32,10 +32,7 @@ Markdown; the editor validates fence parity and section structure, not prose.
 from __future__ import annotations
 
 import difflib
-import os
 import re
-import shutil
-import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -44,8 +41,18 @@ from scripts.ocelot_code_edit import (
     CodeEditError,
     FORBIDDEN_SCRIPT_KEYS,
     MAX_SOURCE_BYTES,
-    sha256_text,
 )
+from scripts.ocelot_edit_txn import (
+    check_base,
+    encode_text,
+    normalize_newlines,
+    read_source,
+    sha256_bytes,
+    write_source,
+)
+from scripts.ocelot_lossless import LosslessText
+
+_NEWLINE_NAMES = {"\n": "lf", "\r\n": "crlf", "\r": "cr"}
 
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 _FENCE_RE = re.compile(r"^\s*(```|~~~)")
@@ -192,7 +199,8 @@ def _section_block(level: int, title: str, body: str) -> str:
     return f"{'#' * max(1, min(6, int(level)))} {title}\n\n{body}\n\n"
 
 
-def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+def _apply_ops(source: str, ops: list[dict[str, Any]],
+               newline: str = "\n") -> tuple[str, list[dict[str, Any]]]:
     edits: list[tuple[int, int, str, dict[str, Any]]] = []
     changes: list[dict[str, Any]] = []
 
@@ -289,7 +297,7 @@ def _apply_ops(source: str, ops: list[dict[str, Any]]) -> tuple[str, list[dict[s
     from scripts.ocelot_lossless import LosslessText
     doc = LosslessText.from_lines(source)
     for start, end, text, _op in edits:
-        doc.replace(start, end, text)
+        doc.replace(start, end, normalize_newlines(text, newline))
     return doc.render(), changes
 
 
@@ -313,28 +321,22 @@ def apply_markdown_edit_script(root: str | Path, script: dict[str, Any], *,
         raise CodeEditError("file escapes the repo root") from e
     if path.suffix.lower() not in (".md", ".markdown"):
         raise CodeEditError("markdown adapter only handles .md/.markdown")
-    if not path.is_file():
-        raise CodeEditError(f"no such file: {file}")
-    if path.stat().st_size > MAX_SOURCE_BYTES:
-        raise CodeEditError(f"file exceeds {MAX_SOURCE_BYTES} bytes")
-
-    source = path.read_text(encoding="utf-8")
-    base_sha = sha256_text(source)
-    expected = script.get("base_sha256")
-    if expected and str(expected) != base_sha:
-        raise CodeEditError(
-            f"stale base: file sha256 is {base_sha}, script expected {expected}")
+    src = read_source(root, file, suffixes=(".md", ".markdown"),
+                      max_bytes=MAX_SOURCE_BYTES, error_cls=CodeEditError)
+    source = src.text
+    base_sha = src.sha256
+    check_base(src, script.get("base_sha256"), CodeEditError)
     ops = script.get("ops")
     if not isinstance(ops, list) or not ops:
         raise CodeEditError("edit script needs a non-empty ops list")
 
-    new_source, changes = _apply_ops(source, ops)
+    new_source, changes = _apply_ops(source, ops, newline=src.newline)
     # Markdown is permissive, but an unclosed fence is a structural break.
     fences = sum(1 for line in new_source.splitlines()
                  if _FENCE_RE.match(line))
     if fences % 2:
         raise CodeEditError("edit would leave an unclosed fenced code block")
-    new_sha = sha256_text(new_source)
+    new_sha = sha256_bytes(encode_text(src, new_source))
 
     diff_lines = list(difflib.unified_diff(
         source.splitlines(keepends=True),
@@ -344,22 +346,7 @@ def apply_markdown_edit_script(root: str | Path, script: dict[str, Any], *,
     applied = False
     backup = None
     if write:
-        backup_dir = root / "var" / "ocelot_dev_edits" / "backups"
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        backup = backup_dir / (
-            f"{time.strftime('%Y%m%d-%H%M%S')}_{base_sha[:12]}_{path.name}")
-        shutil.copy2(path, backup)
-        tmp = path.with_name(path.name + ".ocelot_tmp")
-        tmp.write_text(new_source, encoding="utf-8")
-        try:
-            os.chmod(tmp, path.stat().st_mode)
-            os.replace(tmp, path)
-        finally:
-            if tmp.exists():
-                try:
-                    tmp.unlink()
-                except OSError:
-                    pass
+        backup = write_source(root, src, new_source, error_cls=CodeEditError)
         applied = True
 
     return {
@@ -377,6 +364,11 @@ def apply_markdown_edit_script(root: str | Path, script: dict[str, Any], *,
         "diff_note": ("a unified diff is a rendered view for humans; the "
                       "canonical record is the op list above"),
         "backup": str(backup) if backup else None,
-        "lossless": {"line_leaves": True, "roundtrip": True},
+        "newline": _NEWLINE_NAMES[src.newline],
+        "bom": src.bom,
+        "lossless": {
+            "line_leaves": True,
+            "roundtrip": LosslessText.from_lines(source).render() == source,
+        },
         "graph_stale": bool(applied),
     }
