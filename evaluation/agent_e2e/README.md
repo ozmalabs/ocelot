@@ -23,4 +23,14 @@ Live drivers (`claude`, `opencode`) need `--live` and `OCELOT_AGENT_EVAL_LIVE=1`
 spend tokens. Do not run them without user approval. See the doc for the approved command.
 
 Each run writes worktrees under `/tmp/ocelot_agent_eval/<run>/work/` and removes them
-on exit. Logs stay in `/tmp/ocelot_agent_eval/<run>/logs/`.
+on exit. Only the harness's own worktree is removed; there is no repo-wide prune. If a
+removal is partial, the run record lists it under `cleanup_warnings`. Logs stay in
+`/tmp/ocelot_agent_eval/<run>/logs/`.
+
+The dev_memory arm builds its snapshot and tag cache before the driver starts. That
+time is recorded as `prep_s` and kept out of `wall_s`. Every driver and check runs in
+its own process group, and a timeout kills the whole group.
+
+Live drivers (`claude`, `opencode`) can move the shared git refs. `claude` denies the
+common ref-moving git commands. `opencode` has no restriction. See the doc for the
+residual risks before any live run.

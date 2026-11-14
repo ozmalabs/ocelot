@@ -218,3 +218,33 @@ def test_code_edit_refuses_lone_cr_file_instead_of_crashing(tmp_path: Path) -> N
     with pytest.raises(CodeEditError, match="lone CR"):
         apply_edit_script(tmp_path, {"file": "a.py", "ops": [
             {"op": "replace_body", "symbol": "f", "text": "y = 2"}]})
+
+
+# --------------------------------------------------------------------------- #
+# dt-w4-fixes-b (review 5): PEP 263 cookie check applies to Python only
+# --------------------------------------------------------------------------- #
+def test_cookie_text_in_markdown_heading_is_not_an_encoding_declaration(
+        tmp_path: Path) -> None:
+    (tmp_path / "doc.md").write_bytes(b"# Secure coding: rules\n\nBody.\n")
+    src = read_source(tmp_path, "doc.md", suffixes=(".md",), max_bytes=1024,
+                      error_cls=CodeEditError)
+    assert src.text.startswith("# Secure coding: rules")
+
+
+def test_cookie_like_line_in_json_is_not_an_encoding_declaration(
+        tmp_path: Path) -> None:
+    (tmp_path / "doc.json").write_bytes(b'{"note": "coding: x"}\n')
+    src = read_source(tmp_path, "doc.json", suffixes=(".json",), max_bytes=1024,
+                      error_cls=CodeEditError)
+    assert src.text == '{"note": "coding: x"}\n'
+    (tmp_path / "hash.json").write_bytes(b"# coding: x\n{}\n")
+    src = read_source(tmp_path, "hash.json", suffixes=(".json",), max_bytes=1024,
+                      error_cls=CodeEditError)
+    assert src.text == "# coding: x\n{}\n"
+
+
+def test_python_latin1_cookie_is_still_refused(tmp_path: Path) -> None:
+    (tmp_path / "a.pyi").write_bytes(b"# -*- coding: latin-1 -*-\nx: int\n")
+    with pytest.raises(CodeEditError, match="declares encoding"):
+        read_source(tmp_path, "a.pyi", suffixes=(".pyi",), max_bytes=1024,
+                    error_cls=CodeEditError)

@@ -30,6 +30,7 @@ from typing import Any
 _BOM = b"\xef\xbb\xbf"
 _CODING_RE = re.compile(r"^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)")
 _UTF8_NAMES = frozenset({"utf-8", "utf8", "utf-8-sig"})
+_PY_SUFFIXES = frozenset({".py", ".pyi"})
 _LONE_CR_RE = re.compile(r"\r(?!\n)")
 _BACKUP_ATTEMPTS = 5
 
@@ -113,7 +114,10 @@ def read_source(root: str | Path, file: str, *, suffixes: tuple[str, ...],
         raise error_cls(
             f"{rel} is not valid UTF-8 ({exc.reason} at byte {exc.start}); "
             f"the edit layer only writes UTF-8") from exc
-    _check_encoding_cookie(text, rel, error_cls)
+    # PEP 263 coding cookies only mean something for Python source. Matching
+    # them in Markdown or JSON refuses files such as "# Secure coding: rules".
+    if path.suffix.lower() in _PY_SUFFIXES:
+        _check_encoding_cookie(text, rel, error_cls)
     if _LONE_CR_RE.search(text):
         raise error_cls(
             f"{rel} contains lone CR characters; the edit layer supports LF and "

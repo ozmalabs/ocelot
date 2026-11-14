@@ -66,14 +66,16 @@ For each task and arm, `run_eval` does the following:
 1. Creates a detached worktree at `base` under `<run_root>/work/<task>-<arm>-r<n>`.
 2. Applies the break patch.
 3. Writes the arm's MCP config into the workdir, if the arm needs one.
-4. Snapshots the content hash of every modified, deleted or untracked file.
-5. Runs the driver with the prompt. The driver's `run` returns exit code, wall time,
+4. For dev_memory, runs prep (see Arms). Prep time is recorded as `prep_s`.
+5. Snapshots the content hash of every modified, deleted or untracked file.
+6. Runs the driver with the prompt. The driver's `run` returns exit code, wall time,
    tokens, cost, transcript and tool calls. Unknown values are `None`.
-6. Snapshots again. `files_changed` lists paths whose content hash changed in step 5.
+7. Snapshots again. `files_changed` lists paths whose content hash changed in step 6.
    The break itself does not count as an agent edit.
-7. Runs the check. `success` means the check passed.
-8. `localized` is true if any `expected_files` entry is in `files_changed`.
-9. Removes the worktree, unless `--keep`.
+8. Runs the check. `success` means the check passed.
+9. `localized` is true if any `expected_files` entry is in `files_changed`.
+10. Removes the worktree, unless `--keep`. Cleanup problems are listed in
+    `cleanup_warnings` on the run record.
 
 Logs (driver stdout and stderr, check output, transcripts, the dev-memory snapshot and
 journal) stay in `<run_root>/logs/`. Only worktrees are removed.
@@ -88,8 +90,8 @@ after the break.
 |---|---|---|
 | `noop` | Does nothing. Negative control. Expected success 0%. | no |
 | `fake` | Reverts the break with `git apply -R`. Expected success 100%. Checks the harness only. | no |
-| `claude` | `claude -p <prompt> --output-format json --permission-mode acceptEdits --no-session-persistence --allowedTools Read,Edit,Write,Glob,Grep,Bash`, run in the workdir. | **untested live** |
-| `opencode` | `opencode run --format json --auto <prompt>`, run in the workdir. | **untested live** |
+| `claude` | `claude -p <prompt> --output-format json --permission-mode acceptEdits --no-session-persistence --allowedTools Read,Edit,Write,Glob,Grep,Bash --disallowedTools "Bash(git commit:*),Bash(git push:*),Bash(git stash:*),Bash(git branch:*),Bash(git checkout:*),Bash(git switch:*),Bash(git reset:*),Bash(git rebase:*),Bash(git merge:*),Bash(git tag:*),Bash(git worktree:*)"`, run in the workdir. | **untested live** |
+| `opencode` | `opencode run --format json --auto <prompt>`, run in the workdir. No git restriction (see Shared refs). | **untested live** |
 
 Token and cost fields come from the Claude JSON output (`usage.input_tokens`,
 `usage.output_tokens`, `total_cost_usd`, `result`). Those names were confirmed in the
@@ -109,15 +111,73 @@ The `fake` and `noop` drivers ignore the arm. They do not start an MCP server.
 The refusal happens before any worktree is created. The CLI exits with status 2. The
 driver also checks the environment variable again when it runs.
 
+### Process groups and timeouts
+
+Every driver and check runs through `spawn_group`. The child starts in its own session
+(`start_new_session=True`), so its process group holds everything it starts: MCP
+servers, language servers, shell children. On timeout the harness sends SIGTERM to the
+group, waits up to 5 s for it to exit, and sends SIGKILL to the group. The run is
+recorded with `timed_out: true` and scores as a failure. Before this change only the
+direct child was killed, and an MCP server or sleeping child could keep running against
+a worktree that was about to be deleted.
+
+### Cleanup
+
+Worktrees are removed by `git worktree remove --force <path>`, and only for paths under
+`<run_root>/work`. The harness no longer runs a repo-wide `git worktree prune`. That
+prune also dropped the admin entry of any unrelated worktree whose directory was
+missing, for example one on an unmounted volume.
+
+If `git worktree remove --force` fails (for example, the worktree is locked), the
+harness deletes the directory. It then reads `<path>/.git` before deletion. If the
+admin directory it points to is under `<common git dir>/worktrees/`, the harness
+deletes only that directory. Each partial step is recorded in `cleanup_warnings`.
+
+### Shared refs and the git restriction
+
+Detached worktrees share refs, stash and the object store with the canonical checkout,
+so an agent that runs `git commit`, `git stash` or `git branch` changes the user's
+repository. The `claude` driver therefore passes `--disallowedTools` for these Bash
+patterns: `git commit`, `push`, `stash`, `branch`, `checkout`, `switch`, `reset`,
+`rebase`, `merge`, `tag` and `worktree`. Other Bash commands stay allowed.
+
+Residual risk for `claude`: the patterns match the start of a Bash command. A command
+such as `git -C <dir> commit`, `git --git-dir=... push`, `sh -c 'git commit'`, a full
+path to git, or a script that runs git can get past them. The restriction limits
+accidents. It is not a sandbox.
+
+Residual risk for `opencode`: the harness passes no tool restriction, and `--auto`
+allows every tool. An OpenCode agent can run any git command in the shared repository.
+Do not run the opencode driver on a repository with work you cannot afford to lose,
+until it has a sandbox or a tool policy.
+
 ## Arms
 
 | arm | configuration |
 |---|---|
 | `baseline` | No Ocelot MCP server. Claude Code runs with `--strict-mcp-config`, which ignores the user's MCP servers. OpenCode gets no override, so a user's global MCP servers can still load. This is a known gap for the OpenCode baseline. |
-| `dev_memory` | The workdir gets `.ocelot_agent_eval_mcp.json` (Claude Code, passed with `--mcp-config`) and `.ocelot_agent_eval_opencode.json` (OpenCode, selected with the `OPENCODE_CONFIG` environment variable). Both start `<python> -m scripts.ocelot_dev_memory_mcp` with `PYTHONPATH` and `OCELOT_DEV_ROOT` set to the workdir. The snapshot and journal go under the run's log directory, and `OCELOT_DEV_AUTOBUILD=1` builds the snapshot on first start. A smoke test on this tree (no model) answered `initialize` and listed 39 tools, after about 100 s of snapshot build. That build time is inside the session's wall time. |
+| `dev_memory` | The workdir gets `.ocelot_agent_eval_mcp.json` (Claude Code, passed with `--mcp-config`) and `.ocelot_agent_eval_opencode.json` (OpenCode, selected with the `OPENCODE_CONFIG` environment variable). Both start `<python> -m scripts.ocelot_dev_memory_mcp` with `PYTHONPATH` and `OCELOT_DEV_ROOT` set to the workdir. The snapshot and journal go under the run's log directory. `OCELOT_DEV_AUTOBUILD=0`, because the harness builds the snapshot before the driver starts (see Prep). |
 
 The two config files are untracked and are written before the snapshot. They are
 not counted as agent edits. The agent can still see them with `git status`.
+
+### Prep (dev_memory only, outside the timer)
+
+Before the driver starts, the dev_memory arm builds the dev-memory graph snapshot
+(`build_index`, written to the run's log directory) and warms the tag cache
+(`update_tag_cache`, written to `<workdir>/var/ocelot_dev_tags.json`). Both run in a
+subprocess with the run's Python and `PYTHONPATH=<workdir>`, so they describe the
+broken worktree. `var/` is gitignored, so the cache does not count as an agent edit.
+The change snapshot is taken after prep.
+
+Prep time is recorded as `prep_s` on each run and reported as "mean prep s" per arm.
+The driver's `wall_s` does not include it. The baseline arm has `prep_s = 0`.
+Before this change the snapshot build (about 100 s on this tree) ran inside the
+session's wall time, so dev_memory sessions were timed unfairly.
+
+Prep is not a gate. If it fails, the run records `prep_ok: false` and `prep_error`,
+the driver still runs, and the check still decides. The report counts "prep failures"
+per arm, so a broken index shows up as a result and is not hidden.
 
 ## Running
 

@@ -195,3 +195,13 @@ def test_merge_new_keys_keep_op_order(tmp_path: Path) -> None:
         {"op": "merge", "path": [], "value": {"b": 2, "c": 3}}]}, write=True)
     data = json.loads(p.read_text(encoding="utf-8"))
     assert list(data) == ["a", "b", "c"]
+
+
+def test_cookie_text_in_json_value_does_not_block_json_edit(tmp_path: Path) -> None:
+    # dt-w4-fixes-b review 5: the cookie check is Python-only.
+    (tmp_path / "demo.json").write_bytes(b'{"note": "coding: x", "id": "a"}\n')
+    r = apply_json_edit_script(tmp_path, {"file": "demo.json", "ops": [
+        {"op": "set", "path": ["id"], "value": "b"}]}, write=True)
+    assert r["applied"] is True
+    assert (tmp_path / "demo.json").read_text(encoding="utf-8") == (
+        '{"note": "coding: x", "id": "b"}\n')
