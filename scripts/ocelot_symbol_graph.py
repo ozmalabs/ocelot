@@ -36,7 +36,8 @@ from collections import OrderedDict, defaultdict
 from pathlib import Path
 from typing import Any
 
-from scripts.ocelot_repo_map import _GENERIC_IDENTS, ROOT, update_tag_cache
+from scripts.ocelot_repo_map import (
+    _GENERIC_IDENTS, ROOT, _graph_key, update_tag_cache)
 
 # A name with more global definitions than this is too ambiguous to link.
 MAX_NAME_CANDIDATES = 5
@@ -231,18 +232,21 @@ def build_symbol_graph(cache: dict[str, Any]) -> dict[str, Any]:
     """Symbol graph for a tag-cache view (``update_tag_cache`` output).
 
     Returns ``{root_hash, nodes, edges, stats}``. Results are memoised in
-    process by the view's ``root_hash`` (the last ``MEMO_SIZE`` graphs). A view
-    without a root_hash is built every time.
+    process by ``_graph_key`` (root_hash plus the per-file extractor
+    fingerprints, the same key the repo-map graph uses), for the last
+    ``MEMO_SIZE`` graphs. A view without a root_hash is built every time.
     """
     root_hash = cache.get("root_hash")
-    if root_hash is not None and root_hash in _GRAPH_MEMO:
-        _GRAPH_MEMO.move_to_end(root_hash)
-        return _GRAPH_MEMO[root_hash]
+    if root_hash is None:
+        return _build(cache)
+    key = _graph_key(cache)
+    if key in _GRAPH_MEMO:
+        _GRAPH_MEMO.move_to_end(key)
+        return _GRAPH_MEMO[key]
     graph = _build(cache)
-    if root_hash is not None:
-        _GRAPH_MEMO[root_hash] = graph
-        while len(_GRAPH_MEMO) > MEMO_SIZE:
-            _GRAPH_MEMO.popitem(last=False)
+    _GRAPH_MEMO[key] = graph
+    while len(_GRAPH_MEMO) > MEMO_SIZE:
+        _GRAPH_MEMO.popitem(last=False)
     return graph
 
 

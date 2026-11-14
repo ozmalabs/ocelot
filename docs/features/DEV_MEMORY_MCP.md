@@ -39,13 +39,29 @@ of the current tree (including `scripts/`) takes ~90 s and produces ~137k
 nodes / ~416k edges; `--no-scripts` roughly halves that. Options:
 
 ```bash
---root PATH          # another checkout
+--root PATH          # the tree to index (default: this repo)
 --out PATH           # another snapshot path
 --docs features|all|none
 --no-git             # skip the 200-commit history
 --no-scripts         # skip scripts/*.py
 --git-limit N
 ```
+
+Query commands (`search`, `context`, `edit`, `repo-map`, `symbol-callers`, and
+the rest) take `--root PATH` after the verb. It names the checkout the tools
+act on, and defaults to `OCELOT_DEV_ROOT` or this repo, as the MCP server does.
+`--dump` picks the snapshot. The two can differ: a snapshot records the root it
+was built from, but reads and writes go to `--root`. `build` keeps its own
+`--root`, which is the tree it indexes.
+
+Staleness: `staleness()` (shown in `brief`, `context` and `changed`) compares
+the snapshot with the checkout now. It is stale when the root differs, when
+`git rev-parse HEAD` moved, or when the working tree changed since the build.
+The working tree check is `tree_changed`: a sha256 over `git diff HEAD` and the
+names of untracked files under the indexed source dirs, recorded at build time
+as the `tree_digest` repo attribute. Snapshots without a digest are not judged
+on the tree. Limit: editing the content of an untracked file is not detected,
+only its appearance or removal.
 
 What is indexed:
 
@@ -213,7 +229,7 @@ Content-Length fallback for LSP-style clients).
 | `dev_diagnostics` | Push diagnostics for a file. |
 | `dev_hover` / `dev_document_symbols` | Type/docs and symbol hierarchy. |
 | `dev_ast` | Python AST paths + spans for generic node edits. |
-| `dev_edit` | Apply a semantic edit script (preview by default; an applied write returns LSP diagnostics for the file). |
+| `dev_edit` | Apply a semantic edit script (preview by default; `diagnostics=true` waits for LSP diagnostics after an applied write). |
 | `dev_seed` | Before editing a seed: version, deps, rules/concepts, tests, docs. |
 | `dev_rule` | Before editing a rule: its seed, file, and current body. |
 | `dev_tests` | Before/after a change: the scoped gate. |
@@ -334,7 +350,10 @@ See [`LSP_BRIDGE.md`](LSP_BRIDGE.md).
 `dev_symbol_resolve` answer symbol questions from the tag cache, using
 `scripts/ocelot_symbol_graph.py` (design and limits in
 [`SYMBOL_GRAPH.md`](SYMBOL_GRAPH.md)). The cache is `var/ocelot_dev_tags.json`
-in the process root and is refreshed on each call. The graph is syntactic: each
+in the process root and is refreshed on each call. Every index tool uses that
+cache: `dev_repo_map`, `dev_impact`, `dev_code_search`, `dev_architecture` and
+the `dev_symbol_*` tools all read `<process root>/var/ocelot_dev_tags.json`, not
+the cache of the checkout that holds the script. The graph is syntactic: each
 reference resolves locally, through a `from X import name` binding, or by a
 unique global name, and each edge carries a confidence. There is no type
 inference.
@@ -390,20 +409,33 @@ server did not confirm this", not "this is not a caller".
 
 ## Post-edit diagnostics
 
-`dev_edit` with `apply=true` now waits for the language server's push
-diagnostics for the edited file and returns them under `diagnostics`:
-`{"ok", "count", "errors", "warnings", "published", "items", "server"}`. Each
-item has its 0-based `line` and a 1-based `line1`; `items` holds the first 20.
-The LSP client sends `didChange` when the file's hash differs from the last
-hash it saw, so the diagnostics describe the new content. The journal `edit`
-entry stores the counts without `items`.
+Off by default. `dev_edit` with `apply=true` and `diagnostics=true` waits up to
+8 s for the language server's push diagnostics on the edited file and returns
+them under `diagnostics`:
+`{"ok", "verdict", "count", "errors", "warnings", "published", "items", "server"}`.
+Each item has its 0-based `line` and a 1-based `line1`; `items` holds the first
+20. The LSP client sends `didChange` when the file's hash differs from the last
+hash it saw, so the diagnostics describe the new content.
 
-- `diagnostics=false` skips the step: `{"skipped": "diagnostics=false"}`.
+`verdict` is one of:
+
+- `errors`: at least one severity-1 item.
+- `unknown`: nothing was published within the 8 s window. Nothing is known.
+- `clean`: published, with no items.
+- `warnings`: published, with only non-error items (severity 2 to 4).
+
+The journal `edit` entry is written before the wait, so a timeout or a stopped
+server cannot leave an applied edit unrecorded. It records
+`"diagnostics": "requested"` or `"skipped"`. It does not record the counts, and
+no later line is appended with them.
+
+- Not requested (the default): `{"skipped": "diagnostics=false"}`.
 - No language server: `{"skipped": "unavailable: ..."}`. The edit still applies.
 - A failed query: `{"error": "..."}`. The edit still applies.
 - Preview (`apply=false`) never runs diagnostics, and the key is absent.
-- `published: false` means the server sent nothing within 8 s, so the counts are
-  not evidence of a clean file.
+- `verdict: "unknown"` (`published: false`) is not evidence of a clean file.
+
+CLI: `edit --apply --diagnostics` requests the same wait.
 
 ## Lexical hybrid search
 
@@ -699,13 +731,17 @@ layer is honest: semantic targets in, lossless CST out, diff as a view.
   local-scope resolution only. `obj.method()` resolves by name, under the name
   rules. Dynamic dispatch, `getattr` and star re-exports are not followed. Tags are not extracted from a
   file that starts with a UTF-8 BOM (observed with tree-sitter), so such a file
-  has no symbols in the graph.
+  has no symbols in the graph. The tag cache is the exception for Python: since
+  tag schema v3 its stdlib AST path drops one leading BOM, so Python tags match
+  with or without it. The snapshot's own Python parse (`_python_parse`, which
+  makes the Symbol nodes) still rejects a BOM, so a BOM-prefixed Python file has
+  no Symbol nodes in the snapshot.
 - **Precise mode is only as complete as the language server.** See the note in
   *Symbol graph and precise mode*.
-- **No `symbol-impact` CLI for the symbol graph.** `python -m
-  scripts.ocelot_dev_memory symbol-impact` is the existing LSP call-impact verb.
-  Use the MCP tool `dev_symbol_graph_impact`, or `symbol-callers` / `symbol-callees`
-  on the CLI.
+- **Symbol graph CLI verbs.** `symbol-callers`, `symbol-callees`,
+  `symbol-graph-impact` and `symbol-resolve` run the syntactic graph. `python -m
+  scripts.ocelot_dev_memory symbol-impact` is the existing LSP call-impact verb,
+  not the symbol graph. The MCP tool is `dev_symbol_graph_impact`.
 - **No LLM in the server.** It is deterministic and offline. The LLM is the
   coding agent's business; this surface only gives it better input.
 - **No evaluation yet.** The next measurement is the A-vs-baseline ablation:

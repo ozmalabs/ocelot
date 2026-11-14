@@ -212,3 +212,55 @@ def test_initialize_negotiates_protocol_version(server) -> None:
                             "method": "initialize",
                             "params": {"protocolVersion": "1999-01-01"}})
     assert newest["result"]["protocolVersion"] == "2025-06-18"
+
+
+def _framed_replies(raw: bytes) -> list[Any]:
+    """Decode a stream that may mix newline and Content-Length replies."""
+    out: list[Any] = []
+    stream = io.BytesIO(raw)
+    while True:
+        line = stream.readline()
+        if not line:
+            break
+        if line.lower().startswith(b"content-length:"):
+            length = int(line.split(b":", 1)[1].strip())
+            assert stream.readline() in (b"\r\n", b"\n")
+            out.append(json.loads(stream.read(length).decode("utf-8")))
+        elif line.strip():
+            out.append(json.loads(line))
+    return out
+
+
+def _serve_framed(monkeypatch, server, payload: bytes) -> list[Any]:
+    stdout = io.BytesIO()
+    monkeypatch.setattr(sys, "stdin",
+                        SimpleNamespace(buffer=io.BytesIO(payload)))
+    monkeypatch.setattr(sys, "stdout", SimpleNamespace(buffer=stdout))
+    assert serve(server) == 0
+    return _framed_replies(stdout.getvalue())
+
+
+@pytest.mark.parametrize("length", [-1, 64 * 1024 * 1024 + 1])
+def test_out_of_range_content_length_is_parse_error_then_continues(
+        monkeypatch, server, length: int) -> None:
+    body = json.dumps({"jsonrpc": "2.0", "id": 5, "method": "ping"}).encode()
+    payload = (f"Content-Length: {length}\r\n\r\n".encode()
+               + body + b"\n" + PING)
+    replies = _serve_framed(monkeypatch, server, payload)
+    assert replies[0]["error"]["code"] == -32700
+    assert replies[0]["id"] is None
+    assert replies[-1]["id"] == 5 and "result" in replies[-1]
+
+
+def test_non_integer_content_length_is_parse_error(monkeypatch, server) -> None:
+    replies = _serve_framed(monkeypatch, server,
+                            b"Content-Length: nope\r\n\r\n")
+    assert replies[0]["error"]["code"] == -32700
+
+
+def test_dev_edit_diagnostics_defaults_to_off(server) -> None:
+    listed = server.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    tools = {t["name"]: t for t in listed["result"]["tools"]}
+    prop = tools["dev_edit"]["inputSchema"]["properties"]["diagnostics"]
+    assert prop["default"] is False
+    assert "diagnostics=true" in prop["description"]
