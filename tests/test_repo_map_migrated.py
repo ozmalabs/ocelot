@@ -6,6 +6,7 @@ render inside a token budget. The tag cache is content-hash incremental.
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -13,8 +14,11 @@ import sys
 import time
 from pathlib import Path
 
+import pytest
+
 from scripts import ocelot_repo_map as repo_map_module
 from scripts.ocelot_repo_map import (
+    clear_memos,
     extract_tags,
     impact,
     repo_map,
@@ -296,3 +300,148 @@ def test_pagerank_ranks_sum_to_one_with_dangling_node() -> None:
         ranks = repo_map_module.personalized_pagerank(graph, task=task)
         assert set(ranks) == {"a.py", "b.py", "c.py", "d.py"}
         assert abs(sum(ranks.values()) - 1.0) < 1e-9
+
+
+BASE_COMMIT = "f88fcfda"
+
+
+def _load_base_module(tmp_path: Path):
+    """The pre-W2-B repo_map module, read from git history and imported under
+    another name. It is the reference for output identity (gate 1a)."""
+    try:
+        source = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "show",
+             f"{BASE_COMMIT}:scripts/ocelot_repo_map.py"],
+            capture_output=True, text=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        pytest.skip(f"base commit {BASE_COMMIT} is not available")
+    path = tmp_path / "base_ocelot_repo_map.py"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(source, encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("base_ocelot_repo_map", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _without_timing(payload: dict) -> dict:
+    return {k: v for k, v in payload.items() if k != "cache"}
+
+
+def test_output_matches_base_implementation(tmp_path: Path) -> None:
+    base = _load_base_module(tmp_path / "base")
+    _write_graph_fixture(tmp_path)
+    _fixture(tmp_path)
+    files = sorted(p.name for p in tmp_path.glob("*.py"))
+    assert len(files) >= 10
+    clear_memos()
+    cases = [
+        {"task": "", "budget_tokens": 1500},
+        {"task": "shared compute widget job", "budget_tokens": 800},
+        {"task": "change alpha behavior", "budget_tokens": 300,
+         "focus_files": ["a.py"]},
+        {"task": "widget", "budget_tokens": 2000,
+         "focus_files": ["mod3.py"]},
+    ]
+    for i, kwargs in enumerate(cases):
+        expected = base.repo_map(tmp_path, cache_path=tmp_path / f"base_{i}.json",
+                                 files=files, **kwargs)
+        actual = repo_map(tmp_path, cache_path=tmp_path / f"new_{i}.json",
+                          files=files, **kwargs)
+        assert _without_timing(actual) == _without_timing(expected), kwargs
+    for i, (target, depth) in enumerate([("base.py", 1), ("base.py", 3),
+                                         ("a.py", 2), ("missing.py", 2)]):
+        expected = base.impact(tmp_path, file=target, depth=depth,
+                               cache_path=tmp_path / f"ibase_{i}.json",
+                               files=files)
+        actual = impact(tmp_path, file=target, depth=depth,
+                        cache_path=tmp_path / f"inew_{i}.json", files=files)
+        assert _without_timing(actual) == _without_timing(expected), target
+
+
+def test_graph_memo_reuses_until_content_changes(tmp_path: Path,
+                                                 monkeypatch) -> None:
+    _fixture(tmp_path)
+    clear_memos()
+    builds = {"n": 0}
+    real_build = repo_map_module.build_reference_graph
+
+    def counting_build(cache):
+        builds["n"] += 1
+        return real_build(cache)
+
+    monkeypatch.setattr(repo_map_module, "build_reference_graph",
+                        counting_build)
+    cache_path = tmp_path / "var" / "tags.json"
+    files = ["a.py", "b.py"]
+    first = repo_map(tmp_path, cache_path=cache_path, files=files)
+    assert builds["n"] == 1
+    second = repo_map(tmp_path, cache_path=cache_path, files=files)
+    assert builds["n"] == 1
+    assert second["files"] == first["files"]
+
+    (tmp_path / "a.py").write_text(
+        "def alpha(x):\n    return x + 1\n\n"
+        "def gamma_extra():\n    return alpha(3)\n", encoding="utf-8")
+    third = repo_map(tmp_path, cache_path=cache_path, files=files)
+    assert builds["n"] == 2
+    assert "gamma_extra" in third["markdown"]
+    impacted = impact(tmp_path, file="a.py", depth=2, cache_path=cache_path,
+                      files=files)
+    assert builds["n"] == 2
+    assert [x["path"] for x in impacted["impacted"]] == ["b.py"]
+
+
+def _strip_timing_fields(files: dict) -> dict:
+    return {rel: {k: v for k, v in entry.items()
+                  if k not in ("mtime_ns", "checked_ns")}
+            for rel, entry in files.items()}
+
+
+def test_parallel_cold_index_matches_serial(tmp_path: Path,
+                                            monkeypatch) -> None:
+    _write_graph_fixture(tmp_path)
+    _fixture(tmp_path)
+    files = sorted(p.name for p in tmp_path.glob("*.py"))
+    monkeypatch.setenv("OCELOT_INDEX_WORKERS", "1")
+    serial_path = tmp_path / "serial.json"
+    _cache, serial = update_tag_cache(tmp_path, cache_path=serial_path,
+                                      files=files)
+    assert serial["parallel"] == 1
+
+    monkeypatch.setattr(repo_map_module, "PARALLEL_MIN_FILES", 1)
+    monkeypatch.setenv("OCELOT_INDEX_WORKERS", "2")
+    parallel_path = tmp_path / "parallel.json"
+    _cache, parallel = update_tag_cache(tmp_path, cache_path=parallel_path,
+                                        files=files)
+    assert parallel["parallel"] == 2
+    assert parallel["parsed"] == serial["parsed"] == len(files)
+
+    serial_doc = json.loads(serial_path.read_text(encoding="utf-8"))
+    parallel_doc = json.loads(parallel_path.read_text(encoding="utf-8"))
+    assert serial_doc["root_hash"] == parallel_doc["root_hash"]
+    assert (_strip_timing_fields(serial_doc["files"])
+            == _strip_timing_fields(parallel_doc["files"]))
+
+
+def test_pool_failure_falls_back_to_serial(tmp_path: Path,
+                                           monkeypatch) -> None:
+    _write_graph_fixture(tmp_path)
+    _fixture(tmp_path)
+    files = sorted(p.name for p in tmp_path.glob("*.py"))
+    monkeypatch.setattr(repo_map_module, "PARALLEL_MIN_FILES", 1)
+    monkeypatch.setenv("OCELOT_INDEX_WORKERS", "2")
+
+    class BrokenPool:
+        def __init__(self, *args, **kwargs):
+            raise OSError("no processes for you")
+
+    monkeypatch.setattr(repo_map_module.concurrent.futures,
+                        "ProcessPoolExecutor", BrokenPool)
+    cache_path = tmp_path / "fallback.json"
+    _cache, stats = update_tag_cache(tmp_path, cache_path=cache_path,
+                                     files=files)
+    assert stats["parallel"].startswith("fallback: OSError")
+    assert stats["parsed"] == len(files) and stats["failed"] == 0
+    doc = json.loads(cache_path.read_text(encoding="utf-8"))
+    assert set(doc["files"]) == set(files)
