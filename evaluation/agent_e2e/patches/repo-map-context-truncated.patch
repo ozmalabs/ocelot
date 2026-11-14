@@ -1,0 +1,11 @@
+--- a/scripts/ocelot_repo_map_eval.py
++++ b/scripts/ocelot_repo_map_eval.py
+@@ -175,7 +175,7 @@
+             values.extend([attrs.get("path"), attrs.get("file")])
+         if isinstance(snippet, dict):
+             values.append(snippet.get("path"))
+-    return _unique(v for v in values if isinstance(v, str))
++    return _unique(v for v in values if isinstance(v, str))[:1]
+ 
+ 
+ def _score_files(expected: Iterable[str],
