@@ -42,7 +42,13 @@ IR_OPS = ("replace_expression_ir", "replace_body_ir", "replace_function_ir",
 
 
 def register(registry: Any) -> None:
-    registry.add_indexer(index_seeds)
+    # index_seeds reads seeds/*.json itself and depends on other files only
+    # through their `seeds/<id>.json` mentions.
+    try:
+        registry.add_indexer(index_seeds, watch=("seeds/*.json",),
+                             texts=_SEED_PATH_RE)
+    except TypeError:  # an ozagia without indexer inputs
+        registry.add_indexer(index_seeds)
     registry.add_mcp_tool(GRAPH_QUERY_TOOL, graph_query)
     registry.add_edit_engine("ir", IR_OPS, apply_ir_edit)
 
