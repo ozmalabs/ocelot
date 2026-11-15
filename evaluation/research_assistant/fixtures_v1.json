@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "fixture_set_id": "research-helper-pilot-v1",
+  "status": "pilot_only_burned_not_held_out",
+  "synthetic_material_notice": "All planted contradictions and hypothetical case facts below are synthetic, explicitly marked, and must never be represented as original research records.",
+  "source_snapshots": [
+    {"source_id":"ge_entry","repository":"ge","path":"notes/GRAPHIC_EQUALISATION_FOR_LLMS.md","sha256":"02b32dbd1e23456614584b2a54e673b71f5703c16bd4a8b08bfdfeff579deb27","locator":"§1 and §4","role":"theory overview and stated limits"},
+    {"source_id":"ocelot_science","repository":"ocelot","path":"docs/SCIENCE_RESEARCH.md","sha256":"99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec","locator":"§2 and §4.1","role":"prospective controls, independent unit, and null reporting guidance"},
+    {"source_id":"ocelot_native_graph","repository":"ocelot","path":"docs/research/psychology_affect/NATIVE_GRAPH_FIDELITY_RESULTS.md","sha256":"0a25aca9d9b90cd22fc81428c98254c9df0fc73867656a06c63dee84a23964ca","locator":"document-level locator","role":"non-GE Ocelot research example; reopen full document"}
+  ],
+  "tasks": [
+    {
+      "task_id":"finite_vs_universal",
+      "domain":"mathematical reasoning",
+      "coverage":["finite_check_vs_universal_claim","ge_repository","synthetic"],
+      "prompt":"[SYNTHETIC FIXTURE] A verifier checked every Boolean input in a domain of four variables and found a total single-valued extension. Does this establish that every residual CNF becomes easy to solve? State what the finite check supports and what remains open.",
+      "answer_key":{"acceptable":"The check establishes the specified property only for the enumerated four-variable domain and verifier semantics. It does not prove a universal claim or imply scalable/easy solving; complexity and broader cases remain untested.","required_points":["finite domain/bound named","no universal inference","no complexity/ease conclusion"],"counterevidence":[],"limitations":["finite enumeration is bounded","ease/complexity needs a separate definition and evidence"],"sources":["ge_entry"]},
+      "planted_evidence":{"synthetic":true,"text":"In this synthetic fixture only: an independently checked 4-variable instance has a total single-valued extension. No larger instances or runtime measures were checked."}
+    },
+    {
+      "task_id":"planted_contradiction",
+      "domain":"mathematical reasoning",
+      "coverage":["contradiction_to_broad_claim","ge_repository","synthetic"],
+      "prompt":"[SYNTHETIC FIXTURE] A note claims: 'A total single-valued Boolean extension always makes residual CNF easy.' The attached synthetic counterexample has a valid total extension but preserves a residual family whose stated solve cost grows exponentially with n under the specified solver. Assess the claim without generalizing beyond this fixture.",
+      "answer_key":{"acceptable":"The synthetic example contradicts the universal/ease claim as stated if its construction and cost statement hold. It does not establish a general lower bound for every solver or refute unrelated GE claims. Ask for independent verification of the construction and cost model.","required_points":["recognize contradiction to universal wording","bound conclusion to specified construction/solver","request or note independent verification"],"counterevidence":["synthetic residual family and solver cost assertion oppose the broad claim"],"limitations":["fixture is synthetic, not a published GE result","solver/model-specific cost does not imply universal complexity lower bound"],"sources":["ge_entry"]},
+      "planted_evidence":{"synthetic":true,"text":"SYNTHETIC COUNTEREXAMPLE: for this fixture's declared solver, the constructed family retains exponential solve cost despite a total extension. This is invented pilot material, not an original GE record."}
+    },
+    {
+      "task_id":"ocelot_failed_control",
+      "domain":"empirical research",
+      "coverage":["ocelot_failed_or_missing_control","ocelot_repository","synthetic"],
+      "prompt":"[SYNTHETIC FIXTURE] A hypothetical Ocelot report says the treatment reached 8/10 target episodes, but the negative control was never run and the positive control produced no response. What can be concluded, and what must happen before confirmatory interpretation?",
+      "answer_key":{"acceptable":"The result is exploratory/inconclusive for the treatment effect: the negative control is missing and the dead positive control means the instrument/arm may be nonresponsive. Preserve and report the observation and failures; repair/calibrate controls and prospectively preregister a new confirmatory run. Do not count episodes as independent runs unless the design supports that unit.","required_points":["missing negative control stated","dead positive control invalidates instrument gate","no confirmatory treatment conclusion","report failure/null and new prospective protocol"],"counterevidence":["positive control had no response"],"limitations":["synthetic scenario","n=10 episodes may not be independent experimental units"],"sources":["ocelot_science"]},
+      "planted_evidence":{"synthetic":true,"text":"Hypothetical fixture facts only: 8/10 target episodes, negative control absent, positive control response exactly zero."}
+    },
+    {
+      "task_id":"stale_or_unavailable_source",
+      "domain":"source provenance",
+      "coverage":["stale_source_or_unavailable_artifact","ge_repository","synthetic"],
+      "prompt":"[SYNTHETIC FIXTURE] A prior assistant cites `experiments/old-run/results.json` for a numeric result, but the file cannot be found and the cited source revision is unavailable. A theory overview discusses the framework's limits. Can the numeric result be repeated as established evidence?",
+      "answer_key":{"acceptable":"No. Preserve the historical citation as unavailable/stale and do not repeat its number as verified evidence. Reopen a fixed source revision or locate an independently verifiable artifact; the overview cannot substitute for the missing result. State the provenance gap.","required_points":["citation unavailable/stale identified","numeric result not treated as verified","request fixed revision/reopenable artifact","theory overview not substituted for empirical evidence"],"counterevidence":[],"limitations":["fixture intentionally names a nonexistent artifact","source snapshot can itself become stale after revision"],"sources":["ge_entry"]},
+      "planted_evidence":{"synthetic":true,"text":"SYNTHETIC provenance fault: the named result artifact is deliberately absent; there is no recoverable numeric value in the fixture."}
+    },
+    {
+      "task_id":"inapplicable_empirical_fields",
+      "domain":"qualitative analysis",
+      "coverage":["inapplicable_frame_field","non_ge_example","ocelot_repository"],
+      "prompt":"[SYNTHETIC FIXTURE] Using the Ocelot native-graph fidelity results document as an example of non-GE work, suppose the research question is a qualitative reading of its reported limitations, with no new experiment or run. Must the frame invent RNG seeds and a sample-size justification? What should it record instead?",
+      "answer_key":{"acceptable":"No. RNG and empirical sample-size fields are inapplicable to a qualitative document analysis with no new run. Record a reasoned not-applicable/exemption, identify the fixed source revision and scope, and distinguish what the document reports from the analyst's inference. If designing a new empirical test, applicable prospective requirements return.","required_points":["fields explicitly inapplicable with reason","fixed source/revision and bounded scope","reported result distinguished from inference","requirements return for a new empirical test"],"counterevidence":[],"limitations":["document analysis does not validate the underlying experiment","source snapshot/hash must be reopened"],"sources":["ocelot_native_graph","ocelot_science"]},
+      "planted_evidence":{"synthetic":true,"text":"The qualitative-analysis framing is hypothetical; the cited Ocelot document itself is a real source snapshot."}
+    }
+  ]
+}

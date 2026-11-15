@@ -1,0 +1,77 @@
+{
+  "grader_id": "g2",
+  "records": [
+    {
+      "blind_label": "B0001",
+      "task_id": "unavailable_stale_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Correctly distinguishes the unavailable artifact from reporting guidance.", "unsupported_assertions": "Makes no material unsupported claim or invented numeric assertion.", "contradiction_recall": "No counterevidence is keyed for this task.", "limitation_recall": "States missing artifact/revision and absence of a checkable number.", "citation_reopenability": "Cites the available guide at §§5 and 7.1; synthetic case is supplied in the prompt.", "citation_hash_match": "The cited science guide matches its pinned SHA-256.", "completion": "Directly answers whether to repeat the effect and gives provenance treatment."}
+    },
+    {
+      "blind_label": "B0002",
+      "task_id": "qualitative_non_ge_analysis",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 0, "limitation_recall": 1, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Accurately reports the 0.75-to-0.88 partial lift and its limited scope.", "unsupported_assertions": "Claims are framed as report claims and document-only analysis; no material invention.", "contradiction_recall": "Omits the keyed flat-to-declining same-prompt train-size sweep and undemonstrated data-diversity lever.", "limitation_recall": "Includes single-model/layer, prompt split, and untested transport, but omits the material train-size limitation.", "citation_reopenability": "Links to relevant report sections and guide sections that reopen at the stated ranges.", "citation_hash_match": "Both cited source files match their pinned hashes.", "completion": "Addresses finding, limitations, design-field applicability, records, and independent-verification boundary."}
+    },
+    {
+      "blind_label": "B0003",
+      "task_id": "finite_check_vs_proof",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Bounds the result to the specified formula and all 16 assignments, assuming checker/specification correctness.", "unsupported_assertions": "Does not add claims beyond the synthetic premise and scope guidance.", "contradiction_recall": "No counterevidence is keyed for this task.", "limitation_recall": "Explicitly rejects universal generalization and any runtime/ease inference.", "citation_reopenability": "Cites the supplied case record and guide section.", "citation_hash_match": "The cited science guide matches its pinned SHA-256; case evidence is supplied with the task.", "completion": "Answers both what follows and what does not."}
+    },
+    {
+      "blind_label": "B0004",
+      "task_id": "null_and_controls",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Correctly treats 7/12 as descriptive and explains the missing comparison and failed positive control.", "unsupported_assertions": "Follow-up recommendations are grounded in cited instrument and preregistration guidance.", "contradiction_recall": "Identifies the zero-response positive control as undermining arm viability and interpretation.", "limitation_recall": "Notes missing negative control, unknown independent-run count, and exploratory status.", "citation_reopenability": "Cites the guide's §3.1 and §2 by section links.", "citation_hash_match": "The cited science guide matches its pinned SHA-256.", "completion": "Gives current interpretation and a concrete prospective follow-up before a confirmatory claim."}
+    },
+    {
+      "blind_label": "B0005",
+      "task_id": "null_and_controls",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Accurately confines the observation and control interpretation to the synthetic scenario.", "unsupported_assertions": "Detailed recommendations track the cited research guide; no unsupported treatment-effect claim.", "contradiction_recall": "Explicitly emphasizes the silent positive control as counterevidence to a valid gate.", "limitation_recall": "Covers missing negative control, failed positive control, and episode/run dependence uncertainty.", "citation_reopenability": "Provides section-specific citations to the science guide.", "citation_hash_match": "The cited science guide matches its pinned SHA-256.", "completion": "Answers the present conclusion and specifies controls, preregistration, units, and reporting."}
+    },
+    {
+      "blind_label": "B0006",
+      "task_id": "unavailable_stale_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Correctly says the unavailable revision and absent value cannot substantiate the effect.", "unsupported_assertions": "Does not infer a numeric result or claim the effect is false.", "contradiction_recall": "No counterevidence is keyed for this task.", "limitation_recall": "States the provenance gap and distinguishes guide requirements from measurement validity.", "citation_reopenability": "Cites the available guide at §§5 and 7.1; case evidence is in the prompt.", "citation_hash_match": "The cited science guide matches its pinned SHA-256.", "completion": "Provides clear provenance treatment and recovery condition."}
+    },
+    {
+      "blind_label": "B0007",
+      "task_id": "unavailable_stale_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Accurately identifies the artifact and revision as unavailable and avoids validating the number.", "unsupported_assertions": "Explicitly says unavailability does not show the effect is false.", "contradiction_recall": "No counterevidence is keyed for this task.", "limitation_recall": "Names the provenance failure and distinguishes recovery from a new measurement.", "citation_reopenability": "Guide sections cited are available; synthetic evidence is supplied in the prompt.", "citation_hash_match": "The cited science guide matches its pinned SHA-256.", "completion": "Answers the verification question and gives appropriate record/withholding steps."}
+    },
+    {
+      "blind_label": "B0008",
+      "task_id": "finite_check_vs_proof",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Correctly states the finite instance result and rejects unsupported universal/ease claims.", "unsupported_assertions": "All assertions follow the synthetic case or are explicitly conditional next-evidence requirements.", "contradiction_recall": "No counterevidence is keyed for this task.", "limitation_recall": "Notes no other formulas and no runtime/cost evidence.", "citation_reopenability": "Cites the case statement and guide locator.", "citation_hash_match": "The cited science guide matches its pinned SHA-256; case evidence is supplied with the task.", "completion": "Directly addresses both the result and its limits."}
+    },
+    {
+      "blind_label": "B0009",
+      "task_id": "finite_check_vs_proof",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Correctly bounds totality and single-valuedness to the one checked formula.", "unsupported_assertions": "Does not overstate the result or add unsupported technical claims.", "contradiction_recall": "No counterevidence is keyed for this task.", "limitation_recall": "States the universal claim and easy-solving claim are not established due to absent broader instances and costs.", "citation_reopenability": "Cites the supplied case and the guide's §7.1 locator.", "citation_hash_match": "The cited science guide matches its pinned SHA-256; case evidence is supplied with the task.", "completion": "Fully answers the scope question."}
+    },
+    {
+      "blind_label": "B0010",
+      "task_id": "qualitative_non_ge_analysis",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Accurately reports the partial lift and distinguishes document claims from independent analysis.", "unsupported_assertions": "Carefully attributes train-size and data-diversity claims to the report.", "contradiction_recall": "Recalls the flat-to-declining train-size sweep and says diversity remains undemonstrated.", "limitation_recall": "Includes model/layer and prompt-scale bounds, untested transport, and the train-size caveat.", "citation_reopenability": "Names the relevant report sections and guide sections, all reopenable in the cited files.", "citation_hash_match": "Both material source files match their pinned hashes.", "completion": "Covers finding, limitation, N/A design fields, what to record, and verification boundary."}
+    },
+    {
+      "blind_label": "B0011",
+      "task_id": "null_and_controls",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Correctly treats 7/12 as descriptive and the control failure as invalidating confirmation.", "unsupported_assertions": "Guidance is accurately presented as prospective requirements, not as observed outcomes.", "contradiction_recall": "Explicitly identifies zero positive-control response as a dead-arm concern.", "limitation_recall": "Includes negative-control omission, unspecified independent runs, and required prospective safeguards.", "citation_reopenability": "Cites specific guide sections and subsections that reopen.", "citation_hash_match": "The cited science guide matches its pinned SHA-256.", "completion": "Fully addresses conclusion and confirmatory follow-up."}
+    },
+    {
+      "blind_label": "B0012",
+      "task_id": "qualitative_non_ge_analysis",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {"source_claim_accuracy": "Accurately summarizes reported held-out lift, train/held-out distinction, and scope.", "unsupported_assertions": "Attributes measurements and interpretations to the report and limits its own conclusions.", "contradiction_recall": "Includes the non-improving same-prompt size sweep and marks diverse data as a proposal, not a result.", "limitation_recall": "Covers small single-model/layer scope, prompt split, untested transport, and sweep limitation.", "citation_reopenability": "Names relevant report and guide sections; citations map to reopenable material.", "citation_hash_match": "Both material source files match their pinned hashes.", "completion": "Answers the analysis/design questions and clearly states the independent-verification boundary."}
+    }
+  ]
+}

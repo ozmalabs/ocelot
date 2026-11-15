@@ -26,6 +26,14 @@ State moved from `var/ocelot_dev_*` to `.ozagia/` (gitignored): the tag cache,
 edit backups and sessions. An explicit `OCELOT_DEV_DUMP` / `OZAGIA_DUMP` still
 places the snapshot anywhere, so `var/ocelot_dev_graph.json` keeps working.
 
+The optional research graph and paper/model helpers also live in Ozagia's
+`ozagia.research` package. `ozagia-mcp --mode research` enables its research
+tools; `--mode combined` exposes them together with coding tools and a shared
+context retrieval bridge. Legacy Ocelot research imports and the standalone
+research MCP server remain compatibility entry points; Ocelot-specific engine
+and seed provenance checks stay in the Ocelot adapter. New research sessions
+use `.ozagia/research`, with read-and-first-write migration for old sessions.
+
 ## Old name → new name
 
 | old | ozagia |

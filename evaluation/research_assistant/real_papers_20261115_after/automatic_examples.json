@@ -1,0 +1,160 @@
+{
+  "selection": "hand-selected after the original probe, not a coverage sample",
+  "cases": [
+    {
+      "id": "narrativium_N",
+      "status": "translated",
+      "paper": "/applications/data/projects/graphic-equalisation/papers/formal/04_narrativium_theory_referenced.tex",
+      "source_sha256": "55fdbc9d8ce2e28a9927ff8fa470d1552c1630cdac405939a6ba2226a1ec6b3e",
+      "source_line": 150,
+      "formula": "N=2",
+      "formula_offset": 21,
+      "source_match": true,
+      "translation_residuals": [],
+      "native_values": [
+        {
+          "env": {
+            "N": 2
+          },
+          "status": "computed",
+          "value": true
+        },
+        {
+          "env": {
+            "N": 1
+          },
+          "status": "computed",
+          "value": false
+        }
+      ],
+      "native_evidence_count": 1,
+      "lean": {
+        "status": "accepted",
+        "source_sha256": "dbe0c90eabf04b80893b15d197eca2f3795ac08edf064111c10d88619c3a6502",
+        "version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+        "file": "lean/narrativium_N.lean"
+      }
+    },
+    {
+      "id": "narrativium_mass_energy",
+      "status": "translated",
+      "paper": "/applications/data/projects/graphic-equalisation/papers/formal/04_narrativium_theory_referenced.tex",
+      "source_sha256": "55fdbc9d8ce2e28a9927ff8fa470d1552c1630cdac405939a6ba2226a1ec6b3e",
+      "source_line": 296,
+      "formula": "E_0=mc^2",
+      "formula_offset": 47,
+      "source_match": true,
+      "translation_residuals": [
+        "executor must treat non-finite power results as unresolved",
+        "user-selected implicit product mapping 'mc' -> m * c; this interpretation was supplied by the caller",
+        "numeric arithmetic and ordering use native runtime semantics (including float precision)"
+      ],
+      "native_values": [
+        {
+          "env": {
+            "E_0": 18,
+            "m": 2,
+            "c": 3
+          },
+          "status": "computed",
+          "value": true
+        },
+        {
+          "env": {
+            "E_0": 36,
+            "m": 2,
+            "c": 3
+          },
+          "status": "computed",
+          "value": false
+        }
+      ],
+      "native_evidence_count": 1,
+      "lean": {
+        "status": "accepted",
+        "source_sha256": "5aab896e65c4dc710da4253afd7eaa74473116a85f431da2bf421dfb7757ab59",
+        "version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+        "file": "lean/narrativium_mass_energy.lean"
+      }
+    },
+    {
+      "id": "arxiv_natural_domain",
+      "status": "translated",
+      "paper": "/applications/data/projects/ocelot/data/arxiv/2606.13224/main.tex",
+      "source_sha256": "5278d4fc838b5e62bf30e50010c516e62b5337418d0b5dd1e5b87d11a58ddc16",
+      "source_line": 219,
+      "formula": "m,n\\in\\NN",
+      "formula_offset": 12,
+      "source_match": true,
+      "translation_residuals": [
+        "Natural numbers are explicitly modelled as integers >= 0; verify the paper uses that convention.",
+        "Native integer inputs are limited to signed i64; this does not represent an unbounded natural-number domain.",
+        "Verify that any paper-specific natural-number macro denotes this domain."
+      ],
+      "native_values": [
+        {
+          "env": {
+            "m": 0,
+            "n": 2
+          },
+          "status": "computed",
+          "value": true
+        },
+        {
+          "env": {
+            "m": -1,
+            "n": 2
+          },
+          "status": "computed",
+          "value": false
+        }
+      ],
+      "native_evidence_count": 1,
+      "lean": {
+        "status": "accepted",
+        "source_sha256": "744b776fdc6b515fb8d978b8e8c93ecd9416dc4370d6daf0eaf071543945217b",
+        "version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+        "file": "lean/arxiv_natural_domain.lean"
+      }
+    },
+    {
+      "id": "arxiv_membership",
+      "status": "translated",
+      "paper": "/applications/data/projects/ocelot/data/arxiv/2606.13224/main.tex",
+      "source_sha256": "5278d4fc838b5e62bf30e50010c516e62b5337418d0b5dd1e5b87d11a58ddc16",
+      "source_line": 337,
+      "formula": "\\epsilon,\\mu\\in\\{0,1\\}",
+      "formula_offset": 109,
+      "source_match": true,
+      "translation_residuals": [
+        "Finite membership denotes only the explicitly listed scalar values; review source notation and variable mapping.",
+        "LaTeX Greek symbols are mapped to their command names as scalar variables."
+      ],
+      "native_values": [
+        {
+          "env": {
+            "epsilon": 0,
+            "mu": 1
+          },
+          "status": "computed",
+          "value": true
+        },
+        {
+          "env": {
+            "epsilon": 2,
+            "mu": 1
+          },
+          "status": "computed",
+          "value": false
+        }
+      ],
+      "native_evidence_count": 1,
+      "lean": {
+        "status": "accepted",
+        "source_sha256": "23d13e3bec936104c3cf9c755e25155886f12c9e1292e27257687610177f33c8",
+        "version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+        "file": "lean/arxiv_membership.lean"
+      }
+    }
+  ]
+}

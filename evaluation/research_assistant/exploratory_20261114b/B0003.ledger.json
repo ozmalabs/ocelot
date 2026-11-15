@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "investigation_id": "research-20261114-100957-3a864484",
+  "created_at": "2026-11-14T10:09:57Z",
+  "mode": "exploratory",
+  "roots": [
+    "/applications/data/projects/ocelot"
+  ],
+  "events": [
+    {
+      "id": "event-000001",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "question-0001",
+        "type": "Question",
+        "created_at": "2026-11-14T10:09:57Z",
+        "wording": "What does exhaustive checking of all 16 assignments for one four-variable formula establish about a proposed extension, and does it prove every residual CNF has a total extension and is easy to solve?"
+      }
+    },
+    {
+      "id": "event-000002",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "frame-0001",
+        "type": "Frame",
+        "created_at": "2026-11-14T10:09:57Z",
+        "boundary": "One specified Boolean formula with four variables; the finite domain is exactly its 16 assignments.",
+        "state": "The proposed extension is evaluated on each assignment to this single formula.",
+        "rules": "Check whether the extension returns a value for every assignment and whether that value is unique.",
+        "grammar": "Boolean assignments to four variables; no family of formulas or residual CNFs is enumerated.",
+        "possibilities": "Exactly 2^4 = 16 input assignments for the instance.",
+        "realisation": "An exhaustive program check reports totality and single-valuedness on that instance.",
+        "residual": "No conclusions about other formulas or residual CNFs follow from this instance alone.",
+        "cost": "No runtime, asymptotic, or resource-cost measurements are given.",
+        "grounding": "Synthetic case statement; source standard on explicit scope reporting.",
+        "test": "Finite exhaustive check of the instance only; no universal proof or complexity analysis."
+      }
+    },
+    {
+      "id": "event-000003",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "claim-0001",
+        "type": "Claim",
+        "created_at": "2026-11-14T10:09:57Z",
+        "wording": "For this one four-variable formula, the proposed extension is total and single-valued over all 16 assignments, conditional on the checker and its specification being correct.",
+        "scope": "Only the specified instance and its complete 16-assignment domain.",
+        "claim_type": "inference",
+        "author": "research assistant",
+        "status": "supported_within_scope"
+      }
+    },
+    {
+      "id": "event-000004",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "claim-0002",
+        "type": "Claim",
+        "created_at": "2026-11-14T10:09:57Z",
+        "wording": "The finite check does not prove that every residual CNF has a total extension or that the general problem is easy to solve.",
+        "scope": "Universal existence/totality and general computational difficulty across residual CNFs.",
+        "claim_type": "inference",
+        "author": "research assistant",
+        "status": "supported_within_scope"
+      }
+    },
+    {
+      "id": "event-000005",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "evidence-0001",
+        "type": "Evidence",
+        "created_at": "2026-11-14T10:09:57Z",
+        "description": "Synthetic case says all 16 assignments for one four-variable formula were checked; the proposed extension was total and single-valued on that instance.",
+        "source_id": "case_record",
+        "locator": "B0003.input.json, evidence.case_record; synthetic case statement",
+        "role": "Direct finite-instance evidence for the scoped result."
+      }
+    },
+    {
+      "id": "event-000006",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "evidence-0002",
+        "type": "Evidence",
+        "created_at": "2026-11-14T10:09:57Z",
+        "description": "The case explicitly states that no other formulas and no runtime/cost measures were checked.",
+        "source_id": "case_record",
+        "locator": "B0003.input.json, evidence.case_record",
+        "role": "Limitation: no cross-instance or tractability evidence."
+      }
+    },
+    {
+      "id": "event-000007",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "source-0001",
+        "type": "Source",
+        "created_at": "2026-11-14T10:09:57Z",
+        "title": "Doing Science Research on the OCELOT Substrate",
+        "locator": {
+          "path": "docs/SCIENCE_RESEARCH.md",
+          "section": "§7.1, scope discipline"
+        }
+      }
+    },
+    {
+      "id": "event-000008",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:57Z",
+      "node": {
+        "id": "alternative-0001",
+        "type": "Alternative",
+        "created_at": "2026-11-14T10:09:57Z",
+        "wording": "An extension may fail to be total or single-valued on another formula, and solving may be costly even if a total extension exists; this case did not test either possibility.",
+        "scope": "Other residual CNFs and computational cost, outside the enumerated instance."
+      }
+    },
+    {
+      "id": "event-000009",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:57Z",
+      "edge": {
+        "id": "edge-000001",
+        "type": "scoped_by",
+        "src": "claim-0001",
+        "tgt": "frame-0001",
+        "created_at": "2026-11-14T10:09:57Z"
+      }
+    },
+    {
+      "id": "event-000010",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:57Z",
+      "edge": {
+        "id": "edge-000002",
+        "type": "scoped_by",
+        "src": "claim-0002",
+        "tgt": "frame-0001",
+        "created_at": "2026-11-14T10:09:57Z"
+      }
+    },
+    {
+      "id": "event-000011",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:57Z",
+      "edge": {
+        "id": "edge-000003",
+        "type": "supports",
+        "src": "evidence-0001",
+        "tgt": "claim-0001",
+        "created_at": "2026-11-14T10:09:57Z",
+        "rationale": "Exhaustive checking covers the whole finite input domain of the stated instance."
+      }
+    },
+    {
+      "id": "event-000012",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:57Z",
+      "edge": {
+        "id": "edge-000004",
+        "type": "supports",
+        "src": "evidence-0002",
+        "tgt": "claim-0002",
+        "created_at": "2026-11-14T10:09:57Z",
+        "rationale": "The record says explicitly that no other formulas or cost measures were checked."
+      }
+    },
+    {
+      "id": "event-000013",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:57Z",
+      "edge": {
+        "id": "edge-000005",
+        "type": "opposes",
+        "src": "alternative-0001",
+        "tgt": "claim-0002",
+        "created_at": "2026-11-14T10:09:57Z",
+        "rationale": "This is a counterpossibility to universal extrapolation, not a demonstrated counterexample."
+      }
+    },
+    {
+      "id": "event-000014",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:57Z",
+      "edge": {
+        "id": "edge-000006",
+        "type": "cites",
+        "src": "source-0001",
+        "tgt": "evidence-0002",
+        "created_at": "2026-11-14T10:09:57Z",
+        "rationale": "§7.1 requires explicit statements of what a result establishes and does not establish."
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "question-0001",
+      "type": "Question",
+      "created_at": "2026-11-14T10:09:57Z",
+      "wording": "What does exhaustive checking of all 16 assignments for one four-variable formula establish about a proposed extension, and does it prove every residual CNF has a total extension and is easy to solve?"
+    },
+    {
+      "id": "frame-0001",
+      "type": "Frame",
+      "created_at": "2026-11-14T10:09:57Z",
+      "boundary": "One specified Boolean formula with four variables; the finite domain is exactly its 16 assignments.",
+      "state": "The proposed extension is evaluated on each assignment to this single formula.",
+      "rules": "Check whether the extension returns a value for every assignment and whether that value is unique.",
+      "grammar": "Boolean assignments to four variables; no family of formulas or residual CNFs is enumerated.",
+      "possibilities": "Exactly 2^4 = 16 input assignments for the instance.",
+      "realisation": "An exhaustive program check reports totality and single-valuedness on that instance.",
+      "residual": "No conclusions about other formulas or residual CNFs follow from this instance alone.",
+      "cost": "No runtime, asymptotic, or resource-cost measurements are given.",
+      "grounding": "Synthetic case statement; source standard on explicit scope reporting.",
+      "test": "Finite exhaustive check of the instance only; no universal proof or complexity analysis."
+    },
+    {
+      "id": "claim-0001",
+      "type": "Claim",
+      "created_at": "2026-11-14T10:09:57Z",
+      "wording": "For this one four-variable formula, the proposed extension is total and single-valued over all 16 assignments, conditional on the checker and its specification being correct.",
+      "scope": "Only the specified instance and its complete 16-assignment domain.",
+      "claim_type": "inference",
+      "author": "research assistant",
+      "status": "supported_within_scope"
+    },
+    {
+      "id": "claim-0002",
+      "type": "Claim",
+      "created_at": "2026-11-14T10:09:57Z",
+      "wording": "The finite check does not prove that every residual CNF has a total extension or that the general problem is easy to solve.",
+      "scope": "Universal existence/totality and general computational difficulty across residual CNFs.",
+      "claim_type": "inference",
+      "author": "research assistant",
+      "status": "supported_within_scope"
+    },
+    {
+      "id": "evidence-0001",
+      "type": "Evidence",
+      "created_at": "2026-11-14T10:09:57Z",
+      "description": "Synthetic case says all 16 assignments for one four-variable formula were checked; the proposed extension was total and single-valued on that instance.",
+      "source_id": "case_record",
+      "locator": "B0003.input.json, evidence.case_record; synthetic case statement",
+      "role": "Direct finite-instance evidence for the scoped result."
+    },
+    {
+      "id": "evidence-0002",
+      "type": "Evidence",
+      "created_at": "2026-11-14T10:09:57Z",
+      "description": "The case explicitly states that no other formulas and no runtime/cost measures were checked.",
+      "source_id": "case_record",
+      "locator": "B0003.input.json, evidence.case_record",
+      "role": "Limitation: no cross-instance or tractability evidence."
+    },
+    {
+      "id": "source-0001",
+      "type": "Source",
+      "created_at": "2026-11-14T10:09:57Z",
+      "title": "Doing Science Research on the OCELOT Substrate",
+      "locator": {
+        "path": "docs/SCIENCE_RESEARCH.md",
+        "section": "§7.1, scope discipline"
+      }
+    },
+    {
+      "id": "alternative-0001",
+      "type": "Alternative",
+      "created_at": "2026-11-14T10:09:57Z",
+      "wording": "An extension may fail to be total or single-valued on another formula, and solving may be costly even if a total extension exists; this case did not test either possibility.",
+      "scope": "Other residual CNFs and computational cost, outside the enumerated instance."
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-000001",
+      "type": "scoped_by",
+      "src": "claim-0001",
+      "tgt": "frame-0001",
+      "created_at": "2026-11-14T10:09:57Z"
+    },
+    {
+      "id": "edge-000002",
+      "type": "scoped_by",
+      "src": "claim-0002",
+      "tgt": "frame-0001",
+      "created_at": "2026-11-14T10:09:57Z"
+    },
+    {
+      "id": "edge-000003",
+      "type": "supports",
+      "src": "evidence-0001",
+      "tgt": "claim-0001",
+      "created_at": "2026-11-14T10:09:57Z",
+      "rationale": "Exhaustive checking covers the whole finite input domain of the stated instance."
+    },
+    {
+      "id": "edge-000004",
+      "type": "supports",
+      "src": "evidence-0002",
+      "tgt": "claim-0002",
+      "created_at": "2026-11-14T10:09:57Z",
+      "rationale": "The record says explicitly that no other formulas or cost measures were checked."
+    },
+    {
+      "id": "edge-000005",
+      "type": "opposes",
+      "src": "alternative-0001",
+      "tgt": "claim-0002",
+      "created_at": "2026-11-14T10:09:57Z",
+      "rationale": "This is a counterpossibility to universal extrapolation, not a demonstrated counterexample."
+    },
+    {
+      "id": "edge-000006",
+      "type": "cites",
+      "src": "source-0001",
+      "tgt": "evidence-0002",
+      "created_at": "2026-11-14T10:09:57Z",
+      "rationale": "§7.1 requires explicit statements of what a result establishes and does not establish."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_set_id": "research-assistant-heldout-v1",
+  "hash_algorithm": "SHA-256",
+  "hash_scope": "Exact repository file bytes at the recorded relative path. Recompute before evaluation; a mismatch means the source snapshot is stale and must not be silently accepted.",
+  "sources": [
+    {
+      "source_id": "science_research",
+      "repository": "ocelot",
+      "path": "docs/SCIENCE_RESEARCH.md",
+      "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+      "locators": ["§2", "§3.1", "§5", "§7.1", "§7.2"],
+      "role": "prospective experimental discipline, positive-control requirement, provenance, and scope reporting"
+    },
+    {
+      "source_id": "native_graph_results",
+      "repository": "ocelot",
+      "path": "docs/research/psychology_affect/NATIVE_GRAPH_FIDELITY_RESULTS.md",
+      "sha256": "0a25aca9d9b90cd22fc81428c98254c9df0fc73867656a06c63dee84a23964ca",
+      "locators": ["Claim 1", "Honest bounds and named next axis"],
+      "role": "real non-GE OCELOT empirical-results document, source-reported metrics and explicit bounds"
+    },
+    {
+      "source_id": "case_record",
+      "repository": "heldout_fixture",
+      "path": "tasks.json#task evidence blocks",
+      "sha256": "see task-file hash in README; synthetic case statements are part of the frozen input",
+      "locators": ["task_id-specific evidence block"],
+      "role": "explicitly synthetic premise for finite-check, controls, and stale-source tasks; not original research evidence"
+    }
+  ]
+}

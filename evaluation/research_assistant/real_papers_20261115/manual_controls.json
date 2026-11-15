@@ -1,0 +1,104 @@
+{
+  "study": "hand-selected real-source controls, not a coverage sample",
+  "controls": [
+    {
+      "id": "simple_integer",
+      "source": "/applications/data/projects/graphic-equalisation/papers/formal/04_narrativium_theory_referenced.tex",
+      "source_sha256": "55fdbc9d8ce2e28a9927ff8fa470d1552c1630cdac405939a6ba2226a1ec6b3e",
+      "source_line": 150,
+      "formula": "N=2",
+      "translation_status": "translated",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Var",
+          "name": "N"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 2
+        }
+      },
+      "variables": [
+        "N"
+      ],
+      "residuals": [],
+      "source_match": true,
+      "selection": "hand-selected after seeing initial result; not an extraction coverage sample",
+      "lean_status": "accepted",
+      "lean_file": "lean/control_simple_integer.lean",
+      "lean_version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)",
+      "lean_sha256": "da9ef8a3f76dcbb3dc8d6d9931b78a55109154b2d008f2adcfd333cc0ea6c21f",
+      "native_when_N_2": true,
+      "native_when_N_1": false,
+      "lean_example_status": "accepted",
+      "lean_example_output": "/applications/data/projects/ocelot/evaluation/research_assistant/real_papers_20261115/lean/control_simple_integer_example.lean:16:47: warning: Variable name `input_N_range` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _input_N_range\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n"
+    },
+    {
+      "id": "floating_point",
+      "source": "/applications/data/projects/graphic-equalisation/papers/formal/01f_graphic_equalisation_qualia_and_consciousness_grounding.tex",
+      "source_sha256": "e50e9511d5694a85d9014e5473953eccd0888f90b73528dc76590a032b04b613",
+      "source_line": 386,
+      "formula": "g=0.13",
+      "translation_status": "translated",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Var",
+          "name": "g"
+        },
+        "b": {
+          "type": "Lit",
+          "value": 0.13
+        }
+      },
+      "variables": [
+        "g"
+      ],
+      "residuals": [],
+      "source_match": true,
+      "selection": "hand-selected after seeing initial result; not an extraction coverage sample",
+      "lean_status": "unsupported",
+      "lean_error": "node claim-0002: only Boolean and signed i64 Lit values are supported"
+    },
+    {
+      "id": "implicit_multiplication",
+      "source": "/applications/data/projects/graphic-equalisation/papers/formal/04_narrativium_theory_referenced.tex",
+      "source_sha256": "55fdbc9d8ce2e28a9927ff8fa470d1552c1630cdac405939a6ba2226a1ec6b3e",
+      "source_line": 296,
+      "formula": "E_0=mc^2",
+      "translation_status": "translated",
+      "term": {
+        "type": "Eq",
+        "a": {
+          "type": "Var",
+          "name": "E_0"
+        },
+        "b": {
+          "type": "Pow",
+          "a": {
+            "type": "Var",
+            "name": "mc"
+          },
+          "b": {
+            "type": "Lit",
+            "value": 2
+          }
+        }
+      },
+      "variables": [
+        "E_0",
+        "mc"
+      ],
+      "residuals": [
+        "Adjacent letters are interpreted as a single variable name, not implicit multiplication; verify the source notation.",
+        "executor must treat non-finite power results as unresolved",
+        "numeric arithmetic and ordering use native runtime semantics (including float precision)"
+      ],
+      "source_match": true,
+      "selection": "hand-selected after seeing initial result; not an extraction coverage sample",
+      "lean_status": "unsupported",
+      "lean_error": "node claim-0002: unsupported term constructor 'Pow'"
+    }
+  ]
+}

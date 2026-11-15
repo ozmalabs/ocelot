@@ -1,0 +1,476 @@
+{
+  "schema_version": 1,
+  "investigation_id": "research-20261114-100947-de5f43f2",
+  "created_at": "2026-11-14T10:09:47Z",
+  "mode": "exploratory",
+  "roots": [
+    {
+      "root_id": "ocelot",
+      "path": "/applications/data/projects/ocelot",
+      "files": [
+        "docs/SCIENCE_RESEARCH.md"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "event-000001",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "question-0001",
+        "type": "Question",
+        "created_at": "2026-11-14T10:09:47Z",
+        "wording": "What can be concluded from a hypothetical target response in 7/12 episodes when the negative control was omitted and the positive control showed no detectable response, and what should a follow-up do before a confirmatory treatment claim?"
+      }
+    },
+    {
+      "id": "event-000002",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "source-0001",
+        "type": "Source",
+        "created_at": "2026-11-14T10:09:47Z",
+        "title": "OCELOT science research guidance: instrument gate",
+        "locator": {
+          "root_id": "ocelot",
+          "repository": "ocelot",
+          "path": "docs/SCIENCE_RESEARCH.md",
+          "start_line": 58,
+          "end_line": 70,
+          "heading": "3.1 The Five-Clause Instrument Gate (§1)",
+          "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+          "revision": "5e401a11b473da5d9d0eb66380fe4dd8634aa5f7"
+        }
+      }
+    },
+    {
+      "id": "event-000003",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "source-0002",
+        "type": "Source",
+        "created_at": "2026-11-14T10:09:47Z",
+        "title": "OCELOT science research guidance: prospective preregistration",
+        "locator": {
+          "root_id": "ocelot",
+          "repository": "ocelot",
+          "path": "docs/SCIENCE_RESEARCH.md",
+          "start_line": 35,
+          "end_line": 53,
+          "heading": "Step 1: Write and Commit the Pre-Registration (`docs/research/<topic>/*_PREREG.md`)",
+          "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+          "revision": "5e401a11b473da5d9d0eb66380fe4dd8634aa5f7"
+        }
+      }
+    },
+    {
+      "id": "event-000004",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "source-0003",
+        "type": "Source",
+        "created_at": "2026-11-14T10:09:47Z",
+        "title": "OCELOT science research guidance: results and scope reporting",
+        "locator": {
+          "root_id": "ocelot",
+          "repository": "ocelot",
+          "path": "docs/SCIENCE_RESEARCH.md",
+          "start_line": 158,
+          "end_line": 164,
+          "heading": "7.1 Writing `docs/research/<topic>/*_RESULTS.md`",
+          "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+          "revision": "5e401a11b473da5d9d0eb66380fe4dd8634aa5f7"
+        }
+      }
+    },
+    {
+      "id": "event-000005",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "frame-0001",
+        "type": "Frame",
+        "created_at": "2026-11-14T10:09:47Z",
+        "boundary": "Synthetic case: target response observed in 7 of 12 episodes; negative control omitted; positive control has zero detectable response; independent-run count unspecified.",
+        "state": "Only the stated aggregate and control outcomes are available; no control contrast, sampling uncertainty, or independent-run structure is supplied.",
+        "rules": "Interpretation requires a functioning/alive measurement arm and calibrated instrument; treatment inference requires valid comparison controls and prospective confirmatory design.",
+        "grammar": "Episode-level response/no-response summaries plus target, negative-control, and positive-control arms.",
+        "possibilities": "Observed target activity may be target-associated, background/noise, or an artifact of an insensitive/dead assay; supplied data cannot discriminate these possibilities.",
+        "realisation": "7/12 target episodes responded; negative control absent; positive control response 0 detectable.",
+        "residual": "No estimate of treatment effect versus control, no demonstrated assay sensitivity, and no independent-run replication count.",
+        "cost": "A follow-up must calibrate the readout and run prospectively specified, adequately powered independent runs.",
+        "grounding": "Hypothetical empirical measurement; response definition and episode dependence are unspecified.",
+        "test": "Calibrate random-input floor and ideal-exemplar ceiling, demonstrate non-zero positive-control response, include negative control, then conduct preregistered confirmatory comparison and report nulls/scope."
+      }
+    },
+    {
+      "id": "event-000006",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "claim-0001",
+        "type": "Claim",
+        "created_at": "2026-11-14T10:09:47Z",
+        "wording": "The case establishes only that the target response was recorded in 7 of 12 stated episodes; it does not establish a confirmatory treatment effect.",
+        "scope": "This hypothetical case and its stated outcomes only.",
+        "claim_type": "inference",
+        "author": "research evaluation",
+        "status": "unresolved",
+        "limitations": "The numerator/denominator are descriptive; controls are inadequate for causal attribution and independent-run count is unknown."
+      }
+    },
+    {
+      "id": "event-000007",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "alternative-0001",
+        "type": "Alternative",
+        "created_at": "2026-11-14T10:09:47Z",
+        "wording": "A treatment effect may exist, but this case cannot determine its direction or magnitude because there is no negative-control comparison and the positive-control failure leaves assay/arm viability unestablished.",
+        "scope": "Plausible explanations consistent with the limited case record."
+      }
+    },
+    {
+      "id": "event-000008",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "evidence-0001",
+        "type": "Evidence",
+        "created_at": "2026-11-14T10:09:47Z",
+        "wording": "The synthetic record reports 7/12 target episodes, no negative control, and zero detectable positive-control response; this supports only the descriptive count and leaves causal attribution unidentified.",
+        "limitations": "Not independently replicated; episodes may not be independent; the response measure and uncertainty are unspecified."
+      }
+    },
+    {
+      "id": "event-000009",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "evidence-0002",
+        "type": "Evidence",
+        "created_at": "2026-11-14T10:09:47Z",
+        "wording": "The instrument gate requires random-input floor and ideal-exemplar ceiling checks and states that arms must be alive, demonstrated with non-zero positive-control responses; a gate passing a dead arm is invalid.",
+        "limitations": "Guidance specifies validity checks but does not supply measurements for this case."
+      }
+    },
+    {
+      "id": "event-000010",
+      "type": "node_recorded",
+      "at": "2026-11-14T10:09:47Z",
+      "node": {
+        "id": "evidence-0003",
+        "type": "Evidence",
+        "created_at": "2026-11-14T10:09:47Z",
+        "wording": "Before a confirmatory claim, prospectively preregister the two-sided hypothesis, exact statistic/readout, sample size fixed by power analysis, claimed clean seeds, decision rule, tests, and provisos; report failures/nulls and scope.",
+        "limitations": "This is procedural guidance, not evidence that any treatment works."
+      }
+    },
+    {
+      "id": "event-000011",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000001",
+        "type": "scoped_by",
+        "src": "claim-0001",
+        "tgt": "frame-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000012",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000002",
+        "type": "cites",
+        "src": "evidence-0001",
+        "tgt": "source-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000013",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000003",
+        "type": "supports",
+        "src": "evidence-0001",
+        "tgt": "claim-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000014",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000004",
+        "type": "cites",
+        "src": "evidence-0002",
+        "tgt": "source-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000015",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000005",
+        "type": "opposes",
+        "src": "evidence-0002",
+        "tgt": "alternative-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000016",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000006",
+        "type": "cites",
+        "src": "evidence-0003",
+        "tgt": "source-0002",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000017",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000007",
+        "type": "cites",
+        "src": "evidence-0003",
+        "tgt": "source-0003",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000018",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000008",
+        "type": "supports",
+        "src": "evidence-0003",
+        "tgt": "alternative-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    },
+    {
+      "id": "event-000019",
+      "type": "edge_linked",
+      "at": "2026-11-14T10:09:47Z",
+      "edge": {
+        "id": "edge-000009",
+        "type": "scoped_by",
+        "src": "alternative-0001",
+        "tgt": "frame-0001",
+        "created_at": "2026-11-14T10:09:47Z",
+        "provenance": "researcher interpretation of the synthetic case and cited guidance"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "question-0001",
+      "type": "Question",
+      "created_at": "2026-11-14T10:09:47Z",
+      "wording": "What can be concluded from a hypothetical target response in 7/12 episodes when the negative control was omitted and the positive control showed no detectable response, and what should a follow-up do before a confirmatory treatment claim?"
+    },
+    {
+      "id": "source-0001",
+      "type": "Source",
+      "created_at": "2026-11-14T10:09:47Z",
+      "title": "OCELOT science research guidance: instrument gate",
+      "locator": {
+        "root_id": "ocelot",
+        "repository": "ocelot",
+        "path": "docs/SCIENCE_RESEARCH.md",
+        "start_line": 58,
+        "end_line": 70,
+        "heading": "3.1 The Five-Clause Instrument Gate (§1)",
+        "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+        "revision": "5e401a11b473da5d9d0eb66380fe4dd8634aa5f7"
+      }
+    },
+    {
+      "id": "source-0002",
+      "type": "Source",
+      "created_at": "2026-11-14T10:09:47Z",
+      "title": "OCELOT science research guidance: prospective preregistration",
+      "locator": {
+        "root_id": "ocelot",
+        "repository": "ocelot",
+        "path": "docs/SCIENCE_RESEARCH.md",
+        "start_line": 35,
+        "end_line": 53,
+        "heading": "Step 1: Write and Commit the Pre-Registration (`docs/research/<topic>/*_PREREG.md`)",
+        "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+        "revision": "5e401a11b473da5d9d0eb66380fe4dd8634aa5f7"
+      }
+    },
+    {
+      "id": "source-0003",
+      "type": "Source",
+      "created_at": "2026-11-14T10:09:47Z",
+      "title": "OCELOT science research guidance: results and scope reporting",
+      "locator": {
+        "root_id": "ocelot",
+        "repository": "ocelot",
+        "path": "docs/SCIENCE_RESEARCH.md",
+        "start_line": 158,
+        "end_line": 164,
+        "heading": "7.1 Writing `docs/research/<topic>/*_RESULTS.md`",
+        "sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+        "revision": "5e401a11b473da5d9d0eb66380fe4dd8634aa5f7"
+      }
+    },
+    {
+      "id": "frame-0001",
+      "type": "Frame",
+      "created_at": "2026-11-14T10:09:47Z",
+      "boundary": "Synthetic case: target response observed in 7 of 12 episodes; negative control omitted; positive control has zero detectable response; independent-run count unspecified.",
+      "state": "Only the stated aggregate and control outcomes are available; no control contrast, sampling uncertainty, or independent-run structure is supplied.",
+      "rules": "Interpretation requires a functioning/alive measurement arm and calibrated instrument; treatment inference requires valid comparison controls and prospective confirmatory design.",
+      "grammar": "Episode-level response/no-response summaries plus target, negative-control, and positive-control arms.",
+      "possibilities": "Observed target activity may be target-associated, background/noise, or an artifact of an insensitive/dead assay; supplied data cannot discriminate these possibilities.",
+      "realisation": "7/12 target episodes responded; negative control absent; positive control response 0 detectable.",
+      "residual": "No estimate of treatment effect versus control, no demonstrated assay sensitivity, and no independent-run replication count.",
+      "cost": "A follow-up must calibrate the readout and run prospectively specified, adequately powered independent runs.",
+      "grounding": "Hypothetical empirical measurement; response definition and episode dependence are unspecified.",
+      "test": "Calibrate random-input floor and ideal-exemplar ceiling, demonstrate non-zero positive-control response, include negative control, then conduct preregistered confirmatory comparison and report nulls/scope."
+    },
+    {
+      "id": "claim-0001",
+      "type": "Claim",
+      "created_at": "2026-11-14T10:09:47Z",
+      "wording": "The case establishes only that the target response was recorded in 7 of 12 stated episodes; it does not establish a confirmatory treatment effect.",
+      "scope": "This hypothetical case and its stated outcomes only.",
+      "claim_type": "inference",
+      "author": "research evaluation",
+      "status": "unresolved",
+      "limitations": "The numerator/denominator are descriptive; controls are inadequate for causal attribution and independent-run count is unknown."
+    },
+    {
+      "id": "alternative-0001",
+      "type": "Alternative",
+      "created_at": "2026-11-14T10:09:47Z",
+      "wording": "A treatment effect may exist, but this case cannot determine its direction or magnitude because there is no negative-control comparison and the positive-control failure leaves assay/arm viability unestablished.",
+      "scope": "Plausible explanations consistent with the limited case record."
+    },
+    {
+      "id": "evidence-0001",
+      "type": "Evidence",
+      "created_at": "2026-11-14T10:09:47Z",
+      "wording": "The synthetic record reports 7/12 target episodes, no negative control, and zero detectable positive-control response; this supports only the descriptive count and leaves causal attribution unidentified.",
+      "limitations": "Not independently replicated; episodes may not be independent; the response measure and uncertainty are unspecified."
+    },
+    {
+      "id": "evidence-0002",
+      "type": "Evidence",
+      "created_at": "2026-11-14T10:09:47Z",
+      "wording": "The instrument gate requires random-input floor and ideal-exemplar ceiling checks and states that arms must be alive, demonstrated with non-zero positive-control responses; a gate passing a dead arm is invalid.",
+      "limitations": "Guidance specifies validity checks but does not supply measurements for this case."
+    },
+    {
+      "id": "evidence-0003",
+      "type": "Evidence",
+      "created_at": "2026-11-14T10:09:47Z",
+      "wording": "Before a confirmatory claim, prospectively preregister the two-sided hypothesis, exact statistic/readout, sample size fixed by power analysis, claimed clean seeds, decision rule, tests, and provisos; report failures/nulls and scope.",
+      "limitations": "This is procedural guidance, not evidence that any treatment works."
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-000001",
+      "type": "scoped_by",
+      "src": "claim-0001",
+      "tgt": "frame-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000002",
+      "type": "cites",
+      "src": "evidence-0001",
+      "tgt": "source-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000003",
+      "type": "supports",
+      "src": "evidence-0001",
+      "tgt": "claim-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000004",
+      "type": "cites",
+      "src": "evidence-0002",
+      "tgt": "source-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000005",
+      "type": "opposes",
+      "src": "evidence-0002",
+      "tgt": "alternative-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000006",
+      "type": "cites",
+      "src": "evidence-0003",
+      "tgt": "source-0002",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000007",
+      "type": "cites",
+      "src": "evidence-0003",
+      "tgt": "source-0003",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000008",
+      "type": "supports",
+      "src": "evidence-0003",
+      "tgt": "alternative-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    },
+    {
+      "id": "edge-000009",
+      "type": "scoped_by",
+      "src": "alternative-0001",
+      "tgt": "frame-0001",
+      "created_at": "2026-11-14T10:09:47Z",
+      "provenance": "researcher interpretation of the synthetic case and cited guidance"
+    }
+  ]
+}

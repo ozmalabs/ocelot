@@ -1,0 +1,245 @@
+[
+  {
+    "blind_label": "B0001",
+    "task_id": "unavailable_stale_source",
+    "question": "[SYNTHETIC CASE] A draft cites `results/archive/measure_17.json` at revision `deadbeef` for a numeric effect, but neither the artifact nor that revision can be reopened. A current protocol guide explains how results should be reported. May the numeric effect be repeated as verified evidence? Give the appropriate provenance treatment.",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC provenance fault: the named artifact and revision are unavailable; the fixture contains no numeric value."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§5, Engine Provenance; §7.1",
+        "text": "A number without its engine is not a result. Results should include provenance and explicitly bound what they establish."
+      }
+    ],
+    "answer": "No. The numeric effect cannot be repeated as verified evidence: the cited artifact and revision are unavailable, and the case provides no numeric value to check. The guide states that “a number without an engine is not a result” and requires provenance for measurement results (`docs/SCIENCE_RESEARCH.md`, §5). Its reporting protocol calls for a provenance header, commit, environment, exact selector, and an explicit statement of what the result does and does not establish (§7.1).\n\nTreat the draft’s effect as an unverified historical claim with unavailable provenance, not as a result established by the current protocol guide. Do not supply or infer a value; omit it from verified findings unless the artifact/revision is recovered or the effect is independently reproduced with the required provenance. The guide establishes reporting requirements, not this effect’s magnitude or validity.\n",
+    "answer_sha256": "ecf502523fc65fef9488b4c9e3f3ffabbd010e825e216b6ab4749f479530a0f2"
+  },
+  {
+    "blind_label": "B0002",
+    "task_id": "qualitative_non_ge_analysis",
+    "question": "Using the supplied OCELOT native-graph fidelity results excerpt as a fixed document for qualitative analysis, summarize the strongest supported finding and its main limitation. Should this document-only analysis invent RNG seeds or an experimental sample-size justification? Explain what it should record instead, and distinguish the document's claims from what your analysis independently establishes.",
+    "evidence": [
+      {
+        "source_id": "native_graph_results",
+        "locator": "Claim 1; Honest bounds and named next axis",
+        "text": "The report states held-out aperture-covariance rose from about 0.75 with raw incidence to 0.88 with fitted, well-regularized incidence through the substrate BP. It bounds this to one small model, one layer, N=8–24 neurons/four modes, 60 train and 10 held-out prompts. Between-layer transport incidence remains untested."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§2, empirical lifecycle; §7.1",
+        "text": "Prospective preregistration requirements apply before confirmatory empirical measurement. Results must state scope and limitations."
+      }
+    ],
+    "answer": "The strongest supported finding in the report is a **partial within-layer improvement**: fitted, well-regularized incidence raises held-out aperture-covariance from about 0.75 to 0.88 through the substrate’s BP. The report separately treats train covariance near 1.0 as evidence that full covariance is representable; that is not a claim that the held-out result reached 1.0. [Results, Claims 1–2 and Verdict](../../docs/research/psychology_affect/NATIVE_GRAPH_FIDELITY_RESULTS.md#L12-L72)\n\nThe main limitation is scope: the report describes one small model, one layer, N=8–24 neurons/four modes, and 60 train versus 10 held-out prompts. It explicitly leaves between-layer transport incidence untested. Thus the result supports the stated within-layer case, not transport or broad generalization. [Results, “Honest bounds and named next axis”](../../docs/research/psychology_affect/NATIVE_GRAPH_FIDELITY_RESULTS.md#L88-L101)\n\nThis document-only analysis should **not invent RNG seeds or a sample-size justification**. The guide requires prospective preregistration, including power-fixed sample size and claimed seeds, before confirmatory empirical measurement; no such measurement is being designed or run here. Record instead the analysis frame, cited passages, the report’s claimed result and stated setup, limitations/untested axis, and the boundary between the report’s claims and this analysis. Results reporting should state what is and is not established. [Science-research guide, §2 Step 1](../../docs/SCIENCE_RESEARCH.md#L26-L53); [§7.1](../../docs/SCIENCE_RESEARCH.md#L158-L164)\n\nThe report claims the numerical lift, representability interpretation, and stated scope. Independently, this analysis establishes only that those claims and bounds appear in the supplied document and that the guide assigns preregistration requirements to prospective confirmatory measurement. It does not verify the underlying experiment, data, or reproducibility.\n",
+    "answer_sha256": "3e0df4a189d313e894da4e72baa1fecb135c980693eeb85e0f21f0d453000ada"
+  },
+  {
+    "blind_label": "B0003",
+    "task_id": "finite_check_vs_proof",
+    "question": "[SYNTHETIC CASE] A program exhaustively checked all 16 assignments for one Boolean formula with four variables and confirmed that a proposed extension is total and single-valued on that instance. A note then claims this proves every residual CNF has a total extension and is easy to solve. What follows from the check, and what does not?",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC: one four-variable formula; all 16 assignments checked; proposed extension total and single-valued on that instance. No other formulas or runtime/cost measures checked."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§7.1, scope discipline",
+        "text": "A completed results report should explicitly state both what the result establishes and what it does not establish."
+      }
+    ],
+    "answer": "The exhaustive check supports a finite, instance-level conclusion: for the specified four-variable formula, the proposed extension is total and single-valued on all 16 assignments, assuming the checker and its specification are correct. [B0003 input, synthetic case_record]\n\nIt does not prove that every residual CNF has a total extension. A different formula could behave differently; this check neither establishes nor refutes that universal claim. Nor does it show the problem is easy: no runtime, scaling, or resource costs were measured. [B0003 input, synthetic case_record] The conclusion should state both the established result and its limits, as the research reporting guidance requires. [SCIENCE_RESEARCH.md §7.1, scope discipline]\n",
+    "answer_sha256": "ebaf9d7eaf2feed5b9e8706cc9f82358c04981498c1f17cf2f66c5d7dbcb15bc"
+  },
+  {
+    "blind_label": "B0004",
+    "task_id": "null_and_controls",
+    "question": "[SYNTHETIC CASE] A hypothetical OCELOT measurement reports a target response in 7 of 12 episodes. Its negative control was omitted, and its positive control also produced no detectable response. What can be concluded now, and what should a follow-up do before making a confirmatory treatment claim?",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC: target response 7/12 episodes; negative control omitted; positive control had zero detectable response. Independent-run count is unspecified."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§3.1, clauses 1–5",
+        "text": "Calibrate random-input floor and ideal-exemplar ceiling; ensure arms are alive with non-zero positive-control responses; check the mechanism is load-bearing downstream. A measure that passes a dead arm is not a valid gate."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§2, steps 1–7; §7.2",
+        "text": "Confirmatory work is prospectively preregistered; report failures and nulls, and state scope."
+      }
+    ],
+    "answer": "The only direct conclusion is descriptive: a response was recorded in 7 of the 12 stated target episodes. This does not establish a treatment effect or even that the measurement arm was functioning. With no negative control there is no baseline comparison; with zero detectable response in the positive control, assay sensitivity or arm viability has not been demonstrated. The independent-run count is also unspecified, so the episodes cannot be treated as evidence of independent replication.\n\nBefore making a confirmatory treatment claim, first validate the instrument: show that random input scores at the floor and an ideal exemplar near the ceiling, and obtain a non-zero response under a positive control to show the arm is alive. Include an appropriate negative control so the target can be compared against background. If the claimed mechanism is part of the claim, test whether toggling it changes the downstream measure. Then preregister the two-sided hypothesis, exact readout and comparison, sample size based on power, claimed seeds, decision rule, and planned tests before collecting confirmatory data. Analyze independent runs as the unit where runs are independent, and report failures, nulls, and the scope of the result. Until those checks and a valid prospective comparison succeed, treat 7/12 as an exploratory observation, not confirmation.\n\nSources: [OCELOT science research guidance, §3.1](../../../docs/SCIENCE_RESEARCH.md#31-the-five-clause-instrument-gate-1); [§2](../../../docs/SCIENCE_RESEARCH.md#2-the-experimental-lifecycle-prereg--measure--results); [§7.1](../../../docs/SCIENCE_RESEARCH.md#71-writing-docsresearchtopicresultsmd).\n",
+    "answer_sha256": "eff54732707c9652446e913ef33ba9d8b2ff3b75cb431320c7f21014afa90849"
+  },
+  {
+    "blind_label": "B0005",
+    "task_id": "null_and_controls",
+    "question": "[SYNTHETIC CASE] A hypothetical OCELOT measurement reports a target response in 7 of 12 episodes. Its negative control was omitted, and its positive control also produced no detectable response. What can be concluded now, and what should a follow-up do before making a confirmatory treatment claim?",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC: target response 7/12 episodes; negative control omitted; positive control had zero detectable response. Independent-run count is unspecified."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§3.1, clauses 1–5",
+        "text": "Calibrate random-input floor and ideal-exemplar ceiling; ensure arms are alive with non-zero positive-control responses; check the mechanism is load-bearing downstream. A measure that passes a dead arm is not a valid gate."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§2, steps 1–7; §7.2",
+        "text": "Confirmatory work is prospectively preregistered; report failures and nulls, and state scope."
+      }
+    ],
+    "answer": "Claim: The only supported observation is that a response was detected in 7 of 12 reported target episodes (7/12, about 58%). This is descriptive. Because the negative control was omitted, the positive control produced no detectable response, and the independent-run count is unspecified, these data do not establish that treatment caused the response, that the measure can distinguish signal from noise, or that the experimental arm was functioning. The silent positive control is a critical counterevidence to interpreting the target count as a valid treatment effect: a floor-like result can arise from a dead arm. (Synthetic case statement; *Doing Science Research on the OCELOT Substrate*, §§3.1 clauses 1–5, 7.1.)\n\nFollow-up before a confirmatory treatment claim: prospectively preregister the two-sided hypothesis, exact readout/statistic and comparison, sample size fixed by power analysis, claimed confirmatory seeds, decision rule (including what a null establishes), planned tests, and expected outcome with load-bearing assumptions. First validate the instrument: show a random-input floor and ideal-exemplar ceiling; positive-control each arm and report how many probe conditions evoke non-zero responses; ensure the negative control models the intended alternative; and, if claiming a mechanism, show it is load-bearing downstream by an on/off comparison. Treat independent runs/seeds as the analysis units, not episodes or coupled units as independent replicates. Then run the preregistered comparison and report failures and nulls with the scope of the conclusion. A measure that passes a dead arm is not a valid gate, and confirmatory work should not proceed until the control failure is diagnosed and the instrument/arms pass these checks. (*Doing Science Research on the OCELOT Substrate*, §§2 steps 1–7, 3.1 clauses 1–5, 4 (statistical analysis rules), 7.1–7.2.)\n",
+    "answer_sha256": "2966d494b09a517d9dddb90b9d2af564dd3ac9e4b16929441d073bd2c4d59477"
+  },
+  {
+    "blind_label": "B0006",
+    "task_id": "unavailable_stale_source",
+    "question": "[SYNTHETIC CASE] A draft cites `results/archive/measure_17.json` at revision `deadbeef` for a numeric effect, but neither the artifact nor that revision can be reopened. A current protocol guide explains how results should be reported. May the numeric effect be repeated as verified evidence? Give the appropriate provenance treatment.",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC provenance fault: the named artifact and revision are unavailable; the fixture contains no numeric value."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§5, Engine Provenance; §7.1",
+        "text": "A number without its engine is not a result. Results should include provenance and explicitly bound what they establish."
+      }
+    ],
+    "answer": "No. The numeric effect cannot be repeated as verified evidence: the cited artifact and revision are unavailable, and the case record supplies no numeric value to independently check. Treat the draft's number as an unverified claim with unavailable provenance; do not present it as a result. Recover and inspect the exact artifact/revision before reporting the value, and record the engine provenance and other required context. The protocol guide states that “a number without an engine is not a result” and requires results to include provenance and explicitly bound what they establish (docs/SCIENCE_RESEARCH.md §5); its reporting guidance requires a provenance header and a statement of what the result does and does not establish (§7.1). The guide describes reporting practice; it does not verify this missing measurement.\n",
+    "answer_sha256": "bb568d7a4a6f40bdc71d04b85c05333296f35d80fa66b09bb98c0d05cec9747a"
+  },
+  {
+    "blind_label": "B0007",
+    "task_id": "unavailable_stale_source",
+    "question": "[SYNTHETIC CASE] A draft cites `results/archive/measure_17.json` at revision `deadbeef` for a numeric effect, but neither the artifact nor that revision can be reopened. A current protocol guide explains how results should be reported. May the numeric effect be repeated as verified evidence? Give the appropriate provenance treatment.",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC provenance fault: the named artifact and revision are unavailable; the fixture contains no numeric value."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§5, Engine Provenance; §7.1",
+        "text": "A number without its engine is not a result. Results should include provenance and explicitly bound what they establish."
+      }
+    ],
+    "answer": "No. Do not repeat the numeric effect as verified evidence: the cited artifact and exact revision are unavailable, and this case supplies no numeric value to check (B0007.input.json, synthetic case record). Treat the effect as unverified because its measurement provenance cannot be inspected.\n\nRecord the citation failure explicitly—identify `results/archive/measure_17.json` and revision `deadbeef` as unavailable—and withhold the number from verified results. The current guide sets a reporting rule; it cannot validate or recover the missing measurement. OCELOT’s guide says a number without its engine is not a result and requires result provenance plus an explicit statement of scope (docs/SCIENCE_RESEARCH.md §5; §7.1). If the source is recovered, reassess it against the artifact and provenance; if the effect is measured anew, report that as a new result with its own provenance. The unavailable source does not show that the effect is false; it shows that this citation cannot substantiate it.\n",
+    "answer_sha256": "a67a9d75ec1ab9b41d2c2a18144a4808b45aaa2a4420e7357410fa3b69e62dab"
+  },
+  {
+    "blind_label": "B0008",
+    "task_id": "finite_check_vs_proof",
+    "question": "[SYNTHETIC CASE] A program exhaustively checked all 16 assignments for one Boolean formula with four variables and confirmed that a proposed extension is total and single-valued on that instance. A note then claims this proves every residual CNF has a total extension and is easy to solve. What follows from the check, and what does not?",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC: one four-variable formula; all 16 assignments checked; proposed extension total and single-valued on that instance. No other formulas or runtime/cost measures checked."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§7.1, scope discipline",
+        "text": "A completed results report should explicitly state both what the result establishes and what it does not establish."
+      }
+    ],
+    "answer": "The check establishes the stated property for the single four-variable formula: across its 16 assignments, the proposed extension was total and single-valued. It is exhaustive evidence for that instance only.\n\nIt does not prove that every residual CNF has a total extension. That universal claim ranges over formulas not checked. Nor does the check show that residual CNFs are easy to solve: the case provides no runtime or cost measurements and no evidence about a general solving method. A broader theorem or suitably scoped performance evidence would be needed for those conclusions.\n\nThe report should state both what a result establishes and what it does not establish (docs/SCIENCE_RESEARCH.md, §7.1, “Scope discipline”). The case record specifies that only one four-variable formula was checked and that no other formulas or runtime/cost measures were examined (B0008 synthetic case statement).\n",
+    "answer_sha256": "3bc73e8003ee4aed8d628e8ed27813ca66d20191bad8028ab8f127ecf17ae66a"
+  },
+  {
+    "blind_label": "B0009",
+    "task_id": "finite_check_vs_proof",
+    "question": "[SYNTHETIC CASE] A program exhaustively checked all 16 assignments for one Boolean formula with four variables and confirmed that a proposed extension is total and single-valued on that instance. A note then claims this proves every residual CNF has a total extension and is easy to solve. What follows from the check, and what does not?",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC: one four-variable formula; all 16 assignments checked; proposed extension total and single-valued on that instance. No other formulas or runtime/cost measures checked."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§7.1, scope discipline",
+        "text": "A completed results report should explicitly state both what the result establishes and what it does not establish."
+      }
+    ],
+    "answer": "The check establishes the stated property only for the one four-variable formula and the proposed extension on that instance: all 16 assignments were examined, and the extension was total and single-valued there. It is finite, instance-specific evidence.\n\nIt does not establish that every residual CNF has a total extension. That universal claim ranges over formulas not included in the check. Nor does the check establish that solving such formulas is easy: no runtime, cost measure, or broader set of instances was evaluated. The report should state both the result's scope and what it does not establish, as the research guide requires ([SCIENCE_RESEARCH.md §7.1](docs/SCIENCE_RESEARCH.md#71-writing-docsresearchtopicresultsmd)).\n",
+    "answer_sha256": "0dd4610adb0c273c5f4c48f51d113e44524a1aa2b9090f7ffbe1b6692dd22a46"
+  },
+  {
+    "blind_label": "B0010",
+    "task_id": "qualitative_non_ge_analysis",
+    "question": "Using the supplied OCELOT native-graph fidelity results excerpt as a fixed document for qualitative analysis, summarize the strongest supported finding and its main limitation. Should this document-only analysis invent RNG seeds or an experimental sample-size justification? Explain what it should record instead, and distinguish the document's claims from what your analysis independently establishes.",
+    "evidence": [
+      {
+        "source_id": "native_graph_results",
+        "locator": "Claim 1; Honest bounds and named next axis",
+        "text": "The report states held-out aperture-covariance rose from about 0.75 with raw incidence to 0.88 with fitted, well-regularized incidence through the substrate BP. It bounds this to one small model, one layer, N=8–24 neurons/four modes, 60 train and 10 held-out prompts. Between-layer transport incidence remains untested."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§2, empirical lifecycle; §7.1",
+        "text": "Prospective preregistration requirements apply before confirmatory empirical measurement. Results must state scope and limitations."
+      }
+    ],
+    "answer": "Claim: The strongest supported finding in the fixed report is a partial held-out lift in aperture-covariance: fitting a well-regularized incidence reportedly raises it from about 0.75 (raw incidence) to 0.88 through the substrate BP. This is the report’s result, not a measurement independently reproduced by this document-only analysis (NATIVE_GRAPH_FIDELITY_RESULTS.md, “Claim 1”).\n\nEvidence: The report says the lift uses disjoint held-out prompts and that weak regularization does not beat raw incidence, while stronger regularization does. It also reports train performance near 1.0, which it interprets as evidence that the reading is representable in-sample (same report, “Claim 2” and “Anti-faking / method”).\n\nCounterevidence and limits: The report bounds the result to one small model, one layer, N=8–24 neurons/four modes, 60 training prompts and 10 held-out prompts. Its train-size sweep did not show improvement from more prompts of the same kind, and the proposed benefit of more diverse training data is explicitly undemonstrated. Most importantly, between-layer transport incidence remains untested (“Honest bounds and named next axis”). Thus this is a narrow within-layer result, not evidence for general multi-layer transport or broad generalization.\n\nA document-only analysis should not invent RNG seeds or an experimental sample-size justification. The research lifecycle’s preregistration requirements apply prospectively, before confirmatory empirical measurement; this task performs neither. Instead, record the document and sections examined, the reported scope and limitations, the claim/evidence/counterevidence above, and that no experiment was run or independently verified. The results-writing guidance likewise calls for explicit scope, including what a result does and does not establish (SCIENCE_RESEARCH.md, §2 and §7.1).\n\nThis analysis independently establishes only what the supplied report says and how narrowly it bounds its claims. It does not establish that the reported measurements are correct, reproduce the analysis, validate the experimental design, or supply new statistical justification.\n",
+    "answer_sha256": "179437fb795388a44a410d45c9d249f0c85482803ce3e31d6f3f7edaa83780b0"
+  },
+  {
+    "blind_label": "B0011",
+    "task_id": "null_and_controls",
+    "question": "[SYNTHETIC CASE] A hypothetical OCELOT measurement reports a target response in 7 of 12 episodes. Its negative control was omitted, and its positive control also produced no detectable response. What can be concluded now, and what should a follow-up do before making a confirmatory treatment claim?",
+    "evidence": [
+      {
+        "source_id": "case_record",
+        "locator": "synthetic case statement above",
+        "text": "SYNTHETIC: target response 7/12 episodes; negative control omitted; positive control had zero detectable response. Independent-run count is unspecified."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§3.1, clauses 1–5",
+        "text": "Calibrate random-input floor and ideal-exemplar ceiling; ensure arms are alive with non-zero positive-control responses; check the mechanism is load-bearing downstream. A measure that passes a dead arm is not a valid gate."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§2, steps 1–7; §7.2",
+        "text": "Confirmatory work is prospectively preregistered; report failures and nulls, and state scope."
+      }
+    ],
+    "answer": "The 7/12 figure is a descriptive observation only. With the independent-run count unspecified, the 12 episodes cannot be assumed to be 12 independent units; it does not establish a reproducible treatment effect. The omitted negative control leaves the random-input/background floor and response specificity uncalibrated. More critically, the positive control produced no detectable response, so the arm or measurement may be inactive. Under the instrument gate, a floor score from a dead arm is not evidence that a measure is valid; this result makes the target response uninterpretable as confirmation (§3.1, clauses 1–5).\n\nBefore a confirmatory treatment claim, first diagnose and repair the positive-control failure, then calibrate the measure with random-input and ideal-exemplar controls, verify that the arms produce non-zero positive-control responses, and check duration stability when relevant. Include a negative control that models the intended comparison and calibrates background response. If the claim concerns a mechanism, test whether it is load-bearing downstream by comparing the relevant outcomes with the mechanism on and off (§3.1; §4.2).\n\nThen prospectively preregister a two-sided hypothesis, exact statistic and comparison, sample size fixed by power analysis, clean confirmatory seeds, decision rule, and the complete test list before collecting confirmatory data (§2, steps 1–7). Analyze independent runs/seeds as the units, report failures and nulls, and state the claim’s scope (§4.2; §7.2). Do not treat the current 7/12 observation as confirmatory or proceed with a dead positive-control arm.\n",
+    "answer_sha256": "3a7c52f3c712ead8c66dde05b937d32538868badf073f1ae3e6bfa469ca9a0ef"
+  },
+  {
+    "blind_label": "B0012",
+    "task_id": "qualitative_non_ge_analysis",
+    "question": "Using the supplied OCELOT native-graph fidelity results excerpt as a fixed document for qualitative analysis, summarize the strongest supported finding and its main limitation. Should this document-only analysis invent RNG seeds or an experimental sample-size justification? Explain what it should record instead, and distinguish the document's claims from what your analysis independently establishes.",
+    "evidence": [
+      {
+        "source_id": "native_graph_results",
+        "locator": "Claim 1; Honest bounds and named next axis",
+        "text": "The report states held-out aperture-covariance rose from about 0.75 with raw incidence to 0.88 with fitted, well-regularized incidence through the substrate BP. It bounds this to one small model, one layer, N=8–24 neurons/four modes, 60 train and 10 held-out prompts. Between-layer transport incidence remains untested."
+      },
+      {
+        "source_id": "science_research",
+        "locator": "§2, empirical lifecycle; §7.1",
+        "text": "Prospective preregistration requirements apply before confirmatory empirical measurement. Results must state scope and limitations."
+      }
+    ],
+    "answer": "The strongest supported finding in the supplied report is a partial within-layer lift in held-out aperture covariance: fitted, well-regularized incidence raises the reported value from about 0.75 with raw incidence to 0.88 through the substrate’s BP. The report also says the fit’s in-sample covariance approaches 1.0, while held-out performance remains lower; it interprets that residual as a generalization/regularization gap rather than a representational ceiling. The main limitation is scope: one small model and one layer, 8–24 neurons and four modes, with 60 training and 10 held-out prompts. Between-layer transport incidence remains untested. The report further cautions that a same-prompt training-size sweep did not show a held-out improvement, so more diverse data is only a proposed lever, not a demonstrated result. (Native-graph fidelity results, “Claim 1,” “Claim 2,” and “Honest bounds and named next axis.”)\n\nA document-only qualitative analysis should not invent RNG seeds or a sample-size justification. Those are prospective design requirements for confirmatory empirical measurement: the research guide says to preregister before such measurement, fix sample size by power analysis, and claim confirmatory seeds in advance. This task analyzes an already supplied results excerpt; it does not conduct a new confirmatory experiment. (SCIENCE_RESEARCH.md §§2 and 7.1.)\n\nInstead, record the fixed document and the exact claims being summarized; the reported comparison and scope (including model/layer, neuron/mode counts, and train/held-out prompt counts); the stated limitations and untested axis; and which conclusions are the report’s interpretations versus the analysis’s own bounded synthesis. State explicitly that this analysis does not independently verify the measurements, rerun the method, or establish the report’s claims. The guide calls for results to state scope and limitations, while the results excerpt itself distinguishes achieved held-out performance from in-sample representability. (SCIENCE_RESEARCH.md §7.1; Native-graph fidelity results, “Claim 2” and “Honest bounds and named next axis.”)\n",
+    "answer_sha256": "3b253fae3619217bfd1301cf21dd08ca491779d664416153534a4b658c8274b3"
+  }
+]

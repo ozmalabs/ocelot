@@ -1,0 +1,69 @@
+{
+  "comparison": {
+    "all_source_ids_preserved": true,
+    "boundaries_agree": true,
+    "equivalence_claimed": false,
+    "limitations": [
+      "The substrate composition is a graph rewrite over a selected edge path.",
+      "The identity path is a witness edge; it does not quotient arrows by equality.",
+      "DisCoPy diagrams and substrate edges have not been connected by a proven functor.",
+      "No source paper semantics, associativity law, or right-identity law is checked."
+    ],
+    "preserved_source_ids": [
+      "paper:arrow:f",
+      "paper:arrow:g",
+      "paper:identity:id_X",
+      "paper:object:X",
+      "paper:object:Y",
+      "paper:object:Z"
+    ]
+  },
+  "discopy": {
+    "chain_boxes": [
+      "f",
+      "g"
+    ],
+    "chain_cod": "Z",
+    "chain_dom": "X",
+    "identity_law_equal_to_f": true
+  },
+  "scope": "one X\u2192Y\u2192Z chain and one left-identity case",
+  "source_ids": {
+    "arrow_f": "paper:arrow:f",
+    "arrow_g": "paper:arrow:g",
+    "identity_x": "paper:identity:id_X",
+    "object_x": "paper:object:X",
+    "object_y": "paper:object:Y",
+    "object_z": "paper:object:Z"
+  },
+  "status": "completed",
+  "substrate": {
+    "composed_path": [
+      {
+        "source_id": "derived:paper:arrow:g_after_f",
+        "src": 0,
+        "tgt": 2,
+        "type": "g_after_f"
+      }
+    ],
+    "identity_path_witness": [
+      {
+        "source_id": "derived:paper:identity_X_then_f",
+        "src": 0,
+        "tgt": 1,
+        "type": "id_then_f"
+      }
+    ],
+    "native_edge_count": 5,
+    "native_node_count": 3,
+    "object_node_ids_by_source_id": {
+      "paper:object:X": 0,
+      "paper:object:Y": 1,
+      "paper:object:Z": 2
+    }
+  },
+  "versions": {
+    "discopy": "1.2.1",
+    "substrate-rs": "0.1.0"
+  }
+}

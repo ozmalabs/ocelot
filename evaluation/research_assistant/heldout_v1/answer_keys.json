@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "task_set_id": "research-assistant-heldout-v1",
+  "access": "SCORING ONLY: keep this file inaccessible to answer-generating systems until responses are frozen.",
+  "answer_keys": [
+    {
+      "task_id": "finite_check_vs_proof",
+      "acceptable_answer": "The exhaustive check supports totality and single-valuedness only for the specified extension on the one enumerated four-variable formula, assuming the check is correct. It does not prove the universal claim over all formulas and says nothing about solving ease or asymptotic complexity, which were not measured. A broader theorem or separately defined complexity evidence is needed.",
+      "required_points": ["bound to one formula and its 16 assignments", "does not establish a universal theorem", "no runtime/ease/complexity conclusion"],
+      "counterevidence": [],
+      "limitations": ["synthetic, single-instance fact", "no solver cost or complexity measure supplied"],
+      "sources": ["case_record", "science_research"]
+    },
+    {
+      "task_id": "null_and_controls",
+      "acceptable_answer": "Treat the observation as exploratory and inconclusive for a treatment effect. The omitted negative control leaves a comparison gap, and the zero-response positive control means the instrument/arm may be dead or insensitive, so the apparent target pattern cannot validate the gate. Preserve and report the observation and control failures. Before a new confirmatory claim, diagnose/calibrate the instrument, include appropriate live positive and negative controls, define the independent unit and analysis, and preregister the new measurement. Twelve episodes are not automatically twelve independent runs.",
+      "required_points": ["explicitly note missing negative control", "zero positive-control response invalidates/undermines instrument gate", "do not claim confirmatory treatment effect", "report failure and prospectively specify repaired follow-up", "do not assume episodes are independent units"],
+      "counterevidence": ["positive control produced no detectable response"],
+      "limitations": ["synthetic scenario", "independent-run count and dependence structure are unspecified"],
+      "sources": ["case_record", "science_research"]
+    },
+    {
+      "task_id": "unavailable_stale_source",
+      "acceptable_answer": "No. The numeric effect cannot be repeated as verified evidence because neither its artifact nor cited revision is reopenable. Mark the citation and value as unavailable/unverified, do not supply or infer a number, and seek a fixed, reopenable revision or an independently verifiable artifact. The general reporting guide cannot substitute for the missing empirical result.",
+      "required_points": ["identify unavailable artifact/revision", "do not present numeric result as verified", "state provenance gap and request reopenable evidence", "do not substitute protocol guidance for result evidence"],
+      "counterevidence": [],
+      "limitations": ["synthetic provenance fault; no numeric value exists in fixture"],
+      "sources": ["case_record", "science_research"]
+    },
+    {
+      "task_id": "qualitative_non_ge_analysis",
+      "acceptable_answer": "The document reports a partial lift in held-out covariance, about 0.75 to 0.88 with fitted, well-regularized incidence through BP. Its stated scope is one small model/layer and a 60-train/10-held-out prompt split; transport between layers is untested. This qualitative reading does not run an experiment, so RNG seeds and power-based sample size are inapplicable; record them as not applicable with that reason, identify the exact document revision/hash and excerpt scope, and label the findings as claims reported by the document rather than independently reproduced results. A future empirical replication would need applicable prospective design and controls.",
+      "required_points": ["accurately state reported 0.75-to-0.88 held-out change", "include scale/split limitation and untested transport axis", "mark RNG/sample-size fields not applicable because no new experiment is run", "identify fixed source revision/hash and scope", "separate source-reported claims from independent verification", "recognize requirements return for a new empirical study"],
+      "counterevidence": ["same-prompt train-size sweep was flat-to-declining; the source says more diverse data is only a plausible, undemonstrated lever"],
+      "limitations": ["document analysis does not validate underlying measurements", "small single-model/single-layer scope", "between-layer transport remains untested"],
+      "sources": ["native_graph_results", "science_research"]
+    }
+  ]
+}

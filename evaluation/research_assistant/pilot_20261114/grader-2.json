@@ -1,0 +1,147 @@
+{
+  "grader": "grader-2",
+  "blinding": "Scored anonymized answer files independently. No arm identities or grader-1 material consulted.",
+  "scope": ["finite_vs_universal", "ocelot_failed_control", "stale_or_unavailable_source"],
+  "citation_verification": {
+    "method": "Compared available cited source paths with fixture-pinned SHA-256 values. The graphic-equalisation overview and Ocelot science guide reopened and matched their pinned hashes. Locator scores reflect the specificity and reopenability of citations in each answer.",
+    "uncertainty": "The fixture pins document hashes, not historical revisions or line-level content snapshots. Hash matches support source identity but do not independently validate every cited line's interpretation."
+  },
+  "results": [
+    {
+      "answer": 1,
+      "task_id": "finite_vs_universal",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly confines the result to the enumerated four-variable domain and verifier semantics, and does not infer general ease or runtime bounds.",
+        "unsupported_assertions": "Broader statements are framed as scope limits or inference; no material unsupported result is asserted.",
+        "contradiction_recall": "The fixture specifies no counterevidence for this task.",
+        "limitation_recall": "States finite scope, lack of generalization, and absence of scalability/runtime evidence; flags ambiguity in 'residual CNF' and 'easy.'",
+        "citation_reopenability": "The referenced overview and Ocelot guide paths and line locators are reopenable.",
+        "citation_hash_match": "The cited graphic-equalisation overview and SCIENCE_RESEARCH.md match their respective fixture-pinned hashes.",
+        "completion": "Directly answers what the finite check supports and what remains open."
+      },
+      "uncertainty": "The fixture locator is section-level while the answer cites lines; hashes were verified, but line-level claim interpretation was not independently audited."
+    },
+    {
+      "answer": 1,
+      "task_id": "ocelot_failed_control",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 1, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Treats 8/10 as descriptive only, identifies the missing negative-control contrast, and explains that the zero positive-control response may mean the measure/arm is nonresponsive.",
+        "unsupported_assertions": "Does not claim efficacy and frames the instrument concern as a possibility; proposed controls and preregistration are relevant to the answer key.",
+        "contradiction_recall": "Explicitly identifies the zero positive-control response and explains its force for interpretation.",
+        "limitation_recall": "Calls this a descriptive pilot and notes n=10 is not efficacy evidence, but omits the answer-key limitation that episodes may not be independent experimental units.",
+        "citation_reopenability": "The Ocelot guide path and cited line ranges are reopenable.",
+        "citation_hash_match": "SCIENCE_RESEARCH.md matches the fixture-pinned Ocelot science hash.",
+        "completion": "Answers what can be concluded and gives concrete control, calibration, and preregistration steps before confirmation."
+      },
+      "uncertainty": "The scenario is synthetic; no assumption is made that episodes are independent."
+    },
+    {
+      "answer": 1,
+      "task_id": "stale_or_unavailable_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly refuses to repeat the number as established and says the missing artifact and unavailable revision prevent verification; the overview cannot substitute for empirical evidence.",
+        "unsupported_assertions": "No numeric result is stated as fact; recovery requests are scoped to provenance and primary evidence.",
+        "contradiction_recall": "The fixture specifies no planted counterevidence; the answer recognizes the provenance fault.",
+        "limitation_recall": "Identifies the missing artifact and unavailable revision and distinguishes contextual theory discussion from empirical evidence.",
+        "citation_reopenability": "The overview and Ocelot guide source paths and cited locators are reopenable.",
+        "citation_hash_match": "The graphic-equalisation overview and Ocelot science guide match their fixture-pinned hashes.",
+        "completion": "Directly answers no and specifies recovery of the artifact, revision, and run provenance or qualification/withdrawal."
+      },
+      "uncertainty": "Hash identity was checked; this does not independently validate every cited line's interpretation."
+    },
+    {
+      "answer": 2,
+      "task_id": "finite_vs_universal",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly states that the checked relation supports only the specified four-variable domain and does not establish ease or a general complexity bound.",
+        "unsupported_assertions": "The claim is explicitly conditional on verifier and encoding correctness; no material unsupported conclusion is introduced.",
+        "contradiction_recall": "The fixture specifies no counterevidence for this task.",
+        "limitation_recall": "Covers bounded enumeration, no universal inference, and no defined or demonstrated complexity/ease result.",
+        "citation_reopenability": "Both linked source paths and cited line locators reopen.",
+        "citation_hash_match": "The cited Ocelot science guide and graphic-equalisation overview match their fixture-pinned hashes.",
+        "completion": "Directly states what the check establishes and what remains unproven."
+      },
+      "uncertainty": "Hash identity is verified; line-level interpretation is not independently audited."
+    },
+    {
+      "answer": 2,
+      "task_id": "ocelot_failed_control",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 1, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly treats 8/10 as an observation without causal treatment evidence, and the zero positive control as a possible failed responsiveness gate.",
+        "unsupported_assertions": "Does not infer treatment efficacy; prospective steps are supported by the cited guide and answer key.",
+        "contradiction_recall": "Recognizes and explains the positive-control counterevidence.",
+        "limitation_recall": "Notes pilot-scale n=10, but does not address whether episodes are independent experimental units, a limitation explicitly called out by the answer key.",
+        "citation_reopenability": "Cited Ocelot guide sections and line ranges are reopenable.",
+        "citation_hash_match": "SCIENCE_RESEARCH.md matches the fixture-pinned Ocelot science hash.",
+        "completion": "Provides a bounded conclusion and a substantial prospective control and preregistration plan."
+      },
+      "uncertainty": "The hypothetical episode count does not establish the independent experimental unit."
+    },
+    {
+      "answer": 2,
+      "task_id": "stale_or_unavailable_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly treats the numeric claim as unverified because both the artifact and cited revision are unavailable, and rejects the overview as proof.",
+        "unsupported_assertions": "Does not repeat the numeric value and attributes it only as an unverified prior-assistant claim.",
+        "contradiction_recall": "No planted counterevidence is specified; it identifies the provenance gap in the prompt.",
+        "limitation_recall": "Covers the missing artifact, unavailable revision, and need for recoverable empirical provenance rather than substituting theory context.",
+        "citation_reopenability": "Both cited source paths and line locators are reopenable.",
+        "citation_hash_match": "The cited graphic-equalisation overview and Ocelot guide match their fixture-pinned hashes.",
+        "completion": "Directly answers no and sets a clear condition for later verification."
+      },
+      "uncertainty": "Hash identity is verified; line-level interpretation is not independently audited."
+    },
+    {
+      "answer": 3,
+      "task_id": "finite_vs_universal",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly limits the result to the finite four-variable Boolean domain and rejects extrapolation to arbitrary CNFs or a complexity bound.",
+        "unsupported_assertions": "No unsupported theorem is asserted; the answer explicitly notes that the sources do not define 'residual CNF' or 'easy.'",
+        "contradiction_recall": "The fixture specifies no counterevidence for this task.",
+        "limitation_recall": "States the finite bound, no universal inference, and the missing definition/evidence needed for an ease or complexity claim.",
+        "citation_reopenability": "The cited Ocelot guide and relative graphic-equalisation source path with line locators are reopenable.",
+        "citation_hash_match": "The cited Ocelot science guide and graphic-equalisation overview match their fixture-pinned hashes.",
+        "completion": "Directly answers both parts: finite support and what remains open."
+      },
+      "uncertainty": "Hashes were checked; the fixture's section-level locator does not provide a separate line-level content snapshot."
+    },
+    {
+      "answer": 3,
+      "task_id": "ocelot_failed_control",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 1, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly labels the 8/10 as a hypothetical pilot observation, says the missing negative control prevents identifying treatment effect, and treats the zero positive control as a failed responsiveness signal.",
+        "unsupported_assertions": "Proposed calibration and protocol elements are consistently presented as guide requirements; it does not claim treatment efficacy.",
+        "contradiction_recall": "Explicitly identifies the positive-control failure and explains why a zero/floor-like response cannot validate the gate.",
+        "limitation_recall": "Mentions synthetic scenario and prospective sample size, but omits whether episodes are independent experimental units, which the answer key flags as a relevant limitation.",
+        "citation_reopenability": "The cited Ocelot guide path and line ranges are reopenable.",
+        "citation_hash_match": "SCIENCE_RESEARCH.md matches the fixture-pinned Ocelot science hash.",
+        "completion": "Answers what can be concluded and gives a detailed list of prospective controls and analysis requirements."
+      },
+      "uncertainty": "The hypothetical 10 episodes cannot be assumed to be 10 independent experimental units."
+    },
+    {
+      "answer": 3,
+      "task_id": "stale_or_unavailable_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly declines to repeat the number as established, explains the artifact/revision gap, and does not substitute a theory overview for empirical proof.",
+        "unsupported_assertions": "The only numeric claim is discussed as unverified; the answer makes no unsupported empirical assertion.",
+        "contradiction_recall": "No planted counterevidence is specified; it recognizes the relevant provenance fault.",
+        "limitation_recall": "Identifies missing artifact and source revision, treats overview as context only, and requires primary artifact and provenance recovery.",
+        "citation_reopenability": "The theory overview and Ocelot guide paths and line locators are reopenable.",
+        "citation_hash_match": "The cited graphic-equalisation overview and Ocelot science guide match their fixture-pinned hashes.",
+        "completion": "Directly answers no and gives an appropriate attribution/verification condition."
+      },
+      "uncertainty": "Hash identity was checked; the line-level interpretation was not independently audited."
+    }
+  ],
+  "overall_note": "Descriptive scores for nine answer-task pairs in three burned synthetic pilot cases only. No benefit inference or comparative-effect conclusion is made."
+}

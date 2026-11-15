@@ -1,0 +1,442 @@
+{
+  "study": "exploratory real-paper capability probe",
+  "selection": "first 12 delimited operator-bearing math fragments in recognized formal statement environments in each selected file, in source order; repeated occurrences retained",
+  "limits": [
+    "source text only; no OCR, external input files, or whole-paper formula census",
+    "operator-fragment detection is heuristic; a fragment is not necessarily a complete claim",
+    "successful syntax translation and Lean acceptance do not establish faithful formalization or prove the paper",
+    "nonrandom small sample; no estimate of general accuracy"
+  ],
+  "papers": [
+    {
+      "paper_id": "ge_theory",
+      "source": "/applications/data/projects/graphic-equalisation/papers/formal/01_law_of_graphic_equalisation_theory_referenced.tex",
+      "source_sha256": "1f2748534f34d02cd457e207261d22e6c1ffa1e9e7a0f8efe08d949c703f3b83",
+      "source_revision": "c8f68cd608760e55084ab0c43382a8dbbf44262f",
+      "status": "ingested",
+      "claims_extracted": 67,
+      "native_claims_after_models": 69,
+      "unresolved_references": 19,
+      "eligible_operator_fragments": 16,
+      "sampled_count": 12,
+      "fragments": [
+        {
+          "claim_id": "claim-0002",
+          "claim_label": "prop:provenance-inference",
+          "source_line_start": 366,
+          "formula": "P_F(s)=\\{\\pi_F(h):h\\in H_F,\\ O_F(h)=s\\}.",
+          "translation_status": "unsupported",
+          "translation_reason": "membership domain must be an explicit finite literal set",
+          "translation_residuals": [
+            "H_F,\\ O_F(h)=s\\}."
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0003",
+          "claim_label": "def:graph",
+          "source_line_start": 710,
+          "formula": "\\boxed{G=(g,r,\\Gamma),}",
+          "translation_status": "unsupported",
+          "translation_reason": "unsupported syntax node: Tuple",
+          "translation_residuals": [
+            "Tuple(elts=[Name(id='g', ctx=Load()), Name(id='r', ctx=Load()), Name(id='Gamma', ctx=Load())], ctx=Load())"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0008",
+          "claim_label": "def:collapse",
+          "source_line_start": 963,
+          "formula": "\\boxed{\\Coll_t:\\Poss(G_t)\\rightsquigarrow G_{t+1}.}",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: unexpected character after line continuation character",
+          "translation_residuals": [
+            "C"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0009",
+          "claim_label": "def:history",
+          "source_line_start": 970,
+          "formula": "\\Hist=G_0\\xrightarrow{\\Coll_0}G_1\\xrightarrow{\\Coll_1}G_2\\rightarrow\\cdots.",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: unexpected character after line continuation character",
+          "translation_residuals": [
+            "H"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0017",
+          "claim_label": "def:states",
+          "source_line_start": 1024,
+          "formula": "\\boxed{\\mathrm{NULL}\\;\\neq\\;\\mathrm{undetermined}\\;\\neq\\;\\mathrm{undisclosed}\\;\\neq\\;\\mathrm{resolved}.}",
+          "translation_status": "unsupported",
+          "translation_reason": "unsupported syntax node: Compare",
+          "translation_residuals": [
+            "Compare(left=Constant(value='NULL'), ops=[NotEq(), NotEq(), NotEq()], comparators=[Constant(value='undetermined'), Constant(value='undisclosed'), Constant(value='resolved')])"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0022",
+          "claim_label": "def:supergraph-identity",
+          "source_line_start": 1060,
+          "formula": "\\iota_{W:G}=\\operatorname{Id}_W(G)",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: invalid syntax",
+          "translation_residuals": [
+            "{"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0033",
+          "claim_label": "def:residual",
+          "source_line_start": 1507,
+          "formula": "\\boxed{\\epsilon=\\delta^R\\ominus\\delta^P,}",
+          "translation_status": "unsupported",
+          "translation_reason": "symbolic Greek superscript is ambiguous between an index and exponent",
+          "translation_residuals": [
+            "\\epsilon=\\delta^R\\ominus\\delta^P,",
+            "provide an explicit index or exponent interpretation"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0035",
+          "claim_label": "prop:residual-inadmissible",
+          "source_line_start": 1518,
+          "formula": "\\delta^P=a",
+          "translation_status": "unsupported",
+          "translation_reason": "symbolic Greek superscript is ambiguous between an index and exponent",
+          "translation_residuals": [
+            "\\delta^P=a",
+            "provide an explicit index or exponent interpretation"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0035",
+          "claim_label": "prop:residual-inadmissible",
+          "source_line_start": 1519,
+          "formula": "\\boxed{\\epsilon=\\delta^R\\ominus\\delta^P=u\n=\\text{the non-admitted remainder}.}",
+          "translation_status": "unsupported",
+          "translation_reason": "symbolic Greek superscript is ambiguous between an index and exponent",
+          "translation_residuals": [
+            "\\epsilon=\\delta^R\\ominus\\delta^P=u\n=\\text{the non-admitted remainder}.",
+            "provide an explicit index or exponent interpretation"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0050",
+          "claim_label": "def:present",
+          "source_line_start": 2150,
+          "formula": "\\boxed{U_{\\mathcal F}=0.}",
+          "translation_status": "translated",
+          "translation_reason": null,
+          "translation_residuals": [
+            "Subscript notation is represented as a fixed scalar variable name, not collection indexing; verify this interpretation."
+          ],
+          "term": {
+            "type": "Eq",
+            "a": {
+              "type": "Var",
+              "name": "U_F"
+            },
+            "b": {
+              "type": "Lit",
+              "value": 0
+            }
+          },
+          "source_match": true,
+          "lean_status": "accepted",
+          "lean_file": "lean/ge_theory_10.lean",
+          "lean_source_sha256": "1b160d8956881c00dde9f8e62716aba28d07b8b303ce315b3816bd9a31506710",
+          "lean_version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)"
+        },
+        {
+          "claim_id": "claim-0051",
+          "claim_label": "prop:determinable",
+          "source_line_start": 2159,
+          "formula": "\\boxed{\\text{determinable}\\neq\\text{determined}.}",
+          "translation_status": "translated",
+          "translation_reason": null,
+          "translation_residuals": [
+            "\\mathrm/\\text labels are opaque string symbols; they carry no special domain semantics"
+          ],
+          "term": {
+            "type": "Not",
+            "arg": {
+              "type": "Eq",
+              "a": {
+                "type": "Lit",
+                "value": "determinable"
+              },
+              "b": {
+                "type": "Lit",
+                "value": "determined"
+              }
+            }
+          },
+          "source_match": true,
+          "lean_status": "unsupported",
+          "lean_error": "node claim-0069: only Boolean and signed i64 Lit values are supported"
+        },
+        {
+          "claim_id": "claim-0054",
+          "claim_label": "prop:time-observer",
+          "source_line_start": 2196,
+          "formula": "T\\in\\mathcal F",
+          "translation_status": "unsupported",
+          "translation_reason": "membership domain must be an explicit finite literal set",
+          "translation_residuals": [
+            "\\mathcal F"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        }
+      ]
+    },
+    {
+      "paper_id": "ge_born",
+      "source": "/applications/data/projects/graphic-equalisation/papers/formal/01d_graphic_equalisation_born_recovery.tex",
+      "source_sha256": "a266438a7ae6c624ee729dc63b4d3c3276b3112d9ab7d2ca2eec7e5b181d5120",
+      "source_revision": "c8f68cd608760e55084ab0c43382a8dbbf44262f",
+      "status": "ingested",
+      "claims_extracted": 0,
+      "native_claims_after_models": 0,
+      "unresolved_references": 0,
+      "eligible_operator_fragments": 0,
+      "sampled_count": 0,
+      "fragments": []
+    },
+    {
+      "paper_id": "arxiv_2606_13224",
+      "source": "/applications/data/projects/ocelot/data/arxiv/2606.13224/main.tex",
+      "source_sha256": "5278d4fc838b5e62bf30e50010c516e62b5337418d0b5dd1e5b87d11a58ddc16",
+      "source_revision": "b98925a35055e0b522e8152f0d4fdbf5ef1bfc6e",
+      "status": "ingested",
+      "claims_extracted": 57,
+      "native_claims_after_models": 58,
+      "unresolved_references": 7,
+      "eligible_operator_fragments": 126,
+      "sampled_count": 12,
+      "fragments": [
+        {
+          "claim_id": "claim-0001",
+          "claim_label": "",
+          "source_line_start": 219,
+          "formula": "m,n\\in\\NN",
+          "translation_status": "unsupported",
+          "translation_reason": "natural-number notation needs an explicit minimum of 0 or 1",
+          "translation_residuals": [
+            "\\NN"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0001",
+          "claim_label": "",
+          "source_line_start": 227,
+          "formula": "(\\simplex\\times\\simplex)^{op}\\to \\set",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: unexpected character after line continuation character",
+          "translation_residuals": [
+            "s"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0002",
+          "claim_label": "",
+          "source_line_start": 264,
+          "formula": "\\Lambda^m_k\\boxtimes\\Delta^n\\cup \\Delta^m\\boxtimes\\Lambda^n_l\\to \\Delta^m\\boxtimes\\Delta^n",
+          "translation_status": "unsupported",
+          "translation_reason": "symbolic Greek superscript is ambiguous between an index and exponent",
+          "translation_residuals": [
+            "\\Lambda^m_k\\boxtimes\\Delta^n\\cup \\Delta^m\\boxtimes\\Lambda^n_l\\to \\Delta^m\\boxtimes\\Delta^n",
+            "provide an explicit index or exponent interpretation"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0003",
+          "claim_label": "",
+          "source_line_start": 271,
+          "formula": "p: X\\to Y",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: invalid syntax",
+          "translation_residuals": [
+            ":"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0003",
+          "claim_label": "",
+          "source_line_start": 271,
+          "formula": "X\\to *",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: unexpected character after line continuation character",
+          "translation_residuals": [
+            "t"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0006",
+          "claim_label": "",
+          "source_line_start": 305,
+          "formula": "i: A\\to B",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: invalid syntax",
+          "translation_residuals": [
+            ":"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0006",
+          "claim_label": "",
+          "source_line_start": 305,
+          "formula": "j: K\\to L",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: invalid syntax",
+          "translation_residuals": [
+            ":"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0006",
+          "claim_label": "",
+          "source_line_start": 306,
+          "formula": "i\\hat{\\boxtimes} j: A\\boxtimes L\\cup_{A\\boxtimes K} B\\boxtimes K\\to B\\boxtimes L",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: unexpected character after line continuation character",
+          "translation_residuals": [
+            "h"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0007",
+          "claim_label": "",
+          "source_line_start": 332,
+          "formula": "\\Lambda^m_k\\boxtimes\\Delta^n\\cup \\Delta^m\\boxtimes\\Lambda^n_l\\to \\Delta^m\\boxtimes\\Delta^n",
+          "translation_status": "unsupported",
+          "translation_reason": "symbolic Greek superscript is ambiguous between an index and exponent",
+          "translation_residuals": [
+            "\\Lambda^m_k\\boxtimes\\Delta^n\\cup \\Delta^m\\boxtimes\\Lambda^n_l\\to \\Delta^m\\boxtimes\\Delta^n",
+            "provide an explicit index or exponent interpretation"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0007",
+          "claim_label": "",
+          "source_line_start": 335,
+          "formula": "\\delta\\Delta^{m,n}\\times\\Delta^{1,1}\\cup \\Delta^{m,n}\\times \\mathsf{L}_{\\epsilon,\\mu}^{1,1}\\to \\Delta^{m,n}\\times\\Delta^{1,1}",
+          "translation_status": "unsupported",
+          "translation_reason": "symbolic Greek superscript is ambiguous between an index and exponent",
+          "translation_residuals": [
+            "\\delta\\Delta^{m,n}\\times\\Delta^{1,1}\\cup \\Delta^{m,n}\\times \\mathsf{L}_{\\epsilon,\\mu}^{1,1}\\to \\Delta^{m,n}\\times\\Delta^{1,1}",
+            "provide an explicit index or exponent interpretation"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0007",
+          "claim_label": "",
+          "source_line_start": 335,
+          "formula": "\\mathsf{L}_{\\epsilon,\\mu}^{1,1}\n\t\t=\\Lambda^1_\\epsilon\\boxtimes\\Delta^1\\cup\\Delta^1\\boxtimes \\Lambda^1_\\mu",
+          "translation_status": "unsupported",
+          "translation_reason": "invalid formula syntax: unexpected character after line continuation character",
+          "translation_residuals": [
+            "m"
+          ],
+          "lean_status": "not_attempted_translation_unsupported"
+        },
+        {
+          "claim_id": "claim-0007",
+          "claim_label": "",
+          "source_line_start": 337,
+          "formula": "\\epsilon,\\mu\\in\\{0,1\\}",
+          "translation_status": "translated",
+          "translation_reason": null,
+          "translation_residuals": [
+            "Finite membership denotes only the explicitly listed scalar values; review source notation and variable mapping.",
+            "LaTeX Greek symbols are mapped to their command names as scalar variables."
+          ],
+          "term": {
+            "type": "And",
+            "items": [
+              {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "epsilon"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "epsilon"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "Or",
+                "items": [
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "mu"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "type": "Eq",
+                    "a": {
+                      "type": "Var",
+                      "name": "mu"
+                    },
+                    "b": {
+                      "type": "Lit",
+                      "value": 1
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "source_match": true,
+          "lean_status": "accepted",
+          "lean_file": "lean/arxiv_2606_13224_12.lean",
+          "lean_source_sha256": "23d13e3bec936104c3cf9c755e25155886f12c9e1292e27257687610177f33c8",
+          "lean_version": "Lean (version 4.33.1, x86_64-unknown-linux-gnu, commit 819816b2e0a3bf405af45ae5c7af2491d8f5bee6, Release)"
+        }
+      ]
+    }
+  ]
+}

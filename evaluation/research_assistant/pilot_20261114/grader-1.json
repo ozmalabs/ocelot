@@ -1,0 +1,146 @@
+{
+  "grader_id": "grader-1",
+  "method_note": "Independently scored each of the three tasks in each of the three answer files against README.md and fixtures_v1.json. Cited source files were reopened and their hashes compared with the fixture pins. Scores are descriptive judgments for this burned pilot material only; no comparative benefit inference is made.",
+  "citation_checks": {
+    "ge_entry": {
+      "path": "/applications/data/projects/graphic-equalisation/notes/GRAPHIC_EQUALISATION_FOR_LLMS.md",
+      "fixture_sha256": "02b32dbd1e23456614584b2a54e673b71f5703c16bd4a8b08bfdfeff579deb27",
+      "observed_sha256": "02b32dbd1e23456614584b2a54e673b71f5703c16bd4a8b08bfdfeff579deb27",
+      "status": "match"
+    },
+    "ocelot_science": {
+      "path": "docs/SCIENCE_RESEARCH.md",
+      "fixture_sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+      "observed_sha256": "99c517b39f1c3d5cb080366fc2c12cf265c7559c03dc4c8ea5804d0b5c879aec",
+      "status": "match"
+    }
+  },
+  "records": [
+    {
+      "answer_file": "answer-1.txt",
+      "task_id": "finite_vs_universal",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly confines the verifier result to the specified four-variable finite domain and rejects universal, scalable-ease, and runtime conclusions.",
+        "unsupported_assertions": "Marks exhaustive verification as an assumption and labels the broader conclusion as an inference, not a sourced complexity theorem.",
+        "contradiction_recall": "The fixture supplies no counterevidence for this task; none is missed or invented.",
+        "limitation_recall": "States the finite bound and says broader complexity/ease needs separate evidence.",
+        "citation_reopenability": "The cited GE note reopened at the cited residual and capability/accessibility discussion.",
+        "citation_hash_match": "The GE note's observed SHA-256 matches the fixture pin.",
+        "completion": "Directly answers whether the check establishes the universal claim and states what remains open."
+      }
+    },
+    {
+      "answer_file": "answer-1.txt",
+      "task_id": "ocelot_failed_control",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 1, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly presents 8/10 as descriptive, notes the missing negative control, and explains why a zero positive control undermines the measurement/arm gate.",
+        "unsupported_assertions": "The recommendations about calibration, preregistration, controls, seed handling, and reporting are supported by the cited Ocelot guide sections.",
+        "contradiction_recall": "Identifies the positive-control failure and bounds its force to possible arm/instrument nonresponsiveness.",
+        "limitation_recall": "Calls this a pilot and avoids efficacy inference, but does not explicitly label the scenario synthetic or state that episodes may not be independent units.",
+        "citation_reopenability": "The SCIENCE_RESEARCH.md locators reopen to the preregistration, instrument calibration, and reporting guidance cited.",
+        "citation_hash_match": "The Ocelot science document's observed SHA-256 matches the fixture pin.",
+        "completion": "Gives a limited conclusion and a concrete route to a prospective confirmatory interpretation."
+      }
+    },
+    {
+      "answer_file": "answer-1.txt",
+      "task_id": "stale_or_unavailable_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly refuses to present the missing artifact's number as verified and distinguishes a theory overview from empirical evidence.",
+        "unsupported_assertions": "Limits the claim to an unverified prior-assistant assertion and conditions recovery on source and run provenance.",
+        "contradiction_recall": "The fixture supplies no counterevidence for this task; none is missed or invented.",
+        "limitation_recall": "Identifies the missing artifact and unavailable revision and explains the overview cannot substitute for the result evidence.",
+        "citation_reopenability": "The GE overview and SCIENCE_RESEARCH.md locators reopen at the stated proof-scope and provenance/reporting passages.",
+        "citation_hash_match": "Both cited sources' observed SHA-256 values match their fixture pins.",
+        "completion": "Answers no, states the provenance gap, and specifies the artifact and provenance needed for verification."
+      }
+    },
+    {
+      "answer_file": "answer-2.txt",
+      "task_id": "finite_vs_universal",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Accurately confines the total single-valued extension to the enumerated four-variable domain and rejects a general ease or runtime inference.",
+        "unsupported_assertions": "The verifier/encoding qualification is explicit; the answer does not overstate the finite result.",
+        "contradiction_recall": "No counterevidence is included in this task fixture; none is missed or invented.",
+        "limitation_recall": "Explicitly notes the finite scope and that residual CNF/easy are undefined, so no sharper bound follows.",
+        "citation_reopenability": "The cited Ocelot scope-reporting locator and GE clarification passage reopen successfully.",
+        "citation_hash_match": "Both cited sources' observed SHA-256 values match their fixture pins.",
+        "completion": "Directly answers the question and identifies the finite support and unresolved universal claim."
+      }
+    },
+    {
+      "answer_file": "answer-2.txt",
+      "task_id": "ocelot_failed_control",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Treats the synthetic 8/10 as a pilot observation only, identifies the absent negative control and dead positive control, and withholds treatment-effect interpretation.",
+        "unsupported_assertions": "The listed prospective design and instrument checks are present in the cited Ocelot guide sections.",
+        "contradiction_recall": "Correctly explains that zero positive-control response may indicate a dead arm and cannot validate the gate.",
+        "limitation_recall": "Explicitly calls the case hypothetical and specifies the independent seed/run as the analysis unit, addressing the episode-independence limitation.",
+        "citation_reopenability": "The SCIENCE_RESEARCH.md locators reopen to the cited preregistration, calibration, alive-arm, and independent-run requirements.",
+        "citation_hash_match": "The Ocelot science document's observed SHA-256 matches the fixture pin.",
+        "completion": "States the appropriate conclusion and the controls and prospective steps required before confirmation."
+      }
+    },
+    {
+      "answer_file": "answer-2.txt",
+      "task_id": "stale_or_unavailable_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly says the missing artifact and unavailable revision make the numeric claim unauditable and the overview is not empirical proof.",
+        "unsupported_assertions": "Only permits an attributed, unverified claim until the primary artifact and provenance are recovered.",
+        "contradiction_recall": "No counterevidence is included in this task fixture; none is missed or invented.",
+        "limitation_recall": "Identifies the intentionally absent result artifact and unavailable revision, and explicitly limits what an overview can establish.",
+        "citation_reopenability": "The cited GE overview/limits and Ocelot provenance/reporting passages reopen successfully.",
+        "citation_hash_match": "Both cited sources' observed SHA-256 values match their fixture pins.",
+        "completion": "Directly answers no and specifies the evidence and provenance required to verify the number."
+      }
+    },
+    {
+      "answer_file": "answer-3.txt",
+      "task_id": "finite_vs_universal",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly limits finite verification to the checked domain and verifier semantics and rejects a universal complexity conclusion.",
+        "unsupported_assertions": "Caveats the undefined meanings of residual CNF and easy rather than claiming a sharper result.",
+        "contradiction_recall": "No counterevidence is included in this task fixture; none is missed or invented.",
+        "limitation_recall": "States the four-variable bound and explains that the terms needed for a sharper complexity claim are unspecified.",
+        "citation_reopenability": "The cited Ocelot scope passage and GE scope/limits passages reopen successfully at the cited sections.",
+        "citation_hash_match": "Both cited sources' observed SHA-256 values match their fixture pins.",
+        "completion": "Answers no and explains both the narrow finite support and what remains open."
+      }
+    },
+    {
+      "answer_file": "answer-3.txt",
+      "task_id": "ocelot_failed_control",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly confines 8/10 to the treatment arm, explains the absent baseline contrast, and treats the zero positive control as evidence the instrument may be dead.",
+        "unsupported_assertions": "The prospective protocol, calibration, instrument checks, and reporting recommendations are supported by the cited Ocelot guide.",
+        "contradiction_recall": "Clearly identifies the positive-control failure and its consequence for interpreting a floor-like readout.",
+        "limitation_recall": "Marks the scenario hypothetical and calls for independent runs, covering the synthetic and possible non-independent-episodes caveats.",
+        "citation_reopenability": "The SCIENCE_RESEARCH.md locators reopen to the cited preregistration, instrument checks, analysis-unit, and reporting guidance.",
+        "citation_hash_match": "The Ocelot science document's observed SHA-256 matches the fixture pin.",
+        "completion": "Covers the observation, control failures, and material steps needed before a confirmatory reading."
+      }
+    },
+    {
+      "answer_file": "answer-3.txt",
+      "task_id": "stale_or_unavailable_source",
+      "scores": {"source_claim_accuracy": 2, "unsupported_assertions": 2, "contradiction_recall": 2, "limitation_recall": 2, "citation_reopenability": 2, "citation_hash_match": 2, "completion": 2},
+      "rationales": {
+        "source_claim_accuracy": "Correctly withholds the number as established evidence and distinguishes overview context from empirical proof.",
+        "unsupported_assertions": "Keeps the number at the level of an attributed, unverified prior claim pending recovery of source, artifact, and provenance.",
+        "contradiction_recall": "No counterevidence is included in this task fixture; none is missed or invented.",
+        "limitation_recall": "Explicitly identifies the absent artifact and unavailable revision and the overview's evidence limits; these are the material provenance gaps for this prompt.",
+        "citation_reopenability": "The cited GE overview/limits and Ocelot provenance/reporting passages reopen successfully at the cited locators.",
+        "citation_hash_match": "Both cited sources' observed SHA-256 values match their fixture pins.",
+        "completion": "Directly answers no and gives a clear recovery condition for treating the result as verified."
+      }
+    }
+  ]
+}

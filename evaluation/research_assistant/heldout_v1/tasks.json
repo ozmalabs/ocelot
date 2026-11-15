@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "task_set_id": "research-assistant-heldout-v1",
+  "status": "held_out_synthetic_not_yet_run",
+  "notice": "Prompts and evidence below are new held-out evaluation material, distinct from pilot_20261114. Any invented case facts are explicitly labeled synthetic and are not original research records.",
+  "source_manifest": "source_manifest.json",
+  "tasks": [
+    {
+      "task_id": "finite_check_vs_proof",
+      "domain": "finite mathematics and proof scope",
+      "prompt": "[SYNTHETIC CASE] A program exhaustively checked all 16 assignments for one Boolean formula with four variables and confirmed that a proposed extension is total and single-valued on that instance. A note then claims this proves every residual CNF has a total extension and is easy to solve. What follows from the check, and what does not?",
+      "evidence": [
+        {
+          "source_id": "case_record",
+          "locator": "synthetic case statement above",
+          "text": "SYNTHETIC: one four-variable formula; all 16 assignments checked; proposed extension total and single-valued on that instance. No other formulas or runtime/cost measures checked."
+        },
+        {
+          "source_id": "science_research",
+          "locator": "§7.1, scope discipline",
+          "text": "A completed results report should explicitly state both what the result establishes and what it does not establish."
+        }
+      ]
+    },
+    {
+      "task_id": "null_and_controls",
+      "domain": "empirical research controls and null interpretation",
+      "prompt": "[SYNTHETIC CASE] A hypothetical OCELOT measurement reports a target response in 7 of 12 episodes. Its negative control was omitted, and its positive control also produced no detectable response. What can be concluded now, and what should a follow-up do before making a confirmatory treatment claim?",
+      "evidence": [
+        {
+          "source_id": "case_record",
+          "locator": "synthetic case statement above",
+          "text": "SYNTHETIC: target response 7/12 episodes; negative control omitted; positive control had zero detectable response. Independent-run count is unspecified."
+        },
+        {
+          "source_id": "science_research",
+          "locator": "§3.1, clauses 1–5",
+          "text": "Calibrate random-input floor and ideal-exemplar ceiling; ensure arms are alive with non-zero positive-control responses; check the mechanism is load-bearing downstream. A measure that passes a dead arm is not a valid gate."
+        },
+        {
+          "source_id": "science_research",
+          "locator": "§2, steps 1–7; §7.2",
+          "text": "Confirmatory work is prospectively preregistered; report failures and nulls, and state scope."
+        }
+      ]
+    },
+    {
+      "task_id": "unavailable_stale_source",
+      "domain": "source provenance and stale evidence",
+      "prompt": "[SYNTHETIC CASE] A draft cites `results/archive/measure_17.json` at revision `deadbeef` for a numeric effect, but neither the artifact nor that revision can be reopened. A current protocol guide explains how results should be reported. May the numeric effect be repeated as verified evidence? Give the appropriate provenance treatment.",
+      "evidence": [
+        {
+          "source_id": "case_record",
+          "locator": "synthetic case statement above",
+          "text": "SYNTHETIC provenance fault: the named artifact and revision are unavailable; the fixture contains no numeric value."
+        },
+        {
+          "source_id": "science_research",
+          "locator": "§5, Engine Provenance; §7.1",
+          "text": "A number without its engine is not a result. Results should include provenance and explicitly bound what they establish."
+        }
+      ]
+    },
+    {
+      "task_id": "qualitative_non_ge_analysis",
+      "domain": "qualitative document analysis and frame applicability",
+      "prompt": "Using the supplied OCELOT native-graph fidelity results excerpt as a fixed document for qualitative analysis, summarize the strongest supported finding and its main limitation. Should this document-only analysis invent RNG seeds or an experimental sample-size justification? Explain what it should record instead, and distinguish the document's claims from what your analysis independently establishes.",
+      "evidence": [
+        {
+          "source_id": "native_graph_results",
+          "locator": "Claim 1; Honest bounds and named next axis",
+          "text": "The report states held-out aperture-covariance rose from about 0.75 with raw incidence to 0.88 with fitted, well-regularized incidence through the substrate BP. It bounds this to one small model, one layer, N=8–24 neurons/four modes, 60 train and 10 held-out prompts. Between-layer transport incidence remains untested."
+        },
+        {
+          "source_id": "science_research",
+          "locator": "§2, empirical lifecycle; §7.1",
+          "text": "Prospective preregistration requirements apply before confirmatory empirical measurement. Results must state scope and limitations."
+        }
+      ]
+    }
+  ]
+}
