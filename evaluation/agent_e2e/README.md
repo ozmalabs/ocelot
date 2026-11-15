@@ -1,6 +1,6 @@
 # Agent end-to-end task set
 
-Break/fix tasks for `scripts/ocelot_agent_eval.py`. Full design: `docs/features/AGENT_E2E_EVAL.md`.
+Break/fix tasks for the ozagia agent eval (`ozagia.eval.agent`; `scripts/ocelot_agent_eval.py` is a shim). Full design: ozagia `docs/eval_agent.md`.
 
 Files:
 
@@ -27,10 +27,10 @@ may spend tokens. Do not run them without user approval. `--model` picks the mod
 `--max-total-usd` caps the run's total cost. See the doc for the approved command.
 
 Local drivers get linked worktrees; live drivers get isolated shared clones with no
-remote. Each run writes them under `/tmp/ocelot_agent_eval/<run>/work/` and removes them
+remote. Each run writes them under `/tmp/ozagia_eval/<run>/work/` and removes them
 on exit. Only the harness's own workdir is removed; there is no repo-wide prune. If a
 removal is partial, the run record lists it under `cleanup_warnings`. Logs stay in
-`/tmp/ocelot_agent_eval/<run>/logs/`.
+`/tmp/ozagia_eval/<run>/logs/`.
 
 The dev_memory arm builds its snapshot and tag cache before the driver starts. That
 time is recorded as `prep_s` and kept out of `wall_s`. Every driver and check runs in

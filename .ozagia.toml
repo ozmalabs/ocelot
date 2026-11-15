@@ -1,0 +1,65 @@
+# ozagia project configuration for Ocelot (see ozagia.config).
+# These values reproduce the layout the scripts/ocelot_* dev tools hard-coded.
+
+[index]
+# Indexed into the graph (scripts/ocelot_dev_memory.py SOURCE_DIRS).
+source_dirs = [
+    "runners/dsl/src", "runners/dsl/tests", "domains", "domains_rs",
+    "worlds", "substrate", "tools", "scripts",
+]
+# Scanned by repo map, code search and symbol graph
+# (scripts/ocelot_repo_map.py SOURCE_DIRS: adds tests, scripts before tools).
+map_dirs = [
+    "runners/dsl/src", "runners/dsl/tests", "domains", "domains_rs",
+    "worlds", "substrate", "scripts", "tools", "tests",
+]
+test_dirs = ["tests"]
+# Added to ozagia's generic skip set (.git, .venv, build, target, ...).
+skip_dirs = [
+    "data", "var", "runs", "recordings", "scratch_rr", "scratchpad3", ".bigtmp",
+]
+# Doc globs indexed by default (include_docs="features").
+docs = [
+    "docs/features/*.md",
+    "docs/CODE_MAP.md",
+    "docs/SEED_DEVELOPMENT.md",
+    "docs/SCIENCE_RESEARCH.md",
+    "docs/research/engine_substrate/GRAPH_INTERROGATE.md",
+    "README.md",
+    "CLAUDE.md",
+    "VISION_PROTOCOL.md",
+    "HISTORY.md",
+    "RESULTS.local.md",
+]
+# Added for include_docs="all".
+docs_all = ["docs/**/*.md"]
+# Listed first in the brief.
+key_docs = [
+    "README.md", "CLAUDE.md", "docs/CODE_MAP.md", "docs/SEED_DEVELOPMENT.md",
+    "docs/SCIENCE_RESEARCH.md", "VISION_PROTOCOL.md",
+]
+# Scanned for build/test commands.
+command_docs = ["README.md", "CLAUDE.md", "docs/CODE_MAP.md"]
+# The substrate's Python package lives here.
+import_roots = ["runners/dsl/python"]
+# Path mentions recognised in tests and docs.
+path_prefixes = [
+    "runners", "domains", "domains_rs", "worlds", "substrate", "scripts",
+    "tools", "tests", "seeds", "docs", "evaluation", "benchmarks",
+]
+# Generated output, corpora and scratch trees hidden from dev_changed.
+changed_exclude = [
+    "results/", "evaluation/", "runs/", "var/", "recordings/", "data/",
+    "domain_data/", "semantic-review/", "drafts/", "papers/", "benchmarks/",
+    "seeds/acquired/", "seeds/generated/", "__pycache__/", ".pytest_cache/",
+]
+# Command entrypoints, never dead-code candidates.
+entrypoint_prefixes = ["scripts/", "tools/", "bin/", "runners/dsl/src/bin/"]
+
+[memory]
+# Skipped by the graph build only (not by the repo map).
+skip_dirs = [".venv-jsbsim-f16", "vizdoom"]
+
+[adapters]
+# Seed/rule indexing and dev_graph_query.
+modules = ["tools.ozagia_ocelot_adapter:register"]

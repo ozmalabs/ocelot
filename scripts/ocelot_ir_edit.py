@@ -7,7 +7,7 @@ adapter takes the next step for *authored* code: the replacement code is a hub
 `Prog*` Term-JSON tree, rendered to Python by the EXISTING graph renderer
 (`domains.render_python.render_ir` over the graph-resident RenderRules in
 `seeds/render_python_statements.json`), then spliced into the target's exact
-source span through `scripts.ocelot_lossless.LosslessText`. There is no second
+source span through `ozagia.edit.lossless.LosslessText`. There is no second
 renderer and no text-patch fallback here.
 
 WHAT IS MECHANICAL / DEV TOOLING (CLAUDE.md admissibility):
@@ -48,7 +48,7 @@ stays byte-identical, so comments/trivia BEFORE and AFTER the span survive
 exactly. Comments INSIDE a replaced body/function are part of what was
 replaced (the IR does not invent them). The result is re-parsed and compiled
 before a preview is returned; apply additionally backs up under
-`var/ocelot_dev_edits/backups/` and writes atomically.
+`.ozagia/edits/backups/` and writes atomically.
 
 OPS (v0):
     replace_expression_ir   target (AST path), term (hub IR expression)
@@ -68,7 +68,7 @@ from io import StringIO
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from scripts.ocelot_code_edit import (
+from ozagia.edit.code_edit import (
     FORBIDDEN_SCRIPT_KEYS,
     MAX_SOURCE_BYTES,
     CodeEditError,
@@ -79,7 +79,7 @@ from scripts.ocelot_code_edit import (
     _offset,
     ast_node_table,
 )
-from scripts.ocelot_edit_txn import (
+from ozagia.edit.txn import (
     SourceFile,
     check_base,
     detect_newline,
@@ -89,7 +89,7 @@ from scripts.ocelot_edit_txn import (
     sha256_bytes,
     write_source,
 )
-from scripts.ocelot_lossless import LosslessError, LosslessText, python_roundtrip
+from ozagia.edit.lossless import LosslessError, LosslessText, python_roundtrip
 
 __all__ = ["apply_ir_edit_script", "fallback_check", "SUPPORTED_OPS"]
 
@@ -1058,7 +1058,7 @@ def apply_ir_edit_script(root: str | Path, script: Dict[str, Any], *,
     """Validate and optionally apply a hub-IR-native Python edit script.
 
     `write=False` (default) is a pure preview. `write=True` backs up the
-    original under `var/ocelot_dev_edits/backups/`, writes atomically, and
+    original under `.ozagia/edits/backups/`, writes atomically, and
     returns the backup path. Refusals raise `CodeEditError`; a well-formed
     script whose IR the renderer cannot spell returns `ok=False` with an
     honest `blockers` list and leaves the file untouched.

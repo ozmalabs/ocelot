@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.ocelot_code_edit import CodeEditError, sha256_text
+from ozagia.edit.code_edit import CodeEditError, sha256_text
 from scripts.ocelot_ir_edit import apply_ir_edit_script, fallback_check
 
 
@@ -124,7 +124,7 @@ def test_expression_apply_backup_and_comments(tmp_path: Path) -> None:
     backup = Path(r["backup"])
     assert backup.is_file()
     assert backup.read_text() == FIXTURE
-    assert backup.parent == tmp_path / "var" / "ocelot_dev_edits" / "backups"
+    assert backup.parent == tmp_path / ".ozagia" / "edits" / "backups"
     assert r["before"]["sha256"] == sha256_text(FIXTURE)
     assert r["after"]["sha256"] == sha256_text(after)
 

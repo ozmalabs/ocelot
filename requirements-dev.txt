@@ -1,4 +1,4 @@
-# Dev-memory / graph-edit tooling (install into the repo venv).
+# Dev-memory / graph-edit tooling dependencies (install into the repo venv).
 #
 #   .venv/bin/pip install -r requirements-dev.txt
 #
@@ -17,3 +17,9 @@ tree-sitter-cpp>=0.23,<0.24
 
 # Python language server for the LSP bridge (the package ships the binary).
 pyright>=1.1,<2
+
+# The dev tooling itself is the ozagia package (docs/features/OZAGIA.md).
+# Until it is published, install the local checkout in editable mode:
+#   uv pip install --python .venv/bin/python -e <path to an ozagia checkout>
+# After publication this line replaces that:
+# ozagia[all] @ git+https://github.com/ozmalabs/ozagia

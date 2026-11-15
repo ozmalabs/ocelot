@@ -14,7 +14,7 @@ from substrate_rs import Substrate
 from domains import ast_to_term
 from domains.py_cst_ingest import flat_text, ingest_source, python_cst_leaves
 from domains.ts_ingest import TableWalker
-from scripts.ocelot_lossless import LosslessText
+from ozagia.edit.lossless import LosslessText
 
 
 SOURCE = '''"""Module doc."""
@@ -78,7 +78,7 @@ def test_lossless_edit_preserves_comments() -> None:
 
 
 def test_code_edit_uses_lossless_cst(tmp_path: Path) -> None:
-    from scripts.ocelot_code_edit import apply_edit_script
+    from ozagia.edit.code_edit import apply_edit_script
     p = tmp_path / "mod.py"
     p.write_text(SOURCE, encoding="utf-8")
     r = apply_edit_script(tmp_path, {

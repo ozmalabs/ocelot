@@ -11,7 +11,7 @@ The replacement code is a hub `Prog*` Term-JSON tree. It is rendered by the
 existing graph renderer — `domains.render_python.render_ir` /
 `render_program` over the graph-resident RenderRules in
 `seeds/render_python_statements.json` — and then spliced into the target's
-exact source span through `scripts.ocelot_lossless.LosslessText`.
+exact source span through `ozagia.edit.lossless.LosslessText`.
 
 There is **one** renderer. This module does not spell Python, does not build a
 second emitter, and does not fall back to a text patch. The AST-path table,
@@ -21,7 +21,7 @@ operations; the DECISION (which address, which IR) belongs to the caller
 this adapter's job: the transaction guarantees render + parse + compile, and
 the caller's verify step runs tests (or `ProgEval`) afterwards.
 
-Python only in v0. The Rust/Lua path is `scripts/ocelot_cst_edit.py`; whole
+Python only in v0. The Rust/Lua path is `ozagia.edit.cst`; whole
 files are refused here rather than half-edited.
 
 ## Public API
@@ -70,7 +70,7 @@ The result is the shared transaction contract (all fields present):
 }
 ```
 
-Refusals raise `scripts.ocelot_code_edit.CodeEditError` with a specific
+Refusals raise `ozagia.edit.code_edit.CodeEditError` with a specific
 reason: raw `diff`/`patch` input, a raw `text` key inside an IR op, a stale
 `base_sha256`, a path escaping the repo root, a non-`.py` file, an unknown
 op, a malformed/invalid hub Term, a bad AST path, overlapping edits, or a
@@ -90,7 +90,7 @@ dispatcher's signal to use the CST fallback.
 | `replace_function_ir` | `target`, `stmts` or `term`, optional `args` | replace the `def` header + body; `term` means `return <term>`; decorators are preserved; `args` may be `ProgDefFnParam` terms or plain identifier strings |
 | `fallback_check` | `target` or `term` or `stmts` | read-only coverage probe; never writes |
 
-AST paths use the same structural grammar as `ocelot_code_edit`:
+AST paths use the same structural grammar as `ozagia.edit.code_edit`:
 `body[3].body[1].value`, `body[0].args.args[1]`, etc. They are stable for one
 base version; pair an edit with `base_sha256`.
 
@@ -161,7 +161,7 @@ discarded and the file is untouched.
 
 ## Splicing and lossless guarantees
 
-The span comes from `ocelot_code_edit.ast_node_table`; the replacement is
+The span comes from `ozagia.edit.code_edit.ast_node_table`; the replacement is
 applied to `LosslessText.from_python(source)`. Every leaf outside the target
 range is left byte-identical, and the module mechanically verifies that all
 characters outside the declared spans are unchanged
@@ -179,7 +179,7 @@ point of the byte-for-byte splice).
 ## Transaction semantics
 
 * Default is preview: `write=False`, `applied=false`, `graph_stale=false`.
-* Apply: copy to `var/ocelot_dev_edits/backups/<timestamp>_<sha12>_<name>`,
+* Apply: copy to `.ozagia/edits/backups/<timestamp>_<sha12>_<name>`,
   write a temp file, `os.replace`, return `backup`, `before.sha256`,
   `after.sha256`, `applied=true`, `graph_stale=true`.
 * `base_sha256`, when supplied, must match the current file exactly.
