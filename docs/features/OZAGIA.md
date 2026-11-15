@@ -3,8 +3,9 @@
 The dev tooling for external coding agents (dev memory and its MCP server,
 repo map, code search, symbol graph, graph-addressed edits, LSP bridge, the
 retrieval and agent evals) moved to its own project, **ozagia**
-(<https://github.com/ozmalabs/ozagia>, MIT). Its history moved with it. It is
-installed into this repo's venv in editable mode:
+(<https://github.com/ozmalabs/ozagia>, MIT). Its history moved with it.
+`requirements-dev.txt` installs it from GitHub. To work on ozagia itself,
+install a checkout in editable mode instead:
 
 ```
 uv pip install --python .venv/bin/python -e <path to an ozagia checkout>
