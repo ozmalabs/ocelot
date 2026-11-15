@@ -1,0 +1,29 @@
+diff --git a/scripts/abusive_r2_cycle_limit_run.py b/scripts/abusive_r2_cycle_limit_run.py
+index cc0b2039..dc5e241f 100644
+--- a/scripts/abusive_r2_cycle_limit_run.py
++++ b/scripts/abusive_r2_cycle_limit_run.py
+@@ -82,9 +82,9 @@ def run_episode_metrics(driver_on, seed):
+     NO decision here -- the log is graph read-offs; the metrics below are
+     mechanical reductions (std / count / mean), never a judgement about the
+     victim's state."""
+-    rng = np.random.default_rng(seed) if driver_on else None
++    rng = np.random.default_rng(seed)
+     w = AbusiveR2CycleLimitWorld()
+-    log = w.run_episode(T, driver_on=driver_on, rng=rng)
++    log = w.run_episode(T, rng=rng)
+     va_post = [row["victim_arousal"] for row in log[WARMUP:]]
+     std = float(np.std(va_post))
+     final_snap_count = log[-1]["abuser_snap_count"]
+diff --git a/worlds/abusive_r2_cycle_limit_world.py b/worlds/abusive_r2_cycle_limit_world.py
+index 302263c8..361935d4 100644
+--- a/worlds/abusive_r2_cycle_limit_world.py
++++ b/worlds/abusive_r2_cycle_limit_world.py
+@@ -242,7 +242,7 @@ class AbusiveR2CycleLimitWorld:
+             self.s.set_attr(self.gb, "magnitude", float(self.trickle_mag + jitter))
+             self.s.set_attr(self.gb, "armed", 1.0)
+         self.s.set_attr(self.aaff, "tick_epoch", e)
+-        self.s.set_attr(self.vaff, "tick_epoch", e)
++        self.s.set_attr(self.aaff, "tick_epoch", e)
+         self.inner.run_rules()
+         r = self.readout()
+         self.log.append(r)

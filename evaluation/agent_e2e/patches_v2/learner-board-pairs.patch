@@ -1,0 +1,13 @@
+diff --git a/substrate/learner.py b/substrate/learner.py
+index 7546b6eb..d566fd56 100644
+--- a/substrate/learner.py
++++ b/substrate/learner.py
+@@ -101,7 +101,7 @@ class GammaLearner:
+                         if dr == 0 and dc == 0:
+                             continue
+                         nr, nc = r + dr, c + dc
+-                        if 0 <= nr < rows and 0 <= nc < cols and before[nr][nc]:
++                        if 0 <= nr < rows and 0 <= nc < cols and after[nr][nc]:
+                             alive_n += 1
+                 edits.extend(self.observe(src_type, alive_n, tgt_type))
+         return edits

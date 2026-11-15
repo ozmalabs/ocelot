@@ -1,0 +1,13 @@
+diff --git a/substrate/primitives.py b/substrate/primitives.py
+index 3390e8ad..9570f40e 100644
+--- a/substrate/primitives.py
++++ b/substrate/primitives.py
+@@ -118,7 +118,7 @@ class Substrate:
+                     if not p.admits(src_node, tgt_node, self.graph):
+                         continue
+                     admitted = True
+-                    weight_total += p.evaluate_weight(src_node, tgt_node, self.graph)
++                    weight_total += p.evaluate_weight(tgt_node, src_node, self.graph)
+                 if admitted:
+                     out.append((tgt_type, attrs, weight_total))
+             finally:

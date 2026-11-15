@@ -1,0 +1,24 @@
+diff --git a/domains/conway.py b/domains/conway.py
+index c6f37c0a..53ead90f 100644
+--- a/domains/conway.py
++++ b/domains/conway.py
+@@ -202,5 +202,5 @@ def step(s: Substrate) -> int:
+     for cell_id, new_type in decisions:
+         if s.node(cell_id).type != new_type:
+             s.set_type(cell_id, new_type)
+-            changed += 1
++        changed += 1
+     return changed
+diff --git a/substrate/dsl.py b/substrate/dsl.py
+index e93a3212..2b89a076 100644
+--- a/substrate/dsl.py
++++ b/substrate/dsl.py
+@@ -1794,7 +1794,7 @@ def free_vars(term: Term) -> frozenset[str]:
+     if isinstance(term, Var):
+         return frozenset({term.name})
+     if isinstance(term, (Filter, Exists)):
+-        return free_vars(term.source) | (free_vars(term.predicate) - {term.var_name})
++        return free_vars(term.predicate) - {term.var_name}
+     out: set[str] = set()
+     for f in dataclasses.fields(term):
+         v = getattr(term, f.name)

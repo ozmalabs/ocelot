@@ -1,0 +1,35 @@
+diff --git a/domains/remote_causal_seed.py b/domains/remote_causal_seed.py
+index 4e6f230a..5a17036d 100644
+--- a/domains/remote_causal_seed.py
++++ b/domains/remote_causal_seed.py
+@@ -170,7 +170,7 @@ def _rules():
+                 "obj_id": T(A("o", "obj_id")),
+                 "is_local": T(A("o", "is_local")),
+                 "eff_act": T(A("o", "eff_act")),
+-                "eff_noop": T(A("o", "eff_noop")),
++                "eff_noop": T(A("o", "eff_act")),
+                 "passive_cooccur": T(A("o", "passive_cooccur")),
+                 "status": T(L("posited")),
+             }],
+diff --git a/seeds/remote_causal.json b/seeds/remote_causal.json
+index 8e2198b6..18590c31 100644
+--- a/seeds/remote_causal.json
++++ b/seeds/remote_causal.json
+@@ -703,7 +703,7 @@
+          "type": "Var",
+          "name": "o"
+         },
+-        "key": "eff_noop"
++        "key": "eff_act"
+        }
+       },
+       "passive_cooccur": {
+@@ -890,7 +890,7 @@
+          "type": "Var",
+          "name": "o"
+         },
+-        "key": "eff_noop"
++        "key": "eff_act"
+        }
+       },
+       "passive_cooccur": {
