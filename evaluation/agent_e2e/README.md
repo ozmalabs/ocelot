@@ -12,6 +12,17 @@ Files:
 - `pilot_opencode.{json,md}`: the live pilot, OpenCode with the local `vllm/qwen3.8-27b`
   model, both arms, 1 repeat. 7/7 in both arms.
 
+`tasks_v2.json` (patches in `patches_v2/`, validation in `validation_v2.json`) is a harder set of
+8 tasks at base `54e5eb5f`. In the pilot both arms solved all 7 `tasks.json` tasks, which are
+one-function fixes in the `scripts/ocelot_*` modules with the failing test named in the prompt.
+The v2 tasks target code that still lives in Ocelot (`substrate/`, `domains/`, `worlds/`,
+`tools/`, non-shim `scripts/`, and one seed JSON). Their prompts describe only the
+user-visible symptom and name no file, function or test. Three breaks need edits in two files:
+a seed builder plus its generated `seeds/*.json`, and two refactors that each leave one slip in
+each of two files. Two tasks need the fix in a caller while the error or the wrong value comes
+from a correct callee. Each task's `notes` field records the break and the expected fix for
+reviewers. Run it with `--tasks evaluation/agent_e2e/tasks_v2.json --repo <checkout at 54e5eb5f>`.
+
 Commands (from the repo root, with the venv Python):
 
 ```

@@ -1,0 +1,13 @@
+diff --git a/tools/term_ast_audit.py b/tools/term_ast_audit.py
+index 10aad0aa..a9cc2785 100644
+--- a/tools/term_ast_audit.py
++++ b/tools/term_ast_audit.py
+@@ -277,7 +277,7 @@ def walk_terms_scoped(node: Any, scope: dict, path: str = "",
+                 not_depth += 1
+         for key, value in node.items():
+             yield from walk_terms_scoped(
+-                value, inner, f"{path}.{key}" if path else key, not_depth)
++                value, scope, f"{path}.{key}" if path else key, not_depth)
+     elif isinstance(node, list):
+         for i, value in enumerate(node):
+             yield from walk_terms_scoped(value, scope, f"{path}[{i}]", not_depth)

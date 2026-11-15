@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "base": "54e5eb5fae4592444136b9d70fde08e94cb8a914",
+  "tasks": [
+    {
+      "id": "remote-causal-posit-noop",
+      "area": "domains",
+      "prompt": "In the remote-causation experiments the agent no longer confirms a genuine remote cause. In an attribution vignette where operating the remote switch changes B and doing nothing does not, the posited causal link ends up refuted instead of confirmed, so B's change is never attributed across space and the remote arm stops winning the ls20 and Doom boards. Coincidence vignettes (B changes on its own) are still correctly refused. Find the cause and fix it. The seed manifest checked into seeds/ must stay byte-identical to what its builder generates.",
+      "break_patch": "patches_v2/remote-causal-posit-noop.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_remote_causal_migrated.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "domains/remote_causal_seed.py",
+        "seeds/remote_causal.json"
+      ],
+      "notes": "Break: in the seed builder's posit effects (_posit_effects), the minted RemoteCausalPosit copies eff_noop from the object's eff_act attribute (copy-paste slip), and seeds/remote_causal.json was regenerated from the broken builder (two posit rules carry the slip). Every posit then has eff_act == eff_noop, so rc_refute_interventional fires instead of rc_confirm_interventional. Correct fix: restore T(A('o', 'eff_noop')) in the builder AND regenerate or hand-fix the JSON (both 'key': 'eff_act' occurrences under eff_noop back to 'eff_noop'). Fixing only the builder fails the byte-stable round-trip test; fixing only the JSON leaves the behaviour broken, because worlds/remote_causal.py installs RULES from the builder module. Both files are required."
+    },
+    {
+      "id": "seed-dependency-closure",
+      "area": "domains",
+      "prompt": "Resolving or loading the chat seed closure now fails. Asking the seed registry for 'chat' (and 'voice', which pulls chat in), or loading either onto a bare substrate, raises KeyError: \"unknown seed 'r'; registered: [...]\". No seed called 'r' was ever meant to exist, the seed manifests on disk are unchanged, and seeds outside the chat closure (for example self_monitoring) still load. Find the cause and fix it.",
+      "break_patch": "patches_v2/seed-dependency-closure.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_seeds_migrated.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "domains/seed_registry.py"
+      ],
+      "notes": "Break: the 'conversation' Seed declaration loses the trailing comma in depends_on=(\"relations\",), so depends_on is the string 'relations' and the registry's topological walk visits its characters. The traceback ends in SeedRegistry.get / resolve (substrate/seeds.py), which is correct. Caller-side fix: restore the one-element tuple in domains/seed_registry.py. A defensive change in substrate/seeds.py (coercing a str depends_on to a tuple) would also pass the check but is not the expected localisation."
+    },
+    {
+      "id": "admissible-moves-weight",
+      "area": "substrate",
+      "prompt": "Weighted move enumeration in the Python (G, Γ) graph engine ignores weights that depend on the target node. Given one production Piece -moves_to-> Square whose weight is 1.0 plus 100.0 when the square has occupied=True, enumerating the candidate targets [Square{occupied: False}, Square{occupied: True}] from a Piece returns weight 1.0 for both squares instead of 1.0 and 101.0. Both candidates are still admitted, so admissibility itself looks right. Find the cause and fix it.",
+      "break_patch": "patches_v2/admissible-moves-weight.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_substrate.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "substrate/primitives.py"
+      ],
+      "notes": "Break: Substrate.admissible_moves calls p.evaluate_weight(tgt_node, src_node, G) with the node arguments swapped. Production.evaluate_weight (substrate/grammar.py) is correct: it binds src.var/tgt.var from its arguments, so the weight Term reads the Piece's (absent) 'occupied' attr. No exception; silently wrong weights. Caller-side fix: restore evaluate_weight(src_node, tgt_node, self.graph)."
+    },
+    {
+      "id": "life-step-cache",
+      "area": "substrate",
+      "prompt": "The Game of Life (B3/S23) running on the Python (G, Γ) substrate has regressed. A blinker no longer oscillates and a 2x2 block no longer stays still: within one generation the Python board diverges from the reference rule, and the Python-vs-Rust parity runs diverge too. Separately, the number of changed cells that the Python engine reports for each generation no longer matches the Rust engine's count, even on generations where the boards agree. The Life rule tables themselves were not changed. Find and fix the cause(s).",
+      "break_patch": "patches_v2/life-step-cache.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_conway.py::test_blinker_period_2",
+          "tests/test_conway.py::test_block_still_life",
+          "tests/test_conway.py::test_glider_translates",
+          "tests/test_conway_parity.py",
+          "tests/test_learner.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "substrate/dsl.py",
+        "domains/conway.py"
+      ],
+      "notes": "Two slips in one refactor, one per file; each alone fails the check. (1) substrate/dsl.py free_vars: for Filter/Exists it returns only the predicate's free vars minus var_name and drops free_vars(term.source). Filter's step-cache key is then (id(self), ()) for the shared alive-neighbour Filter, so every cell in a generation reuses the first cell's neighbour set. (2) domains/conway.py step: 'changed += 1' was dedented out of the 'if type != new_type' block, so the returned change count is the number of cells, which only the parity tests catch. Fix: restore 'free_vars(term.source) | (free_vars(term.predicate) - {term.var_name})' and re-indent the counter. Disabling the Filter cache instead of fixing free_vars would also pass but is a workaround."
+    },
+    {
+      "id": "checkpoint-instance-index",
+      "area": "substrate",
+      "prompt": "Checkpointing the seed-booted agent's mind (the Python adapter that sits between worlds and the Rust graph) to a file and restoring it no longer preserves its world-instance index. Node and edge counts right after the restore match, but the restored index's keys no longer equal the original's, and asking the restored adapter for an instance that existed before the checkpoint (type Rock, id rock_1) creates a brand-new node instead of returning the stored one, so the graph grows. Find the cause and fix it.",
+      "break_patch": "patches_v2/checkpoint-instance-index.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_persistence_migrated.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "substrate/world_adapter.py"
+      ],
+      "notes": "Break: WorldAdapter.save writes 'instances' rows as [wid, t, nid] while WorldAdapter.load reads them as (t, wid, v), so restored _instances keys are (id, type). The file is ~19.6k lines; save and load are ~100 lines apart. Correct fix: restore [t, wid, n.value] in save. Swapping the read order in load also passes the check but would misread every checkpoint written before the break; document as acceptable-but-worse."
+    },
+    {
+      "id": "learner-board-pairs",
+      "area": "substrate",
+      "prompt": "Γ induction from observed Life transitions learns the wrong rule when it is trained on whole (before, after) board pairs. After training on B3/S23 board pairs it predicts DeadCell for a live cell with 2 live neighbours, and a substrate running the induced grammar diverges from the B3/S23 reference after one generation. Feeding the same transitions one cell at a time as (src_type, alive_neighbours, next_type) observations still converges to the correct table. Find the cause and fix it.",
+      "break_patch": "patches_v2/learner-board-pairs.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_learner.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "substrate/learner.py"
+      ],
+      "notes": "Break: GammaLearner.observe_transition counts live neighbours on the 'after' board instead of 'before' (one token). The near-duplicate module function extract_observations is still correct, which is why per-cell training works. Fix: count before[nr][nc]."
+    },
+    {
+      "id": "r2-cycle-arms",
+      "area": "worlds",
+      "prompt": "In the R2 cycle-of-abuse limit-cycle experiment the two arms no longer separate. The constant-regulation control, which must receive no tension driver at all, now shows abuser snaps and a non-zero victim arousal oscillation. In the cycle arm the abuser still snaps repeatedly, but the victim's arousal no longer entrains to the abuser, and inducing one cycle for the ethics restore check no longer moves the victim's arousal. The seed manifests were not changed. Find and fix the cause(s).",
+      "break_patch": "patches_v2/r2-cycle-arms.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_abusive_r2_migrated.py"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "worlds/abusive_r2_cycle_limit_world.py",
+        "scripts/abusive_r2_cycle_limit_run.py"
+      ],
+      "notes": "Two slips; each alone fails the check. (1) World: AbusiveR2CycleLimitWorld.step advances tick_epoch on the abuser's AffectiveState twice and never on the victim's, so the epoch-guarded r2_victim_entrainment_via_frustration rule stops firing for the victim. (2) Runner: run_episode_metrics always seeds an rng and calls w.run_episode(T, rng=rng) without driver_on, so the callee's default driver_on=True drives the control arm too (caller-side bug; run_episode is correct). Fix: set the victim's tick_epoch in step, and restore 'rng = ... if driver_on else None' plus driver_on=driver_on in the runner."
+    },
+    {
+      "id": "bound-audit-quantifier-scope",
+      "area": "tools",
+      "prompt": "The structural bound audit of seed rules no longer promotes codebook-crossing comparisons. In the vision_category seed's cat_recognize rule, the four Lte(Attr, Attr) box-containment bounds compare a codebook candidate bound by a NodesOfType quantifier against the matched observation; they used to be counted at tier T2 (T2_bound_like == 4) and now the audit reports 0, so the audit table no longer shows any verdict moving between T1 and T2. Comparisons that involve no quantified variable are classified exactly as before. Find the cause and fix it.",
+      "break_patch": "patches_v2/bound-audit-quantifier-scope.patch",
+      "check": {
+        "argv": [
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "--confcutdir={workdir}",
+          "tests/test_ast_attr_migrated.py::test_headline_t2_category_box_containment_is_found",
+          "tests/test_ast_attr_migrated.py::test_audit_table_exactly_one_verdict_moves",
+          "tests/test_ast_attr_migrated.py::test_positive_control_detect_nothing_reddens_headline_not_fp",
+          "tests/test_ast_attr_migrated.py::test_t2_fires_only_on_attr_vs_attr",
+          "tests/test_ast_attr_migrated.py::test_conjunction_tripwire_nonbound_battery_still_clean",
+          "tests/test_tripwire_repair_migrated.py::test_SEES_the_AST_detector_finds_the_Lt_inside_Not_Exists_bound"
+        ],
+        "timeout_s": 60
+      },
+      "expected_files": [
+        "tools/term_ast_audit.py"
+      ],
+      "notes": "Break: walk_terms_scoped recurses into a dict's children with the outer 'scope' instead of 'inner', so a binder's var_name (Exists/Filter/MinOver over NodesOfType) is never in scope below it and is_codebook_crossing never finds a candidate. Fix: pass 'inner' again. Caveat: tests/test_ast_attr_migrated.py::test_positive_control_detector_source_restored_byte_identical pins the module's sha256; it is deliberately NOT in the check (an agent may fix the bug with different bytes), but it will fail after the break and, if an agent runs that whole test file, it names the module. It passes again only if the fix restores the original bytes."
+    }
+  ]
+}

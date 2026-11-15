@@ -1,0 +1,13 @@
+diff --git a/substrate/world_adapter.py b/substrate/world_adapter.py
+index 1f06867e..9f666796 100644
+--- a/substrate/world_adapter.py
++++ b/substrate/world_adapter.py
+@@ -15164,7 +15164,7 @@ class WorldAdapter:
+             "graph": self.s.graph_to_dict(),
+             "grammar": self.s.grammar_to_json(),
+             "rules": self.inner.export_rules(),
+-            "instances": [[t, wid, n.value]
++            "instances": [[wid, t, n.value]
+                           for (t, wid), n in self._instances.items()],
+             "concepts": [[name, n.value] for name, n in self._concepts.items()],
+             # (SHAPE_AUDIT.md §4.2 fix) `_recursive_concepts` is a lazily-created
